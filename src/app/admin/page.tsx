@@ -57,7 +57,6 @@ import {
   Mail,
   Send,
   Megaphone,
-  CheckCircle2,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -664,6 +663,14 @@ export default function AdminPage() {
     }
   }, []);
 
+  const fetchInbox = useCallback(async (s?: string) => {
+    try {
+      const q = s && s !== "all" ? `?status=${s}` : "";
+      const res = await fetch(`/api/admin/inbox${q}`);
+      if (res.ok) setInboxMessages(await res.json());
+    } catch { /* silent */ }
+  }, []);
+
   useEffect(() => {
     if (status === "loading") return;
 
@@ -841,14 +848,6 @@ export default function AdminPage() {
       setEmailSending(false);
     }
   };
-
-  const fetchInbox = useCallback(async (status?: string) => {
-    try {
-      const q = status && status !== "all" ? `?status=${status}` : "";
-      const res = await fetch(`/api/admin/inbox${q}`);
-      if (res.ok) setInboxMessages(await res.json());
-    } catch { /* silent */ }
-  }, []);
 
   const handleSelectMessage = async (msg: ContactMessage) => {
     setSelectedMessage(msg);

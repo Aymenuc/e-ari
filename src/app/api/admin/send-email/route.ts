@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Send in batches of 10 to avoid overwhelming the email service
-  const results = [];
+  const results: PromiseSettledResult<Awaited<ReturnType<typeof sendCustomEmail>>>[] = [];
   for (let i = 0; i < users.length; i += 10) {
     const batch = users.slice(i, i + 10);
     const batchResults = await Promise.allSettled(
