@@ -54,12 +54,6 @@ export function Navigation() {
                 AI Literacy
               </Button>
             </Link>
-            <Link href="/team">
-              <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-sans">
-                <Users className="h-4 w-4 mr-1" />
-                Team
-              </Button>
-            </Link>
             <Link href="/#pricing">
               <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-sans">
                 Pricing
@@ -212,12 +206,6 @@ export function Navigation() {
               <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-sans">
                 <Brain className="h-4 w-4 mr-2" />
                 AI Literacy
-              </Button>
-            </Link>
-            <Link href="/team" onClick={() => setMobileOpen(false)}>
-              <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-sans">
-                <Users className="h-4 w-4 mr-2" />
-                Team
               </Button>
             </Link>
             <Link href="/#pricing" onClick={() => setMobileOpen(false)}>
