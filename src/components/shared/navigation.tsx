@@ -60,11 +60,6 @@ export function Navigation() {
                 Team
               </Button>
             </Link>
-            <Link href="/careers">
-              <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-sans">
-                Careers
-              </Button>
-            </Link>
             <Link href="/#pricing">
               <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-sans">
                 Pricing
@@ -223,11 +218,6 @@ export function Navigation() {
               <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-sans">
                 <Users className="h-4 w-4 mr-2" />
                 Team
-              </Button>
-            </Link>
-            <Link href="/careers" onClick={() => setMobileOpen(false)}>
-              <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-sans">
-                Careers
               </Button>
             </Link>
             <Link href="/#pricing" onClick={() => setMobileOpen(false)}>
