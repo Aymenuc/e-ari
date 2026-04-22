@@ -1,24 +1,19 @@
 /**
  * E-ARI Email Notification Service
  *
- * Sends professional, value-focused email notifications for:
+ * Sends professional, value-focused email notifications via Resend:
  * - Quarterly re-assessment reminders
  * - Monthly AI Pulse summaries
  * - Significant score change alerts
  * - Welcome/onboarding emails
  * - Refund request and status notifications
  *
- * Architecture:
- * - In-app notifications via Prisma (always works)
- * - Email delivery via configurable webhook (SendGrid, Mailgun, custom)
- * - Graceful fallback when email infrastructure is not configured
- *
  * Environment variables:
- * - EMAIL_WEBHOOK_URL: HTTP endpoint for sending emails
- * - EMAIL_FROM_ADDRESS: Sender email address (e.g., "E-ARI <noreply@e-ari.com>")
- * - EMAIL_API_KEY: Optional API key for the webhook
+ * - RESEND_API_KEY: Resend API key
+ * - EMAIL_FROM_ADDRESS: Sender address (must be a verified Resend domain)
  */
 
+import { Resend } from 'resend';
 import { db } from './db';
 import { PILLARS, MATURITY_BANDS } from './pillars';
 
@@ -53,9 +48,7 @@ export interface RefundEmailDetails {
 
 // ─── Configuration ──────────────────────────────────────────────────────────
 
-const EMAIL_WEBHOOK_URL = process.env.EMAIL_WEBHOOK_URL || '';
-const EMAIL_FROM_ADDRESS = process.env.EMAIL_FROM_ADDRESS || 'E-ARI <noreply@e-ari.com>';
-const EMAIL_API_KEY = process.env.EMAIL_API_KEY || '';
+const EMAIL_FROM_ADDRESS = process.env.EMAIL_FROM_ADDRESS || 'onboarding@resend.dev';
 
 const SIGNIFICANT_SCORE_THRESHOLD = 8; // Points change to trigger alert
 
@@ -68,33 +61,24 @@ const REASON_DISPLAY: Record<string, string> = {
 
 // ─── Core Email Sending ────────────────────────────────────────────────────
 
-/**
- * Send an email via the configured webhook.
- * Falls back to notification-only if no webhook is configured.
- */
 async function sendEmail(payload: EmailPayload): Promise<EmailResult> {
-  // Try email webhook if configured
-  if (!EMAIL_WEBHOOK_URL) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
     return { sent: false, method: 'notification_only' };
   }
 
   try {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (EMAIL_API_KEY) {
-      headers['Authorization'] = `Bearer ${EMAIL_API_KEY}`;
-    }
-
-    const response = await fetch(EMAIL_WEBHOOK_URL, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(10000), // 10s timeout
+    const resend = new Resend(apiKey);
+    const { error } = await resend.emails.send({
+      from: payload.from || EMAIL_FROM_ADDRESS,
+      to: payload.to,
+      subject: payload.subject,
+      html: payload.html,
+      text: payload.text,
     });
 
-    if (!response.ok) {
-      return { sent: false, method: 'notification_only', error: `Webhook returned ${response.status}` };
+    if (error) {
+      return { sent: false, method: 'notification_only', error: error.message };
     }
 
     return { sent: true, method: 'email' };
