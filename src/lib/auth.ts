@@ -5,6 +5,7 @@ import GitHubProvider from "next-auth/providers/github";
 import TwitterProvider from "next-auth/providers/twitter";
 import { db } from "./db";
 import bcrypt from "bcryptjs";
+import { sendWelcomeEmail } from "./email-service";
 
 /**
  * Resolve the canonical NEXTAUTH_URL.
@@ -179,6 +180,9 @@ export const authOptions: NextAuthOptions = {
             session_state: account.session_state as string | undefined,
           },
         });
+
+        // Send welcome email for new OAuth users (fire-and-forget)
+        sendWelcomeEmail(newUser.id, newUser.email, newUser.name).catch(() => {});
 
         return true;
       }

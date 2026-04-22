@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
+import { sendWelcomeEmail } from "@/lib/email-service";
 
 export async function POST(req: NextRequest) {
   try {
@@ -49,6 +50,9 @@ export async function POST(req: NextRequest) {
         role: "user",
       },
     });
+
+    // Send welcome email (fire-and-forget)
+    sendWelcomeEmail(user.id, user.email, user.name).catch(() => {});
 
     return NextResponse.json(
       {

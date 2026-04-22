@@ -10,7 +10,8 @@
  *
  * Environment variables:
  * - RESEND_API_KEY: Resend API key
- * - EMAIL_FROM_ADDRESS: Sender address (must be a verified Resend domain)
+ * - EMAIL_FROM_ADDRESS: support@e-ari.com — used for refund/support emails
+ * - EMAIL_FROM_HELLO: hello@e-ari.com — used for welcome/promotional/pulse emails
  */
 
 import { Resend } from 'resend';
