@@ -275,6 +275,38 @@ model SocialPost {
   updatedAt       DateTime  @updatedAt
 }
 
+// ─── Contact Inbox ───────────────────────────────────────────────────────────
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  company   String?
+  subject   String
+  message   String
+  status    String   @default("new") // "new" | "read" | "replied" | "archived"
+  adminNote String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  replies ContactReply[]
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ContactReply {
+  id               String   @id @default(cuid())
+  contactMessageId String
+  subject          String
+  body             String
+  sentAt           DateTime @default(now())
+
+  contactMessage ContactMessage @relation(fields: [contactMessageId], references: [id], onDelete: Cascade)
+
+  @@index([contactMessageId])
+}
+
 // ─── Refund Requests ────────────────────────────────────────────────────────
 
 model RefundRequest {

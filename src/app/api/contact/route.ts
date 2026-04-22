@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
 import { sendContactFormEmail } from "@/lib/email-service";
 
 export async function POST(req: NextRequest) {
@@ -20,6 +21,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
   }
 
-  await sendContactFormEmail(name, email, company || null, subject, message);
+  // Store in DB for admin inbox
+  await db.contactMessage.create({
+    data: { name, email, company: company || null, subject, message },
+  });
+
+  // Send notification email to support
+  sendContactFormEmail(name, email, company || null, subject, message).catch(() => {});
+
   return NextResponse.json({ message: "Message sent successfully" });
 }
