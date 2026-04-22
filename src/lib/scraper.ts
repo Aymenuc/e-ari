@@ -1,80 +1,53 @@
 /**
  * E-ARI Web Scraping / Context Enrichment Service
  *
- * Uses z-ai-web-dev-sdk's web_search and LLM capabilities to enrich
- * organizational context for AI readiness assessments. This service:
+ * Uses Tavily Search API for web search and GLM-5.1 for synthesis to enrich
+ * organizational context for AI readiness assessments.
  *
- * 1. Searches the web for information about an organization
- * 2. Extracts AI readiness signals (tech stack, AI initiatives, partnerships, news)
- * 3. Returns structured OrgContext that tailors assessment questions and insights
- *
- * Design principles:
- * - Graceful degradation: if web search fails, return partial context
- * - Privacy-first: no raw PII stored in logs; only org-level signals extracted
- * - Server-side only: this module must never be imported on the client
- * - No browser scraping: only uses z-ai-web-dev-sdk's web_search + LLM
+ * Environment variables:
+ * - TAVILY_API_KEY: Tavily Search API key
+ * - GLM_API_KEY: GLM-5.1 API key
  */
-
-import ZAI from 'z-ai-web-dev-sdk';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-/** Input: organization info provided by the user during assessment setup */
 export interface ScrapingInput {
-  /** Organization name (required — the primary search key) */
   orgName: string;
-  /** Organization website URL (optional — helps disambiguate and find official info) */
   websiteUrl?: string;
-  /** Industry sector ID from the assessment sector selection (e.g., 'healthcare', 'finance') */
   sector?: string;
-  /** Any free-text context the user provides about their organization */
   additionalContext?: string;
 }
 
-/** Output: enriched context about the organization for assessment tailoring */
 export interface OrgContext {
-  /** Organization name (mirrored from input) */
   orgName: string;
-  /** Organization website URL (mirrored from input if provided) */
   websiteUrl?: string;
-  /** Industry sector (mirrored from input if provided) */
   sector?: string;
-  /** Summary of AI trends relevant to the organization's industry */
   industryContext: string;
-  /** What we learned specifically about this organization from web sources */
   orgSpecificContext: string;
-  /** Known AI projects, initiatives, or programs the organization is involved in */
   aiInitiatives: string[];
-  /** Technologies, platforms, or tools mentioned in connection with the organization */
   techStackSignals: string[];
-  /** Sector-specific regulations and compliance requirements that affect AI adoption */
   regulatoryConsiderations: string[];
-  /** How the organization compares within its sector regarding AI maturity */
   competitiveLandscape: string;
-  /** URLs that were used as sources for the enrichment */
   scrapingSources: string[];
-  /** ISO 8601 timestamp of when the context was scraped */
   scrapedAt: string;
-  /** Confidence level in the accuracy of the scraped data */
   confidence: 'high' | 'medium' | 'low';
 }
 
-/** Result from a quick website scrape */
 export interface QuickScrapeResult {
-  /** Inferred title or organization name from the website */
   title: string;
-  /** Brief description of what the organization does */
   description: string;
-  /** Technology signals detected from search snippets */
   techSignals: string[];
+}
+
+interface TavilyResult {
+  url: string;
+  title: string;
+  content: string;
+  score: number;
 }
 
 // ─── Sector name mapping ────────────────────────────────────────────────────
 
-/**
- * Maps sector IDs from the E-ARI sector definitions to human-readable names
- * and search-friendly keywords for web queries.
- */
 const SECTOR_MAP: Record<string, { name: string; searchKeywords: string[] }> = {
   healthcare: {
     name: 'Healthcare & Life Sciences',
@@ -116,20 +89,6 @@ const SECTOR_MAP: Record<string, { name: string; searchKeywords: string[] }> = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-/**
- * Get the z-ai-web-dev-sdk client instance.
- * Wraps creation in error handling so callers don't need to.
- */
-async function getZAIClient() {
-  const ZAIModule = await import('z-ai-web-dev-sdk');
-  const zai = await ZAIModule.default.create();
-  return zai;
-}
-
-/**
- * Build a domain hint from a website URL for disambiguation.
- * e.g., "https://www.acme.com" → "acme.com"
- */
 function extractDomain(url: string): string {
   try {
     const parsed = new URL(url.startsWith('http') ? url : `https://${url}`);
@@ -139,26 +98,6 @@ function extractDomain(url: string): string {
   }
 }
 
-/**
- * Execute a web search with error handling, returning an empty array on failure.
- */
-async function safeWebSearch(
-  zai: Awaited<ReturnType<typeof getZAIClient>>,
-  query: string,
-  num: number = 8,
-): Promise<Array<{ url: string; name: string; snippet: string; host_name: string; rank: number; date?: string; favicon?: string }>> {
-  try {
-    const results = await zai.functions.invoke('web_search', { query, num });
-    return Array.isArray(results) ? results : [];
-  } catch (error) {
-    console.warn(`[scraper] Web search failed for query "${query}":`, error);
-    return [];
-  }
-}
-
-/**
- * Parse a JSON response from the LLM, handling markdown code block wrapping.
- */
 function parseLLMJson<T>(content: string): T {
   let jsonStr = content.trim();
   if (jsonStr.startsWith('```')) {
@@ -167,9 +106,6 @@ function parseLLMJson<T>(content: string): T {
   return JSON.parse(jsonStr) as T;
 }
 
-/**
- * Determine confidence level based on how many sources returned useful data.
- */
 function assessConfidence(
   orgResults: unknown[],
   sectorResults: unknown[],
@@ -181,116 +117,119 @@ function assessConfidence(
   return 'low';
 }
 
+async function tavilySearch(query: string, maxResults: number = 8): Promise<TavilyResult[]> {
+  const apiKey = process.env.TAVILY_API_KEY;
+  if (!apiKey) {
+    console.warn('[scraper] TAVILY_API_KEY not set');
+    return [];
+  }
+  try {
+    const res = await fetch('https://api.tavily.com/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ api_key: apiKey, query, max_results: maxResults, search_depth: 'basic' }),
+    });
+    if (!res.ok) {
+      console.warn(`[scraper] Tavily search failed (${res.status}) for query: ${query}`);
+      return [];
+    }
+    const data = await res.json();
+    return Array.isArray(data.results) ? data.results : [];
+  } catch (error) {
+    console.warn(`[scraper] Tavily search error for query "${query}":`, error);
+    return [];
+  }
+}
+
+async function glmComplete(systemPrompt: string, userPrompt: string, maxTokens: number = 1500): Promise<string | null> {
+  const apiKey = process.env.GLM_API_KEY;
+  if (!apiKey) {
+    console.warn('[scraper] GLM_API_KEY not set');
+    return null;
+  }
+  try {
+    const res = await fetch('https://api.us-west-2.modal.direct/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: 'zai-org/GLM-5.1-FP8',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        max_tokens: maxTokens,
+        temperature: 0.2,
+      }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content ?? null;
+  } catch (error) {
+    console.warn('[scraper] GLM completion error:', error);
+    return null;
+  }
+}
+
 // ─── Main Exported Functions ─────────────────────────────────────────────────
 
-/**
- * Scrape and enrich organizational context using web search and LLM analysis.
- *
- * This is the primary entry point for context enrichment. It performs multiple
- * web searches about the organization and its sector, then uses an LLM to
- * synthesize the results into a structured {@link OrgContext} object.
- *
- * @param input - Organization identification provided by the user
- * @returns Structured organizational context for assessment tailoring
- *
- * @example
- * ```typescript
- * const context = await scrapeOrganizationContext({
- *   orgName: 'Acme Corp',
- *   websiteUrl: 'https://acme.com',
- *   sector: 'manufacturing',
- *   additionalContext: 'Recently announced AI strategy',
- * });
- * console.log(context.aiInitiatives);
- * console.log(context.confidence);
- * ```
- */
 export async function scrapeOrganizationContext(input: ScrapingInput): Promise<OrgContext> {
   const timestamp = new Date().toISOString();
   const { orgName, websiteUrl, sector, additionalContext } = input;
 
-  // Build disambiguation hints
   const domainHint = websiteUrl ? ` (${extractDomain(websiteUrl)})` : '';
   const sectorInfo = sector ? SECTOR_MAP[sector] : null;
   const sectorName = sectorInfo?.name ?? sector ?? '';
 
-  // Initialize ZAI client
-  let zai: Awaited<ReturnType<typeof getZAIClient>>;
-  try {
-    zai = await getZAIClient();
-  } catch (error) {
-    console.error('[scraper] Failed to initialize ZAI client:', error);
-    return buildFallbackContext(input, timestamp, 'ZAI client initialization failed');
-  }
-
-  // ── Step 1: Search for org-specific AI and technology information ──
+  // ── Step 1: Org-specific searches ──
   const orgSearchQueries = [
     `${orgName}${domainHint} AI artificial intelligence initiatives`,
     `${orgName}${domainHint} technology stack digital transformation`,
     `${orgName}${domainHint} partnerships AI machine learning`,
   ];
+  if (sectorName) orgSearchQueries.push(`${orgName}${domainHint} ${sectorName} AI adoption`);
+  if (additionalContext) orgSearchQueries.push(`${orgName} ${additionalContext}`);
 
-  // Add a sector-specific query if sector is known
-  if (sectorName) {
-    orgSearchQueries.push(`${orgName}${domainHint} ${sectorName} AI adoption`);
-  }
+  const orgResults = (await Promise.all(orgSearchQueries.map((q) => tavilySearch(q, 8)))).flat();
 
-  // Add additional context query if provided
-  if (additionalContext) {
-    orgSearchQueries.push(`${orgName} ${additionalContext}`);
-  }
-
-  const orgSearchPromises = orgSearchQueries.map((q) => safeWebSearch(zai, q, 8));
-  const orgSearchResults = await Promise.all(orgSearchPromises);
-  const allOrgResults = orgSearchResults.flat();
-
-  // Deduplicate by URL
   const seenUrls = new Set<string>();
-  const uniqueOrgResults = allOrgResults.filter((r) => {
+  const uniqueOrgResults = orgResults.filter((r) => {
     if (seenUrls.has(r.url)) return false;
     seenUrls.add(r.url);
     return true;
   });
 
-  // ── Step 2: Search for sector-specific AI trends and regulations ──
-  const sectorSearchQueries: string[] = [];
-  if (sectorInfo) {
-    sectorSearchQueries.push(`${sectorInfo.name} AI trends 2024 2025`);
-    sectorSearchQueries.push(`${sectorInfo.name} AI regulation compliance requirements`);
-    sectorSearchQueries.push(`${sectorInfo.searchKeywords[0]} ${sectorInfo.searchKeywords[1]} industry outlook`);
-  } else {
-    // Generic sector-agnostic queries
-    sectorSearchQueries.push('enterprise AI adoption trends 2024 2025');
-    sectorSearchQueries.push('AI regulation compliance enterprise requirements');
-  }
+  // ── Step 2: Sector-specific searches ──
+  const sectorQueries = sectorInfo
+    ? [
+        `${sectorInfo.name} AI trends 2024 2025`,
+        `${sectorInfo.name} AI regulation compliance requirements`,
+        `${sectorInfo.searchKeywords[0]} ${sectorInfo.searchKeywords[1]} industry outlook`,
+      ]
+    : ['enterprise AI adoption trends 2024 2025', 'AI regulation compliance enterprise requirements'];
 
-  const sectorSearchPromises = sectorSearchQueries.map((q) => safeWebSearch(zai, q, 6));
-  const sectorSearchResults = await Promise.all(sectorSearchPromises);
-  const allSectorResults = sectorSearchResults.flat();
+  const sectorResults = (await Promise.all(sectorQueries.map((q) => tavilySearch(q, 6)))).flat();
 
-  // Deduplicate sector results
   const seenSectorUrls = new Set<string>();
-  const uniqueSectorResults = allSectorResults.filter((r) => {
+  const uniqueSectorResults = sectorResults.filter((r) => {
     if (seenSectorUrls.has(r.url)) return false;
     seenSectorUrls.add(r.url);
     return true;
   });
 
-  // ── Step 3: If no results at all, return fallback ──
   if (uniqueOrgResults.length === 0 && uniqueSectorResults.length === 0) {
     return buildFallbackContext(input, timestamp, 'No web search results returned');
   }
 
-  // ── Step 4: Use LLM to synthesize search results into structured context ──
+  // ── Step 3: GLM synthesis ──
   try {
     const orgSnippets = uniqueOrgResults
       .slice(0, 15)
-      .map((r, i) => `[${i + 1}] "${r.name}" — ${r.snippet} (Source: ${r.host_name})`)
+      .map((r, i) => `[${i + 1}] "${r.title}" — ${r.content} (Source: ${extractDomain(r.url)})`)
       .join('\n');
 
     const sectorSnippets = uniqueSectorResults
       .slice(0, 10)
-      .map((r, i) => `[${i + 1}] "${r.name}" — ${r.snippet} (Source: ${r.host_name})`)
+      .map((r, i) => `[${i + 1}] "${r.title}" — ${r.content} (Source: ${extractDomain(r.url)})`)
       .join('\n');
 
     const allSourceUrls = [
@@ -298,9 +237,7 @@ export async function scrapeOrganizationContext(input: ScrapingInput): Promise<O
       ...uniqueSectorResults.slice(0, 10).map((r) => r.url),
     ];
 
-    const synthesisPrompt = `You are an enterprise AI readiness research analyst. Analyze the following web search results about an organization and its industry to extract AI readiness context.
-
-ORGANIZATION: ${orgName}${websiteUrl ? `\nWEBSITE: ${websiteUrl}` : ''}${sector ? `\nSECTOR: ${sectorName}` : ''}${additionalContext ? `\nADDITIONAL CONTEXT: ${additionalContext}` : ''}
+    const synthesisPrompt = `ORGANIZATION: ${orgName}${websiteUrl ? `\nWEBSITE: ${websiteUrl}` : ''}${sector ? `\nSECTOR: ${sectorName}` : ''}${additionalContext ? `\nADDITIONAL CONTEXT: ${additionalContext}` : ''}
 
 ORGANIZATION SEARCH RESULTS:
 ${orgSnippets || 'No organization-specific results found.'}
@@ -310,43 +247,29 @@ ${sectorSnippets || 'No sector-specific results found.'}
 
 RULES:
 - Base ALL findings ONLY on the search results provided above. Do not fabricate or infer information not supported by the snippets.
-- If the search results don't mention specific AI initiatives for this organization, return an empty array for aiInitiatives — do NOT guess.
+- If the search results don't mention specific AI initiatives for this organization, return an empty array for aiInitiatives.
 - If the search results don't mention specific technologies, return an empty array for techStackSignals.
 - For regulatory considerations, combine what's in the search results with well-known sector regulations (e.g., HIPAA for healthcare, SOX for finance).
 - Be conservative: it's better to return less information than to fabricate.
-- Keep all text fields concise and actionable (2-4 sentences max for summaries).
-- For competitiveLandscape, describe how this organization's AI maturity appears relative to its sector peers based on the search data.
+- Keep all text fields concise and actionable (2-4 sentences max).
 
 Respond in this exact JSON format:
 {
-  "industryContext": "2-3 sentence summary of AI trends and adoption patterns in this organization's sector",
-  "orgSpecificContext": "2-3 sentence summary of what the search results reveal about THIS organization's AI readiness posture",
+  "industryContext": "2-3 sentence summary of AI trends in this sector",
+  "orgSpecificContext": "2-3 sentence summary of what search results reveal about THIS organization's AI readiness",
   "aiInitiatives": ["initiative 1", "initiative 2"],
   "techStackSignals": ["technology 1", "technology 2"],
   "regulatoryConsiderations": ["regulation 1", "regulation 2"],
-  "competitiveLandscape": "2-3 sentence assessment of how this organization compares to sector peers in AI maturity"
+  "competitiveLandscape": "2-3 sentence assessment of how this organization compares to sector peers"
 }`;
 
-    const completion = await zai.chat.completions.create({
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You are an enterprise AI readiness research analyst. Extract only factual, source-supported insights from web search results. Never fabricate information. Be conservative and precise.',
-        },
-        {
-          role: 'user',
-          content: synthesisPrompt,
-        },
-      ],
-      temperature: 0.2, // Very low temperature for factual extraction
-      max_tokens: 1500,
-    });
+    const content = await glmComplete(
+      'You are an enterprise AI readiness research analyst. Extract only factual, source-supported insights from web search results. Never fabricate information. Be conservative and precise.',
+      synthesisPrompt,
+      1500,
+    );
 
-    const content = completion.choices[0]?.message?.content;
-    if (!content) {
-      throw new Error('Empty LLM response from synthesis');
-    }
+    if (!content) throw new Error('Empty GLM response');
 
     const parsed = parseLLMJson<{
       industryContext: string;
@@ -357,13 +280,10 @@ Respond in this exact JSON format:
       competitiveLandscape: string;
     }>(content);
 
-    // Validate essential fields exist
     const hasOrgSpecificData =
       (Array.isArray(parsed.aiInitiatives) && parsed.aiInitiatives.length > 0) ||
       (Array.isArray(parsed.techStackSignals) && parsed.techStackSignals.length > 0) ||
       (typeof parsed.orgSpecificContext === 'string' && parsed.orgSpecificContext.length > 50);
-
-    const confidence = assessConfidence(uniqueOrgResults, uniqueSectorResults, hasOrgSpecificData);
 
     return {
       orgName,
@@ -376,48 +296,22 @@ Respond in this exact JSON format:
       regulatoryConsiderations: Array.isArray(parsed.regulatoryConsiderations)
         ? parsed.regulatoryConsiderations.slice(0, 8)
         : [],
-      competitiveLandscape: parsed.competitiveLandscape || 'Competitive positioning could not be assessed from available sources.',
+      competitiveLandscape:
+        parsed.competitiveLandscape || 'Competitive positioning could not be assessed from available sources.',
       scrapingSources: allSourceUrls,
       scrapedAt: timestamp,
-      confidence,
+      confidence: assessConfidence(uniqueOrgResults, uniqueSectorResults, hasOrgSpecificData),
     };
   } catch (error) {
-    console.error('[scraper] LLM synthesis failed, building context from raw search results:', error);
-
-    // Fallback: build context from raw snippets without LLM analysis
+    console.error('[scraper] GLM synthesis failed, building context from raw results:', error);
     return buildContextFromRawResults(input, uniqueOrgResults, uniqueSectorResults, timestamp);
   }
 }
 
-/**
- * Get sector-specific AI trends without org-specific information.
- *
- * Useful for providing industry context during assessment onboarding
- * when the user hasn't yet provided their organization details.
- *
- * @param sectorId - The sector identifier (e.g., 'healthcare', 'finance', 'manufacturing')
- * @returns A narrative summary of AI trends for the specified sector
- *
- * @example
- * ```typescript
- * const trends = await getSectorAITrends('healthcare');
- * // "Healthcare AI adoption is accelerating, with clinical decision support
- * //  and drug discovery leading investment priorities..."
- * ```
- */
 export async function getSectorAITrends(sectorId: string): Promise<string> {
   const sectorInfo = SECTOR_MAP[sectorId];
   const sectorName = sectorInfo?.name ?? sectorId;
 
-  let zai: Awaited<ReturnType<typeof getZAIClient>>;
-  try {
-    zai = await getZAIClient();
-  } catch (error) {
-    console.error('[scraper] Failed to initialize ZAI client for sector trends:', error);
-    return `AI adoption trends for the ${sectorName} sector could not be retrieved at this time.`;
-  }
-
-  // Search for sector-specific AI trends
   const queries = sectorInfo
     ? [
         `${sectorInfo.name} AI trends adoption 2024 2025`,
@@ -428,15 +322,12 @@ export async function getSectorAITrends(sectorId: string): Promise<string> {
         `${sectorName} artificial intelligence industry outlook`,
       ];
 
-  const searchPromises = queries.map((q) => safeWebSearch(zai, q, 6));
-  const searchResults = await Promise.all(searchPromises);
-  const allResults = searchResults.flat();
+  const allResults = (await Promise.all(queries.map((q) => tavilySearch(q, 6)))).flat();
 
   if (allResults.length === 0) {
     return `No recent AI trend information found for the ${sectorName} sector. Consider researching industry reports from McKinsey, Gartner, or Forrester for the latest insights.`;
   }
 
-  // Deduplicate
   const seenUrls = new Set<string>();
   const uniqueResults = allResults.filter((r) => {
     if (seenUrls.has(r.url)) return false;
@@ -444,134 +335,61 @@ export async function getSectorAITrends(sectorId: string): Promise<string> {
     return true;
   });
 
-  // Use LLM to synthesize trends
-  try {
-    const snippets = uniqueResults
-      .slice(0, 8)
-      .map((r, i) => `[${i + 1}] "${r.name}" — ${r.snippet}`)
-      .join('\n');
+  const snippets = uniqueResults
+    .slice(0, 8)
+    .map((r, i) => `[${i + 1}] "${r.title}" — ${r.content}`)
+    .join('\n');
 
-    const completion = await zai.chat.completions.create({
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You are an industry analyst specializing in AI adoption trends. Synthesize search results into a concise, factual trend summary. Do not fabricate data. Reference only what the search results support. Write 3-5 sentences.',
-        },
-        {
-          role: 'user',
-          content: `Based on these search results about AI trends in the ${sectorName} sector, provide a concise summary:\n\n${snippets}`,
-        },
-      ],
-      temperature: 0.3,
-      max_tokens: 500,
-    });
+  const content = await glmComplete(
+    'You are an industry analyst specializing in AI adoption trends. Synthesize search results into a concise, factual trend summary. Do not fabricate data. Reference only what the search results support. Write 3-5 sentences.',
+    `Based on these search results about AI trends in the ${sectorName} sector, provide a concise summary:\n\n${snippets}`,
+    500,
+  );
 
-    const content = completion.choices[0]?.message?.content;
-    if (content) {
-      return content.trim();
-    }
-  } catch (error) {
-    console.error('[scraper] LLM sector trends synthesis failed:', error);
-  }
+  if (content) return content.trim();
 
-  // Fallback: concatenate snippets
   return uniqueResults
     .slice(0, 4)
-    .map((r) => r.snippet)
+    .map((r) => r.content)
     .filter(Boolean)
     .join(' ');
 }
 
-/**
- * Get quick context for a website URL using web search.
- *
- * Performs a lightweight search to identify the organization behind a URL,
- * extracting a title, description, and any technology signals from snippets.
- * Does NOT perform deep scraping or LLM analysis.
- *
- * @param url - The website URL to look up
- * @returns Basic information about the website and detected tech signals
- *
- * @example
- * ```typescript
- * const info = await quickScrapeWebsite('https://acme.com');
- * // { title: 'Acme Corp', description: '...', techSignals: ['AWS', 'React'] }
- * ```
- */
 export async function quickScrapeWebsite(url: string): Promise<QuickScrapeResult> {
   const domain = extractDomain(url);
-
-  let zai: Awaited<ReturnType<typeof getZAIClient>>;
-  try {
-    zai = await getZAIClient();
-  } catch (error) {
-    console.error('[scraper] Failed to initialize ZAI client for quick scrape:', error);
-    return {
-      title: domain,
-      description: 'Context could not be retrieved at this time.',
-      techSignals: [],
-    };
-  }
-
-  const searchResults = await safeWebSearch(zai, `${domain} company about technology`, 5);
+  const searchResults = await tavilySearch(`${domain} company about technology`, 5);
 
   if (searchResults.length === 0) {
-    return {
-      title: domain,
-      description: 'No information found for this website.',
-      techSignals: [],
-    };
+    return { title: domain, description: 'No information found for this website.', techSignals: [] };
   }
 
-  // Extract info from the first few results
-  const topResult = searchResults[0];
-  const title = topResult?.name || domain;
+  const snippetsText = searchResults
+    .slice(0, 5)
+    .map((r, i) => `[${i + 1}] "${r.title}" — ${r.content}`)
+    .join('\n');
 
-  const descriptions = searchResults
-    .slice(0, 3)
-    .map((r) => r.snippet)
-    .filter(Boolean);
+  const content = await glmComplete(
+    'Extract the organization name, a brief description (1-2 sentences), and any mentioned technologies/platforms from these search results. Respond in JSON: {"title": "...", "description": "...", "techSignals": ["..."]}. Only include facts from the snippets.',
+    snippetsText,
+    300,
+  );
 
-  // Use LLM for quick extraction if we have snippets
-  try {
-    const snippetsText = searchResults
-      .slice(0, 5)
-      .map((r, i) => `[${i + 1}] "${r.name}" — ${r.snippet}`)
-      .join('\n');
-
-    const completion = await zai.chat.completions.create({
-      messages: [
-        {
-          role: 'system',
-          content:
-            'Extract the organization name, a brief description (1-2 sentences), and any mentioned technologies/platforms from these search results. Respond in JSON: {"title": "...", "description": "...", "techSignals": ["..."]}. Only include facts from the snippets.',
-        },
-        {
-          role: 'user',
-          content: snippetsText,
-        },
-      ],
-      temperature: 0.2,
-      max_tokens: 300,
-    });
-
-    const content = completion.choices[0]?.message?.content;
-    if (content) {
+  if (content) {
+    try {
       const parsed = parseLLMJson<{ title: string; description: string; techSignals: string[] }>(content);
       return {
-        title: parsed.title || title,
-        description: parsed.description || descriptions.join(' ').slice(0, 300),
+        title: parsed.title || searchResults[0]?.title || domain,
+        description: parsed.description || searchResults.slice(0, 3).map((r) => r.content).join(' ').slice(0, 300),
         techSignals: Array.isArray(parsed.techSignals) ? parsed.techSignals.slice(0, 10) : [],
       };
+    } catch {
+      // fall through to raw fallback
     }
-  } catch (error) {
-    console.warn('[scraper] Quick scrape LLM extraction failed, using raw snippets:', error);
   }
 
-  // Fallback: use raw snippets without LLM
+  const descriptions = searchResults.slice(0, 3).map((r) => r.content).filter(Boolean);
   return {
-    title,
+    title: searchResults[0]?.title || domain,
     description: descriptions.join(' ').slice(0, 300) || 'No description available.',
     techSignals: extractTechSignalsFromSnippets(descriptions),
   };
@@ -579,17 +397,8 @@ export async function quickScrapeWebsite(url: string): Promise<QuickScrapeResult
 
 // ─── Internal Helpers ────────────────────────────────────────────────────────
 
-/**
- * Build a fallback OrgContext when web search or LLM analysis fails entirely.
- * Returns a minimal but valid context structure with low confidence.
- */
-function buildFallbackContext(
-  input: ScrapingInput,
-  timestamp: string,
-  reason: string,
-): OrgContext {
+function buildFallbackContext(input: ScrapingInput, timestamp: string, reason: string): OrgContext {
   const sectorInfo = input.sector ? SECTOR_MAP[input.sector] : null;
-
   return {
     orgName: input.orgName,
     websiteUrl: input.websiteUrl,
@@ -608,26 +417,14 @@ function buildFallbackContext(
   };
 }
 
-/**
- * Build context from raw search results when the LLM synthesis step fails.
- * Extracts what it can from snippets using simple heuristics.
- */
 function buildContextFromRawResults(
   input: ScrapingInput,
-  orgResults: Array<{ url: string; name: string; snippet: string; host_name: string }>,
-  sectorResults: Array<{ url: string; name: string; snippet: string; host_name: string }>,
+  orgResults: TavilyResult[],
+  sectorResults: TavilyResult[],
   timestamp: string,
 ): OrgContext {
-  const allSnippets = [
-    ...orgResults.map((r) => r.snippet),
-    ...sectorResults.map((r) => r.snippet),
-  ].filter(Boolean);
-
-  const allUrls = [
-    ...orgResults.map((r) => r.url),
-    ...sectorResults.map((r) => r.url),
-  ];
-
+  const allSnippets = [...orgResults.map((r) => r.content), ...sectorResults.map((r) => r.content)].filter(Boolean);
+  const allUrls = [...orgResults.map((r) => r.url), ...sectorResults.map((r) => r.url)];
   const sectorInfo = input.sector ? SECTOR_MAP[input.sector] : null;
   const hasOrgData = orgResults.length > 0;
 
@@ -636,20 +433,10 @@ function buildContextFromRawResults(
     websiteUrl: input.websiteUrl,
     sector: input.sector,
     industryContext: sectorInfo
-      ? `AI trends in ${sectorInfo.name}: ${sectorResults
-          .slice(0, 3)
-          .map((r) => r.snippet)
-          .filter(Boolean)
-          .join(' ')
-          .slice(0, 400) || 'No sector trends could be extracted.'}`
+      ? `AI trends in ${sectorInfo.name}: ${sectorResults.slice(0, 3).map((r) => r.content).filter(Boolean).join(' ').slice(0, 400) || 'No sector trends could be extracted.'}`
       : 'Sector-specific trends could not be determined.',
     orgSpecificContext: hasOrgData
-      ? orgResults
-          .slice(0, 4)
-          .map((r) => r.snippet)
-          .filter(Boolean)
-          .join(' ')
-          .slice(0, 500)
+      ? orgResults.slice(0, 4).map((r) => r.content).filter(Boolean).join(' ').slice(0, 500)
       : `No web results found for ${input.orgName}. ${input.additionalContext || ''}`,
     aiInitiatives: extractAIInitiativesFromSnippets(allSnippets),
     techStackSignals: extractTechSignalsFromSnippets(allSnippets),
@@ -663,131 +450,58 @@ function buildContextFromRawResults(
   };
 }
 
-/**
- * Extract AI initiative mentions from search snippets using keyword matching.
- * This is a heuristic fallback when the LLM is unavailable.
- */
 function extractAIInitiativesFromSnippets(snippets: string[]): string[] {
   const aiKeywords = [
-    'AI initiative',
-    'AI project',
-    'AI program',
-    'machine learning',
-    'deep learning',
-    'AI-powered',
-    'AI-driven',
-    'AI platform',
-    'AI center of excellence',
-    'AI lab',
-    'generative AI',
-    'GenAI',
-    'artificial intelligence',
-    'AI transformation',
-    'AI strategy',
-    'AI adoption',
-    'chatbot',
-    'virtual assistant',
-    'automation',
-    'intelligent automation',
-    'predictive analytics',
-    'natural language processing',
-    'computer vision',
-    'AI partnership',
-    'AI collaboration',
+    'AI initiative', 'AI project', 'AI program', 'machine learning', 'deep learning',
+    'AI-powered', 'AI-driven', 'AI platform', 'AI center of excellence', 'AI lab',
+    'generative AI', 'GenAI', 'artificial intelligence', 'AI transformation', 'AI strategy',
+    'AI adoption', 'chatbot', 'virtual assistant', 'automation', 'intelligent automation',
+    'predictive analytics', 'natural language processing', 'computer vision',
+    'AI partnership', 'AI collaboration',
   ];
 
   const initiatives: string[] = [];
-  const combined = snippets.join(' ').toLowerCase();
-
   for (const keyword of aiKeywords) {
-    if (combined.includes(keyword.toLowerCase())) {
-      // Find the snippet containing this keyword and extract a relevant phrase
-      for (const snippet of snippets) {
-        const lowerSnippet = snippet.toLowerCase();
-        const idx = lowerSnippet.indexOf(keyword.toLowerCase());
-        if (idx !== -1) {
-          // Extract a window around the keyword
-          const start = Math.max(0, idx - 30);
-          const end = Math.min(snippet.length, idx + keyword.length + 60);
-          const phrase = snippet.slice(start, end).trim();
-          // Clean up the phrase
-          const cleaned = phrase.replace(/^[^a-zA-Z]*/, '').replace(/[^a-zA-Z]*$/, '');
-          if (cleaned.length > 10 && !initiatives.some((i) => i.includes(cleaned.slice(0, 20)))) {
-            initiatives.push(cleaned);
-          }
-          break; // Only take the first snippet per keyword
+    for (const snippet of snippets) {
+      const idx = snippet.toLowerCase().indexOf(keyword.toLowerCase());
+      if (idx !== -1) {
+        const start = Math.max(0, idx - 30);
+        const end = Math.min(snippet.length, idx + keyword.length + 60);
+        const cleaned = snippet.slice(start, end).trim().replace(/^[^a-zA-Z]*/, '').replace(/[^a-zA-Z]*$/, '');
+        if (cleaned.length > 10 && !initiatives.some((i) => i.includes(cleaned.slice(0, 20)))) {
+          initiatives.push(cleaned);
         }
+        break;
       }
     }
     if (initiatives.length >= 8) break;
   }
-
   return initiatives;
 }
 
-/**
- * Extract technology signals from search snippets using pattern matching.
- * This is a heuristic fallback when the LLM is unavailable.
- */
 function extractTechSignalsFromSnippets(snippets: string[]): string[] {
   const techPatterns = [
-    // Cloud providers
-    /\b(AWS|Amazon Web Services)\b/gi,
-    /\b(Azure|Microsoft Azure)\b/gi,
-    /\b(GCP|Google Cloud|Google Cloud Platform)\b/gi,
-    // AI/ML platforms
-    /\b(TensorFlow)\b/gi,
-    /\b(PyTorch)\b/gi,
-    /\b(SageMaker)\b/gi,
-    /\b(OpenAI)\b/gi,
-    /\b(Azure AI)\b/gi,
-    /\b(Vertex AI)\b/gi,
-    /\b(Hugging Face)\b/gi,
-    /\b(DataRobot)\b/gi,
-    /\b(Palantir)\b/gi,
-    /\b(C3\.ai)\b/gi,
-    /\b(Databricks)\b/gi,
-    /\b(Snowflake)\b/gi,
-    // Data engineering
-    /\b(Spark|Apache Spark)\b/gi,
-    /\b(Kafka|Apache Kafka)\b/gi,
-    /\b(Kubernetes)\b/gi,
-    /\b(Docker)\b/gi,
-    // ERPs & enterprise
-    /\b(SAP)\b/gi,
-    /\b(Salesforce)\b/gi,
-    /\b(ServiceNow)\b/gi,
-    /\b(Workday)\b/gi,
-    /\b(Oracle)\b/gi,
-    // Programming
-    /\b(Python)\b/gi,
-    /\b(R lang|R programming)\b/gi,
-    /\b(Scala)\b/gi,
-    // Databases
-    /\b(PostgreSQL)\b/gi,
-    /\b(MongoDB)\b/gi,
-    /\b(Redis)\b/gi,
+    /\b(AWS|Amazon Web Services)\b/gi, /\b(Azure|Microsoft Azure)\b/gi,
+    /\b(GCP|Google Cloud|Google Cloud Platform)\b/gi, /\b(TensorFlow)\b/gi,
+    /\b(PyTorch)\b/gi, /\b(SageMaker)\b/gi, /\b(OpenAI)\b/gi,
+    /\b(Azure AI)\b/gi, /\b(Vertex AI)\b/gi, /\b(Hugging Face)\b/gi,
+    /\b(DataRobot)\b/gi, /\b(Palantir)\b/gi, /\b(C3\.ai)\b/gi,
+    /\b(Databricks)\b/gi, /\b(Snowflake)\b/gi, /\b(Spark|Apache Spark)\b/gi,
+    /\b(Kafka|Apache Kafka)\b/gi, /\b(Kubernetes)\b/gi, /\b(Docker)\b/gi,
+    /\b(SAP)\b/gi, /\b(Salesforce)\b/gi, /\b(ServiceNow)\b/gi,
+    /\b(Workday)\b/gi, /\b(Oracle)\b/gi, /\b(Python)\b/gi,
+    /\b(PostgreSQL)\b/gi, /\b(MongoDB)\b/gi, /\b(Redis)\b/gi,
   ];
 
   const signals = new Set<string>();
   const combined = snippets.join(' ');
-
   for (const pattern of techPatterns) {
     const matches = combined.match(pattern);
-    if (matches) {
-      for (const match of matches) {
-        signals.add(match.trim());
-      }
-    }
+    if (matches) matches.forEach((m) => signals.add(m.trim()));
   }
-
   return Array.from(signals).slice(0, 15);
 }
 
-/**
- * Get default regulatory considerations for a sector.
- * These are well-known, factual regulations that don't require web search.
- */
 function getDefaultRegulations(sector?: string): string[] {
   const regulationMap: Record<string, string[]> = {
     healthcare: [
@@ -835,7 +549,7 @@ function getDefaultRegulations(sector?: string): string[] {
     ],
     education: [
       'FERPA (Family Educational Rights and Privacy Act)',
-      'COPPA (Children\'s Online Privacy Protection Act)',
+      "COPPA (Children's Online Privacy Protection Act)",
       'GDPR for EU student data',
       'ADA/Section 508 accessibility requirements for AI tools',
     ],
