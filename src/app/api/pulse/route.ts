@@ -1,0 +1,79 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { runPulse, savePulseRun } from "@/lib/pulse-engine";
+
+// GET /api/pulse?month=2026-04 — Returns user's pulse history
+export async function GET(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const month = searchParams.get("month");
+
+    const where: { userId: string; month?: string } = { userId: session.user.id };
+    if (month) {
+      where.month = month;
+    }
+
+    const pulseRuns = await db.pulseRun.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Parse JSON fields for response
+    const parsed = pulseRuns.map(run => ({
+      ...run,
+      pillarScores: JSON.parse(run.pillarScores),
+      scoreChanges: JSON.parse(run.scoreChanges),
+      topRisks: JSON.parse(run.topRisks),
+      topQuickWins: JSON.parse(run.topQuickWins),
+    }));
+
+    return NextResponse.json(parsed);
+  } catch (error) {
+    console.error("Pulse GET error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+// POST /api/pulse — Trigger a new Pulse run
+export async function POST() {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const result = await runPulse(session.user.id);
+    const pulseRunId = await savePulseRun(session.user.id, result);
+
+    // Create a notification for the user about the pulse result
+    await db.notification.create({
+      data: {
+        userId: session.user.id,
+        type: "pulse_ready",
+        title: "AI Pulse Report Ready",
+        message: `Your ${result.month} AI Pulse report is ready. Overall score: ${Math.round(result.overallScore)}%.`,
+        actionUrl: "/pulse",
+        assessmentId: result.assessmentId,
+      },
+    });
+
+    return NextResponse.json({
+      id: pulseRunId,
+      ...result,
+    }, { status: 201 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Internal server error";
+    if (message.includes("No completed assessment")) {
+      return NextResponse.json({ error: message }, { status: 400 });
+    }
+    console.error("Pulse POST error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

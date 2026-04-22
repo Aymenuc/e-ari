@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <!-- Outer hexagon ring -->
+  <path d="M24 3L43 13.5V34.5L24 45L5 34.5V13.5L24 3Z" stroke="#2563eb" stroke-width="1.5" fill="none" opacity="0.3"/>
+  <!-- Inner hexagon ring -->
+  <path d="M24 8L37.5 15.5V30.5L24 38L10.5 30.5V15.5L24 8Z" stroke="#2563eb" stroke-width="1" fill="none" opacity="0.15"/>
+  <!-- Central neural node -->
+  <circle cx="24" cy="24" r="5" fill="#2563eb"/>
+  <circle cx="24" cy="24" r="3" fill="#60a5fa"/>
+  <!-- 8 radiating connections (8 pillars) -->
+  <line x1="24" y1="24" x2="24" y2="11" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="24" y1="24" x2="35.3" y2="17.5" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="24" y1="24" x2="35.3" y2="30.5" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="24" y1="24" x2="24" y2="37" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="24" y1="24" x2="12.7" y2="30.5" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="24" y1="24" x2="12.7" y2="17.5" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Pillar endpoint nodes -->
+  <circle cx="24" cy="11" r="2.5" fill="#60a5fa"/>
+  <circle cx="35.3" cy="17.5" r="2.5" fill="#8b5cf6"/>
+  <circle cx="35.3" cy="30.5" r="2.5" fill="#06b6d4"/>
+  <circle cx="24" cy="37" r="2.5" fill="#10b981"/>
+  <circle cx="12.7" cy="30.5" r="2.5" fill="#f59e0b"/>
+  <circle cx="12.7" cy="17.5" r="2.5" fill="#ec4899"/>
+  <!-- Two more nodes for 8 pillars -->
+  <circle cx="29.7" cy="13.3" r="2" fill="#ef4444"/>
+  <circle cx="18.3" cy="34.7" r="2" fill="#14b8a6"/>
+  <!-- Subtle connection lines between outer nodes -->
+  <line x1="24" y1="11" x2="29.7" y2="13.3" stroke="#60a5fa" stroke-width="0.5" opacity="0.4"/>
+  <line x1="29.7" y1="13.3" x2="35.3" y2="17.5" stroke="#8b5cf6" stroke-width="0.5" opacity="0.4"/>
+  <line x1="35.3" y1="17.5" x2="35.3" y2="30.5" stroke="#06b6d4" stroke-width="0.5" opacity="0.4"/>
+  <line x1="35.3" y1="30.5" x2="24" y2="37" stroke="#10b981" stroke-width="0.5" opacity="0.4"/>
+  <line x1="24" y1="37" x2="18.3" y2="34.7" stroke="#f59e0b" stroke-width="0.5" opacity="0.4"/>
+  <line x1="18.3" y1="34.7" x2="12.7" y2="30.5" stroke="#14b8a6" stroke-width="0.5" opacity="0.4"/>
+  <line x1="12.7" y1="30.5" x2="12.7" y2="17.5" stroke="#ec4899" stroke-width="0.5" opacity="0.4"/>
+  <line x1="12.7" y1="17.5" x2="24" y2="11" stroke="#60a5fa" stroke-width="0.5" opacity="0.4"/>
+</svg>

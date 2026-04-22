@@ -1,0 +1,297 @@
+// E-ARI — Enterprise AI Readiness Assessment Platform
+// Prisma Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String   @id @default(cuid())
+  email            String   @unique
+  name             String?
+  passwordHash     String?
+  organization     String?
+  sector           String?  // Industry sector for benchmarking
+  orgSize          String?  // "1-50", "51-200", "201-1000", "1001-5000", "5000+"
+  tier             String   @default("free") // "free" | "professional" | "enterprise"
+  role             String   @default("user") // "user" | "admin"
+  image            String?
+  stripeCustomerId String?  // Stripe customer ID for billing portal
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  assessments       Assessment[]
+  accounts          Account[]
+  sessions          Session[]
+  pipelineRuns      PipelineRun[]
+  pulseRuns         PulseRun[]
+  integrations      Integration[]
+  notifications     Notification[]
+  benchmarkConsents BenchmarkConsent[]
+  refundRequests    RefundRequest[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Assessment {
+  id                String   @id @default(cuid())
+  userId            String
+  sector            String   @default("general") // Industry sector: "healthcare" | "finance" | "manufacturing" | "retail" | "government" | "technology" | "energy" | "education" | "general"
+  status            String   @default("draft") // "draft" | "completed" | "archived"
+  scoringVersion    String   @default("1.0.0")
+  methodologyVersion String  @default("1.0.0")
+  overallScore      Float?
+  maturityBand      String?  // "laggard" | "follower" | "chaser" | "pacesetter"
+  pillarScores      String?  // JSON string of pillar scores
+  aiInsights        String?  // JSON string of AI-generated insights
+  completedAt       DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  previousAssessmentId  String?
+  benchmarkConsented    Boolean   @default(false)
+  isPulse              Boolean   @default(false)
+  pulseMonth           String?
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  responses     Response[]
+  pipelineRuns  PipelineRun[]
+}
+
+model Response {
+  id           String   @id @default(cuid())
+  assessmentId String
+  pillarId     String   // e.g. "strategy", "data", etc.
+  questionId   String   // e.g. "strategy_1"
+  answer       Int      // Likert 1-5 or numeric value
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@unique([assessmentId, questionId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Orchestrator Pipeline Models ────────────────────────────────────────────
+
+model PipelineRun {
+  id            String   @id @default(cuid())
+  assessmentId  String
+  userId        String
+  status        String   @default("pending") // "pending" | "running" | "completed" | "failed" | "partial"
+  triggeredBy   String   @default("auto")    // "auto" (on submit) | "manual" | "retry"
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  assessment Assessment     @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stages     PipelineStage[]
+
+  @@index([assessmentId])
+  @@index([userId])
+}
+
+model PipelineStage {
+  id            String   @id @default(cuid())
+  pipelineRunId String
+  agent         String   // "scoring" | "insight" | "discovery" | "report" | "assistant" | "literacy"
+  status        String   @default("pending") // "pending" | "running" | "completed" | "failed" | "skipped"
+  input         String?  // JSON string of agent input context
+  output        String?  // JSON string of agent output/result
+  error         String?  // Error message if failed
+  durationMs    Int?     // Execution time in milliseconds
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+
+  pipelineRun PipelineRun @relation(fields: [pipelineRunId], references: [id], onDelete: Cascade)
+
+  @@index([pipelineRunId])
+  @@index([agent])
+}
+
+// ─── Benchmark Data (Anonymous Aggregation) ──────────────────────────────────
+
+model BenchmarkSnapshot {
+  id             String   @id @default(cuid())
+  sector         String   // "healthcare" | "finance" | etc.
+  pillarId       String   // "strategy" | "data" | etc.
+  avgScore       Float    // Average normalized score for this sector+pillar
+  medianScore    Float
+  p25Score       Float    // 25th percentile
+  p75Score       Float    // 75th percentile
+  p90Score       Float    // 90th percentile
+  sampleSize     Int      // Number of contributing organizations
+  scoringVersion String   @default("5.2")
+  computedAt     DateTime @default(now())
+
+  @@index([sector, pillarId])
+  @@index([computedAt])
+}
+
+model BenchmarkConsent {
+  id           String   @id @default(cuid())
+  assessmentId String   @unique
+  userId       String
+  consented    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ─── AI Pulse (Monthly Continuous Monitoring) ─────────────────────────────────
+
+model PulseRun {
+  id           String   @id @default(cuid())
+  userId       String
+  assessmentId String   // The latest assessment this pulse is based on
+  overallScore Float
+  pillarScores String  // JSON string of pillar scores
+  scoreChanges String  // JSON: { pillarId: { previous: number, current: number, delta: number } }
+  topRisks     String  // JSON array of top 3 risk descriptions
+  topQuickWins String  // JSON array of top 3 quick win descriptions
+  month        String  // "2026-04" format
+  status       String   @default("completed") // "pending" | "completed" | "failed"
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([month])
+}
+
+// ─── Integration Connections ─────────────────────────────────────────────────
+
+model Integration {
+  id         String    @id @default(cuid())
+  userId     String
+  provider   String    // "slack" | "teams" | "jira" | "asana" | "google_workspace" | "microsoft_365"
+  status     String    @default("pending") // "pending" | "active" | "disconnected" | "error"
+  config     String    // JSON: provider-specific config (webhook URLs, channel IDs, etc.)
+  lastSyncAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@index([userId])
+}
+
+// ─── Notification & Digest ────────────────────────────────────────────────────
+
+model Notification {
+  id           String   @id @default(cuid())
+  userId       String
+  type         String   // "pulse_ready" | "quarterly_reminder" | "benchmark_update" | "weekly_digest" | "integration_alert"
+  title        String
+  message      String
+  read         Boolean  @default(false)
+  actionUrl    String?  // e.g. "/results/abc123" or "/pulse"
+  assessmentId String?  // Optional link to related assessment
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
+}
+
+// ─── Social Media Automation ────────────────────────────────────────────────
+
+model SocialAccount {
+  id            String    @id @default(cuid())
+  provider      String    // "linkedin", "twitter", "facebook"
+  accountName   String    // Display name
+  accountHandle String?   // @handle
+  accessToken   String?   // Encrypted OAuth token
+  refreshToken  String?
+  tokenExpiresAt DateTime?
+  avatarUrl     String?
+  isActive      Boolean   @default(true)
+  lastSyncAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model SocialPost {
+  id              String    @id @default(cuid())
+  content         String    // Post text
+  platform        String    // "linkedin", "twitter", "facebook", "all"
+  mediaUrls       String?   // JSON array of image URLs
+  status          String    @default("draft") // draft, scheduled, publishing, published, failed
+  scheduledAt     DateTime?
+  publishedAt     DateTime?
+  failedReason    String?
+  category        String?   // "benchmark", "compliance", "certification", "promotion", "custom"
+  autoGenerated   Boolean   @default(false)
+  engagementMetrics String? // JSON: { likes, shares, comments, clicks, impressions }
+  sourceData      String?   // JSON: reference data used to generate the post
+  createdBy       String?   // Admin user who created it
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// ─── Refund Requests ────────────────────────────────────────────────────────
+
+model RefundRequest {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  amount      Float
+  reason      String    // "duplicate", "not_as_described", "accidental", "other"
+  details     String?
+  status      String    @default("pending") // pending, approved, rejected, refunded
+  chargeId    String?
+  refundId    String?
+  refundedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([chargeId])
+}

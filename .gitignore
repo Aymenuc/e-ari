@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+next-service-dist/
+
+# Prisma dev database
+prisma/dev.db
+prisma/dev.db-journal
+
+# Environment variables (never commit secrets)
+.env.local
+.env*.local
+
+# Vercel
+.vercel/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
