@@ -441,6 +441,85 @@ export async function sendWelcomeEmail(
   return emailResult;
 }
 
+// ─── Admin → User Custom Email ──────────────────────────────────────────────
+
+export async function sendCustomEmail(
+  to: string,
+  userName: string | null,
+  subject: string,
+  messageBody: string,
+): Promise<EmailResult> {
+  const firstName = userName?.split(' ')[0] || 'there';
+  const safeBody = messageBody.replace(/\n/g, '<br>');
+
+  const html = buildEmailWrapper(`
+    <div class="header">
+      <h1>Message from E-ARI</h1>
+      <p>A direct message from the E-ARI team</p>
+    </div>
+    <div class="content">
+      <p>Hi ${firstName},</p>
+      <div style="background: #21262d; border-radius: 8px; padding: 20px; margin: 16px 0; border-left: 4px solid #2563eb;">
+        <p style="color: #e6edf3; font-size: 14px; line-height: 1.8; margin: 0;">${safeBody}</p>
+      </div>
+      <p style="font-size: 12px; color: #484f58; margin-top: 24px;">This message was sent directly by the E-ARI team. Reply to <a href="mailto:support@e-ari.com" style="color: #3b82f6;">support@e-ari.com</a> if you have questions.</p>
+    </div>
+  `, subject);
+
+  return sendEmail({
+    to,
+    subject,
+    html,
+    text: `Hi ${firstName},\n\n${messageBody}\n\n---\nThe E-ARI Team\nsupport@e-ari.com`,
+    from: EMAIL_FROM_HELLO,
+    category: 'admin_message',
+  });
+}
+
+// ─── Contact Form → Support ─────────────────────────────────────────────────
+
+export async function sendContactFormEmail(
+  name: string,
+  email: string,
+  company: string | null,
+  subject: string,
+  message: string,
+): Promise<EmailResult> {
+  const supportEmail = (process.env.EMAIL_FROM_ADDRESS || 'support@e-ari.com')
+    .replace(/^.*<(.+)>.*$/, '$1');
+
+  const safeMessage = message.replace(/\n/g, '<br>');
+
+  const html = buildEmailWrapper(`
+    <div class="header" style="background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);">
+      <h1>New Contact Form Message</h1>
+      <p>From ${name}</p>
+    </div>
+    <div class="content">
+      <div style="background: #21262d; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+        <p style="margin: 0 0 8px; color: #8b949e; font-size: 13px;"><strong style="color: #e6edf3;">Name:</strong> ${name}</p>
+        <p style="margin: 0 0 8px; color: #8b949e; font-size: 13px;"><strong style="color: #e6edf3;">Email:</strong> <a href="mailto:${email}" style="color: #3b82f6;">${email}</a></p>
+        ${company ? `<p style="margin: 0 0 8px; color: #8b949e; font-size: 13px;"><strong style="color: #e6edf3;">Company:</strong> ${company}</p>` : ''}
+        <p style="margin: 0; color: #8b949e; font-size: 13px;"><strong style="color: #e6edf3;">Subject:</strong> ${subject}</p>
+      </div>
+      <div class="metric">
+        <div class="label">Message</div>
+        <p style="color: #e6edf3; font-size: 14px; line-height: 1.8; margin: 8px 0 0; white-space: pre-wrap;">${safeMessage}</p>
+      </div>
+      <a href="mailto:${email}" class="cta-button" style="margin-top: 20px; display: inline-block;">Reply to ${name}</a>
+    </div>
+  `, `Contact from ${name} (${email}): ${subject}`);
+
+  return sendEmail({
+    to: supportEmail,
+    subject: `[Contact] ${subject} — from ${name}`,
+    html,
+    text: `Contact Form Submission\n\nName: ${name}\nEmail: ${email}${company ? `\nCompany: ${company}` : ''}\nSubject: ${subject}\n\n${message}`,
+    from: EMAIL_FROM_ADDRESS,
+    category: 'contact_form',
+  });
+}
+
 // ─── Refund Request Email (notifies support) ────────────────────────────────
 
 export async function sendRefundRequestEmail(
