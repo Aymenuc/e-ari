@@ -49,6 +49,7 @@ export interface RefundEmailDetails {
 // ─── Configuration ──────────────────────────────────────────────────────────
 
 const EMAIL_FROM_ADDRESS = process.env.EMAIL_FROM_ADDRESS || 'onboarding@resend.dev';
+const EMAIL_FROM_HELLO = process.env.EMAIL_FROM_HELLO || EMAIL_FROM_ADDRESS;
 
 const SIGNIFICANT_SCORE_THRESHOLD = 8; // Points change to trigger alert
 
@@ -199,7 +200,7 @@ export async function sendQuarterlyReminder(
       : `${daysUntilReview}-Day Notice: Quarterly AI Readiness Review Coming Up`,
     html,
     text: `Hi ${firstName}, ${urgencyText.replace(/<[^>]*>/g, '')}. Your last score was ${Math.round(overallScore)}% (${maturityLabel}). Re-run your assessment at ${process.env.NEXTAUTH_URL || 'https://e-ari.com'}/assessment`,
-    from: EMAIL_FROM_ADDRESS,
+    from: EMAIL_FROM_HELLO,
     category: 'quarterly_reminder',
   });
 
@@ -275,7 +276,7 @@ export async function sendMonthlyPulseEmail(
     subject: `${monthLabel} AI Pulse: Your Readiness Score Is ${Math.round(overallScore)}%`,
     html,
     text: `${monthLabel} AI Pulse: Overall ${Math.round(overallScore)}%${delta !== null ? ` (${delta >= 0 ? '+' : ''}${delta}%)` : ''}. ${topRisks.length} risks and ${topQuickWins.length} quick wins identified. View at ${process.env.NEXTAUTH_URL || 'https://e-ari.com'}/pulse`,
-    from: EMAIL_FROM_ADDRESS,
+    from: EMAIL_FROM_HELLO,
     category: 'pulse_ready',
   });
 
@@ -358,7 +359,7 @@ export async function sendScoreChangeAlert(
       : `Alert: AI Readiness Score Changed to ${Math.round(currentScore)}% (${overallDelta})`,
     html,
     text: `Score changed from ${Math.round(previousScore)}% to ${Math.round(currentScore)}% (${overallDelta >= 0 ? '+' : ''}${overallDelta}). ${changedPillars.length} pillars changed. View at ${process.env.NEXTAUTH_URL || 'https://e-ari.com'}/portal`,
-    from: EMAIL_FROM_ADDRESS,
+    from: EMAIL_FROM_HELLO,
     category: 'benchmark_update',
   });
 
@@ -419,7 +420,7 @@ export async function sendWelcomeEmail(
     subject: 'Welcome to E-ARI — Start Your AI Readiness Assessment',
     html,
     text: `Hi ${firstName}, welcome to E-ARI! Start your first AI readiness assessment at ${process.env.NEXTAUTH_URL || 'https://e-ari.com'}/assessment`,
-    from: EMAIL_FROM_ADDRESS,
+    from: EMAIL_FROM_HELLO,
     category: 'weekly_digest',
   });
 
