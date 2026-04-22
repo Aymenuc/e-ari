@@ -89,16 +89,7 @@ export function Navigation() {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden flex items-center justify-center h-9 w-9 rounded-md text-muted-foreground hover:text-foreground transition-colors"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Toggle menu"
-          >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-
-          {/* Auth Actions */}
+          {/* Auth Actions + Mobile Menu Button (grouped right) */}
           <div className="flex items-center gap-3">
             {status === "loading" ? (
               <div className="h-9 w-24 animate-pulse rounded-md bg-navy-700" />
@@ -183,6 +174,14 @@ export function Navigation() {
                 </Link>
               </div>
             )}
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden flex items-center justify-center h-9 w-9 rounded-md text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
           </div>
         </div>
       </div>
