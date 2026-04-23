@@ -1060,66 +1060,148 @@ export default function Home() {
         <ParallaxSection speed={0.05} className="py-20 sm:py-28 bg-navy-900" id="methodology">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
-              <div className="text-center max-w-3xl mx-auto">
+              <div className="text-center max-w-2xl mx-auto">
+                <span className="inline-block font-mono text-xs tracking-widest uppercase text-eari-blue/70 mb-3">Methodology</span>
                 <h2 className="font-heading text-3xl sm:text-4xl font-bold gradient-text-blue">
                   The 8-Pillar Framework
                 </h2>
-                <p className="mt-4 text-lg text-muted-foreground font-sans">
-                  Our evidence-based methodology evaluates organizational AI readiness across eight critical dimensions, each weighted by strategic importance and validated against industry benchmarks.
+                <p className="mt-4 text-base text-muted-foreground font-sans leading-relaxed">
+                  Eight critical dimensions, weighted by strategic importance, validated against industry benchmarks — one composite score.
                 </p>
               </div>
             </FadeUp>
 
-            <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {PILLARS.map((pillar, i) => {
-                const Icon = ICON_MAP[pillar.icon] || Target
-                return (
-                  <FadeUp key={pillar.id} delay={i * 0.06}>
-                    <motion.div
-                      whileHover={{ y: -6, boxShadow: `0 12px 40px ${pillar.color}20` }}
-                      transition={{ duration: 0.25 }}
-                      className="h-full"
-                    >
-                      <Card className="bg-navy-800 border-border/50 hover:border-eari-blue/30 transition-colors duration-300 h-full relative overflow-hidden">
-                        {/* Animated colored left border */}
-                        <motion.div
-                          className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg"
-                          style={{ backgroundColor: pillar.color }}
-                          initial={{ height: 0 }}
-                          animate={{ height: '100%' }}
-                          transition={{ duration: 0.6, delay: 0.3 + i * 0.06, ease: 'easeOut' }}
+            {/* ── Split layout: Radar left + Pillar list right ── */}
+            <div className="mt-14 lg:mt-20 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+
+              {/* LEFT — Radar */}
+              <FadeUp delay={0.1}>
+                <div className="relative mx-auto w-full max-w-md aspect-square">
+                  <div className="absolute inset-[10%] rounded-full bg-eari-blue/5 blur-3xl" />
+                  <svg viewBox="0 0 200 200" className="w-full h-full" aria-label="8-pillar radar visualization">
+                    <defs>
+                      <radialGradient id="methodRadarFill" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="rgba(6,182,212,0.25)" />
+                        <stop offset="100%" stopColor="rgba(59,130,246,0.05)" />
+                      </radialGradient>
+                      <linearGradient id="methodStrokeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#06b6d4" />
+                        <stop offset="100%" stopColor="#3b82f6" />
+                      </linearGradient>
+                    </defs>
+                    {[20, 40, 60, 80].map(r => (
+                      <circle key={r} cx="100" cy="100" r={r} fill="none" stroke="rgba(48,57,74,0.3)" strokeWidth="0.5" />
+                    ))}
+                    {PILLARS.map((_, i) => {
+                      const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2
+                      return (
+                        <line key={i} x1="100" y1="100"
+                          x2={100 + 80 * Math.cos(angle)} y2={100 + 80 * Math.sin(angle)}
+                          stroke="rgba(48,57,74,0.25)" strokeWidth="0.5" />
+                      )
+                    })}
+                    <motion.polygon
+                      points={SAMPLE_SCORES.map((p, i) => {
+                        const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2
+                        const r = (p.score / 100) * 80
+                        return `${100 + r * Math.cos(angle)},${100 + r * Math.sin(angle)}`
+                      }).join(' ')}
+                      fill="url(#methodRadarFill)"
+                      stroke="url(#methodStrokeGrad)"
+                      strokeWidth="1.5"
+                      initial={{ opacity: 0, scale: 0.6 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 1, delay: 0.4, ease: 'easeOut' }}
+                      style={{ transformOrigin: 'center' }}
+                    />
+                    {SAMPLE_SCORES.map((p, i) => {
+                      const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2
+                      const r = (p.score / 100) * 80
+                      return (
+                        <motion.circle key={i}
+                          cx={100 + r * Math.cos(angle)} cy={100 + r * Math.sin(angle)}
+                          r="3" fill={p.color} stroke="rgba(15,23,42,0.6)" strokeWidth="1"
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ duration: 0.3, delay: 0.9 + i * 0.06 }}
                         />
-                        <CardHeader className="pl-5">
-                          <div className="flex items-center justify-between">
-                            <div
-                              className="flex h-10 w-10 items-center justify-center rounded-lg"
-                              style={{ backgroundColor: `${pillar.color}20` }}
-                            >
-                              <Icon className="h-5 w-5" style={{ color: pillar.color }} />
-                            </div>
-                            <Badge variant="outline" className="font-mono text-xs border-border text-muted-foreground">
-                              {Math.round(pillar.weight * 100)}%
-                            </Badge>
+                      )
+                    })}
+                    {PILLARS.map((pillar, i) => {
+                      const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2
+                      const labelR = 96
+                      return (
+                        <text key={i}
+                          x={100 + labelR * Math.cos(angle)} y={100 + labelR * Math.sin(angle)}
+                          textAnchor="middle" dominantBaseline="middle"
+                          fill="#8b949e" fontSize="7.5" fontFamily="monospace" fontWeight="500">
+                          {pillar.shortName}
+                        </text>
+                      )
+                    })}
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="text-center">
+                      <span className="block text-3xl font-heading font-bold text-foreground/90">63.8</span>
+                      <span className="block text-[10px] font-mono text-muted-foreground tracking-wider uppercase">E-ARI</span>
+                    </div>
+                  </div>
+                </div>
+              </FadeUp>
+
+              {/* RIGHT — Vertical pillar list */}
+              <div className="space-y-0">
+                {PILLARS.map((pillar, i) => {
+                  const Icon = ICON_MAP[pillar.icon] || Target
+                  const weightPct = Math.round(pillar.weight * 100)
+                  return (
+                    <FadeUp key={pillar.id} delay={i * 0.05}>
+                      <motion.div
+                        className="group relative py-4 border-b border-white/[0.04] last:border-b-0 cursor-default"
+                        initial={false}
+                        whileHover={{ x: 4 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div
+                            className="flex h-8 w-8 items-center justify-center rounded-md flex-shrink-0 transition-colors duration-200"
+                            style={{ backgroundColor: `${pillar.color}15` }}
+                          >
+                            <Icon className="h-4 w-4" style={{ color: pillar.color }} />
                           </div>
-                          <CardTitle className="font-heading text-base text-foreground mt-2">
-                            {pillar.name}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pl-5">
-                          <CardDescription className="font-sans text-sm leading-relaxed">
-                            {pillar.description}
-                          </CardDescription>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  </FadeUp>
-                )
-              })}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-baseline gap-2">
+                              <span className="font-heading text-sm font-semibold text-foreground group-hover:text-white transition-colors">
+                                {pillar.name}
+                              </span>
+                              <span className="font-mono text-[10px] text-muted-foreground/60 flex-shrink-0">
+                                {weightPct}% weight
+                              </span>
+                            </div>
+                            <div className="mt-1.5 h-1 rounded-full bg-white/[0.04] overflow-hidden">
+                              <motion.div
+                                className="h-full rounded-full"
+                                style={{ backgroundColor: pillar.color }}
+                                initial={{ width: 0 }}
+                                animate={{ width: `${SAMPLE_SCORES[i].score}%` }}
+                                transition={{ duration: 0.8, delay: 0.6 + i * 0.07, ease: 'easeOut' }}
+                              />
+                            </div>
+                          </div>
+                          <span className="font-mono text-lg font-semibold tabular-nums" style={{ color: pillar.color }}>
+                            {SAMPLE_SCORES[i].score}
+                          </span>
+                        </div>
+                      </motion.div>
+                    </FadeUp>
+                  )
+                })}
+              </div>
             </div>
 
             <FadeUp delay={0.3}>
-              <p className="mt-10 text-center text-sm text-muted-foreground font-mono">
-                Scoring is deterministic and versioned (v5.3). All calculations are reproducible — no hidden variables, no randomness.
+              <p className="mt-12 text-center text-xs text-muted-foreground/50 font-mono tracking-wide">
+                Scoring is deterministic and versioned (v5.3) — reproducible, no hidden variables.
               </p>
             </FadeUp>
           </div>
@@ -1176,88 +1258,64 @@ export default function Home() {
         <ParallaxSection speed={0.04} className="py-20 sm:py-28 bg-navy-800/50">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
-              <div className="text-center max-w-3xl mx-auto">
+              <div className="text-center max-w-2xl mx-auto">
+                <span className="inline-block font-mono text-xs tracking-widest uppercase text-eari-blue/70 mb-3">Pipeline</span>
                 <h2 className="font-heading text-3xl sm:text-4xl font-bold gradient-text-blue">
                   How Scoring Works
                 </h2>
-                <p className="mt-4 text-lg text-muted-foreground font-sans">
-                  A transparent, six-step pipeline from raw responses to maturity classification. Every stage is auditable and deterministic.
+                <p className="mt-4 text-base text-muted-foreground font-sans leading-relaxed">
+                  Six deterministic steps from raw responses to maturity classification. Every stage is auditable, versioned, and reproducible.
                 </p>
               </div>
             </FadeUp>
 
-            <div className="mt-16 relative">
-              {/* SVG connecting line (visible on lg screens) */}
-              <div className="hidden lg:block absolute top-1/2 left-0 right-0 -translate-y-1/2 pointer-events-none z-0" aria-hidden="true">
-                <svg className="w-full h-8" preserveAspectRatio="none" viewBox="0 0 1200 32">
-                  <motion.line
-                    x1="60"
-                    y1="16"
-                    x2="1140"
-                    y2="16"
-                    stroke="rgba(37,99,235,0.3)"
-                    strokeWidth="2"
-                    strokeDasharray="8 4"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={{ pathLength: 1, opacity: 1 }}
-                    transition={{ duration: 2, delay: 0.5, ease: 'easeInOut' }}
-                  />
-                </svg>
+            <div className="mt-14 lg:mt-20 relative">
+              {/* Animated connecting line */}
+              <div className="absolute top-[27px] left-0 right-0 hidden lg:block pointer-events-none" aria-hidden="true">
+                <motion.div
+                  className="h-px bg-gradient-to-r from-eari-blue/0 via-eari-blue/30 to-eari-blue/0"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 1.8, delay: 0.4, ease: 'easeInOut' }}
+                  style={{ transformOrigin: 'left' }}
+                />
               </div>
 
-              {/* Pipeline flow */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-y-10 gap-x-6 lg:gap-x-4">
                 {PIPELINE_STEPS.map((step, i) => {
                   const Icon = step.icon
                   return (
-                    <FadeUp key={step.label} delay={i * 0.08}>
-                      <div className="relative">
+                    <FadeUp key={step.label} delay={i * 0.07}>
+                      <div className="flex flex-col items-center text-center group">
                         <motion.div
-                          whileHover={{ y: -3 }}
+                          className="relative flex h-14 w-14 items-center justify-center rounded-full border border-white/[0.06] bg-navy-800 mb-4 group-hover:border-eari-blue/40 transition-colors duration-300"
+                          whileHover={{ scale: 1.1 }}
                           transition={{ duration: 0.2 }}
                         >
-                          <Card className="bg-navy-800 border-border/50 hover:border-eari-blue/30 transition-colors duration-300">
-                            <CardContent className="p-6">
-                              <div className="flex items-start gap-4">
-                                <motion.div
-                                  className={`flex h-10 w-10 items-center justify-center rounded-lg bg-eari-blue/15 flex-shrink-0 ${i === 0 ? 'pipeline-pulse' : ''}`}
-                                  initial={{ scale: 0.8, opacity: 0 }}
-                                  animate={{ scale: 1, opacity: 1 }}
-                                  transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
-                                >
-                                  <Icon className="h-5 w-5 text-eari-blue-light" />
-                                </motion.div>
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <motion.span
-                                      className="font-mono text-xs text-eari-blue-light font-bold"
-                                      initial={{ opacity: 0 }}
-                                      animate={{ opacity: 1 }}
-                                      transition={{ duration: 0.3, delay: 0.5 + i * 0.1 }}
-                                    >
-                                      0{i + 1}
-                                    </motion.span>
-                                    <h3 className="font-heading font-semibold text-foreground">{step.label}</h3>
-                                  </div>
-                                  <p className="mt-1.5 text-sm text-muted-foreground font-sans leading-relaxed">
-                                    {step.desc}
-                                  </p>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
+                          <Icon className="h-5 w-5 text-eari-blue-light" />
+                          <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-eari-blue text-[9px] font-mono font-bold text-white">
+                            {i + 1}
+                          </span>
                         </motion.div>
-                        {/* Arrow connector for larger screens */}
-                        {i < PIPELINE_STEPS.length - 1 && (
-                          <div className="hidden lg:block absolute -right-3 top-1/2 -translate-y-1/2 z-10 text-border">
-                            <ArrowRight className="h-5 w-5" />
-                          </div>
-                        )}
+                        <h3 className="font-heading text-sm font-semibold text-foreground">{step.label}</h3>
+                        <p className="mt-1 text-[11px] text-muted-foreground/70 leading-relaxed max-w-[140px]">{step.desc}</p>
                       </div>
                     </FadeUp>
                   )
                 })}
               </div>
+
+              <FadeUp delay={0.6}>
+                <div className="mt-12 flex justify-center">
+                  <div className="inline-flex items-center gap-3 rounded-full bg-navy-800/80 border border-white/[0.06] px-5 py-2.5">
+                    <span className="text-xs text-muted-foreground font-mono">Result</span>
+                    <span className="h-3 w-px bg-border/40" />
+                    <span className="text-sm font-heading font-semibold text-foreground">Weighted E-ARI Composite</span>
+                    <span className="h-3 w-px bg-border/40" />
+                    <span className="text-xs font-mono text-eari-blue-light">Maturity Band Assigned</span>
+                  </div>
+                </div>
+              </FadeUp>
             </div>
           </div>
         </ParallaxSection>
@@ -2300,142 +2358,97 @@ export default function Home() {
           <div className="h-px bg-gradient-to-r from-transparent via-[#d4a853]/20 to-transparent" />
         </div>
         <section className="py-20 sm:py-28 bg-navy-900 relative overflow-hidden" id="integrations">
-          {/* Subtle grid background */}
-          <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-            <div className="absolute top-[20%] right-[10%] w-[400px] h-[400px] rounded-full opacity-[0.04]" style={{ background: 'radial-gradient(circle, #d4a853 0%, transparent 70%)' }} />
-            <div className="absolute bottom-[10%] left-[5%] w-[300px] h-[300px] rounded-full opacity-[0.03]" style={{ background: 'radial-gradient(circle, #2563eb 0%, transparent 70%)' }} />
-          </div>
-
-          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
-              <div className="text-center max-w-3xl mx-auto mb-14">
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <Plug className="h-6 w-6 text-[#d4a853]" />
-                  <Badge variant="outline" className="font-mono text-xs border-[#d4a853]/30 text-[#d4a853] bg-[#d4a853]/5">
-                    Enterprise-Ready
-                  </Badge>
-                </div>
+              <div className="text-center max-w-2xl mx-auto mb-14">
+                <span className="inline-block font-mono text-xs tracking-widest uppercase text-[#d4a853]/70 mb-3">Enterprise-Ready</span>
                 <h2 className="font-heading text-3xl sm:text-4xl font-bold gradient-text-gold">
                   Integrations That Fit Your Stack
                 </h2>
-                <p className="mt-4 text-lg text-muted-foreground font-sans">
-                  E-ARI plugs into your existing enterprise ecosystem — from identity providers to cloud platforms. No rip-and-replace. Just connect, assess, and accelerate.
+                <p className="mt-4 text-base text-muted-foreground font-sans leading-relaxed">
+                  Connect to your existing ecosystem — identity, cloud, compliance, and data. No rip-and-replace.
                 </p>
               </div>
             </FadeUp>
 
-            {/* Integration categories */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                {
-                  icon: KeyRound,
-                  title: 'SSO & Identity',
-                  items: ['SAML 2.0', 'OAuth 2.0 / OIDC', 'Active Directory', 'Okta / Azure AD'],
-                  desc: 'Single sign-on with your existing identity provider. No separate passwords, no provisioning headaches.',
-                  color: '#3b82f6',
-                  accent: 'from-blue-500/20 to-cyan-500/20',
-                },
-                {
-                  icon: Cloud,
-                  title: 'Cloud Platforms',
-                  items: ['AWS', 'Azure', 'Google Cloud', 'Multi-cloud'],
-                  desc: 'Deploy E-ARI on any major cloud platform or run it in your own VPC for complete data sovereignty.',
-                  color: '#06b6d4',
-                  accent: 'from-cyan-500/20 to-teal-500/20',
-                },
-                {
-                  icon: Webhook,
-                  title: 'Webhooks & Events',
-                  items: ['Score change events', 'Certification milestones', 'Drift alerts', 'Custom triggers'],
-                  desc: 'Real-time webhook notifications push assessment events into your existing workflows and incident management systems.',
-                  color: '#10b981',
-                  accent: 'from-emerald-500/20 to-green-500/20',
-                },
-                {
-                  icon: Code2,
-                  title: 'REST API',
-                  items: ['Assessment CRUD', 'Score retrieval', 'Benchmark queries', 'User management'],
-                  desc: 'Full REST API with OpenAPI documentation. Automate assessments, integrate scores into your dashboards, and build custom workflows.',
-                  color: '#8b5cf6',
-                  accent: 'from-violet-500/20 to-purple-500/20',
-                },
-                {
-                  icon: Globe,
-                  title: 'Compliance Frameworks',
-                  items: ['EU AI Act', 'NIST AI RMF', 'ISO 42001', 'SOC 2 Type II'],
-                  desc: 'Pre-mapped compliance controls that translate your E-ARI scores into regulatory gap analyses across major AI governance frameworks.',
-                  color: '#f59e0b',
-                  accent: 'from-amber-500/20 to-yellow-500/20',
-                },
-                {
-                  icon: Layers,
-                  title: 'Data & Export',
-                  items: ['PDF reports', 'DOCX exports', 'CSV data dumps', 'BI tool feeds'],
-                  desc: 'Export assessment results in multiple formats or pipe raw data into your business intelligence tools for custom analytics.',
-                  color: '#ec4899',
-                  accent: 'from-pink-500/20 to-rose-500/20',
-                },
-              ].map((integration, i) => {
-                const Icon = integration.icon
-                return (
-                  <FadeUp key={integration.title} delay={i * 0.06}>
-                    <motion.div
-                      whileHover={{ y: -6, boxShadow: `0 12px 40px ${integration.color}15` }}
-                      transition={{ duration: 0.25 }}
-                      className="h-full"
-                    >
-                      <Card className="bg-navy-800 border-border/50 hover:border-border/80 transition-all duration-300 h-full relative overflow-hidden">
-                        {/* Gradient top accent */}
-                        <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${integration.accent}`} />
-                        <CardHeader className="pb-3">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className="flex h-10 w-10 items-center justify-center rounded-lg"
-                              style={{ backgroundColor: `${integration.color}15` }}
-                            >
-                              <Icon className="h-5 w-5" style={{ color: integration.color }} />
-                            </div>
-                            <CardTitle className="font-heading text-base text-foreground">{integration.title}</CardTitle>
+            {/* ── 2-col: Featured API panel + compact integration rows ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
+
+              {/* LEFT — Featured API panel */}
+              <FadeUp delay={0.1}>
+                <div className="h-full rounded-2xl border border-white/[0.06] bg-navy-800/60 overflow-hidden flex flex-col">
+                  <div className="flex items-center gap-3 px-6 py-5 border-b border-white/[0.04]">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-500/10">
+                      <Code2 className="h-5 w-5 text-violet-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-heading text-base font-semibold text-foreground">REST API</h3>
+                      <p className="text-xs text-muted-foreground/70 mt-0.5">OpenAPI 3.0 · TypeScript & Python SDKs</p>
+                    </div>
+                  </div>
+                  <div className="flex-1 p-5">
+                    <div className="rounded-lg bg-navy-900/70 border border-white/[0.04] p-4 font-mono text-xs leading-6 overflow-x-auto">
+                      <span className="text-muted-foreground/50"># Fetch your latest assessment scores</span><br />
+                      <span className="text-[#d4a853]">curl</span> <span className="text-emerald-400">-H</span> <span className="text-amber-300">&quot;Authorization: Bearer eari_sk_...&quot;</span> \<br />
+                      &nbsp;&nbsp;<span className="text-eari-blue-light">https://api.e-ari.io/v1/assessments/latest/scores</span><br /><br />
+                      <span className="text-muted-foreground/50"># Response</span><br />
+                      <span className="text-muted-foreground/40">{'{'}</span><br />
+                      &nbsp;&nbsp;<span className="text-violet-400">&quot;composite&quot;</span>: <span className="text-amber-300">63.8</span>,<br />
+                      &nbsp;&nbsp;<span className="text-violet-400">&quot;band&quot;</span>: <span className="text-emerald-400">&quot;Developing&quot;</span>,<br />
+                      &nbsp;&nbsp;<span className="text-violet-400">&quot;pillars&quot;</span>: <span className="text-muted-foreground/40">[...8 scores]</span><br />
+                      <span className="text-muted-foreground/40">{'}'}</span>
+                    </div>
+                  </div>
+                  <div className="px-6 py-4 border-t border-white/[0.04] flex flex-wrap gap-2">
+                    {['Assessment CRUD', 'Score retrieval', 'Benchmark queries', 'User management'].map(item => (
+                      <span key={item} className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-violet-500/10 text-violet-300/80 border border-violet-500/10">
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </FadeUp>
+
+              {/* RIGHT — Stacked integration rows */}
+              <div className="space-y-3">
+                {[
+                  { icon: KeyRound, title: 'SSO & Identity', items: ['SAML 2.0', 'OAuth 2.0 / OIDC', 'Active Directory', 'Okta / Azure AD'], desc: 'Single sign-on with your existing identity provider.', color: '#3b82f6' },
+                  { icon: Cloud, title: 'Cloud Platforms', items: ['AWS', 'Azure', 'Google Cloud', 'Multi-cloud'], desc: 'Deploy on any major cloud or in your own VPC.', color: '#06b6d4' },
+                  { icon: Webhook, title: 'Webhooks & Events', items: ['Score change events', 'Certification milestones', 'Drift alerts', 'Custom triggers'], desc: 'Real-time notifications into your workflows.', color: '#10b981' },
+                  { icon: Globe, title: 'Compliance Frameworks', items: ['EU AI Act', 'NIST AI RMF', 'ISO 42001', 'SOC 2 Type II'], desc: 'Pre-mapped regulatory gap analyses.', color: '#f59e0b' },
+                  { icon: Layers, title: 'Data & Export', items: ['PDF reports', 'DOCX exports', 'CSV data dumps', 'BI tool feeds'], desc: 'Export or pipe data into your BI tools.', color: '#ec4899' },
+                ].map((integration, i) => {
+                  const Icon = integration.icon
+                  return (
+                    <FadeUp key={integration.title} delay={i * 0.05}>
+                      <motion.div
+                        className="group flex items-center gap-4 rounded-xl border border-white/[0.04] bg-navy-800/40 px-5 py-4 hover:border-white/[0.08] hover:bg-navy-800/60 transition-all duration-200 cursor-default"
+                        whileHover={{ x: 4 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg flex-shrink-0" style={{ backgroundColor: `${integration.color}12` }}>
+                          <Icon className="h-4 w-4" style={{ color: integration.color }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-heading text-sm font-semibold text-foreground group-hover:text-white transition-colors">{integration.title}</span>
+                            <span className="text-[10px] text-muted-foreground/50 hidden sm:inline">{integration.desc}</span>
                           </div>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-sm text-muted-foreground font-sans leading-relaxed mb-4">{integration.desc}</p>
-                          <div className="flex flex-wrap gap-2">
-                            {integration.items.map((item) => (
-                              <Badge
-                                key={item}
-                                variant="outline"
-                                className="text-[10px] font-mono border-border/40 text-muted-foreground/80 bg-navy-700/50 hover:border-border/80 transition-colors"
-                              >
+                          <div className="mt-1.5 flex flex-wrap gap-1.5">
+                            {integration.items.map(item => (
+                              <span key={item} className="text-[9px] font-mono px-2 py-0.5 rounded-full border border-white/[0.04] text-muted-foreground/60 bg-white/[0.02]">
                                 {item}
-                              </Badge>
+                              </span>
                             ))}
                           </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  </FadeUp>
-                )
-              })}
-            </div>
-
-            {/* API callout */}
-            <FadeUp delay={0.3}>
-              <div className="mt-12 glass-card rounded-xl p-6 sm:p-8 max-w-3xl mx-auto text-center">
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <Code2 className="h-5 w-5 text-eari-blue-light" />
-                  <span className="font-heading text-sm font-semibold text-eari-blue-light">Developer-First API</span>
-                </div>
-                <div className="bg-navy-900/60 rounded-lg p-4 font-mono text-xs text-left overflow-x-auto border border-border/30 mb-4">
-                  <span className="text-muted-foreground/60"># Fetch your latest assessment scores</span><br />
-                  <span className="text-[#d4a853]">curl</span> <span className="text-emerald-400">-H</span> <span className="text-amber-300">&quot;Authorization: Bearer eari_sk_...&quot;</span> \<br />
-                  &nbsp;&nbsp;<span className="text-eari-blue-light">https://api.e-ari.io/v1/assessments/latest/scores</span>
-                </div>
-                <p className="text-sm text-muted-foreground font-sans">
-                  Full REST API with OpenAPI 3.0 docs, SDKs for Python and TypeScript, and webhook event subscriptions.
-                </p>
+                        </div>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground/20 group-hover:text-muted-foreground/50 transition-colors flex-shrink-0" />
+                      </motion.div>
+                    </FadeUp>
+                  )
+                })}
               </div>
-            </FadeUp>
+            </div>
           </div>
         </section>
 
