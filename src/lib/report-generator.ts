@@ -34,7 +34,10 @@ import {
   convertInchesToTwip,
   TableLayoutType,
   VerticalAlign,
+  ImageRun,
 } from 'docx';
+import * as path from 'path';
+import * as fs from 'fs';
 import { PILLARS, MATURITY_BANDS, type MaturityBand } from './pillars';
 import type { ScoringResult, PillarScoreResult, AdjustmentRecord } from './assessment-engine';
 
@@ -87,6 +90,24 @@ const PAGE_MARGINS = {
   left: convertInchesToTwip(0.9),
   right: convertInchesToTwip(0.9),
 };
+
+// ─── Logo ───────────────────────────────────────────────────────────────────
+
+let cachedLogoBuffer: Buffer | null = null;
+
+async function getLogoPngBuffer(): Promise<Buffer | undefined> {
+  if (cachedLogoBuffer) return cachedLogoBuffer;
+  try {
+    const sharp = (await import('sharp')).default;
+    const svgPath = path.join(process.cwd(), 'public', 'logo.svg');
+    const svgBuffer = fs.readFileSync(svgPath);
+    const pngBuffer = await sharp(svgBuffer).resize(240, 240).png().toBuffer();
+    cachedLogoBuffer = Buffer.from(pngBuffer);
+    return cachedLogoBuffer;
+  } catch {
+    return undefined;
+  }
+}
 
 // ─── Helper Functions ───────────────────────────────────────────────────────
 
@@ -427,7 +448,18 @@ export async function generateAssessmentReport(data: AssessmentReportData): Prom
   // SECTION 0: TITLE PAGE
   // ═══════════════════════════════════════════════════════════════════════
 
-  children.push(spacer(1600));
+  const logoBuffer = await getLogoPngBuffer();
+
+  children.push(spacer(800));
+
+  if (logoBuffer) {
+    children.push(new Paragraph({
+      children: [new ImageRun({ data: logoBuffer, transformation: { width: 140, height: 140 }, type: 'png' })],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 200 },
+    }));
+  }
+
   children.push(new Paragraph({
     children: [new TextRun({ text: 'E-ARI', font: FONT_HEADING, size: 72, bold: true, color: COLOR_BLUE })],
     alignment: AlignmentType.CENTER,
@@ -985,7 +1017,18 @@ export async function generatePulseReport(data: PulseReportData): Promise<Buffer
   const children: (Paragraph | Table)[] = [];
 
   // ── Title Page ──────────────────────────────────────────────────────────
-  children.push(spacer(1600));
+  const pulseLogoBuffer = await getLogoPngBuffer();
+
+  children.push(spacer(800));
+
+  if (pulseLogoBuffer) {
+    children.push(new Paragraph({
+      children: [new ImageRun({ data: pulseLogoBuffer, transformation: { width: 120, height: 120 }, type: 'png' })],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 160 },
+    }));
+  }
+
   children.push(new Paragraph({
     children: [new TextRun({ text: 'E-ARI', font: FONT_HEADING, size: 72, bold: true, color: COLOR_BLUE })],
     alignment: AlignmentType.CENTER,

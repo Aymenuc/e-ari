@@ -54,7 +54,7 @@ export function Navigation() {
                 AI Literacy
               </Button>
             </Link>
-            <Link href="/#pricing">
+            <Link href="/pricing">
               <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-sans">
                 Pricing
               </Button>
@@ -207,7 +207,7 @@ export function Navigation() {
                 AI Literacy
               </Button>
             </Link>
-            <Link href="/#pricing" onClick={() => setMobileOpen(false)}>
+            <Link href="/pricing" onClick={() => setMobileOpen(false)}>
               <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-sans">
                 Pricing
               </Button>
