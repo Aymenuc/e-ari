@@ -1322,293 +1322,216 @@ export default function Home() {
 
         {/* ─── 3B. AGENTIC PROPERTIES SECTION ─────────────────────────────── */}
         <ParallaxSection speed={0.04} className="py-20 sm:py-28 bg-navy-900 relative overflow-hidden" id="agentic">
-          {/* Hexagonal grid background */}
+          {/* Subtle grid background */}
           <div className="absolute inset-0 hex-grid-bg pointer-events-none" aria-hidden="true" />
-
-          {/* Floating constellation lines */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-            <svg className="w-full h-full" viewBox="0 0 1200 600" preserveAspectRatio="none" fill="none">
-              {/* Neural network connections */}
-              <motion.line x1="200" y1="150" x2="400" y2="300" stroke="rgba(37,99,235,0.15)" strokeWidth="1" className="neural-line" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 1.5, delay: 0.2 }} />
-              <motion.line x1="400" y1="300" x2="700" y2="200" stroke="rgba(139,92,246,0.15)" strokeWidth="1" className="neural-line" style={{ animationDelay: '0.5s' }} initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 1.5, delay: 0.4 }} />
-              <motion.line x1="700" y1="200" x2="1000" y2="350" stroke="rgba(6,182,212,0.15)" strokeWidth="1" className="neural-line" style={{ animationDelay: '1s' }} initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 1.5, delay: 0.6 }} />
-              <motion.line x1="200" y1="450" x2="500" y2="350" stroke="rgba(16,185,129,0.15)" strokeWidth="1" className="neural-line" style={{ animationDelay: '1.5s' }} initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 1.5, delay: 0.8 }} />
-              <motion.line x1="500" y1="350" x2="900" y2="450" stroke="rgba(245,158,11,0.15)" strokeWidth="1" className="neural-line" style={{ animationDelay: '2s' }} initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 1.5, delay: 1.0 }} />
-              <motion.line x1="400" y1="300" x2="500" y2="350" stroke="rgba(236,72,153,0.15)" strokeWidth="1" className="neural-line" style={{ animationDelay: '2.5s' }} initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 1.5, delay: 1.2 }} />
-              {/* Constellation nodes */}
-              <motion.circle cx="200" cy="150" r="3" fill="#3b82f6" className="constellation-node" initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 }} />
-              <motion.circle cx="400" cy="300" r="4" fill="#8b5cf6" className="constellation-node" style={{ animationDelay: '0.5s' }} initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.5 }} />
-              <motion.circle cx="700" cy="200" r="3" fill="#06b6d4" className="constellation-node" style={{ animationDelay: '1s' }} initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.7 }} />
-              <motion.circle cx="1000" cy="350" r="4" fill="#10b981" className="constellation-node" style={{ animationDelay: '1.5s' }} initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.9 }} />
-              <motion.circle cx="500" cy="350" r="3" fill="#f59e0b" className="constellation-node" style={{ animationDelay: '2s' }} initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 1.1 }} />
-              <motion.circle cx="900" cy="450" r="3" fill="#ec4899" className="constellation-node" style={{ animationDelay: '2.5s' }} initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 1.3 }} />
-              <motion.circle cx="200" cy="450" r="3" fill="#3b82f6" className="constellation-node" style={{ animationDelay: '3s' }} initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 1.5 }} />
-            </svg>
-          </div>
 
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {/* Section header */}
             <FadeUp>
-              <div className="text-center max-w-3xl mx-auto">
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <motion.div
-                    animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-                  >
-                    <Bot className="h-6 w-6 text-eari-blue-light" />
-                  </motion.div>
-                  <SparkleBadge>
-                    <Badge variant="outline" className="font-mono text-xs border-eari-blue/40 text-eari-blue-light relative z-10">
-                      Agentic Architecture
-                    </Badge>
-                  </SparkleBadge>
-                </div>
+              <div className="text-center max-w-2xl mx-auto">
+                <span className="inline-block font-mono text-xs tracking-widest uppercase text-eari-blue/70 mb-3">Agentic Architecture</span>
                 <h2 className="font-heading text-3xl sm:text-4xl font-bold gradient-text-blue">
                   The Innovation: Agentic AI Assessment
                 </h2>
-                <p className="mt-4 text-lg text-muted-foreground font-sans">
-                  What makes E-ARI different? Six specialized AI agents — each with a distinct role — work in a coordinated pipeline to assess, discover, analyze, educate, report, and guide. No other platform combines deterministic scoring with agentic intelligence. This is not a chatbot. This is an AI workforce for readiness.
+                <p className="mt-4 text-base text-muted-foreground font-sans leading-relaxed">
+                  Six specialized AI agents work in a coordinated pipeline — each feeding context to the next, compounding insight depth at every stage. Not a chatbot. An AI workforce for readiness.
                 </p>
               </div>
             </FadeUp>
 
-            {/* Agent cards grid */}
-            <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {AGENT_PROPERTIES.map((agent, i) => {
-                const Icon = agent.icon
-                return (
-                  <FadeUp key={agent.id} delay={i * 0.08}>
+            {/* ── Orbital diagram left + Agent spotlight right ── */}
+            <div className="mt-14 lg:mt-20 grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-14 items-center">
+
+              {/* LEFT — Orbital agent constellation (3 cols) */}
+              <FadeUp delay={0.1} className="lg:col-span-3">
+                <div className="relative flex flex-col items-center justify-center py-8">
+                  {/* Central hub */}
+                  <div className="relative w-[320px] h-[320px] sm:w-[380px] sm:h-[380px]">
+                    {/* Outer ring pulse */}
                     <motion.div
-                      whileHover={{ y: -8, scale: 1.02 }}
-                      transition={{ duration: 0.35, ease: 'easeOut' }}
-                      className="h-full agent-card-3d"
-                    >
-                      <div className="agent-card-3d-inner h-full">
-                        <Card className="bg-navy-800 border-border/50 hover:border-eari-blue/30 transition-all duration-300 h-full relative overflow-hidden agent-card-glow">
-                          {/* Colored top gradient accent */}
-                          <div
-                            className="absolute top-0 left-0 right-0 h-1"
-                            style={{
-                              background: `linear-gradient(90deg, transparent, ${agent.color}, transparent)`,
-                            }}
-                          />
+                      className="absolute inset-0 rounded-full border border-eari-blue/[0.08]"
+                      animate={{ scale: [1, 1.04, 1], opacity: [0.3, 0.6, 0.3] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                    />
+                    <motion.div
+                      className="absolute inset-4 rounded-full border border-eari-blue/[0.05]"
+                      animate={{ scale: [1, 1.03, 1], opacity: [0.2, 0.5, 0.2] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+                    />
 
-                          {/* Orbiting ring around icon */}
-                          <CardHeader className="pb-3 relative">
-                            <div className="flex items-start justify-between">
-                              <div className="relative">
-                                {/* Icon container */}
-                                <div
-                                  className="flex h-14 w-14 items-center justify-center rounded-xl relative z-10"
-                                  style={{ backgroundColor: `${agent.color}15` }}
-                                >
-                                  <Icon className="h-7 w-7" style={{ color: agent.color }} />
-                                </div>
-                                {/* Orbit ring 1 */}
-                                <div
-                                  className="absolute inset-[-8px] rounded-full border border-dashed agent-orbit"
-                                  style={{ borderColor: `${agent.color}25` }}
-                                >
-                                  <div
-                                    className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full"
-                                    style={{ backgroundColor: agent.color, opacity: 0.6 }}
-                                  />
-                                </div>
-                                {/* Orbit ring 2 */}
-                                <div
-                                  className="absolute inset-[-16px] rounded-full border border-dashed agent-orbit-reverse"
-                                  style={{ borderColor: `${agent.color}12` }}
-                                >
-                                  <div
-                                    className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-1.5 h-1.5 rounded-full"
-                                    style={{ backgroundColor: agent.color, opacity: 0.4 }}
-                                  />
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="flex h-2 w-2 rounded-full bg-emerald-400 agent-status" />
-                                <Badge variant="outline" className="font-mono text-[10px] border-border text-muted-foreground uppercase tracking-wider">
-                                  {agent.status}
-                                </Badge>
-                              </div>
-                            </div>
-                            <CardTitle className="font-heading text-lg text-foreground mt-3">
-                              {agent.name}
-                            </CardTitle>
-                            <p className="text-sm font-medium mt-0.5" style={{ color: agent.color }}>
-                              {agent.tagline}
-                            </p>
-                          </CardHeader>
-                          <CardContent>
-                            <p className="text-sm text-muted-foreground font-sans leading-relaxed">
-                              {agent.description}
-                            </p>
-                            {/* Capability bar */}
-                            <div className="mt-4 pt-3 border-t border-border/30">
-                              <p className="text-xs font-mono text-muted-foreground/70 flex items-center gap-1.5">
-                                <Zap className="h-3 w-3" style={{ color: agent.color }} />
-                                {agent.capability}
-                              </p>
-                              {agent.href && (
-                                <Link href={agent.href}>
-                                  <button className="mt-3 flex items-center gap-1.5 text-xs font-heading font-semibold transition-colors hover:opacity-80" style={{ color: agent.color }}>
-                                    Try it <ArrowRight className="h-3 w-3" />
-                                  </button>
-                                </Link>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </div>
-                    </motion.div>
-                  </FadeUp>
-                )
-              })}
-            </div>
-
-            {/* Orchestration flow visualization */}
-            <FadeUp delay={0.3}>
-              <div className="mt-20">
-                <div className="text-center mb-10">
-                  <h3 className="font-heading text-xl sm:text-2xl font-bold text-foreground">
-                    Agent Orchestration Pipeline
-                  </h3>
-                  <p className="mt-2 text-sm text-muted-foreground font-sans">
-                    Six agents operate in a coordinated sequence — each feeding context to the next, compounding insight depth at every stage.
-                  </p>
-                </div>
-
-                <div className="relative">
-                  {/* Flow connector line */}
-                  <div className="hidden lg:block absolute top-1/2 left-0 right-0 -translate-y-1/2 h-[2px] pointer-events-none" aria-hidden="true">
-                    <div className="w-full h-full data-flow-line rounded-full" />
-                  </div>
-
-                  {/* Flow steps */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 relative z-10">
-                    {ORCHESTRATION_FLOW.map((step, i) => (
-                      <motion.div
-                        key={step.label}
-                        initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                        whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                        viewport={{ once: true, margin: '-30px' }}
-                        transition={{ duration: 0.5, delay: 0.3 + i * 0.1, ease: 'easeOut' }}
-                        className="flex flex-col items-center text-center"
-                      >
-                        <div className="relative">
+                    {/* Agent orbital nodes */}
+                    {AGENT_PROPERTIES.map((agent, i) => {
+                      const Icon = agent.icon
+                      const angle = (Math.PI * 2 * i) / AGENT_PROPERTIES.length - Math.PI / 2
+                      const radius = 140
+                      const x = 50 + (radius / 190) * 50 * Math.cos(angle)
+                      const y = 50 + (radius / 190) * 50 * Math.sin(angle)
+                      return (
+                        <motion.div
+                          key={agent.id}
+                          className="absolute z-10"
+                          style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' }}
+                          initial={{ opacity: 0, scale: 0 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: 0.3 + i * 0.1, type: 'spring', stiffness: 200 }}
+                        >
                           <motion.div
-                            className="flex h-14 w-14 items-center justify-center rounded-full bg-navy-800 border-2 border-eari-blue/30 relative z-10"
-                            whileHover={{ scale: 1.1, borderColor: 'rgba(37,99,235,0.6)' }}
+                            className="group relative cursor-default"
+                            whileHover={{ scale: 1.15 }}
                             transition={{ duration: 0.2 }}
                           >
-                            <span className="font-heading font-bold text-eari-blue-light text-sm">
-                              {String(i + 1).padStart(2, '0')}
-                            </span>
+                            <div
+                              className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.08]"
+                              style={{
+                                backgroundColor: `${agent.color}15`,
+                                boxShadow: `0 0 20px ${agent.color}15`,
+                              }}
+                            >
+                              <Icon className="h-5 w-5" style={{ color: agent.color }} />
+                            </div>
+                            {/* Agent name tooltip */}
+                            <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                              <span className="text-[10px] font-mono text-muted-foreground/80 bg-navy-900/90 px-2 py-0.5 rounded border border-white/[0.06]">
+                                {agent.name}
+                              </span>
+                            </div>
+                            {/* Status dot */}
+                            <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5 rounded-full bg-emerald-400 agent-status border-2 border-navy-900" />
                           </motion.div>
-                          {/* Pulse ring */}
-                          <motion.div
-                            className="absolute inset-[-4px] rounded-full border border-eari-blue/20"
-                            animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
-                            transition={{ duration: 2, delay: i * 0.3, repeat: Infinity, ease: 'easeOut' }}
-                          />
+                        </motion.div>
+                      )
+                    })}
+
+                    {/* Center core */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <motion.div
+                        className="flex flex-col items-center gap-2"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.2, type: 'spring' }}
+                      >
+                        <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-eari-blue/20 to-cyan-500/10 border border-eari-blue/20 flex items-center justify-center shadow-lg shadow-eari-blue/10">
+                          <Workflow className="h-7 w-7 text-eari-blue-light" />
                         </div>
-                        <span className="mt-3 font-heading font-semibold text-foreground text-sm">
-                          {step.label}
-                        </span>
-                        <span className="mt-1 text-xs text-muted-foreground font-sans">
-                          {step.desc}
-                        </span>
+                        <span className="text-[10px] font-mono text-muted-foreground/50 uppercase tracking-widest">Orchestrator</span>
                       </motion.div>
+                    </div>
+
+                    {/* Connecting lines from center to each agent */}
+                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 380 380" aria-hidden="true">
+                      {AGENT_PROPERTIES.map((agent, i) => {
+                        const angle = (Math.PI * 2 * i) / AGENT_PROPERTIES.length - Math.PI / 2
+                        const radius = 140
+                        const x = 190 + radius * Math.cos(angle)
+                        const y = 190 + radius * Math.sin(angle)
+                        return (
+                          <motion.line
+                            key={`line-${agent.id}`}
+                            x1="190" y1="190" x2={x} y2={y}
+                            stroke={agent.color}
+                            strokeWidth="0.5"
+                            strokeOpacity="0.12"
+                            initial={{ pathLength: 0, opacity: 0 }}
+                            whileInView={{ pathLength: 1, opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.5 + i * 0.08, duration: 0.6 }}
+                          />
+                        )
+                      })}
+                    </svg>
+                  </div>
+
+                  {/* Pipeline flow — compact horizontal below orbital */}
+                  <div className="mt-10 flex items-center justify-center gap-0 flex-wrap">
+                    {ORCHESTRATION_FLOW.map((step, i) => (
+                      <div key={step.label} className="flex items-center">
+                        <motion.div
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-navy-800/50 border border-white/[0.04]"
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: 0.3 + i * 0.08 }}
+                        >
+                          <span className="text-[9px] font-mono font-bold text-eari-blue-light">{String(i + 1).padStart(2, '0')}</span>
+                          <span className="text-[11px] font-heading font-semibold text-foreground">{step.label}</span>
+                        </motion.div>
+                        {i < ORCHESTRATION_FLOW.length - 1 && (
+                          <ArrowRight className="h-3 w-3 text-muted-foreground/20 mx-1 flex-shrink-0" />
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
-              </div>
-            </FadeUp>
+              </FadeUp>
 
-            {/* Live agent terminal demo */}
-            <FadeUp delay={0.4}>
-              <div className="mt-16 max-w-3xl mx-auto">
-                <div className="glass-card rounded-xl overflow-hidden shadow-2xl shadow-eari-blue/10">
-                  {/* Terminal chrome */}
-                  <div className="flex items-center gap-2 px-4 py-3 border-b border-border/40 bg-navy-800/80">
-                    <span className="traffic-light traffic-light-red" />
-                    <span className="traffic-light traffic-light-yellow" />
-                    <span className="traffic-light traffic-light-green" />
-                    <span className="ml-3 text-xs font-mono text-muted-foreground">e-ari-agents.orchestration</span>
-                    <div className="ml-auto flex items-center gap-1.5">
-                      <span className="flex h-2 w-2 rounded-full bg-emerald-400 agent-status" />
-                      <span className="text-xs font-mono text-emerald-400/80">agents online</span>
-                    </div>
-                  </div>
-                  {/* Terminal content */}
-                  <div className="p-5 font-mono text-sm space-y-2 bg-navy-900/50">
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.5 }}
-                      className="text-muted-foreground"
-                    >
-                      <span className="text-emerald-400">$</span> e-ari agents --start --sector=finance
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 1.2 }}
-                    >
-                      <span className="text-eari-blue-light">[scoring]</span>{' '}
-                      <span className="text-muted-foreground">Calculating weighted composite... v5.3</span>
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 2.0 }}
-                    >
-                      <span className="text-[#8b5cf6]">[insight]</span>{' '}
-                      <span className="text-muted-foreground">Generating cross-pillar narrative... 8 pillars analyzed</span>
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 2.8 }}
-                    >
-                      <span className="text-[#06b6d4]">[literacy]</span>{' '}
-                      <span className="text-muted-foreground">Curating role-based paths... 3 gap areas identified</span>
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 3.5 }}
-                    >
-                      <span className="text-[#f59e0b]">[report]</span>{' '}
-                      <span className="text-muted-foreground">Generating PDF... executive-summary + radar-chart</span>
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 4.2 }}
-                    >
-                      <span className="text-emerald-400">[done]</span>{' '}
-                      <span className="text-foreground">All 6 agents completed. E-ARI Score: <span className="text-eari-blue-light font-bold">67/100</span> (Chaser)</span>
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 5.0 }}
-                      className="text-muted-foreground"
-                    >
-                      <span className="text-emerald-400">$</span> <span className="terminal-cursor" />
-                    </motion.div>
-                  </div>
-                </div>
+              {/* RIGHT — Featured agent spotlight (2 cols) */}
+              <div className="lg:col-span-2 space-y-0">
+                {AGENT_PROPERTIES.map((agent, i) => {
+                  const Icon = agent.icon
+                  const isFeatured = i === 0
+                  return (
+                    <FadeUp key={agent.id} delay={i * 0.06}>
+                      <motion.div
+                        className="group relative cursor-default"
+                        whileHover={{ x: 3 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {/* Featured agent — expanded card */}
+                        {isFeatured ? (
+                          <div className="rounded-xl border border-white/[0.06] bg-navy-800/40 p-5 mb-3">
+                            <div className="flex items-center gap-3 mb-3">
+                              <div
+                                className="flex h-10 w-10 items-center justify-center rounded-lg"
+                                style={{ backgroundColor: `${agent.color}15` }}
+                              >
+                                <Icon className="h-5 w-5" style={{ color: agent.color }} />
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-heading text-sm font-semibold text-foreground">{agent.name}</span>
+                                  <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 agent-status" />
+                                </div>
+                                <span className="text-[10px] font-mono text-muted-foreground/50">{agent.tagline}</span>
+                              </div>
+                            </div>
+                            <p className="text-xs text-muted-foreground/70 leading-relaxed mb-3">{agent.description}</p>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {agent.capability.split(' · ').map(cap => (
+                                <span
+                                  key={cap}
+                                  className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.03] border border-white/[0.05] text-muted-foreground/60"
+                                >
+                                  {cap}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          /* Compact agent rows */
+                          <div className="flex items-center gap-3 py-3 border-b border-white/[0.04] last:border-b-0">
+                            <div
+                              className="flex h-8 w-8 items-center justify-center rounded-lg flex-shrink-0"
+                              style={{ backgroundColor: `${agent.color}10` }}
+                            >
+                              <Icon className="h-3.5 w-3.5" style={{ color: agent.color }} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-heading text-xs font-semibold text-foreground group-hover:text-white transition-colors">{agent.name}</span>
+                                <span className="text-[9px] font-mono text-muted-foreground/30 hidden sm:inline">{agent.tagline}</span>
+                              </div>
+                            </div>
+                            <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 agent-status flex-shrink-0" />
+                          </div>
+                        )}
+                      </motion.div>
+                    </FadeUp>
+                  )
+                })}
               </div>
-            </FadeUp>
+            </div>
           </div>
         </ParallaxSection>
 
@@ -1616,183 +1539,266 @@ export default function Home() {
         <ParallaxSection speed={0.04} className="py-20 sm:py-28 bg-navy-900">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
-              <div className="text-center max-w-3xl mx-auto">
+              <div className="text-center max-w-2xl mx-auto">
+                <span className="inline-block font-mono text-xs tracking-widest uppercase text-eari-blue/70 mb-3">Output</span>
                 <h2 className="font-heading text-3xl sm:text-4xl font-bold gradient-text-blue">
                   What Your Results Look Like
                 </h2>
-                <p className="mt-4 text-lg text-muted-foreground font-sans">
-                  A comprehensive results dashboard with visual scoring, maturity classification, and actionable insights.
+                <p className="mt-4 text-base text-muted-foreground font-sans leading-relaxed">
+                  A comprehensive readiness profile — composite score, maturity classification, pillar breakdown, and strategic recommendations.
                 </p>
               </div>
             </FadeUp>
 
-            <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-              {/* Radar chart with drawing animation */}
-              <FadeUp>
-                <div className="glass-card rounded-xl p-8 flex items-center justify-center relative">
-                  <svg
-                    viewBox="0 0 300 300"
-                    className="w-full max-w-sm"
-                    aria-label="Radar chart showing assessment scores across 8 pillars"
-                  >
-                    {/* Background rings */}
-                    {[0.25, 0.5, 0.75, 1].map((scale, i) => (
-                      <polygon
-                        key={i}
-                        points={Array.from({ length: 8 }, (_, j) => {
-                          const angle = (Math.PI * 2 * j) / 8 - Math.PI / 2
-                          const r = 120 * scale
-                          return `${150 + r * Math.cos(angle)},${150 + r * Math.sin(angle)}`
-                        }).join(' ')}
-                        fill="none"
-                        stroke="rgba(48,57,74,0.5)"
-                        strokeWidth="1"
-                      />
-                    ))}
+            {/* ── Immersive dashboard mockup ── */}
+            <div className="mt-14 lg:mt-20">
+              <FadeUp delay={0.1}>
+                <div className="rounded-2xl border border-white/[0.06] bg-[#0a0f1a] overflow-hidden shadow-2xl shadow-eari-blue/5">
+                  {/* Window chrome */}
+                  <div className="flex items-center gap-2 px-5 py-3 border-b border-white/[0.04] bg-[#0d1220]">
+                    <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
+                    <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
+                    <span className="w-3 h-3 rounded-full bg-[#28c840]" />
+                    <span className="ml-4 text-[11px] font-mono text-muted-foreground/50">e-ari-dashboard.results</span>
+                    <div className="ml-auto flex items-center gap-3">
+                      <Badge className="bg-eari-blue/15 text-eari-blue-light border-eari-blue/30 text-[10px] font-mono">v5.3</Badge>
+                      <Badge className="bg-emerald-500/10 text-emerald-300 border-emerald-500/20 text-[10px] font-mono">LIVE</Badge>
+                    </div>
+                  </div>
 
-                    {/* Axis lines */}
-                    {Array.from({ length: 8 }, (_, j) => {
-                      const angle = (Math.PI * 2 * j) / 8 - Math.PI / 2
-                      return (
-                        <line
-                          key={j}
-                          x1="150"
-                          y1="150"
-                          x2={150 + 120 * Math.cos(angle)}
-                          y2={150 + 120 * Math.sin(angle)}
-                          stroke="rgba(48,57,74,0.4)"
-                          strokeWidth="1"
-                        />
-                      )
-                    })}
+                  <div className="p-6 sm:p-8">
+                    {/* Top row: Score ring + Maturity + Certification */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+                      {/* Score ring */}
+                      <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+                        <div className="relative score-ring-glow">
+                          <svg width="100" height="100" viewBox="0 0 100 100" aria-label="E-ARI Score: 63.8">
+                            <defs>
+                              <linearGradient id="resultScoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#2563eb" />
+                                <stop offset="100%" stopColor="#06b6d4" />
+                              </linearGradient>
+                            </defs>
+                            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(48,57,74,0.3)" strokeWidth="5" />
+                            <motion.circle
+                              cx="50" cy="50" r="42"
+                              fill="none"
+                              stroke="url(#resultScoreGrad)"
+                              strokeWidth="5"
+                              strokeLinecap="round"
+                              strokeDasharray={264}
+                              initial={{ strokeDashoffset: 264 }}
+                              whileInView={{ strokeDashoffset: 264 - 264 * 0.638 }}
+                              viewport={{ once: true }}
+                              transition={{ duration: 1.5, ease: 'easeOut', delay: 0.3 }}
+                              transform="rotate(-90 50 50)"
+                            />
+                            <motion.text
+                              x="50" y="46" textAnchor="middle" fill="#e6edf3" fontSize="22" fontWeight="700" fontFamily="var(--font-plus-jakarta)"
+                              initial={{ opacity: 0 }}
+                              whileInView={{ opacity: 1 }}
+                              viewport={{ once: true }}
+                              transition={{ delay: 0.8 }}
+                            >
+                              63.8
+                            </motion.text>
+                            <text x="50" y="62" textAnchor="middle" fill="#8b949e" fontSize="9" fontFamily="var(--font-inter)">
+                              / 100
+                            </text>
+                          </svg>
+                        </div>
+                        <p className="mt-2 text-xs font-mono text-muted-foreground/50">Composite E-ARI Score</p>
+                      </div>
 
-                    {/* Data polygon with drawing animation */}
-                    <motion.polygon
-                      points={SAMPLE_SCORES.map((s, j) => {
-                        const angle = (Math.PI * 2 * j) / 8 - Math.PI / 2
-                        const r = (s.score / 100) * 120
-                        return `${150 + r * Math.cos(angle)},${150 + r * Math.sin(angle)}`
-                      }).join(' ')}
-                      fill="rgba(37,99,235,0.15)"
-                      stroke="#3b82f6"
-                      strokeWidth="2"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 1.2, ease: 'easeOut', delay: 0.3 }}
-                      style={{ transformOrigin: '150px 150px' }}
-                    />
+                      {/* Maturity classification */}
+                      <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+                        <div className="flex items-center gap-2 rounded-full bg-emerald-400/10 border border-emerald-400/20 px-4 py-2 mb-3">
+                          <span className="flex h-2 w-2 rounded-full bg-emerald-400 agent-status" />
+                          <span className="text-sm font-heading font-bold text-emerald-400">Developing</span>
+                        </div>
+                        <p className="text-xs font-mono text-muted-foreground/40 mb-3">Maturity Band: 51–75</p>
+                        {/* Compact maturity scale */}
+                        <div className="w-full space-y-1">
+                          {Object.values(MATURITY_BANDS).map((band) => {
+                            const isActive = band.label === 'Chaser'
+                            return (
+                              <div key={band.label} className="flex items-center gap-2">
+                                <div
+                                  className="h-1.5 rounded-full"
+                                  style={{
+                                    backgroundColor: isActive ? band.color : `${band.color}30`,
+                                    width: isActive ? '100%' : `${(band.max / 100) * 100}%`,
+                                  }}
+                                />
+                                <span className={`text-[9px] font-mono flex-shrink-0 ${isActive ? 'text-foreground' : 'text-muted-foreground/30'}`}>
+                                  {band.label}
+                                </span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
 
-                    {/* Rotating highlight ring */}
-                    <g className="radar-rotate" style={{ transformOrigin: '150px 150px' }}>
-                      <circle
-                        cx="150"
-                        cy="150"
-                        r="122"
-                        fill="none"
-                        stroke="url(#radarHighlight)"
-                        strokeWidth="3"
-                        strokeDasharray="20 340"
-                        opacity="0.6"
-                      />
-                      <defs>
-                        <linearGradient id="radarHighlight" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#3b82f6" stopOpacity="0" />
-                          <stop offset="50%" stopColor="#06b6d4" stopOpacity="1" />
-                          <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
-                        </linearGradient>
-                      </defs>
-                    </g>
+                      {/* Certification badge */}
+                      <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+                        <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-[#d4a853]/20 to-[#d4a853]/5 border border-[#d4a853]/20 flex items-center justify-center mb-3">
+                          <Award className="h-7 w-7 text-[#d4a853]" />
+                        </div>
+                        <span className="text-sm font-heading font-bold text-[#d4a853]">E-ARI Silver</span>
+                        <p className="text-[10px] font-mono text-muted-foreground/40 mt-1">Certification Eligible</p>
+                      </div>
+                    </div>
 
-                    {/* Data points with staggered animation */}
-                    {SAMPLE_SCORES.map((s, j) => {
-                      const angle = (Math.PI * 2 * j) / 8 - Math.PI / 2
-                      const r = (s.score / 100) * 120
-                      return (
-                        <motion.circle
-                          key={j}
-                          cx={150 + r * Math.cos(angle)}
-                          cy={150 + r * Math.sin(angle)}
-                          r="4"
-                          fill={s.color}
-                          stroke="#0d1117"
-                          strokeWidth="2"
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{ duration: 0.4, delay: 0.8 + j * 0.08, ease: 'easeOut' }}
-                        />
-                      )
-                    })}
+                    {/* Bottom row: Radar + Key findings */}
+                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                      {/* Radar chart (3 cols) */}
+                      <div className="lg:col-span-3 flex items-center justify-center p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+                        <svg viewBox="0 0 300 300" className="w-full max-w-xs" aria-label="Pillar radar chart">
+                          {/* Background rings */}
+                          {[0.25, 0.5, 0.75, 1].map((scale, i) => (
+                            <polygon
+                              key={i}
+                              points={SAMPLE_SCORES.map((_, j) => {
+                                const angle = (Math.PI * 2 * j) / SAMPLE_SCORES.length - Math.PI / 2
+                                const r = 110 * scale
+                                return `${150 + r * Math.cos(angle)},${150 + r * Math.sin(angle)}`
+                              }).join(' ')}
+                              fill="none"
+                              stroke="rgba(48,57,74,0.3)"
+                              strokeWidth="0.5"
+                            />
+                          ))}
+                          {/* Axis lines */}
+                          {SAMPLE_SCORES.map((_, j) => {
+                            const angle = (Math.PI * 2 * j) / SAMPLE_SCORES.length - Math.PI / 2
+                            return (
+                              <line
+                                key={j}
+                                x1="150" y1="150"
+                                x2={150 + 110 * Math.cos(angle)}
+                                y2={150 + 110 * Math.sin(angle)}
+                                stroke="rgba(48,57,74,0.2)"
+                                strokeWidth="0.5"
+                              />
+                            )
+                          })}
+                          {/* Data polygon */}
+                          <motion.polygon
+                            points={SAMPLE_SCORES.map((s, j) => {
+                              const angle = (Math.PI * 2 * j) / SAMPLE_SCORES.length - Math.PI / 2
+                              const r = (s.score / 100) * 110
+                              return `${150 + r * Math.cos(angle)},${150 + r * Math.sin(angle)}`
+                            }).join(' ')}
+                            fill="rgba(37,99,235,0.12)"
+                            stroke="#3b82f6"
+                            strokeWidth="1.5"
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
+                            style={{ transformOrigin: '150px 150px' }}
+                          />
+                          {/* Data points */}
+                          {SAMPLE_SCORES.map((s, j) => {
+                            const angle = (Math.PI * 2 * j) / SAMPLE_SCORES.length - Math.PI / 2
+                            const r = (s.score / 100) * 110
+                            return (
+                              <motion.circle
+                                key={j}
+                                cx={150 + r * Math.cos(angle)}
+                                cy={150 + r * Math.sin(angle)}
+                                r="3"
+                                fill={s.color}
+                                stroke="#0a0f1a"
+                                strokeWidth="1.5"
+                                initial={{ scale: 0, opacity: 0 }}
+                                whileInView={{ scale: 1, opacity: 1 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.3, delay: 0.8 + j * 0.06 }}
+                              />
+                            )
+                          })}
+                          {/* Labels */}
+                          {SAMPLE_SCORES.map((s, j) => {
+                            const angle = (Math.PI * 2 * j) / SAMPLE_SCORES.length - Math.PI / 2
+                            const r = 130
+                            const x = 150 + r * Math.cos(angle)
+                            const y = 150 + r * Math.sin(angle)
+                            return (
+                              <text
+                                key={j}
+                                x={x} y={y}
+                                textAnchor="middle"
+                                dominantBaseline="middle"
+                                fill="#8b949e"
+                                fontSize="9"
+                                fontFamily="var(--font-inter)"
+                              >
+                                {s.name} {s.score}
+                              </text>
+                            )
+                          })}
+                        </svg>
+                      </div>
 
-                    {/* Labels */}
-                    {SAMPLE_SCORES.map((s, j) => {
-                      const angle = (Math.PI * 2 * j) / 8 - Math.PI / 2
-                      const r = 140
-                      const x = 150 + r * Math.cos(angle)
-                      const y = 150 + r * Math.sin(angle)
-                      return (
-                        <text
-                          key={j}
-                          x={x}
-                          y={y}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          fill="#8b949e"
-                          fontSize="10"
-                          fontFamily="var(--font-inter)"
-                        >
-                          {s.name}
-                        </text>
-                      )
-                    })}
-                  </svg>
+                      {/* Key findings panel (2 cols) */}
+                      <div className="lg:col-span-2 space-y-3">
+                        <h3 className="font-heading text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                          <Sparkles className="h-3.5 w-3.5 text-eari-blue-light" />
+                          Key Findings
+                        </h3>
+
+                        {/* Top strength */}
+                        <div className="rounded-lg p-3 bg-emerald-500/[0.06] border border-emerald-500/[0.12]">
+                          <div className="flex items-center gap-2 mb-1">
+                            <TrendingUp className="h-3 w-3 text-emerald-400" />
+                            <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider">Top Strength</span>
+                          </div>
+                          <p className="text-xs text-foreground font-heading font-semibold">Security &amp; Compliance — 83/100</p>
+                          <p className="text-[10px] text-muted-foreground/60 mt-0.5">Strongest pillar. Robust controls and audit practices in place.</p>
+                        </div>
+
+                        {/* Critical gap */}
+                        <div className="rounded-lg p-3 bg-amber-500/[0.06] border border-amber-500/[0.12]">
+                          <div className="flex items-center gap-2 mb-1">
+                            <TrendingDown className="h-3 w-3 text-amber-400" />
+                            <span className="text-[10px] font-mono text-amber-400 uppercase tracking-wider">Critical Gap</span>
+                          </div>
+                          <p className="text-xs text-foreground font-heading font-semibold">Talent &amp; Skills — 44/100</p>
+                          <p className="text-[10px] text-muted-foreground/60 mt-0.5">AI workforce readiness is the primary constraint on execution.</p>
+                        </div>
+
+                        {/* AI Insight */}
+                        <div className="rounded-lg p-3 bg-eari-blue/[0.06] border border-eari-blue/[0.12]">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Brain className="h-3 w-3 text-eari-blue-light" />
+                            <span className="text-[10px] font-mono text-eari-blue-light uppercase tracking-wider">AI Insight</span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
+                            Strong governance foundations (78/100) offset by a critical talent gap (44/100) that could constrain AI execution capacity. Prioritize upskilling programs before scaling deployments.
+                          </p>
+                        </div>
+
+                        {/* Quick stats row */}
+                        <div className="grid grid-cols-3 gap-2 pt-1">
+                          <div className="text-center p-2 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                            <p className="font-heading text-lg font-bold text-eari-blue-light">8</p>
+                            <p className="text-[8px] font-mono text-muted-foreground/40">Pillars</p>
+                          </div>
+                          <div className="text-center p-2 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                            <p className="font-heading text-lg font-bold text-[#d4a853]">40</p>
+                            <p className="text-[8px] font-mono text-muted-foreground/40">Questions</p>
+                          </div>
+                          <div className="text-center p-2 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                            <p className="font-heading text-lg font-bold text-emerald-400">v5.3</p>
+                            <p className="text-[8px] font-mono text-muted-foreground/40">Method</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </FadeUp>
-
-              {/* Maturity bands with staggered slide-in */}
-              <div className="space-y-4">
-                <FadeUp delay={0.1}>
-                  <h3 className="font-heading text-xl font-semibold text-foreground mb-6">Maturity Classification</h3>
-                </FadeUp>
-                {Object.values(MATURITY_BANDS).map((band, i) => (
-                  <motion.div
-                    key={band.label}
-                    initial={{ opacity: 0, x: 40 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true, margin: '-30px' }}
-                    transition={{ duration: 0.5, delay: 0.2 + i * 0.12, ease: 'easeOut' }}
-                  >
-                    <div className="flex items-center gap-4 p-4 rounded-lg bg-navy-800 border border-border/50 hover:border-border transition-colors group">
-                      <div
-                        className="flex h-12 w-12 items-center justify-center rounded-lg flex-shrink-0 group-hover:scale-105 transition-transform"
-                        style={{ backgroundColor: `${band.color}20` }}
-                      >
-                        <span className="font-heading font-bold text-lg" style={{ color: band.color }}>
-                          {band.max}
-                        </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-heading font-semibold text-foreground">{band.label}</span>
-                          <span className="font-mono text-xs text-muted-foreground">
-                            {band.min}-{band.max}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground font-sans mt-0.5 truncate">
-                          {band.description}
-                        </p>
-                      </div>
-                      <motion.div
-                        className="h-2 w-16 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: band.color }}
-                        initial={{ scaleX: 0 }}
-                        whileInView={{ scaleX: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6, delay: 0.4 + i * 0.12, ease: 'easeOut' }}
-                      />
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
             </div>
           </div>
         </ParallaxSection>
