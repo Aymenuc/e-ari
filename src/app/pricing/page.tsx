@@ -12,6 +12,7 @@ import {
   Shield,
   ArrowRight,
   ArrowUpRight,
+  TrendingUp,
   ChevronDown,
   HelpCircle,
   CreditCard,
@@ -73,25 +74,23 @@ const PRICING_TIERS = [
     price: '$0',
     yearlyPrice: '$0',
     period: 'forever',
-    description: 'Explore AI readiness with up to 3 assessments and taste the AI magic',
+    yearlyPeriod: '',
+    description: '1 assessment and 3 pulse checks per month to explore AI readiness at no cost',
     icon: Zap,
     color: '#64748b',
     colorClass: 'text-slate-400',
     bgColor: 'bg-slate-500/15',
     borderColor: 'border-slate-500/30',
     features: [
-      { text: '3 assessments per account', included: true, highlight: true },
-      { text: 'Score breakdown by pillar', included: true },
-      { text: 'Maturity band classification', included: true },
-      { text: '1 AI Insight summary', included: true, highlight: true },
-      { text: 'Literacy Agent (basic assessment)', included: true },
+      { text: '1 full assessment / month', included: true, highlight: true },
+      { text: '3 pulse checks / month', included: true },
+      { text: '1 team member', included: true },
+      { text: 'Basic Literacy Hub', included: true },
+      { text: '1 .docx report / month ($29 add-on)', included: true },
+      { text: '1 sector benchmark', included: true },
       { text: 'Community support', included: true },
-      { text: 'PDF report generation', included: false },
-      { text: 'Discovery Agent', included: false },
-      { text: 'Report Agent', included: false },
-      { text: 'AI Assistant', included: false },
-      { text: 'Historical benchmarking', included: false },
-      { text: 'Custom weighting options', included: false },
+      { text: 'Admin portal', included: false },
+      { text: 'API access', included: false },
     ],
     highlighted: false,
     ctaText: 'Start Free',
@@ -99,53 +98,80 @@ const PRICING_TIERS = [
   {
     id: 'professional',
     name: 'Professional',
-    price: '$59',
-    yearlyPrice: '$49',
+    price: '$49',
+    yearlyPrice: '$39',
     period: '/month',
     yearlyPeriod: '/mo, billed yearly',
-    description: 'Unlimited AI-powered assessments with all 6 agents and strategic outputs',
+    description: '5 assessments and 15 pulse checks per month with full Literacy Hub access',
     icon: Sparkles,
     color: '#2563eb',
     colorClass: 'text-eari-blue-light',
     bgColor: 'bg-eari-blue/15',
     borderColor: 'border-eari-blue/30',
     features: [
-      { text: 'Unlimited assessments', included: true, highlight: true },
-      { text: 'All 6 AI Agents', included: true, highlight: true },
-      { text: 'Full AI narrative insights', included: true },
-      { text: 'PDF report with executive summary', included: true },
-      { text: 'Historical benchmarking & sector comparison', included: true },
-      { text: 'Custom weighting options', included: true },
-      { text: 'AI Assistant (interactive Q&A)', included: true },
-      { text: 'Roadmap & strategic recommendations', included: true },
-      { text: 'Priority email support', included: true },
-      { text: 'Dedicated account manager', included: false },
+      { text: '5 full assessments / month', included: true, highlight: true },
+      { text: '15 pulse checks / month', included: true },
+      { text: '5 team members', included: true },
+      { text: 'Full Literacy library', included: true },
+      { text: '3 .docx reports included', included: true },
+      { text: '5 sector benchmarks', included: true },
+      { text: 'Basic admin portal', included: true },
+      { text: 'Email support (48h)', included: true },
+      { text: 'API access', included: false },
+    ],
+    highlighted: false,
+    ctaText: 'Get Professional',
+  },
+  {
+    id: 'growth',
+    name: 'Growth',
+    price: '$149',
+    yearlyPrice: '$119',
+    period: '/month',
+    yearlyPeriod: '/mo, billed yearly',
+    description: '20 assessments and 50 pulse checks with full admin portal, all sectors, and read-only API',
+    icon: TrendingUp,
+    color: '#8b5cf6',
+    colorClass: 'text-violet-400',
+    bgColor: 'bg-violet-500/15',
+    borderColor: 'border-violet-500/30',
+    features: [
+      { text: '20 full assessments / month', included: true, highlight: true },
+      { text: '50 pulse checks / month', included: true },
+      { text: '25 team members', included: true },
+      { text: 'Full library + Learning Paths', included: true },
+      { text: 'Unlimited .docx reports', included: true },
+      { text: 'All sectors', included: true },
+      { text: 'Full admin portal', included: true },
+      { text: 'Read-only API access', included: true },
+      { text: 'Chat + Quarterly Review', included: true, highlight: true },
     ],
     highlighted: true,
-    ctaText: 'Upgrade to Pro',
+    ctaText: 'Get Growth',
   },
   {
     id: 'enterprise',
     name: 'Enterprise',
-    price: 'Custom',
-    yearlyPrice: 'Custom',
-    period: '',
-    yearlyPeriod: '',
-    description: 'Organization-wide AI readiness at scale with dedicated support and custom pricing',
+    price: '$399',
+    yearlyPrice: '$319',
+    period: '/month',
+    yearlyPeriod: '/mo, billed yearly',
+    description: 'Unlimited everything with SSO/SAML, full CRUD API, and a dedicated CSM',
     icon: Shield,
     color: '#d4a853',
     colorClass: 'text-amber-400',
     bgColor: 'bg-amber-500/15',
     borderColor: 'border-amber-500/30',
     features: [
-      { text: 'Everything in Professional', included: true },
-      { text: 'Multi-organization management', included: true },
-      { text: 'Admin dashboard & analytics', included: true },
-      { text: 'REST API access', included: true },
-      { text: 'Custom branding & white-label', included: true },
-      { text: 'SSO / SAML integration', included: true },
-      { text: 'Dedicated account manager', included: true },
-      { text: 'SLA guarantees', included: true },
+      { text: 'Unlimited assessments', included: true, highlight: true },
+      { text: 'Unlimited pulse checks', included: true },
+      { text: 'Unlimited team members', included: true },
+      { text: 'Full library + Custom Content', included: true },
+      { text: 'Unlimited reports + Custom Branding', included: true },
+      { text: 'All sectors + Custom Benchmarks', included: true },
+      { text: 'Full admin portal + SSO/SAML', included: true },
+      { text: 'Full CRUD API access', included: true },
+      { text: 'Dedicated CSM + SLA', included: true, highlight: true },
     ],
     highlighted: false,
     ctaText: 'Contact Sales',
@@ -170,43 +196,25 @@ const AGENT_ICONS = [
 // ---------------------------------------------------------------------------
 
 const COMPARISON_FEATURES = [
-  { category: 'Assessments' },
-  { feature: 'Assessments', starter: '3', professional: 'Unlimited', enterprise: 'Unlimited' },
-  { feature: 'Pillar breakdowns', starter: true, professional: true, enterprise: true },
-  { feature: 'Maturity classification', starter: true, professional: true, enterprise: true },
-  { feature: 'Sector-specific questions', starter: true, professional: true, enterprise: true },
-  { feature: 'AI Insight summary', starter: '1 summary', professional: 'Full narratives', enterprise: 'Full narratives' },
+  { category: 'Usage' },
+  { feature: 'Full Assessments / month', starter: '1', professional: '5', growth: '20', enterprise: 'Unlimited' },
+  { feature: 'Pulse Checks / month', starter: '3', professional: '15', growth: '50', enterprise: 'Unlimited' },
+  { feature: 'Team Members', starter: '1', professional: '5', growth: '25', enterprise: 'Unlimited' },
 
-  { category: 'AI Agents' },
-  { feature: 'Scoring Agent', starter: true, professional: true, enterprise: true },
-  { feature: 'Insight Agent (AI narratives)', starter: 'Limited (1)', professional: true, enterprise: true },
-  { feature: 'Discovery Agent', starter: false, professional: true, enterprise: true },
-  { feature: 'Literacy Agent', starter: 'Basic', professional: true, enterprise: true },
-  { feature: 'Report Agent (PDF)', starter: false, professional: true, enterprise: true },
-  { feature: 'Assistant Agent (Q&A)', starter: false, professional: true, enterprise: true },
+  { category: 'Reports' },
+  { feature: '.docx Report Downloads', starter: '1/mo ($29 add-on)', professional: '3 included', growth: 'Unlimited', enterprise: 'Unlimited + Custom Branding' },
 
-  { category: 'Analytics & Reporting' },
-  { feature: 'Basic dashboard', starter: true, professional: true, enterprise: true },
-  { feature: 'Historical benchmarking', starter: false, professional: true, enterprise: true },
-  { feature: 'Sector comparison', starter: false, professional: true, enterprise: true },
-  { feature: 'Custom weighting', starter: false, professional: true, enterprise: true },
-  { feature: 'PDF report export', starter: false, professional: true, enterprise: true },
-  { feature: 'Executive summary', starter: false, professional: true, enterprise: true },
-  { feature: 'Roadmap & recommendations', starter: false, professional: true, enterprise: true },
-  { feature: 'Risk assessment matrix', starter: false, professional: true, enterprise: true },
+  { category: 'Learning & Benchmarking' },
+  { feature: 'Literacy Hub Access', starter: 'Basic only', professional: 'Full library', growth: 'Full + Learning Paths', enterprise: 'Full + Custom Content' },
+  { feature: 'Sector Benchmarking', starter: '1 sector', professional: '5 sectors', growth: 'All sectors', enterprise: 'All + Custom Benchmarks' },
 
-  { category: 'Organization' },
-  { feature: 'Multi-org management', starter: false, professional: false, enterprise: true },
-  { feature: 'Admin dashboard', starter: false, professional: false, enterprise: true },
-  { feature: 'REST API access', starter: false, professional: false, enterprise: true },
-  { feature: 'Custom branding / white-label', starter: false, professional: false, enterprise: true },
-  { feature: 'SSO / SAML', starter: false, professional: false, enterprise: true },
+  { category: 'Administration & API' },
+  { feature: 'Admin Portal', starter: false, professional: 'Basic', growth: 'Full', enterprise: 'Full + SSO/SAML' },
+  { feature: 'API Access', starter: false, professional: false, growth: 'Read-only', enterprise: 'Full CRUD' },
 
   { category: 'Support' },
-  { feature: 'Community support', starter: true, professional: true, enterprise: true },
-  { feature: 'Priority email support', starter: false, professional: true, enterprise: true },
-  { feature: 'Dedicated account manager', starter: false, professional: false, enterprise: true },
-  { feature: 'SLA guarantees', starter: false, professional: false, enterprise: true },
+  { feature: 'Support Level', starter: 'Community', professional: 'Email (48h)', growth: 'Chat + Quarterly Review', enterprise: 'Dedicated CSM + SLA' },
+  { feature: 'Annual Discount', starter: '–', professional: '$39/mo (20% off)', growth: '$119/mo (20% off)', enterprise: '$319/mo (20% off)' },
 ]
 
 // ---------------------------------------------------------------------------
@@ -215,36 +223,36 @@ const COMPARISON_FEATURES = [
 
 const FAQ_ITEMS = [
   {
-    question: 'What happens when I upgrade to Professional?',
-    answer: 'Your account is instantly upgraded to Professional with full access to all 6 AI agents, PDF reports, benchmarking, and the AI Assistant. Cancel anytime — if you cancel, your account reverts to the free Starter plan.',
+    question: 'What is the difference between Professional and Growth?',
+    answer: 'Professional is for individual practitioners or small teams — 5 assessments, 15 pulse checks, 5 team members, and basic admin. Growth is built for scaling organizations: 20 assessments, 50 pulse checks, 25 team members, all sector benchmarks, unlimited .docx reports, full admin portal, read-only API, and quarterly business reviews with our team.',
   },
   {
-    question: 'Is the Professional plan per user or per organization?',
-    answer: 'Professional is priced per user — $59/month billed monthly or $49/month billed annually ($588/year). Each user gets unlimited assessments and full access to all 6 AI agents. For multi-user or organization-wide deployments, contact us for an Enterprise quote.',
+    question: 'Are the plan limits per account or per user?',
+    answer: 'Limits are per account, shared across all team members. For example, Professional gives your account 5 assessments and 15 pulse checks per month total, used across your 5 team members.',
   },
   {
-    question: 'Can I cancel my subscription anytime?',
-    answer: 'Yes, absolutely. Cancel at any time with no penalties or hidden fees. You retain access until the end of your current billing period, then your account reverts to the Starter plan.',
+    question: 'How does annual billing work?',
+    answer: 'All paid plans offer 20% off when billed annually. Professional: $39/mo ($468/yr). Growth: $119/mo ($1,428/yr). Enterprise: $319/mo ($3,828/yr). Switch between monthly and yearly at any time — the new rate applies at your next billing cycle.',
   },
   {
-    question: 'What is the AI Insight summary on the free plan?',
-    answer: 'The Starter plan includes 1 AI Insight summary per assessment — a brief strategic overview of your results. The Professional plan unlocks full AI narrative insights with detailed cross-pillar analysis, risk identification, and actionable recommendations.',
+    question: 'What is the $29 .docx add-on on Starter?',
+    answer: 'Starter includes 1 .docx report download per month. If you need additional downloads without upgrading, you can purchase extra reports at $29 each. Professional includes 3, and Growth and Enterprise are unlimited.',
   },
   {
-    question: 'How does the yearly billing work?',
-    answer: 'Choosing yearly billing locks you in at $49/month ($588/year) instead of $59/month — saving you $120 per year. You can switch between monthly and yearly at any time; the new rate applies at your next billing cycle.',
+    question: 'Can I cancel anytime?',
+    answer: 'Yes, cancel at any time with no penalties. You retain access until the end of your current billing period, then your account reverts to Starter.',
   },
   {
-    question: 'How does Enterprise pricing work?',
-    answer: 'Enterprise pricing is custom and depends on your organization size, number of users, and required features (SSO, API access, custom branding, SLA). Contact us through the form and we will put together a tailored quote — typically within 24 hours.',
+    question: 'What does the Quarterly Review on Growth include?',
+    answer: 'A quarterly 1-hour call with an E-ARI specialist to review your readiness scores, benchmark progress, and prioritize improvement initiatives. It is a structured advisory session, not a sales call.',
   },
   {
-    question: 'What are the 6 AI Agents?',
-    answer: 'E-ARI uses 6 specialized AI agents that work together: the Scoring Agent (deterministic pillar scoring), Insight Agent (LLM-powered strategic narratives), Discovery Agent (organizational AI landscape mapping), Report Agent (PDF report compilation), Literacy Agent (AI literacy assessment and learning paths), and the Assistant Agent (interactive Q&A about your results).',
+    question: 'What does Enterprise add over Growth?',
+    answer: 'Unlimited usage across all features, custom sector benchmarks, custom branding on reports, SSO/SAML, full CRUD API, and a dedicated Customer Success Manager with SLA-backed response times.',
   },
   {
     question: 'Is my data secure?',
-    answer: 'Yes. All data is encrypted in transit and at rest. We use industry-standard security practices and never share your assessment data with third parties. Enterprise customers can also enable SSO/SAML for additional access control.',
+    answer: 'Yes. All data is encrypted in transit and at rest. We never share your assessment data with third parties. Enterprise customers can additionally enable SSO/SAML for centralized access control.',
   },
 ]
 
@@ -263,6 +271,7 @@ export default function PricingPage() {
   const isLoggedIn = sessionStatus === 'authenticated'
   const isFree = userTier === 'free' || userTier === null
   const isPro = userTier === 'professional'
+  const isGrowth = userTier === 'growth'
   const isEnterprise = userTier === 'enterprise'
 
   // ---------------------------------------------------------------------------
@@ -271,13 +280,11 @@ export default function PricingPage() {
 
   function renderCTA(tierId: string, ctaText: string) {
     if (!isLoggedIn) {
-      // Not logged in
       if (tierId === 'free') {
         return (
           <Link href="/auth/register" className="w-full">
             <Button variant="outline" className="w-full border-border hover:bg-navy-700 text-foreground font-heading min-h-[44px]">
-              {ctaText}
-              <ArrowRight className="ml-2 h-4 w-4" />
+              {ctaText} <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
         )
@@ -286,18 +293,25 @@ export default function PricingPage() {
         return (
           <Link href="/auth/register" className="w-full">
             <Button className="w-full bg-gradient-to-r from-eari-blue to-cyan-600 hover:from-eari-blue-dark hover:to-cyan-700 text-white font-heading font-semibold shadow-lg shadow-eari-blue/20 min-h-[44px]">
-              {ctaText}
-              <ArrowRight className="ml-2 h-4 w-4" />
+              {ctaText} <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+        )
+      }
+      if (tierId === 'growth') {
+        return (
+          <Link href="/auth/register" className="w-full">
+            <Button className="w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-heading font-semibold shadow-lg shadow-violet-500/20 min-h-[44px]">
+              {ctaText} <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
         )
       }
       if (tierId === 'enterprise') {
         return (
-          <Link href="/auth/register" className="w-full">
+          <Link href="/contact" className="w-full">
             <Button className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-navy-900 font-heading font-semibold shadow-lg shadow-amber-500/20 min-h-[44px]">
-              {ctaText}
-              <ArrowUpRight className="ml-2 h-4 w-4" />
+              {ctaText} <ArrowUpRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
         )
@@ -308,55 +322,42 @@ export default function PricingPage() {
     if (tierId === 'free') {
       return (
         <Button variant="outline" disabled className="w-full border-border text-muted-foreground font-heading min-h-[44px]">
-          {isFree ? 'Current Plan' : 'Free'}
+          {isFree ? 'Current Plan' : 'Starter'}
         </Button>
       )
     }
-
     if (tierId === 'professional') {
-      if (isPro) {
-        return (
-          <Button disabled className="w-full bg-eari-blue/20 text-eari-blue-light border border-eari-blue/30 font-heading min-h-[44px]">
-            Current Plan
-          </Button>
-        )
-      }
-      if (isEnterprise) {
-        return (
-          <Button disabled className="w-full bg-navy-700 text-muted-foreground font-heading min-h-[44px]">
-            Included in Enterprise
-          </Button>
-        )
-      }
-      // Free tier user
+      if (isPro) return <Button disabled className="w-full bg-eari-blue/20 text-eari-blue-light border border-eari-blue/30 font-heading min-h-[44px]">Current Plan</Button>
+      if (isGrowth || isEnterprise) return <Button disabled className="w-full bg-navy-700 text-muted-foreground font-heading min-h-[44px]">Included in your plan</Button>
       return (
         <Link href="/checkout?plan=professional" className="w-full">
           <Button className="w-full bg-gradient-to-r from-eari-blue to-cyan-600 hover:from-eari-blue-dark hover:to-cyan-700 text-white font-heading font-semibold shadow-lg shadow-eari-blue/20 min-h-[44px]">
-            {ctaText}
-            <ArrowUpRight className="ml-2 h-4 w-4" />
+            {ctaText} <ArrowUpRight className="ml-2 h-4 w-4" />
           </Button>
         </Link>
       )
     }
-
-    if (tierId === 'enterprise') {
-      if (isEnterprise) {
-        return (
-          <Button disabled className="w-full bg-amber-500/20 text-amber-400 border border-amber-500/30 font-heading min-h-[44px]">
-            Current Plan
-          </Button>
-        )
-      }
+    if (tierId === 'growth') {
+      if (isGrowth) return <Button disabled className="w-full bg-violet-500/20 text-violet-400 border border-violet-500/30 font-heading min-h-[44px]">Current Plan</Button>
+      if (isEnterprise) return <Button disabled className="w-full bg-navy-700 text-muted-foreground font-heading min-h-[44px]">Included in Enterprise</Button>
       return (
-        <Link href="/checkout?plan=enterprise" className="w-full">
-          <Button className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-navy-900 font-heading font-semibold shadow-lg shadow-amber-500/20 min-h-[44px]">
-            {ctaText}
-            <ArrowUpRight className="ml-2 h-4 w-4" />
+        <Link href="/checkout?plan=growth" className="w-full">
+          <Button className="w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-heading font-semibold shadow-lg shadow-violet-500/20 min-h-[44px]">
+            {ctaText} <ArrowUpRight className="ml-2 h-4 w-4" />
           </Button>
         </Link>
       )
     }
-
+    if (tierId === 'enterprise') {
+      if (isEnterprise) return <Button disabled className="w-full bg-amber-500/20 text-amber-400 border border-amber-500/30 font-heading min-h-[44px]">Current Plan</Button>
+      return (
+        <Link href="/contact" className="w-full">
+          <Button className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-navy-900 font-heading font-semibold shadow-lg shadow-amber-500/20 min-h-[44px]">
+            {ctaText} <ArrowUpRight className="ml-2 h-4 w-4" />
+          </Button>
+        </Link>
+      )
+    }
     return null
   }
 
@@ -454,7 +455,7 @@ export default function PricingPage() {
                 >
                   Yearly
                   <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px] px-1.5 py-0">
-                    Save 17%
+                    Save 20%
                   </Badge>
                 </button>
               </div>
@@ -465,7 +466,7 @@ export default function PricingPage() {
         {/* --- Pricing Cards --- */}
         <section className="pb-16 sm:pb-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 max-w-7xl mx-auto">
               {PRICING_TIERS.map((tier, index) => {
                 const TierIcon = tier.icon
                 const displayPrice = billingPeriod === 'yearly' ? tier.yearlyPrice : tier.price
@@ -515,38 +516,17 @@ export default function PricingPage() {
                                 </span>
                               )}
                             </div>
-                            {tier.id === 'professional' && billingPeriod === 'yearly' && (
-                              <p className="mt-1 text-xs text-emerald-400 font-sans">
-                                Save $198 per year (2 months free)
-                              </p>
+                            {billingPeriod === 'yearly' && tier.id === 'professional' && (
+                              <p className="mt-1 text-xs text-emerald-400 font-sans">Save $120/yr vs monthly</p>
                             )}
-                            {tier.id === 'enterprise' && billingPeriod === 'yearly' && (
-                              <p className="mt-1 text-xs text-emerald-400 font-sans">
-                                Save $990 per year (2 months free)
-                              </p>
+                            {billingPeriod === 'yearly' && tier.id === 'growth' && (
+                              <p className="mt-1 text-xs text-emerald-400 font-sans">Save $360/yr vs monthly</p>
+                            )}
+                            {billingPeriod === 'yearly' && tier.id === 'enterprise' && (
+                              <p className="mt-1 text-xs text-emerald-400 font-sans">Save $960/yr vs monthly</p>
                             )}
                           </div>
                         </CardHeader>
-
-                        {/* Agent visual for Professional */}
-                        {tier.id === 'professional' && (
-                          <div className="px-6 pb-3">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              {AGENT_ICONS.map((agent) => {
-                                const AgentIcon = agent.icon
-                                return (
-                                  <div
-                                    key={agent.name}
-                                    className="flex items-center gap-1 px-2 py-1 rounded-md bg-eari-blue/10 border border-eari-blue/20"
-                                  >
-                                    <AgentIcon className="h-3 w-3 text-eari-blue-light" />
-                                    <span className="text-[10px] font-heading text-eari-blue-light">{agent.name}</span>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          </div>
-                        )}
 
                         <CardContent className="flex-1">
                           <Separator className="mb-4 bg-border/40" />
@@ -602,52 +582,37 @@ export default function PricingPage() {
                       {/* Table header */}
                       <thead>
                         <tr className="border-b border-border/40">
-                          <th className="text-left p-4 font-heading font-semibold text-foreground">
-                            Feature
-                          </th>
-                          <th className="text-center p-4 font-heading font-semibold text-muted-foreground w-28">
-                            Starter
-                          </th>
-                          <th className="text-center p-4 font-heading font-semibold text-eari-blue-light w-28 bg-eari-blue/5">
-                            Professional
-                          </th>
-                          <th className="text-center p-4 font-heading font-semibold text-amber-400 w-28">
-                            Enterprise
-                          </th>
+                          <th className="text-left p-4 font-heading font-semibold text-foreground min-w-[160px]">Feature</th>
+                          <th className="text-center p-3 font-heading font-semibold text-muted-foreground w-28">Starter</th>
+                          <th className="text-center p-3 font-heading font-semibold text-eari-blue-light w-28 bg-eari-blue/5">Professional</th>
+                          <th className="text-center p-3 font-heading font-semibold text-violet-400 w-28 bg-violet-500/5">Growth</th>
+                          <th className="text-center p-3 font-heading font-semibold text-amber-400 w-28">Enterprise</th>
                         </tr>
                       </thead>
                       <tbody>
                         {COMPARISON_FEATURES.map((item, i) => {
-                          // Category row
                           if ('category' in item) {
                             return (
                               <tr key={`cat-${i}`} className="bg-navy-700/30">
-                                <td colSpan={4} className="px-4 py-2.5 font-heading font-semibold text-xs uppercase tracking-wider text-muted-foreground">
+                                <td colSpan={5} className="px-4 py-2.5 font-heading font-semibold text-xs uppercase tracking-wider text-muted-foreground">
                                   {item.category}
                                 </td>
                               </tr>
                             )
                           }
-
-                          // Feature row
                           return (
                             <tr key={`feat-${i}`} className="border-b border-border/20 hover:bg-navy-700/20 transition-colors">
-                              <td className="px-4 py-3 text-foreground font-sans">
-                                {item.feature}
-                              </td>
-                              {(['starter', 'professional', 'enterprise'] as const).map((tier) => {
-                                const value = item[tier]
-                                const isProCol = tier === 'professional'
+                              <td className="px-4 py-3 text-foreground font-sans text-sm">{item.feature}</td>
+                              {(['starter', 'professional', 'growth', 'enterprise'] as const).map((col) => {
+                                const value = (item as Record<string, unknown>)[col]
                                 return (
-                                  <td key={tier} className={`text-center px-4 py-3 ${isProCol ? 'bg-eari-blue/5' : ''}`}>
+                                  <td key={col} className={`text-center px-3 py-3 ${col === 'professional' ? 'bg-eari-blue/5' : col === 'growth' ? 'bg-violet-500/5' : ''}`}>
                                     {typeof value === 'boolean' ? (
-                                      value ? (
-                                        <Check className="h-4 w-4 text-emerald-400 mx-auto" />
-                                      ) : (
-                                        <X className="h-4 w-4 text-muted-foreground/30 mx-auto" />
-                                      )
+                                      value
+                                        ? <Check className="h-4 w-4 text-emerald-400 mx-auto" />
+                                        : <X className="h-4 w-4 text-muted-foreground/30 mx-auto" />
                                     ) : (
-                                      <span className={`font-sans text-xs ${value === 'Limited (1)' || value === 'Basic' ? 'text-amber-400' : 'text-foreground'}`}>{value}</span>
+                                      <span className="font-sans text-xs text-foreground">{value as string}</span>
                                     )}
                                   </td>
                                 )
