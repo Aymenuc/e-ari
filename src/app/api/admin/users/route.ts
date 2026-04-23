@@ -21,7 +21,6 @@ export async function GET() {
         email: true,
         tier: true,
         role: true,
-        organization: true,
         createdAt: true,
         _count: {
           select: { assessments: true },
@@ -36,7 +35,7 @@ export async function GET() {
       email: user.email,
       tier: user.tier,
       role: user.role,
-      organization: user.organization,
+      organization: null,
       createdAt: user.createdAt,
       assessmentCount: user._count.assessments,
     }));
@@ -116,7 +115,6 @@ export async function PATCH(req: NextRequest) {
         email: true,
         tier: true,
         role: true,
-        organization: true,
         createdAt: true,
         updatedAt: true,
       },
