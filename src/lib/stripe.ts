@@ -22,6 +22,15 @@ export const stripe = new Stripe(
 export const STRIPE_PRICE_PRO =
   process.env.STRIPE_PRICE_PRO || 'price_pro_placeholder'
 
+export const STRIPE_PRICE_PRO_YEARLY =
+  process.env.STRIPE_PRICE_PRO_YEARLY || 'price_pro_yearly_placeholder'
+
+export const STRIPE_PRICE_GROWTH =
+  process.env.STRIPE_PRICE_GROWTH || 'price_growth_placeholder'
+
+export const STRIPE_PRICE_GROWTH_YEARLY =
+  process.env.STRIPE_PRICE_GROWTH_YEARLY || 'price_growth_yearly_placeholder'
+
 // ---------------------------------------------------------------------------
 // Webhook secret — used to verify incoming Stripe events
 // ---------------------------------------------------------------------------
@@ -49,7 +58,7 @@ export async function createCheckoutSession({
   cancelUrl: string
 }) {
   const session = await stripe.checkout.sessions.create({
-    mode: 'payment',
+    mode: 'subscription',
     payment_method_types: ['card'],
     customer_email: email,
     line_items: [

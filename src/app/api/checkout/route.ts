@@ -5,12 +5,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { createCheckoutSession, STRIPE_PRICE_PRO } from '@/lib/stripe'
+import {
+  createCheckoutSession,
+  STRIPE_PRICE_PRO,
+  STRIPE_PRICE_PRO_YEARLY,
+  STRIPE_PRICE_GROWTH,
+  STRIPE_PRICE_GROWTH_YEARLY,
+} from '@/lib/stripe'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { tier } = body as { tier?: string }
+    const { tier, billing } = body as { tier?: string; billing?: string }
 
     // ── Authenticate ──────────────────────────────────────────────────────
     const session = await getServerSession(authOptions)
@@ -39,7 +45,15 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Professional tier → Stripe Checkout
+    // Resolve price ID based on tier + billing interval
+    const isAnnual = billing === 'annual'
+    let priceId: string
+    if (requestedTier === 'growth') {
+      priceId = isAnnual ? STRIPE_PRICE_GROWTH_YEARLY : STRIPE_PRICE_GROWTH
+    } else {
+      priceId = isAnnual ? STRIPE_PRICE_PRO_YEARLY : STRIPE_PRICE_PRO
+    }
+
     const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || ''
     const successUrl = `${origin}/api/checkout/success?session_id={CHECKOUT_SESSION_ID}`
     const cancelUrl = `${origin}/pricing?canceled=1`
@@ -47,7 +61,7 @@ export async function POST(request: NextRequest) {
     const checkoutSession = await createCheckoutSession({
       userId: session.user.id,
       email: session.user.email,
-      priceId: STRIPE_PRICE_PRO,
+      priceId,
       tier: requestedTier,
       successUrl,
       cancelUrl,

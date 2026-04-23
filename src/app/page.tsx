@@ -542,7 +542,9 @@ const PRICING_TIERS = [
   {
     name: 'Starter',
     price: '$0',
+    yearlyPrice: '$0',
     period: 'forever',
+    yearlyPeriod: 'forever',
     description: 'Explore AI readiness with your first assessment and core scoring.',
     icon: Zap,
     color: '#64748b',
@@ -560,12 +562,15 @@ const PRICING_TIERS = [
     ],
     cta: 'Start Free',
     href: '/auth/register',
+    yearlyHref: '/auth/register',
     highlighted: false,
   },
   {
     name: 'Professional',
     price: '$49',
+    yearlyPrice: '$39',
     period: '/month',
+    yearlyPeriod: '/mo, billed yearly',
     description: 'For practitioners running regular assessments with AI-powered insights.',
     icon: Sparkles,
     color: '#2563eb',
@@ -582,13 +587,16 @@ const PRICING_TIERS = [
       { text: 'API access', included: false },
     ],
     cta: 'Get Professional',
-    href: '/checkout?tier=professional',
+    href: '/checkout?tier=professional&billing=monthly',
+    yearlyHref: '/checkout?tier=professional&billing=annual',
     highlighted: false,
   },
   {
     name: 'Growth',
     price: '$149',
+    yearlyPrice: '$119',
     period: '/month',
+    yearlyPeriod: '/mo, billed yearly',
     description: 'For scaling organizations that need broader coverage and team collaboration.',
     icon: TrendingUp,
     color: '#7c3aed',
@@ -605,13 +613,16 @@ const PRICING_TIERS = [
       { text: 'SSO / SAML', included: false },
     ],
     cta: 'Get Growth',
-    href: '/checkout?tier=growth',
+    href: '/checkout?tier=growth&billing=monthly',
+    yearlyHref: '/checkout?tier=growth&billing=annual',
     highlighted: true,
   },
   {
     name: 'Enterprise',
     price: '$399',
+    yearlyPrice: '$319',
     period: '/month',
+    yearlyPeriod: '/mo, billed yearly',
     description: 'Organization-wide AI readiness at scale with dedicated support and SLAs.',
     icon: Shield,
     color: '#d4a853',
@@ -629,6 +640,7 @@ const PRICING_TIERS = [
     ],
     cta: 'Contact Sales',
     href: '/contact',
+    yearlyHref: '/contact',
     highlighted: false,
   },
 ]
@@ -669,6 +681,7 @@ const TESTIMONIALS = [
    ═══════════════════════════════════════════════════════════════════════════ */
 
 export default function Home() {
+  const [isAnnual, setIsAnnual] = useState(false)
   return (
     <div className="min-h-screen flex flex-col bg-navy-900">
       <Navigation />
@@ -2455,14 +2468,18 @@ export default function Home() {
                 <p className="mt-4 text-lg text-muted-foreground font-sans">
                   From individual assessments to enterprise-wide deployment. No hidden fees.
                 </p>
-                {/* Decorative toggle (visual only) */}
-                <div className="mt-6 inline-flex items-center gap-3 rounded-full bg-navy-800 border border-border/50 px-4 py-2">
-                  <span className="text-sm font-sans text-foreground font-medium">Per Assessment</span>
-                  <div className="w-8 h-[18px] rounded-full bg-eari-blue relative">
-                    <div className="absolute top-[2px] right-[2px] w-[14px] h-[14px] rounded-full bg-white" />
+                <button
+                  onClick={() => setIsAnnual(v => !v)}
+                  className="mt-6 inline-flex items-center gap-3 rounded-full bg-navy-800 border border-border/50 px-4 py-2 cursor-pointer hover:border-border transition-colors"
+                >
+                  <span className={`text-sm font-sans font-medium transition-colors ${!isAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>Monthly</span>
+                  <div className={`w-8 h-[18px] rounded-full relative transition-colors duration-200 ${isAnnual ? 'bg-eari-blue' : 'bg-muted-foreground/30'}`}>
+                    <div className={`absolute top-[2px] w-[14px] h-[14px] rounded-full bg-white transition-all duration-200 ${isAnnual ? 'right-[2px]' : 'left-[2px]'}`} />
                   </div>
-                  <span className="text-sm font-sans text-muted-foreground">Annual</span>
-                </div>
+                  <span className={`text-sm font-sans transition-colors ${isAnnual ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+                    Annual <span className="text-emerald-400 text-xs font-sans">Save 20%</span>
+                  </span>
+                </button>
               </div>
             </FadeUp>
 
@@ -2527,14 +2544,14 @@ export default function Home() {
                         <CardContent>
                           <div className="mt-2 mb-6">
                             {isPro ? (
-                              <span className="font-heading text-5xl font-bold gradient-text-blue">{tier.price}</span>
+                              <span className="font-heading text-5xl font-bold gradient-text-blue">{isAnnual ? tier.yearlyPrice : tier.price}</span>
                             ) : isEnterprise ? (
-                              <span className="font-heading text-5xl font-bold gradient-text-gold">{tier.price}</span>
+                              <span className="font-heading text-5xl font-bold gradient-text-gold">{isAnnual ? tier.yearlyPrice : tier.price}</span>
                             ) : (
-                              <span className="font-heading text-5xl font-bold text-foreground">{tier.price}</span>
+                              <span className="font-heading text-5xl font-bold text-foreground">{isAnnual ? tier.yearlyPrice : tier.price}</span>
                             )}
-                            {tier.period && (
-                              <span className="text-muted-foreground font-sans text-sm ml-1">{tier.period}</span>
+                            {(isAnnual ? tier.yearlyPeriod : tier.period) && (
+                              <span className="text-muted-foreground font-sans text-sm ml-1">{isAnnual ? tier.yearlyPeriod : tier.period}</span>
                             )}
                           </div>
 
@@ -2573,7 +2590,7 @@ export default function Home() {
                         </CardContent>
 
                         <CardFooter className="pt-2">
-                          <Link href={tier.href} className="w-full">
+                          <Link href={isAnnual ? (tier.yearlyHref || tier.href) : tier.href} className="w-full">
                             <Button
                               className={`w-full font-heading font-semibold h-11 ${
                                 isPro
@@ -2595,44 +2612,6 @@ export default function Home() {
               })}
             </div>
 
-            {/* Quick comparison row */}
-            <FadeUp delay={0.4}>
-              <div className="mt-16 max-w-4xl mx-auto">
-                <div className="glass-card rounded-xl p-6 overflow-x-auto">
-                  <h3 className="font-heading text-base font-semibold text-foreground mb-4 text-center">Quick Comparison</h3>
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-border/30">
-                        <th className="text-left font-sans text-muted-foreground pb-3 pr-4">Feature</th>
-                        <th className="text-center font-heading text-slate-400 pb-3 px-2" style={{ color: '#64748b' }}>Starter</th>
-                        <th className="text-center font-heading pb-3 px-2" style={{ color: '#2563eb' }}>Professional</th>
-                        <th className="text-center font-heading pb-3 px-2" style={{ color: '#d4a853' }}>Enterprise</th>
-                      </tr>
-                    </thead>
-                    <tbody className="font-sans text-muted-foreground">
-                      {[
-                        { feature: 'Assessments', starter: '3', pro: 'Unlimited', enterprise: 'Unlimited' },
-                        { feature: 'AI Agents', starter: '2 (Scoring, Literacy)', pro: 'All 6', enterprise: 'All 6' },
-                        { feature: 'E-ARI Certification', starter: 'Badge', pro: 'Bronze–Gold', enterprise: 'Platinum' },
-                        { feature: 'Regulatory Compliance', starter: '—', pro: 'EU/NIST/ISO', enterprise: 'EU/NIST/ISO' },
-                        { feature: 'Continuous Monitoring', starter: '—', pro: '—', enterprise: '✓' },
-                        { feature: 'AI Narrative Insights', starter: '1 summary', pro: 'Full narratives', enterprise: 'Full narratives' },
-                        { feature: 'PDF Reports', starter: '—', pro: '✓', enterprise: '✓' },
-                        { feature: 'API Access', starter: '—', pro: '—', enterprise: '✓' },
-                        { feature: 'SSO / SAML', starter: '—', pro: '—', enterprise: '✓' },
-                      ].map((row) => (
-                        <tr key={row.feature} className="border-b border-border/10 last:border-0">
-                          <td className="py-2.5 pr-4 text-foreground font-medium">{row.feature}</td>
-                          <td className="py-2.5 px-2 text-center">{row.starter}</td>
-                          <td className="py-2.5 px-2 text-center font-medium" style={{ color: '#3b82f6' }}>{row.pro}</td>
-                          <td className="py-2.5 px-2 text-center font-medium" style={{ color: '#d4a853' }}>{row.enterprise}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </FadeUp>
           </div>
         </ParallaxSection>
 
