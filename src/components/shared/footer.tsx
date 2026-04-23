@@ -1,13 +1,12 @@
 import Link from "next/link";
-import { Mail, MapPin, MessageSquare } from "lucide-react";
-import { ContactForm } from "@/components/shared/contact-form";
+import { Mail, MessageSquare, ArrowRight } from "lucide-react";
 
 export function Footer() {
   return (
     <footer className="border-t border-border/50 bg-navy-900">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14">
         {/* Main grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
 
           {/* Brand + info */}
           <div className="lg:col-span-2 space-y-5">
@@ -15,7 +14,7 @@ export function Footer() {
               <img src="/logo.svg" alt="E-ARI" className="h-9 w-9 rounded-lg" />
               <span className="font-heading font-semibold text-lg text-foreground">E-ARI</span>
             </div>
-            <p className="text-sm text-muted-foreground font-sans leading-relaxed max-w-xs">
+            <p className="text-sm text-muted-foreground font-sans leading-relaxed max-w-sm">
               Enterprise AI Readiness Assessment. Evidence-based, actionable outputs for organizations starting or advancing their AI journey.
             </p>
             <div className="space-y-2">
@@ -29,7 +28,7 @@ export function Footer() {
               </a>
             </div>
 
-            {/* Link columns side-by-side under brand on large screens */}
+            {/* Link columns side-by-side */}
             <div className="grid grid-cols-3 gap-6 pt-2">
               <div>
                 <h3 className="font-heading font-semibold text-xs text-foreground mb-3 uppercase tracking-wider">Product</h3>
@@ -47,6 +46,7 @@ export function Footer() {
                   <li><Link href="/team" className="text-xs text-muted-foreground hover:text-foreground transition-colors font-sans">Team</Link></li>
                   <li><span className="text-xs text-muted-foreground font-sans">About</span></li>
                   <li><Link href="/careers" className="text-xs text-muted-foreground hover:text-foreground transition-colors font-sans">Careers</Link></li>
+                  <li><Link href="/contact" className="text-xs text-muted-foreground hover:text-foreground transition-colors font-sans">Contact</Link></li>
                 </ul>
               </div>
               <div>
@@ -60,16 +60,30 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Contact form */}
-          <div className="lg:col-span-3">
-            <div className="rounded-xl border border-border/50 bg-navy-800/60 p-6 backdrop-blur-sm">
-              <div className="mb-5">
-                <h3 className="font-heading font-semibold text-base text-foreground mb-1">Get in Touch</h3>
-                <p className="text-sm text-muted-foreground font-sans">
-                  Questions about AI readiness, pricing, or enterprise partnerships? We respond within 24 hours.
+          {/* Get in Touch CTA */}
+          <div className="lg:col-span-1">
+            <div className="rounded-xl border border-eari-blue/20 bg-navy-800/60 p-6 backdrop-blur-sm h-full flex flex-col justify-between">
+              <div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-eari-blue/10 border border-eari-blue/20 mb-4">
+                  <Mail className="h-5 w-5 text-eari-blue-light" />
+                </div>
+                <h3 className="font-heading font-semibold text-base text-foreground mb-2">Get in Touch</h3>
+                <p className="text-sm text-muted-foreground font-sans leading-relaxed">
+                  Questions about AI readiness, enterprise pricing, or methodology? Our team responds within 24 hours.
                 </p>
               </div>
-              <ContactForm />
+              <div className="mt-6 space-y-3">
+                <Link
+                  href="/contact"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-eari-blue px-4 py-2.5 text-sm font-sans font-medium text-white hover:bg-eari-blue-dark transition-colors"
+                >
+                  Send us a message
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <p className="text-center text-[11px] font-mono text-muted-foreground">
+                  We respond within 24 business hours
+                </p>
+              </div>
             </div>
           </div>
 

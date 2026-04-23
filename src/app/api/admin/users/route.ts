@@ -6,30 +6,13 @@ import { db } from "@/lib/db";
 const VALID_TIERS = ["free", "professional", "enterprise"];
 const VALID_ROLES = ["user", "admin"];
 
-// Helper: verify the requesting user is an admin via DB lookup
-async function verifyAdmin(): Promise<NextResponse | null> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const requestingUser = await db.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true },
-  });
-
-  if (!requestingUser || requestingUser.role !== "admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  return null; // null means authorized
-}
-
 // GET /api/admin/users — List all users with assessment counts
 export async function GET() {
   try {
-    const authError = await verifyAdmin();
-    if (authError) return authError;
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id || session.user.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     const users = await db.user.findMany({
       select: {
@@ -71,8 +54,10 @@ export async function GET() {
 // PATCH /api/admin/users — Update user tier or role
 export async function PATCH(req: NextRequest) {
   try {
-    const authError = await verifyAdmin();
-    if (authError) return authError;
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id || session.user.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     const body = await req.json();
     const { userId, tier, role } = body;

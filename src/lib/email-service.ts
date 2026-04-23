@@ -101,7 +101,29 @@ function getActionUrlForCategory(category: string): string {
 
 // ─── Email Template Builders ────────────────────────────────────────────────
 
+const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" width="40" height="40" style="display:inline-block;vertical-align:middle;">
+  <path d="M24 3L43 13.5V34.5L24 45L5 34.5V13.5L24 3Z" stroke="#60a5fa" stroke-width="1.5" fill="none" opacity="0.4"/>
+  <path d="M24 8L37.5 15.5V30.5L24 38L10.5 30.5V15.5L24 8Z" stroke="#60a5fa" stroke-width="1" fill="none" opacity="0.2"/>
+  <circle cx="24" cy="24" r="5" fill="#2563eb"/>
+  <circle cx="24" cy="24" r="3" fill="#60a5fa"/>
+  <line x1="24" y1="24" x2="24" y2="11" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="24" y1="24" x2="35.3" y2="17.5" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="24" y1="24" x2="35.3" y2="30.5" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="24" y1="24" x2="24" y2="37" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="24" y1="24" x2="12.7" y2="30.5" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="24" y1="24" x2="12.7" y2="17.5" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="24" cy="11" r="2.5" fill="#60a5fa"/>
+  <circle cx="35.3" cy="17.5" r="2.5" fill="#8b5cf6"/>
+  <circle cx="35.3" cy="30.5" r="2.5" fill="#06b6d4"/>
+  <circle cx="24" cy="37" r="2.5" fill="#10b981"/>
+  <circle cx="12.7" cy="30.5" r="2.5" fill="#f59e0b"/>
+  <circle cx="12.7" cy="17.5" r="2.5" fill="#ec4899"/>
+  <circle cx="29.7" cy="13.3" r="2" fill="#ef4444"/>
+  <circle cx="18.3" cy="34.7" r="2" fill="#14b8a6"/>
+</svg>`;
+
 function buildEmailWrapper(content: string, preheader: string): string {
+  const baseUrl = process.env.NEXTAUTH_URL || 'https://e-ari.com';
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -109,36 +131,70 @@ function buildEmailWrapper(content: string, preheader: string): string {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>E-ARI</title>
   <style>
-    body { margin: 0; padding: 0; background: #0d1117; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
-    .container { max-width: 600px; margin: 0 auto; background: #161b22; border-radius: 12px; overflow: hidden; }
-    .header { background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%); padding: 32px 24px; text-align: center; }
-    .header h1 { color: #ffffff; font-size: 24px; margin: 0; font-weight: 800; letter-spacing: -0.02em; }
-    .header p { color: rgba(255,255,255,0.8); font-size: 14px; margin: 8px 0 0; }
-    .content { padding: 32px 24px; color: #e6edf3; }
-    .content h2 { color: #e6edf3; font-size: 20px; margin: 0 0 16px; font-weight: 700; }
-    .content p { color: #8b949e; font-size: 14px; line-height: 1.6; margin: 0 0 16px; }
-    .metric { background: #21262d; border-radius: 8px; padding: 16px; margin: 16px 0; border-left: 4px solid #2563eb; }
-    .metric .value { color: #3b82f6; font-size: 28px; font-weight: 800; }
-    .metric .label { color: #8b949e; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
-    .metric .change-positive { color: #22c55e; font-size: 13px; }
-    .metric .change-negative { color: #ef4444; font-size: 13px; }
-    .cta-button { display: inline-block; background: linear-gradient(135deg, #2563eb, #06b6d4); color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 8px; font-weight: 600; font-size: 14px; margin: 16px 0; }
-    .risk-item { background: rgba(245, 158, 11, 0.1); border-left: 3px solid #f59e0b; padding: 12px; margin: 8px 0; border-radius: 4px; }
+    body { margin: 0; padding: 0; background: #0a0f1a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+    .wrapper { padding: 32px 16px; background: #0a0f1a; }
+    .container { max-width: 580px; margin: 0 auto; background: #111827; border-radius: 16px; overflow: hidden; border: 1px solid #1e2a3a; box-shadow: 0 24px 64px rgba(0,0,0,0.5); }
+    .topbar { background: #0d1520; padding: 18px 28px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #1e2a3a; }
+    .topbar-brand { color: #f1f5f9; font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
+    .topbar-dot { width: 5px; height: 5px; background: #2563eb; border-radius: 50%; display: inline-block; margin: 0 6px; animation: none; }
+    .header { padding: 36px 28px 28px; text-align: center; position: relative; overflow: hidden; }
+    .header-bg { background: linear-gradient(135deg, #0f2044 0%, #1a1040 50%, #0f2044 100%); }
+    .header-accent { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); width: 300px; height: 300px; background: radial-gradient(circle, rgba(37,99,235,0.25) 0%, transparent 70%); border-radius: 50%; pointer-events: none; }
+    .header h1 { color: #f1f5f9; font-size: 22px; margin: 16px 0 0; font-weight: 800; letter-spacing: -0.02em; position: relative; }
+    .header p { color: rgba(241,245,249,0.65); font-size: 14px; margin: 8px 0 0; position: relative; }
+    .divider { height: 1px; background: linear-gradient(90deg, transparent, #1e3a5f, transparent); margin: 0; }
+    .content { padding: 32px 28px; color: #e2e8f0; }
+    .content h2 { color: #f1f5f9; font-size: 18px; margin: 24px 0 12px; font-weight: 700; letter-spacing: -0.01em; }
+    .content p { color: #94a3b8; font-size: 14px; line-height: 1.7; margin: 0 0 14px; }
+    .content p strong { color: #e2e8f0; }
+    .metric { background: #0d1520; border-radius: 10px; padding: 18px 20px; margin: 16px 0; border: 1px solid #1e3a5f; border-left: 3px solid #2563eb; }
+    .metric .value { color: #60a5fa; font-size: 30px; font-weight: 800; letter-spacing: -0.03em; }
+    .metric .label { color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .metric .change-positive { color: #34d399; font-size: 13px; font-weight: 600; }
+    .metric .change-negative { color: #f87171; font-size: 13px; font-weight: 600; }
+    .cta-wrap { text-align: center; margin: 24px 0 8px; }
+    .cta-button { display: inline-block; background: linear-gradient(135deg, #2563eb 0%, #0891b2 100%); color: #ffffff !important; text-decoration: none; padding: 14px 36px; border-radius: 10px; font-weight: 700; font-size: 14px; letter-spacing: 0.01em; box-shadow: 0 4px 24px rgba(37,99,235,0.35); }
+    .step-card { background: #0d1520; border-radius: 10px; padding: 16px 18px; margin: 10px 0; border: 1px solid #1e2a3a; }
+    .step-card .step-title { color: #60a5fa; font-weight: 700; font-size: 13px; margin: 0 0 6px; }
+    .step-card p { color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.5; }
+    .risk-item { background: rgba(245,158,11,0.08); border-left: 3px solid #f59e0b; padding: 12px 14px; margin: 8px 0; border-radius: 6px; }
     .risk-item p { color: #fbbf24; font-size: 13px; margin: 0; }
-    .win-item { background: rgba(34, 197, 94, 0.1); border-left: 3px solid #22c55e; padding: 12px; margin: 8px 0; border-radius: 4px; }
-    .win-item p { color: #4ade80; font-size: 13px; margin: 0; }
-    .footer { padding: 24px; text-align: center; color: #484f58; font-size: 12px; border-top: 1px solid #21262d; }
+    .win-item { background: rgba(52,211,153,0.08); border-left: 3px solid #34d399; padding: 12px 14px; margin: 8px 0; border-radius: 6px; }
+    .win-item p { color: #34d399; font-size: 13px; margin: 0; }
+    .info-card { background: #0d1520; border-radius: 10px; padding: 16px 18px; margin: 16px 0; border: 1px solid #1e2a3a; }
+    .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+    .info-row:last-child { margin-bottom: 0; }
+    .info-label { color: #64748b; }
+    .info-value { color: #e2e8f0; font-weight: 500; }
+    .footer-divider { height: 1px; background: #1e2a3a; margin: 0; }
+    .footer { padding: 20px 28px; background: #0d1520; }
+    .footer-brand { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .footer-brand-name { color: #64748b; font-size: 13px; font-weight: 600; }
+    .footer p { color: #475569; font-size: 12px; line-height: 1.6; margin: 0 0 4px; }
     .footer a { color: #3b82f6; text-decoration: none; }
     .preheader { display: none !important; visibility: hidden; mso-hide: all; font-size: 1px; line-height: 1px; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; }
   </style>
 </head>
 <body>
   <div class="preheader">${preheader}</div>
-  <div class="container">
-    ${content}
-    <div class="footer">
-      <p>E-ARI — Enterprise AI Readiness Assessment Platform</p>
-      <p>You're receiving this because you have an active E-ARI account. <a href="${process.env.NEXTAUTH_URL || 'https://e-ari.com'}/portal">Manage notifications</a></p>
+  <div class="wrapper">
+    <div class="container">
+      <div class="topbar">
+        ${LOGO_SVG}
+        <span class="topbar-brand">E-ARI</span>
+        <span class="topbar-dot"></span>
+        <span style="color:#475569;font-size:12px;">Enterprise AI Readiness</span>
+      </div>
+      ${content}
+      <div class="footer-divider"></div>
+      <div class="footer">
+        <div class="footer-brand">
+          ${LOGO_SVG.replace('width="40" height="40"', 'width="20" height="20"')}
+          <span class="footer-brand-name">E-ARI Platform</span>
+        </div>
+        <p>You're receiving this because you have an active E-ARI account.</p>
+        <p><a href="${baseUrl}/portal">Manage notifications</a> &middot; <a href="mailto:support@e-ari.com">support@e-ari.com</a> &middot; <a href="${baseUrl}/privacy">Privacy Policy</a></p>
+      </div>
     </div>
   </div>
 </body>
@@ -165,32 +221,36 @@ export async function sendQuarterlyReminder(
     : `Your next quarterly review is in <strong>${daysUntilReview} days</strong>`;
 
   const html = buildEmailWrapper(`
-    <div class="header">
+    <div class="header header-bg">
+      <div class="header-accent"></div>
       <h1>Quarterly Review Reminder</h1>
       <p>${urgencyText}</p>
     </div>
+    <div class="divider"></div>
     <div class="content">
       <p>Hi ${firstName},</p>
-      <p>AI readiness is not a one-time measurement — it evolves as your organization adopts new technologies, processes, and strategies. Regular re-assessment ensures your readiness score reflects your current state and helps track meaningful progress over time.</p>
-      
+      <p>AI readiness is not a one-time measurement — it evolves as your organization adopts new technologies, processes, and strategies. Regular re-assessment ensures your score reflects your current state.</p>
+
       <div class="metric">
         <div class="label">Last Assessment Score</div>
         <div class="value">${Math.round(overallScore)}%</div>
-        <div style="margin-top: 4px; color: #8b949e; font-size: 13px;">${maturityLabel} maturity &middot; Assessed ${new Date(lastAssessmentDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+        <div style="margin-top: 4px; color: #64748b; font-size: 13px;">${maturityLabel} maturity &middot; ${new Date(lastAssessmentDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
       </div>
 
       <h2>Why Re-assess Now?</h2>
-      <p>Your AI readiness landscape changes faster than you might think. A quarterly re-assessment captures:</p>
-      <ul style="color: #8b949e; font-size: 14px; line-height: 1.8; padding-left: 20px;">
+      <p>Your AI readiness landscape shifts faster than you'd expect. A quarterly re-assessment captures:</p>
+      <ul style="color: #94a3b8; font-size: 14px; line-height: 1.9; padding-left: 20px; margin: 0 0 16px;">
         <li>Progress from recent AI initiatives and investments</li>
-        <li>Changes in governance posture due to new regulations</li>
+        <li>Changes in governance posture from new regulations</li>
         <li>Impact of talent acquisition or upskilling programs</li>
         <li>Infrastructure and data pipeline improvements</li>
         <li>Shifts in organizational culture and AI adoption</li>
       </ul>
 
-      <a href="${process.env.NEXTAUTH_URL || 'https://e-ari.com'}/assessment" class="cta-button">Re-run Assessment</a>
-      <p style="font-size: 12px; color: #484f58;">Your previous answers will be pre-filled for quick updating.</p>
+      <div class="cta-wrap">
+        <a href="${process.env.NEXTAUTH_URL || 'https://e-ari.com'}/assessment" class="cta-button">Re-run Assessment</a>
+      </div>
+      <p style="font-size: 12px; color: #475569; text-align: center; margin-top: 8px;">Your previous answers will be pre-filled for quick updating.</p>
     </div>
   `, `Your quarterly AI readiness review is ${daysUntilReview <= 0 ? 'overdue' : `due in ${daysUntilReview} days`}. Current score: ${Math.round(overallScore)}%.`);
 
@@ -249,17 +309,19 @@ export async function sendMonthlyPulseEmail(
   const winsHtml = topQuickWins.slice(0, 3).map(w => `<div class="win-item"><p>${w}</p></div>`).join('');
 
   const html = buildEmailWrapper(`
-    <div class="header">
+    <div class="header header-bg">
+      <div class="header-accent"></div>
       <h1>AI Pulse Report</h1>
       <p>${monthLabel} Readiness Summary</p>
     </div>
+    <div class="divider"></div>
     <div class="content">
       <p>Hi ${firstName},</p>
-      <p>Here's your monthly AI readiness pulse check. This automated analysis compares your current assessment profile to identify emerging risks and high-impact improvement opportunities.</p>
-      
+      <p>Here's your monthly AI readiness pulse check — an automated analysis that compares your current assessment profile to identify emerging risks and high-impact improvement opportunities.</p>
+
       <div class="metric">
         <div class="label">Overall Readiness</div>
-        <div style="display: flex; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 12px;">
           <div class="value">${Math.round(overallScore)}%</div>
           ${deltaHtml}
         </div>
@@ -268,7 +330,9 @@ export async function sendMonthlyPulseEmail(
       ${risksHtml ? `<h2>Top Risks</h2>${risksHtml}` : ''}
       ${winsHtml ? `<h2>Quick Wins</h2>${winsHtml}` : ''}
 
-      <a href="${process.env.NEXTAUTH_URL || 'https://e-ari.com'}/pulse" class="cta-button">View Full Pulse Report</a>
+      <div class="cta-wrap">
+        <a href="${process.env.NEXTAUTH_URL || 'https://e-ari.com'}/pulse" class="cta-button">View Full Pulse Report</a>
+      </div>
     </div>
   `, `${monthLabel} AI Pulse: Score ${Math.round(overallScore)}%${delta !== null ? ` (${delta >= 0 ? '+' : ''}${delta}%)` : ''}. ${topRisks.length} risks, ${topQuickWins.length} quick wins.`);
 
@@ -322,19 +386,19 @@ export async function sendScoreChangeAlert(
   }).join('');
 
   const html = buildEmailWrapper(`
-    <div class="header" style="background: ${isImprovement ? 'linear-gradient(135deg, #22c55e 0%, #06b6d4 100%)' : 'linear-gradient(135deg, #ef4444 0%, #f59e0b 100%)'};">
-      <h1>${isImprovement ? 'Readiness Score Increased' : 'Readiness Score Changed'}</h1>
+    <div class="header" style="background: ${isImprovement ? 'linear-gradient(135deg, #0a2a1a 0%, #0d2038 100%)' : 'linear-gradient(135deg, #2a0a0a 0%, #1a1020 100%)'};">
+      <div class="header-accent" style="background: radial-gradient(circle, ${isImprovement ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)'} 0%, transparent 70%);"></div>
+      <h1 style="color: ${isImprovement ? '#34d399' : '#f87171'};">${isImprovement ? 'Readiness Score Increased' : 'Readiness Score Changed'}</h1>
       <p>Your AI readiness score ${isImprovement ? 'improved' : 'changed'} by ${Math.abs(overallDelta)} points</p>
     </div>
+    <div class="divider"></div>
     <div class="content">
       <p>Hi ${firstName},</p>
       <p>Your latest assessment shows a <strong>${isImprovement ? 'positive' : 'significant'}</strong> change in your AI readiness profile. Here's what shifted:</p>
-      
-      <div class="metric">
+
+      <div class="metric" style="border-left-color: ${isImprovement ? '#34d399' : '#f87171'};">
         <div class="label">Overall Score Change</div>
-        <div style="display: flex; align-items: center;">
-          <div class="value" style="color: ${isImprovement ? '#22c55e' : '#ef4444'};">${Math.round(previousScore)}% → ${Math.round(currentScore)}%</div>
-        </div>
+        <div class="value" style="color: ${isImprovement ? '#34d399' : '#f87171'};">${Math.round(previousScore)}% → ${Math.round(currentScore)}%</div>
         <div class="${isImprovement ? 'change-positive' : 'change-negative'}" style="margin-top: 4px;">
           ${isImprovement ? '+' : ''}${overallDelta} point${Math.abs(overallDelta) !== 1 ? 's' : ''}
         </div>
@@ -343,13 +407,14 @@ export async function sendScoreChangeAlert(
       <h2>Pillar Changes</h2>
       ${pillarChangesHtml}
 
-      ${isImprovement ? `
-        <p>Your investments in AI readiness are paying off. Continue monitoring your progress with monthly AI Pulse reports and consider focusing on your remaining gaps to sustain momentum.</p>
-      ` : `
-        <p>A declining readiness score often reflects changes in organizational priorities, talent turnover, or evolving regulatory requirements. Re-assess your strategy and focus on the pillars showing the steepest declines.</p>
-      `}
+      <p>${isImprovement
+        ? 'Your investments in AI readiness are paying off. Keep monitoring progress with monthly AI Pulse reports and focus on remaining gaps to sustain momentum.'
+        : 'A declining score often reflects shifts in priorities, talent turnover, or evolving regulatory requirements. Re-assess your strategy and focus on the pillars showing the steepest declines.'
+      }</p>
 
-      <a href="${process.env.NEXTAUTH_URL || 'https://e-ari.com'}/portal" class="cta-button">View Full Results</a>
+      <div class="cta-wrap">
+        <a href="${process.env.NEXTAUTH_URL || 'https://e-ari.com'}/portal" class="cta-button">View Full Results</a>
+      </div>
     </div>
   `, `Your AI readiness score ${isImprovement ? 'increased' : 'changed'} by ${overallDelta} points to ${Math.round(currentScore)}%.`);
 
@@ -390,29 +455,35 @@ export async function sendWelcomeEmail(
   const firstName = userName?.split(' ')[0] || 'there';
 
   const html = buildEmailWrapper(`
-    <div class="header">
+    <div class="header header-bg">
+      <div class="header-accent"></div>
       <h1>Welcome to E-ARI</h1>
       <p>Your AI Readiness journey starts now</p>
     </div>
+    <div class="divider"></div>
     <div class="content">
       <p>Hi ${firstName},</p>
-      <p>Welcome to E-ARI — the Enterprise AI Readiness Assessment platform that helps you measure, track, and improve your organization's preparedness for AI adoption across 8 critical dimensions.</p>
-      
+      <p>Welcome to <strong>E-ARI</strong> — the Enterprise AI Readiness Assessment platform that helps you measure, track, and improve your organization's preparedness for AI adoption across 8 critical dimensions.</p>
+
       <h2>Get Started in 3 Steps</h2>
-      <div style="background: #21262d; border-radius: 8px; padding: 16px; margin: 12px 0;">
-        <p style="margin: 0 0 8px; color: #3b82f6; font-weight: 600; font-size: 14px;">1. Complete Your First Assessment</p>
-        <p style="margin: 0; font-size: 13px;">Answer 40 questions across 8 readiness pillars — takes about 15 minutes.</p>
+
+      <div class="step-card">
+        <p class="step-title">1 &mdash; Complete Your First Assessment</p>
+        <p>Answer 40 questions across 8 readiness pillars — takes about 15 minutes. Your results are immediate.</p>
       </div>
-      <div style="background: #21262d; border-radius: 8px; padding: 16px; margin: 12px 0;">
-        <p style="margin: 0 0 8px; color: #3b82f6; font-weight: 600; font-size: 14px;">2. Review Your AI Readiness Score</p>
-        <p style="margin: 0; font-size: 13px;">Get a detailed breakdown by pillar with maturity classification and AI-generated insights.</p>
+      <div class="step-card">
+        <p class="step-title">2 &mdash; Review Your AI Readiness Score</p>
+        <p>Get a detailed breakdown by pillar with maturity classification and AI-generated strategic insights.</p>
       </div>
-      <div style="background: #21262d; border-radius: 8px; padding: 16px; margin: 12px 0;">
-        <p style="margin: 0 0 8px; color: #3b82f6; font-weight: 600; font-size: 14px;">3. Track Progress Over Time</p>
-        <p style="margin: 0; font-size: 13px;">Use quarterly re-assessments and monthly AI Pulse reports to measure improvement.</p>
+      <div class="step-card">
+        <p class="step-title">3 &mdash; Track Progress Over Time</p>
+        <p>Use quarterly re-assessments and monthly AI Pulse reports to measure improvement and stay ahead.</p>
       </div>
 
-      <a href="${process.env.NEXTAUTH_URL || 'https://e-ari.com'}/assessment" class="cta-button">Start Your First Assessment</a>
+      <div class="cta-wrap" style="margin-top: 28px;">
+        <a href="${process.env.NEXTAUTH_URL || 'https://e-ari.com'}/assessment" class="cta-button">Start Your First Assessment</a>
+      </div>
+      <p style="text-align: center; font-size: 12px; color: #475569; margin-top: 10px;">Free to start &mdash; no credit card required</p>
     </div>
   `, `Welcome to E-ARI! Start your first AI readiness assessment today.`);
 
@@ -453,16 +524,18 @@ export async function sendCustomEmail(
   const safeBody = messageBody.replace(/\n/g, '<br>');
 
   const html = buildEmailWrapper(`
-    <div class="header">
+    <div class="header header-bg">
+      <div class="header-accent"></div>
       <h1>Message from E-ARI</h1>
       <p>A direct message from the E-ARI team</p>
     </div>
+    <div class="divider"></div>
     <div class="content">
       <p>Hi ${firstName},</p>
-      <div style="background: #21262d; border-radius: 8px; padding: 20px; margin: 16px 0; border-left: 4px solid #2563eb;">
-        <p style="color: #e6edf3; font-size: 14px; line-height: 1.8; margin: 0;">${safeBody}</p>
+      <div class="metric" style="border-left-color: #2563eb; padding: 20px;">
+        <p style="color: #e2e8f0; font-size: 14px; line-height: 1.8; margin: 0; white-space: pre-wrap;">${safeBody}</p>
       </div>
-      <p style="font-size: 12px; color: #484f58; margin-top: 24px;">This message was sent directly by the E-ARI team. Reply to <a href="mailto:support@e-ari.com" style="color: #3b82f6;">support@e-ari.com</a> if you have questions.</p>
+      <p style="font-size: 12px; color: #475569; margin-top: 20px;">This message was sent directly by the E-ARI team. Reply to <a href="mailto:support@e-ari.com" style="color: #3b82f6;">support@e-ari.com</a> if you have questions.</p>
     </div>
   `, subject);
 
@@ -491,22 +564,26 @@ export async function sendContactFormEmail(
   const safeMessage = message.replace(/\n/g, '<br>');
 
   const html = buildEmailWrapper(`
-    <div class="header" style="background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);">
-      <h1>New Contact Form Message</h1>
-      <p>From ${name}</p>
+    <div class="header header-bg">
+      <div class="header-accent"></div>
+      <h1>New Contact Message</h1>
+      <p>From ${name}${company ? ` · ${company}` : ''}</p>
     </div>
+    <div class="divider"></div>
     <div class="content">
-      <div style="background: #21262d; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-        <p style="margin: 0 0 8px; color: #8b949e; font-size: 13px;"><strong style="color: #e6edf3;">Name:</strong> ${name}</p>
-        <p style="margin: 0 0 8px; color: #8b949e; font-size: 13px;"><strong style="color: #e6edf3;">Email:</strong> <a href="mailto:${email}" style="color: #3b82f6;">${email}</a></p>
-        ${company ? `<p style="margin: 0 0 8px; color: #8b949e; font-size: 13px;"><strong style="color: #e6edf3;">Company:</strong> ${company}</p>` : ''}
-        <p style="margin: 0; color: #8b949e; font-size: 13px;"><strong style="color: #e6edf3;">Subject:</strong> ${subject}</p>
+      <div class="info-card">
+        <div class="info-row"><span class="info-label">Name</span><span class="info-value">${name}</span></div>
+        <div class="info-row"><span class="info-label">Email</span><span class="info-value"><a href="mailto:${email}" style="color: #60a5fa;">${email}</a></span></div>
+        ${company ? `<div class="info-row"><span class="info-label">Company</span><span class="info-value">${company}</span></div>` : ''}
+        <div class="info-row"><span class="info-label">Subject</span><span class="info-value">${subject}</span></div>
       </div>
       <div class="metric">
         <div class="label">Message</div>
-        <p style="color: #e6edf3; font-size: 14px; line-height: 1.8; margin: 8px 0 0; white-space: pre-wrap;">${safeMessage}</p>
+        <p style="color: #e2e8f0; font-size: 14px; line-height: 1.8; margin: 8px 0 0; white-space: pre-wrap;">${safeMessage}</p>
       </div>
-      <a href="mailto:${email}" class="cta-button" style="margin-top: 20px; display: inline-block;">Reply to ${name}</a>
+      <div class="cta-wrap" style="margin-top: 20px;">
+        <a href="mailto:${email}" class="cta-button">Reply to ${name}</a>
+      </div>
     </div>
   `, `Contact from ${name} (${email}): ${subject}`);
 
@@ -530,26 +607,30 @@ export async function sendRefundRequestEmail(
   const firstName = refundDetails.userName?.split(' ')[0] || 'there';
 
   const html = buildEmailWrapper(`
-    <div class="header" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);">
-      <h1>New Refund Request</h1>
+    <div class="header" style="background: linear-gradient(135deg, #1a0f00 0%, #1a0a0a 100%);">
+      <div class="header-accent" style="background: radial-gradient(circle, rgba(245,158,11,0.2) 0%, transparent 70%);"></div>
+      <h1 style="color: #fbbf24;">New Refund Request</h1>
       <p>Action required from the support team</p>
     </div>
+    <div class="divider"></div>
     <div class="content">
-      <p>A new refund request has been submitted:</p>
+      <p>A new refund request has been submitted and requires your review.</p>
 
-      <div class="metric">
+      <div class="metric" style="border-left-color: #f59e0b;">
         <div class="label">Refund Amount</div>
-        <div class="value" style="color: #f59e0b;">$${refundDetails.amount.toFixed(2)}</div>
+        <div class="value" style="color: #fbbf24;">$${refundDetails.amount.toFixed(2)}</div>
       </div>
 
-      <div style="background: #21262d; border-radius: 8px; padding: 16px; margin: 16px 0;">
-        <p style="margin: 0 0 8px; color: #8b949e; font-size: 13px;"><strong style="color: #e6edf3;">User:</strong> ${firstName} (${refundDetails.userEmail})</p>
-        <p style="margin: 0 0 8px; color: #8b949e; font-size: 13px;"><strong style="color: #e6edf3;">Reason:</strong> ${reasonLabel}</p>
-        ${refundDetails.details ? `<p style="margin: 0 0 8px; color: #8b949e; font-size: 13px;"><strong style="color: #e6edf3;">Details:</strong> ${refundDetails.details}</p>` : ''}
-        <p style="margin: 0; color: #8b949e; font-size: 13px;"><strong style="color: #e6edf3;">Request ID:</strong> ${refundDetails.id}</p>
+      <div class="info-card">
+        <div class="info-row"><span class="info-label">User</span><span class="info-value">${firstName} &lt;${refundDetails.userEmail}&gt;</span></div>
+        <div class="info-row"><span class="info-label">Reason</span><span class="info-value">${reasonLabel}</span></div>
+        ${refundDetails.details ? `<div class="info-row"><span class="info-label">Details</span><span class="info-value">${refundDetails.details}</span></div>` : ''}
+        <div class="info-row"><span class="info-label">Request ID</span><span class="info-value" style="font-family: monospace; font-size: 12px;">${refundDetails.id}</span></div>
       </div>
 
-      <a href="${process.env.NEXTAUTH_URL || 'https://e-ari.com'}/admin/refunds" class="cta-button" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">Review in Admin Panel</a>
+      <div class="cta-wrap">
+        <a href="${process.env.NEXTAUTH_URL || 'https://e-ari.com'}/admin" class="cta-button" style="background: linear-gradient(135deg, #d97706, #dc2626);">Review in Admin Panel</a>
+      </div>
     </div>
   `, `New refund request from ${refundDetails.userEmail} for $${refundDetails.amount.toFixed(2)}.`);
 
@@ -600,22 +681,32 @@ export async function sendRefundStatusEmail(
 
   const config = statusConfig[status] || statusConfig.pending;
 
+  const bgColor = status === 'approved' || status === 'refunded' ? 'linear-gradient(135deg, #0a1f15 0%, #0d1520 100%)' : status === 'rejected' ? 'linear-gradient(135deg, #1a0a0a 0%, #1a1020 100%)' : 'linear-gradient(135deg, #1a0f00 0%, #0d1520 100%)';
+  const accentColor = status === 'approved' || status === 'refunded' ? 'rgba(52,211,153,0.2)' : status === 'rejected' ? 'rgba(248,113,113,0.2)' : 'rgba(251,191,36,0.2)';
+  const titleColor = status === 'approved' || status === 'refunded' ? '#34d399' : status === 'rejected' ? '#f87171' : '#fbbf24';
+  const borderColor = status === 'approved' || status === 'refunded' ? '#34d399' : status === 'rejected' ? '#f87171' : '#f59e0b';
+
   const html = buildEmailWrapper(`
-    <div class="header" style="background: ${config.gradient};">
-      <h1>${config.title}</h1>
+    <div class="header" style="background: ${bgColor};">
+      <div class="header-accent" style="background: radial-gradient(circle, ${accentColor} 0%, transparent 70%);"></div>
+      <h1 style="color: ${titleColor};">${config.title}</h1>
       <p>Refund request for $${refundDetails.amount.toFixed(2)}</p>
     </div>
+    <div class="divider"></div>
     <div class="content">
       <p>Hi ${firstName},</p>
       <p>${config.message}</p>
 
-      <div style="background: #21262d; border-radius: 8px; padding: 16px; margin: 16px 0;">
-        <p style="margin: 0 0 8px; color: #8b949e; font-size: 13px;"><strong style="color: #e6edf3;">Amount:</strong> $${refundDetails.amount.toFixed(2)}</p>
-        <p style="margin: 0 0 8px; color: #8b949e; font-size: 13px;"><strong style="color: #e6edf3;">Reason:</strong> ${reasonLabel}</p>
-        <p style="margin: 0; color: #8b949e; font-size: 13px;"><strong style="color: #e6edf3;">Request ID:</strong> ${refundDetails.id}</p>
+      <div class="info-card">
+        <div class="info-row"><span class="info-label">Amount</span><span class="info-value" style="color: ${titleColor}; font-weight: 700;">$${refundDetails.amount.toFixed(2)}</span></div>
+        <div class="info-row"><span class="info-label">Reason</span><span class="info-value">${reasonLabel}</span></div>
+        <div class="info-row"><span class="info-label">Status</span><span class="info-value" style="color: ${titleColor}; text-transform: capitalize;">${status}</span></div>
+        <div class="info-row"><span class="info-label">Request ID</span><span class="info-value" style="font-family: monospace; font-size: 12px;">${refundDetails.id}</span></div>
       </div>
 
-      <a href="${process.env.NEXTAUTH_URL || 'https://e-ari.com'}/portal" class="cta-button">Go to Your Account</a>
+      <div class="cta-wrap">
+        <a href="${process.env.NEXTAUTH_URL || 'https://e-ari.com'}/portal" class="cta-button">Go to Your Account</a>
+      </div>
     </div>
   `, `${config.title}: Your refund request for $${refundDetails.amount.toFixed(2)} has been ${status}.`);
 

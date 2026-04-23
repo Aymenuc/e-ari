@@ -2508,7 +2508,8 @@ export default function AdminPage() {
              INBOX TAB
              ═══════════════════════════════════════════════════════════════ */}
           {activeTab === "inbox" && (
-            <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="space-y-4">
+            <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="space-y-5">
+
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
@@ -2516,68 +2517,149 @@ export default function AdminPage() {
                     <Mail className="h-5 w-5 text-eari-blue" />
                     Contact Inbox
                     {inboxMessages.filter((m) => m.status === "new").length > 0 && (
-                      <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-eari-blue text-[10px] font-bold text-white">
+                      <span className="ml-1 flex h-5 min-w-[20px] px-1 items-center justify-center rounded-full bg-eari-blue text-[10px] font-bold text-white">
                         {inboxMessages.filter((m) => m.status === "new").length}
                       </span>
                     )}
                   </h2>
-                  <p className="text-sm text-muted-foreground font-sans mt-0.5">Messages from the contact form</p>
+                  <p className="text-sm text-muted-foreground font-sans mt-0.5">Messages submitted through the contact form</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  {(["all", "new", "read", "replied", "archived"] as const).map((s) => (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { fetchInbox(inboxStatusFilter !== "all" ? inboxStatusFilter : undefined); }}
+                  className="font-sans border-border text-muted-foreground hover:text-foreground h-8 text-xs gap-1.5 self-start sm:self-auto"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  Refresh
+                </Button>
+              </div>
+
+              {/* Stats row */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: "Total", count: inboxMessages.length, color: "text-foreground", bg: "bg-navy-700/40", border: "border-border/40" },
+                  { label: "New", count: inboxMessages.filter((m) => m.status === "new").length, color: "text-eari-blue-light", bg: "bg-eari-blue/8", border: "border-eari-blue/20" },
+                  { label: "Replied", count: inboxMessages.filter((m) => m.status === "replied").length, color: "text-emerald", bg: "bg-emerald/8", border: "border-emerald/20" },
+                  { label: "Archived", count: inboxMessages.filter((m) => m.status === "archived").length, color: "text-muted-foreground", bg: "bg-navy-700/20", border: "border-border/30" },
+                ].map(({ label, count, color, bg, border }) => (
+                  <div key={label} className={`rounded-lg border ${border} ${bg} px-4 py-3`}>
+                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">{label}</p>
+                    <p className={`font-heading text-2xl font-bold ${color}`}>{count}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Status filter pills */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {(["all", "new", "read", "replied", "archived"] as const).map((s) => {
+                  const counts: Record<string, number> = {
+                    all: inboxMessages.length,
+                    new: inboxMessages.filter((m) => m.status === "new").length,
+                    read: inboxMessages.filter((m) => m.status === "read").length,
+                    replied: inboxMessages.filter((m) => m.status === "replied").length,
+                    archived: inboxMessages.filter((m) => m.status === "archived").length,
+                  };
+                  return (
                     <button
                       key={s}
-                      onClick={() => { setInboxStatusFilter(s); fetchInbox(s); setSelectedMessage(null); }}
-                      className={`px-2.5 py-1 rounded-md text-xs font-sans transition-colors ${inboxStatusFilter === s ? "bg-eari-blue text-white" : "bg-navy-700/60 text-muted-foreground hover:text-foreground"}`}
+                      onClick={() => { setInboxStatusFilter(s); fetchInbox(s !== "all" ? s : undefined); setSelectedMessage(null); }}
+                      className={`px-3 py-1 rounded-full text-xs font-sans transition-colors ${inboxStatusFilter === s ? "bg-eari-blue text-white shadow-sm" : "bg-navy-700/50 border border-border/40 text-muted-foreground hover:text-foreground hover:border-border/70"}`}
                     >
-                      {s === "all" ? `All (${inboxMessages.length})` : s === "new" ? `New (${inboxMessages.filter(m => m.status === "new").length})` : s.charAt(0).toUpperCase() + s.slice(1)}
+                      {s.charAt(0).toUpperCase() + s.slice(1)}{" "}
+                      <span className={`ml-0.5 ${inboxStatusFilter === s ? "opacity-80" : "opacity-50"}`}>({counts[s]})</span>
                     </button>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
 
               {/* Split pane */}
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 min-h-[600px]">
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4" style={{ minHeight: 580 }}>
+
                 {/* Message list */}
                 <div className="lg:col-span-2 rounded-xl border border-border/50 bg-card/80 overflow-hidden flex flex-col">
+                  <div className="px-4 py-3 border-b border-border/40 flex items-center justify-between">
+                    <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-wider">
+                      {inboxMessages.length} message{inboxMessages.length !== 1 ? "s" : ""}
+                    </p>
+                  </div>
                   {inboxMessages.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center flex-1 py-16 text-muted-foreground">
-                      <Mail className="h-10 w-10 mb-3 opacity-20" />
-                      <p className="font-sans text-sm">No messages yet.</p>
+                    <div className="flex flex-col items-center justify-center flex-1 py-16 text-muted-foreground gap-3">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-navy-700/50 border border-border/40">
+                        <Mail className="h-6 w-6 opacity-30" />
+                      </div>
+                      <div className="text-center">
+                        <p className="font-sans text-sm font-medium">No messages</p>
+                        <p className="font-sans text-xs text-muted-foreground/60 mt-0.5">Messages from the contact form will appear here</p>
+                      </div>
                     </div>
                   ) : (
-                    <div className="overflow-y-auto flex-1 divide-y divide-border/40">
-                      {inboxMessages.map((msg) => (
-                        <button
-                          key={msg.id}
-                          onClick={() => handleSelectMessage(msg)}
-                          className={`w-full text-left px-4 py-3.5 hover:bg-navy-700/40 transition-colors ${selectedMessage?.id === msg.id ? "bg-navy-700/60 border-l-2 border-eari-blue" : ""}`}
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-heading font-semibold mt-0.5 ${msg.status === "new" ? "bg-eari-blue/20 text-eari-blue-light" : "bg-navy-600 text-foreground"}`}>
-                              {msg.name[0]?.toUpperCase()}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center justify-between gap-2">
-                                <p className={`font-sans text-sm truncate ${msg.status === "new" ? "font-semibold text-foreground" : "font-medium text-foreground/80"}`}>{msg.name}</p>
-                                <div className="flex items-center gap-1.5 shrink-0">
-                                  {msg.status === "new" && <span className="h-2 w-2 rounded-full bg-eari-blue" />}
-                                  <span className="text-[10px] font-mono text-muted-foreground">{new Date(msg.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                    <div className="overflow-y-auto flex-1">
+                      {inboxMessages.map((msg) => {
+                        const isSelected = selectedMessage?.id === msg.id;
+                        const isNew = msg.status === "new";
+                        return (
+                          <button
+                            key={msg.id}
+                            onClick={() => handleSelectMessage(msg)}
+                            className={`w-full text-left px-4 py-4 transition-all border-b border-border/30 last:border-b-0 relative ${isSelected ? "bg-eari-blue/8 border-l-[3px] border-l-eari-blue pl-[13px]" : "hover:bg-navy-700/30 border-l-[3px] border-l-transparent"}`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-heading font-semibold ${isNew ? "bg-eari-blue/25 text-eari-blue-light ring-1 ring-eari-blue/40" : isSelected ? "bg-eari-blue/15 text-eari-blue-light" : "bg-navy-600/80 text-foreground/70"}`}>
+                                {msg.name[0]?.toUpperCase()}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-start justify-between gap-2 mb-0.5">
+                                  <p className={`font-sans text-sm truncate leading-tight ${isNew ? "font-semibold text-foreground" : "font-medium text-foreground/80"}`}>
+                                    {msg.name}
+                                  </p>
+                                  <span className="text-[10px] font-mono text-muted-foreground shrink-0 mt-0.5">
+                                    {new Date(msg.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                  </span>
+                                </div>
+                                <p className={`font-sans text-xs truncate mb-1 ${isNew ? "text-foreground/75 font-medium" : "text-muted-foreground"}`}>
+                                  {msg.subject}
+                                </p>
+                                <p className="font-sans text-[11px] text-muted-foreground/55 truncate leading-snug mb-2">
+                                  {msg.message.slice(0, 65)}{msg.message.length > 65 ? "…" : ""}
+                                </p>
+                                <div className="flex items-center gap-1.5">
+                                  {isNew && (
+                                    <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-eari-blue/15 text-eari-blue-light font-mono border border-eari-blue/20">
+                                      <span className="h-1.5 w-1.5 rounded-full bg-eari-blue animate-pulse" />
+                                      NEW
+                                    </span>
+                                  )}
+                                  {msg.status === "replied" && (
+                                    <span className="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded-full bg-emerald/10 text-emerald border border-emerald/20 font-mono">
+                                      REPLIED
+                                    </span>
+                                  )}
+                                  {msg.status === "read" && (
+                                    <span className="inline-block text-[10px] px-1.5 py-0.5 rounded-full bg-navy-600/60 text-muted-foreground/70 font-mono">
+                                      READ
+                                    </span>
+                                  )}
+                                  {msg.status === "archived" && (
+                                    <span className="inline-block text-[10px] px-1.5 py-0.5 rounded-full bg-navy-600/40 text-muted-foreground/50 font-mono">
+                                      ARCHIVED
+                                    </span>
+                                  )}
+                                  {msg.replies.length > 0 && (
+                                    <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-navy-600/60 text-muted-foreground font-mono">
+                                      <MessageSquare className="h-2.5 w-2.5" />
+                                      {msg.replies.length}
+                                    </span>
+                                  )}
+                                  {msg.company && (
+                                    <span className="text-[10px] font-sans text-muted-foreground/50 truncate">· {msg.company}</span>
+                                  )}
                                 </div>
                               </div>
-                              <p className={`font-sans text-xs truncate mt-0.5 ${msg.status === "new" ? "text-foreground/70" : "text-muted-foreground"}`}>{msg.subject}</p>
-                              <p className="font-sans text-xs text-muted-foreground/60 truncate mt-0.5">{msg.message.slice(0, 60)}…</p>
-                              <div className="mt-1.5">
-                                {msg.status === "new" && <span className="inline-block text-[10px] px-1.5 py-0.5 rounded bg-eari-blue/15 text-eari-blue-light font-mono">NEW</span>}
-                                {msg.status === "replied" && <span className="inline-block text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono">REPLIED</span>}
-                                {msg.status === "read" && <span className="inline-block text-[10px] px-1.5 py-0.5 rounded bg-navy-600 text-muted-foreground font-mono">READ</span>}
-                                {msg.status === "archived" && <span className="inline-block text-[10px] px-1.5 py-0.5 rounded bg-navy-600/50 text-muted-foreground/60 font-mono">ARCHIVED</span>}
-                                {msg.replies.length > 0 && <span className="ml-1 inline-block text-[10px] px-1.5 py-0.5 rounded bg-navy-600 text-muted-foreground font-mono">{msg.replies.length} repl{msg.replies.length === 1 ? "y" : "ies"}</span>}
-                              </div>
                             </div>
-                          </div>
-                        </button>
-                      ))}
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -2585,98 +2667,159 @@ export default function AdminPage() {
                 {/* Message detail */}
                 <div className="lg:col-span-3 rounded-xl border border-border/50 bg-card/80 flex flex-col overflow-hidden">
                   {!selectedMessage ? (
-                    <div className="flex flex-col items-center justify-center flex-1 py-16 text-muted-foreground">
-                      <MessageSquare className="h-10 w-10 mb-3 opacity-20" />
-                      <p className="font-sans text-sm">Select a message to read</p>
+                    <div className="flex flex-col items-center justify-center flex-1 py-16 text-muted-foreground gap-4">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-navy-700/50 border border-border/40">
+                        <MessageSquare className="h-7 w-7 opacity-25" />
+                      </div>
+                      <div className="text-center">
+                        <p className="font-sans text-sm font-medium">No message selected</p>
+                        <p className="font-sans text-xs text-muted-foreground/60 mt-1">Choose a message from the list to read and reply</p>
+                      </div>
                     </div>
                   ) : (
                     <div className="flex flex-col flex-1 overflow-hidden">
+
                       {/* Message header */}
-                      <div className="px-5 py-4 border-b border-border/40">
+                      <div className="px-6 py-4 border-b border-border/40 bg-navy-800/30">
                         <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <h3 className="font-heading font-semibold text-base text-foreground">{selectedMessage.subject}</h3>
-                            <div className="flex items-center gap-2 mt-1 flex-wrap">
-                              <span className="font-sans text-sm text-foreground/80">{selectedMessage.name}</span>
-                              <span className="text-muted-foreground/40">·</span>
-                              <a href={`mailto:${selectedMessage.email}`} className="font-mono text-xs text-eari-blue-light hover:underline">{selectedMessage.email}</a>
-                              {selectedMessage.company && <><span className="text-muted-foreground/40">·</span><span className="font-sans text-xs text-muted-foreground">{selectedMessage.company}</span></>}
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-heading font-semibold text-base text-foreground leading-tight mb-2">{selectedMessage.subject}</h3>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-navy-600 text-[10px] font-heading font-semibold text-foreground">
+                                {selectedMessage.name[0]?.toUpperCase()}
+                              </div>
+                              <span className="font-sans text-sm font-medium text-foreground/90">{selectedMessage.name}</span>
+                              <span className="text-muted-foreground/30">·</span>
+                              <a href={`mailto:${selectedMessage.email}`} className="font-mono text-xs text-eari-blue-light hover:underline underline-offset-2">
+                                {selectedMessage.email}
+                              </a>
+                              {selectedMessage.company && (
+                                <>
+                                  <span className="text-muted-foreground/30">·</span>
+                                  <span className="font-sans text-xs text-muted-foreground bg-navy-600/60 px-2 py-0.5 rounded-full">{selectedMessage.company}</span>
+                                </>
+                              )}
                             </div>
-                            <p className="text-[10px] font-mono text-muted-foreground mt-1">{new Date(selectedMessage.createdAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}</p>
+                            <p className="text-[10px] font-mono text-muted-foreground mt-2">
+                              Received {new Date(selectedMessage.createdAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}
+                            </p>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            {selectedMessage.status !== "archived" && (
-                              <Button variant="ghost" size="sm" onClick={() => handleArchiveMessage(selectedMessage.id)} className="h-7 px-2 text-xs font-sans text-muted-foreground hover:text-foreground">
-                                <Archive className="h-3.5 w-3.5 mr-1" />
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {selectedMessage.status !== "archived" ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleArchiveMessage(selectedMessage.id)}
+                                className="h-7 px-2.5 text-xs font-sans text-muted-foreground hover:text-foreground hover:bg-navy-700/60 gap-1"
+                              >
+                                <Archive className="h-3.5 w-3.5" />
                                 Archive
                               </Button>
+                            ) : (
+                              <span className="text-[10px] font-mono text-muted-foreground/60 px-2 py-1 rounded-md bg-navy-700/30">Archived</span>
                             )}
                           </div>
                         </div>
                       </div>
 
-                      {/* Thread: original + replies */}
-                      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
-                        {/* Original message */}
-                        <div className="rounded-lg bg-navy-700/40 border border-border/30 p-4">
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-navy-500 text-[10px] font-heading font-semibold text-foreground">
-                              {selectedMessage.name[0]?.toUpperCase()}
+                      {/* Thread */}
+                      <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+                        {/* Original message bubble */}
+                        <div className="rounded-xl border border-border/40 bg-navy-700/30 p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-navy-500/80 border border-border/40 text-[11px] font-heading font-semibold text-foreground">
+                                {selectedMessage.name[0]?.toUpperCase()}
+                              </div>
+                              <div>
+                                <span className="font-sans text-xs font-semibold text-foreground">{selectedMessage.name}</span>
+                                {selectedMessage.email && (
+                                  <span className="ml-2 font-mono text-[10px] text-muted-foreground">{selectedMessage.email}</span>
+                                )}
+                              </div>
                             </div>
-                            <span className="font-sans text-xs font-medium text-foreground">{selectedMessage.name}</span>
-                            <span className="text-[10px] font-mono text-muted-foreground ml-auto">{new Date(selectedMessage.createdAt).toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" })}</span>
+                            <span className="text-[10px] font-mono text-muted-foreground">
+                              {new Date(selectedMessage.createdAt).toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" })}
+                            </span>
                           </div>
-                          <p className="font-sans text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">{selectedMessage.message}</p>
+                          <p className="font-sans text-sm text-foreground/85 leading-relaxed whitespace-pre-wrap">{selectedMessage.message}</p>
                         </div>
 
-                        {/* Replies */}
+                        {/* Reply bubbles */}
                         {selectedMessage.replies.map((reply) => (
-                          <div key={reply.id} className="rounded-lg bg-eari-blue/10 border border-eari-blue/20 p-4">
-                            <div className="flex items-center gap-2 mb-3">
-                              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-eari-blue/30 text-[10px] font-heading font-semibold text-eari-blue-light">A</div>
-                              <span className="font-sans text-xs font-medium text-eari-blue-light">You (Admin)</span>
-                              <span className="text-[10px] font-mono text-muted-foreground ml-auto">{new Date(reply.sentAt).toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" })}</span>
+                          <div key={reply.id} className="rounded-xl border border-eari-blue/25 bg-eari-blue/8 p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-2">
+                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-eari-blue/30 border border-eari-blue/30 text-[11px] font-heading font-semibold text-eari-blue-light">
+                                  A
+                                </div>
+                                <div>
+                                  <span className="font-sans text-xs font-semibold text-eari-blue-light">You (Admin)</span>
+                                  <span className="ml-2 font-mono text-[10px] text-muted-foreground">hello@e-ari.com</span>
+                                </div>
+                              </div>
+                              <span className="text-[10px] font-mono text-muted-foreground">
+                                {new Date(reply.sentAt).toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" })}
+                              </span>
                             </div>
-                            <p className="text-[10px] font-mono text-muted-foreground mb-2">Subject: {reply.subject}</p>
-                            <p className="font-sans text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">{reply.body}</p>
+                            <div className="mb-2 flex items-center gap-1.5">
+                              <span className="text-[10px] font-mono text-muted-foreground/60 bg-navy-700/40 px-2 py-0.5 rounded">
+                                Re: {reply.subject}
+                              </span>
+                            </div>
+                            <p className="font-sans text-sm text-foreground/85 leading-relaxed whitespace-pre-wrap">{reply.body}</p>
                           </div>
                         ))}
                       </div>
 
                       {/* Reply compose */}
-                      {selectedMessage.status !== "archived" && (
-                        <div className="border-t border-border/40 px-5 py-4 space-y-3">
+                      {selectedMessage.status !== "archived" ? (
+                        <div className="border-t border-border/40 bg-navy-800/20 px-6 py-4 space-y-3">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Send className="h-3.5 w-3.5 text-eari-blue-light" />
+                            <p className="font-sans text-xs font-semibold text-foreground">
+                              Reply to {selectedMessage.name}
+                            </p>
+                          </div>
                           <Input
                             value={replySubject}
                             onChange={(e) => setReplySubject(e.target.value)}
-                            placeholder="Subject"
-                            className="font-sans border-border bg-navy-700/60 text-sm h-8"
+                            placeholder="Email subject…"
+                            className="font-sans border-border/60 bg-navy-700/50 text-sm h-9 focus:border-eari-blue/50 focus:ring-eari-blue/20"
                           />
                           <Textarea
                             value={replyBody}
                             onChange={(e) => setReplyBody(e.target.value)}
-                            placeholder={`Reply to ${selectedMessage.name}…`}
-                            rows={4}
-                            className="font-sans border-border bg-navy-700/60 text-sm resize-none"
+                            placeholder={`Write your reply to ${selectedMessage.name}…`}
+                            rows={5}
+                            className="font-sans border-border/60 bg-navy-700/50 text-sm resize-none focus:border-eari-blue/50 focus:ring-eari-blue/20 leading-relaxed"
                           />
                           {replyResult && (
-                            <div className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-sans ${replyResult.success ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-destructive/10 text-destructive border border-destructive/20"}`}>
-                              {replyResult.success ? <CheckCircle2 className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
+                            <div className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-sans ${replyResult.success ? "bg-emerald/8 text-emerald border border-emerald/20" : "bg-destructive/10 text-destructive border border-destructive/20"}`}>
+                              {replyResult.success ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> : <X className="h-3.5 w-3.5 shrink-0" />}
                               {replyResult.message}
                             </div>
                           )}
-                          <div className="flex items-center justify-between">
-                            <p className="text-[10px] text-muted-foreground font-sans">Sent from hello@e-ari.com</p>
+                          <div className="flex items-center justify-between pt-1">
+                            <p className="text-[10px] text-muted-foreground font-mono flex items-center gap-1.5">
+                              <Mail className="h-3 w-3" />
+                              Sent from hello@e-ari.com
+                            </p>
                             <Button
                               size="sm"
                               onClick={handleSendReply}
                               disabled={replySending || !replyBody.trim() || !replySubject.trim()}
-                              className="font-sans bg-eari-blue hover:bg-eari-blue-dark text-white text-xs h-8 gap-1.5"
+                              className="font-sans bg-eari-blue hover:bg-eari-blue-dark text-white text-xs h-8 px-4 gap-1.5 disabled:opacity-50"
                             >
                               {replySending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
                               {replySending ? "Sending…" : "Send Reply"}
                             </Button>
                           </div>
+                        </div>
+                      ) : (
+                        <div className="border-t border-border/40 px-6 py-4 flex items-center gap-2 text-muted-foreground/60">
+                          <Archive className="h-3.5 w-3.5" />
+                          <p className="font-sans text-xs">This conversation is archived. Replies are disabled.</p>
                         </div>
                       )}
                     </div>
