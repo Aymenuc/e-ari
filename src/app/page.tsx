@@ -1325,6 +1325,32 @@ export default function Home() {
           {/* Subtle grid background */}
           <div className="absolute inset-0 hex-grid-bg pointer-events-none" aria-hidden="true" />
 
+          {/* Full-section neural network background */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+            <svg className="w-full h-full" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice" fill="none">
+              {/* Connection lines drawing in */}
+              <motion.line x1="120" y1="80"  x2="360" y2="270" stroke="rgba(37,99,235,0.14)"  strokeWidth="1" strokeDasharray="5 12" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 2.0, delay: 0.3 }} />
+              <motion.line x1="360" y1="270" x2="650" y2="160" stroke="rgba(139,92,246,0.13)" strokeWidth="1" strokeDasharray="5 12" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 2.0, delay: 0.6 }} />
+              <motion.line x1="650" y1="160" x2="980" y2="310" stroke="rgba(6,182,212,0.13)"  strokeWidth="1" strokeDasharray="5 12" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 2.0, delay: 0.9 }} />
+              <motion.line x1="180" y1="440" x2="470" y2="340" stroke="rgba(16,185,129,0.12)" strokeWidth="1" strokeDasharray="5 12" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 2.0, delay: 1.1 }} />
+              <motion.line x1="470" y1="340" x2="860" y2="440" stroke="rgba(245,158,11,0.11)" strokeWidth="1" strokeDasharray="5 12" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 2.0, delay: 1.3 }} />
+              <motion.line x1="360" y1="270" x2="470" y2="340" stroke="rgba(236,72,153,0.13)" strokeWidth="1" strokeDasharray="5 12" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 2.0, delay: 1.5 }} />
+              <motion.line x1="650" y1="160" x2="650" y2="430" stroke="rgba(139,92,246,0.07)" strokeWidth="1"                          initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 2.0, delay: 1.7 }} />
+              <motion.line x1="980" y1="310" x2="1150" y2="490" stroke="rgba(37,99,235,0.07)" strokeWidth="1"                          initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 2.0, delay: 1.9 }} />
+              {/* Pulsing constellation nodes */}
+              <motion.circle cx="120"  cy="80"  r="3.5" fill="rgba(59,130,246,0.65)"  className="constellation-node" initial={{ scale: 0, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.4, type: 'spring' }} />
+              <motion.circle cx="360"  cy="270" r="5"   fill="rgba(139,92,246,0.65)" className="constellation-node" initial={{ scale: 0, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.7, type: 'spring' }} />
+              <motion.circle cx="650"  cy="160" r="4"   fill="rgba(6,182,212,0.65)"  className="constellation-node" initial={{ scale: 0, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }} transition={{ delay: 1.0, type: 'spring' }} />
+              <motion.circle cx="980"  cy="310" r="4.5" fill="rgba(16,185,129,0.65)" className="constellation-node" initial={{ scale: 0, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }} transition={{ delay: 1.2, type: 'spring' }} />
+              <motion.circle cx="470"  cy="340" r="3.5" fill="rgba(245,158,11,0.65)" className="constellation-node" initial={{ scale: 0, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }} transition={{ delay: 1.4, type: 'spring' }} />
+              <motion.circle cx="860"  cy="440" r="4"   fill="rgba(236,72,153,0.65)" className="constellation-node" initial={{ scale: 0, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }} transition={{ delay: 1.6, type: 'spring' }} />
+              <motion.circle cx="180"  cy="440" r="3"   fill="rgba(37,99,235,0.55)"  className="constellation-node" initial={{ scale: 0, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }} transition={{ delay: 1.8, type: 'spring' }} />
+              {/* Traveling data particles along the network */}
+              <motion.circle r="2" fill="rgba(59,130,246,0.8)"  animate={{ cx: [120, 360, 650, 980], cy: [80, 270, 160, 310] }} transition={{ duration: 7, repeat: Infinity, ease: 'linear' }} />
+              <motion.circle r="1.5" fill="rgba(236,72,153,0.8)" animate={{ cx: [180, 470, 860], cy: [440, 340, 440] }}       transition={{ duration: 5, repeat: Infinity, ease: 'linear', delay: 2.5 }} />
+            </svg>
+          </div>
+
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {/* Section header */}
             <FadeUp>
@@ -1381,15 +1407,20 @@ export default function Home() {
                             whileHover={{ scale: 1.15 }}
                             transition={{ duration: 0.2 }}
                           >
-                            <div
+                            <motion.div
                               className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.08]"
-                              style={{
-                                backgroundColor: `${agent.color}15`,
-                                boxShadow: `0 0 20px ${agent.color}15`,
+                              style={{ backgroundColor: `${agent.color}15` }}
+                              animate={{
+                                boxShadow: [
+                                  `0 0 8px ${agent.color}25`,
+                                  `0 0 22px ${agent.color}80, 0 0 38px ${agent.color}35`,
+                                  `0 0 8px ${agent.color}25`,
+                                ],
                               }}
+                              transition={{ duration: 2.5 + i * 0.4, repeat: Infinity, ease: 'easeInOut', delay: i * 0.4 }}
                             >
                               <Icon className="h-5 w-5" style={{ color: agent.color }} />
-                            </div>
+                            </motion.div>
                             {/* Agent name tooltip */}
                             <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                               <span className="text-[10px] font-mono text-muted-foreground/80 bg-navy-900/90 px-2 py-0.5 rounded border border-white/[0.06]">
@@ -1419,24 +1450,108 @@ export default function Home() {
                       </motion.div>
                     </div>
 
-                    {/* Connecting lines from center to each agent */}
+                    {/* Neural network SVG — orbital connections + flowing data */}
                     <svg className="absolute inset-0 w-full h-full" viewBox="0 0 380 380" aria-hidden="true">
+                      {/* Outer perimeter connecting adjacent agent nodes */}
                       {AGENT_PROPERTIES.map((agent, i) => {
-                        const angle = (Math.PI * 2 * i) / AGENT_PROPERTIES.length - Math.PI / 2
-                        const radius = 140
-                        const x = 190 + radius * Math.cos(angle)
-                        const y = 190 + radius * Math.sin(angle)
+                        const ni = (i + 1) % AGENT_PROPERTIES.length
+                        const a1 = (Math.PI * 2 * i)  / AGENT_PROPERTIES.length - Math.PI / 2
+                        const a2 = (Math.PI * 2 * ni) / AGENT_PROPERTIES.length - Math.PI / 2
+                        const r = 140
                         return (
                           <motion.line
-                            key={`line-${agent.id}`}
-                            x1="190" y1="190" x2={x} y2={y}
-                            stroke={agent.color}
-                            strokeWidth="0.5"
-                            strokeOpacity="0.12"
+                            key={`outer-${i}`}
+                            x1={190 + r * Math.cos(a1)} y1={190 + r * Math.sin(a1)}
+                            x2={190 + r * Math.cos(a2)} y2={190 + r * Math.sin(a2)}
+                            stroke={agent.color} strokeWidth="0.7" strokeDasharray="3 8"
                             initial={{ pathLength: 0, opacity: 0 }}
-                            whileInView={{ pathLength: 1, opacity: 1 }}
+                            whileInView={{ pathLength: 1, opacity: 0.18 }}
                             viewport={{ once: true }}
-                            transition={{ delay: 0.5 + i * 0.08, duration: 0.6 }}
+                            transition={{ delay: 0.9 + i * 0.1, duration: 1.1 }}
+                          />
+                        )
+                      })}
+                      {/* Skip-one cross connections — neural star pattern */}
+                      {[0, 1, 2].map((i) => {
+                        const ni = (i + 2) % AGENT_PROPERTIES.length
+                        const a1 = (Math.PI * 2 * i)  / AGENT_PROPERTIES.length - Math.PI / 2
+                        const a2 = (Math.PI * 2 * ni) / AGENT_PROPERTIES.length - Math.PI / 2
+                        const r = 140
+                        return (
+                          <motion.line
+                            key={`cross-${i}`}
+                            x1={190 + r * Math.cos(a1)} y1={190 + r * Math.sin(a1)}
+                            x2={190 + r * Math.cos(a2)} y2={190 + r * Math.sin(a2)}
+                            stroke={AGENT_PROPERTIES[ni].color} strokeWidth="0.4"
+                            initial={{ pathLength: 0, opacity: 0 }}
+                            whileInView={{ pathLength: 1, opacity: 0.07 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 1.4 + i * 0.12, duration: 1.3 }}
+                          />
+                        )
+                      })}
+                      {/* Base spokes: structural center-to-node lines */}
+                      {AGENT_PROPERTIES.map((agent, i) => {
+                        const angle = (Math.PI * 2 * i) / AGENT_PROPERTIES.length - Math.PI / 2
+                        const r = 140
+                        return (
+                          <motion.line
+                            key={`base-${agent.id}`}
+                            x1="190" y1="190"
+                            x2={190 + r * Math.cos(angle)} y2={190 + r * Math.sin(angle)}
+                            stroke={agent.color} strokeWidth="0.5"
+                            initial={{ pathLength: 0, opacity: 0 }}
+                            whileInView={{ pathLength: 1, opacity: 0.2 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.4 + i * 0.08, duration: 0.6 }}
+                          />
+                        )
+                      })}
+                      {/* Flowing data lines — animated dashes moving outward */}
+                      {AGENT_PROPERTIES.map((agent, i) => {
+                        const angle = (Math.PI * 2 * i) / AGENT_PROPERTIES.length - Math.PI / 2
+                        const r = 140
+                        return (
+                          <motion.line
+                            key={`flow-${agent.id}`}
+                            x1="190" y1="190"
+                            x2={190 + r * Math.cos(angle)} y2={190 + r * Math.sin(angle)}
+                            stroke={agent.color} strokeWidth="1.8" strokeLinecap="round"
+                            strokeDasharray="5 25"
+                            initial={{ opacity: 0, strokeDashoffset: 30 }}
+                            whileInView={{ opacity: 0.65 }}
+                            animate={{ strokeDashoffset: [30, -30] }}
+                            viewport={{ once: true }}
+                            transition={{
+                              opacity: { delay: 0.7 + i * 0.1, duration: 0.5 },
+                              strokeDashoffset: { duration: 1.6 + i * 0.18, repeat: Infinity, ease: 'linear', delay: i * 0.28 },
+                            }}
+                          />
+                        )
+                      })}
+                      {/* Traveling data packets: dots moving center ↔ agent */}
+                      {AGENT_PROPERTIES.map((agent, i) => {
+                        const angle = (Math.PI * 2 * i) / AGENT_PROPERTIES.length - Math.PI / 2
+                        const r = 140
+                        const tx = 190 + r * Math.cos(angle)
+                        const ty = 190 + r * Math.sin(angle)
+                        return (
+                          <motion.circle
+                            key={`packet-${agent.id}`}
+                            r="2.5" fill={agent.color}
+                            style={{ filter: `drop-shadow(0 0 4px ${agent.color})` }}
+                            initial={{ cx: 190, cy: 190, opacity: 0 }}
+                            animate={{
+                              cx: [190, tx, 190],
+                              cy: [190, ty, 190],
+                              opacity: [0, 0.95, 0.7, 0.95, 0],
+                            }}
+                            transition={{
+                              duration: 2.2 + i * 0.28,
+                              repeat: Infinity,
+                              ease: 'easeInOut',
+                              delay: 1.0 + i * 0.38,
+                            }}
                           />
                         )
                       })}
