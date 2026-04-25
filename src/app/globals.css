@@ -225,6 +225,9 @@
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   padding: 2px;
+  /* NOTE: @property is not supported in Firefox <128 or Safari <15.4.
+     A JS fallback using requestAnimationFrame is recommended for full browser support.
+     The gradient border will be static in unsupported browsers. */
 }
 
 /* Typewriter cursor blink */
@@ -241,14 +244,25 @@
   margin-left: 2px;
 }
 
-/* CTA pulsing glow */
-@keyframes ctaPulseGlow {
-  0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.3), 0 0 40px rgba(37, 99, 235, 0.1); }
-  50% { box-shadow: 0 0 30px rgba(37, 99, 235, 0.5), 0 0 60px rgba(37, 99, 235, 0.2); }
+/* CTA pulsing glow — uses pseudo-element to avoid box-shadow layout thrashing */
+@keyframes ctaPulseScale {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.05); opacity: 1; }
 }
 
 .cta-pulse-glow {
-  animation: ctaPulseGlow 3s ease-in-out infinite;
+  position: relative;
+}
+
+.cta-pulse-glow::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.3), transparent 70%);
+  animation: ctaPulseScale 3s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
 }
 
 /* Shimmer effect for pricing recommended card */
@@ -333,22 +347,35 @@
   animation: iconFloat 3s ease-in-out infinite;
 }
 
-/* Pulse for active pipeline step */
-@keyframes pipelinePulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(37, 99, 235, 0); }
+/* Pulse for active pipeline step — pseudo-element avoids box-shadow layout thrashing */
+@keyframes pipelinePulseScale {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.15); opacity: 0; }
 }
 
 .pipeline-pulse {
-  animation: pipelinePulse 2s ease-in-out infinite;
+  position: relative;
 }
 
-/* Score bar fill animation */
+.pipeline-pulse::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.4);
+  animation: pipelinePulseScale 2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Score bar fill animation — scaleX instead of width to avoid layout thrashing */
 @keyframes scoreBarFill {
-  from { width: 0%; }
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 }
 
 .score-bar-fill {
+  transform-origin: left;
   animation: scoreBarFill 1.2s ease-out forwards;
 }
 
@@ -424,6 +451,19 @@
   background: rgba(37, 99, 235, 0.25);
 }
 
+/* Particle float animation — CSS-driven for ParticleGrid, replacing Framer Motion infinite loops */
+@keyframes particleFloat {
+  0% { transform: translate(0, 0); opacity: 0.2; }
+  25% { transform: translate(5px, -15px); opacity: 0.5; }
+  50% { transform: translate(-3px, 5px); opacity: 0.3; }
+  75% { transform: translate(4px, -8px); opacity: 0.6; }
+  100% { transform: translate(0, 0); opacity: 0.2; }
+}
+
+.particle-float {
+  animation: particleFloat var(--particle-duration, 8s) ease-in-out infinite;
+}
+
 /* Back to top button */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(10px); }
@@ -441,7 +481,7 @@
 }
 
 /* Checkmark draw animation */
-@keyframes checkDraw {
+@keyframes checkDraw20 {
   from { stroke-dashoffset: 20; }
   to { stroke-dashoffset: 0; }
 }
@@ -449,7 +489,7 @@
 .check-animate {
   stroke-dasharray: 20;
   stroke-dashoffset: 20;
-  animation: checkDraw 0.4s ease-out forwards;
+  animation: checkDraw20 0.4s ease-out forwards;
 }
 
 /* Card colored left border animation */
@@ -458,15 +498,16 @@
   to { height: 100%; }
 }
 
-/* Radar rotating highlight */
+/* Radar rotating highlight — calmed for Living Constellation */
 @keyframes radarRotate {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
 .radar-rotate {
-  animation: radarRotate 8s linear infinite;
+  animation: radarRotate 20s linear infinite;
   transform-origin: center;
+  opacity: 0.15;
 }
 
 /* Subtle pulse for icons */
@@ -521,14 +562,25 @@
   animation: neuralPulse 2s ease-in-out infinite;
 }
 
-/* Agent card glow */
-@keyframes agentGlow {
-  0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.1), inset 0 0 20px rgba(37, 99, 235, 0.02); }
-  50% { box-shadow: 0 0 40px rgba(37, 99, 235, 0.2), inset 0 0 30px rgba(37, 99, 235, 0.05); }
+/* Agent card glow — pseudo-element avoids box-shadow layout thrashing */
+@keyframes agentGlowScale {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.02); opacity: 1; }
 }
 
 .agent-card-glow {
-  animation: agentGlow 4s ease-in-out infinite;
+  position: relative;
+}
+
+.agent-card-glow::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.15), transparent 70%);
+  animation: agentGlowScale 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
 }
 
 /* Terminal cursor blink */
@@ -562,13 +614,14 @@
   animation: dataFlow 2s linear infinite;
 }
 
-/* Constellation node pulse */
+/* Constellation node pulse — transform:scale instead of r attribute for browser compat */
 @keyframes constellationPulse {
-  0%, 100% { r: 3; opacity: 0.6; }
-  50% { r: 5; opacity: 1; }
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.67); opacity: 1; }
 }
 
 .constellation-node {
+  transform-origin: center;
   animation: constellationPulse 3s ease-in-out infinite;
 }
 
@@ -586,14 +639,25 @@
   transform: rotateY(-3deg) rotateX(2deg);
 }
 
-/* Agent status indicator */
-@keyframes statusPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-  50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+/* Agent status indicator — pseudo-element avoids box-shadow layout thrashing */
+@keyframes statusPulseScale {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.5); opacity: 0; }
 }
 
 .agent-status {
-  animation: statusPulse 2s ease-in-out infinite;
+  position: relative;
+}
+
+.agent-status::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.4);
+  animation: statusPulseScale 2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
 }
 
 /* Agent processing wave */
@@ -625,14 +689,14 @@
   animation: hexShift 8s ease-in-out infinite;
 }
 
-/* Agent connector line glow */
-@keyframes connectorGlow {
-  0%, 100% { opacity: 0.2; filter: blur(0px); }
-  50% { opacity: 0.8; filter: blur(1px); }
+/* Agent connector line glow — overlay opacity instead of filter for performance */
+@keyframes connectorGlowOpacity {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
 }
 
 .connector-glow {
-  animation: connectorGlow 3s ease-in-out infinite;
+  animation: connectorGlowOpacity 3s ease-in-out infinite;
 }
 
 /* ─── Aurora / Holographic Card Effects ──────────────────────────────────── */
@@ -707,7 +771,7 @@
   z-index: -1;
 }
 
-/* ─── Radar Scan Line ──────────────────────────────────────────────────── */
+/* ─── Radar Scan Line (disabled for Living Constellation) ──────────────── */
 
 @keyframes scanRotate {
   from { transform: rotate(0deg); }
@@ -715,8 +779,7 @@
 }
 
 .scan-line {
-  animation: scanRotate 4s linear infinite;
-  transform-origin: center;
+  animation: none;
 }
 
 /* ─── Floating Badge Animation ─────────────────────────────────────────── */
@@ -832,13 +895,24 @@
 
 /* ─── Score Ring Gradient Glow ─────────────────────────────────────────── */
 
-@keyframes scoreGlow {
-  0%, 100% { filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.4)); }
-  50% { filter: drop-shadow(0 0 14px rgba(6, 182, 212, 0.6)); }
+/* Score ring gradient glow — overlay opacity instead of filter for performance */
+@keyframes scoreGlowOpacity {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
 }
 
 .score-ring-glow {
-  animation: scoreGlow 3s ease-in-out infinite;
+  position: relative;
+}
+
+.score-ring-glow::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.4), transparent 60%);
+  animation: scoreGlowOpacity 3s ease-in-out infinite;
+  pointer-events: none;
 }
 
 /* ─── Pricing Card Pattern ─────────────────────────────────────────────── */
@@ -894,15 +968,17 @@
   box-shadow: 0 6px 30px rgba(212, 168, 83, 0.4);
 }
 
-/* ─── Radar Data Point Pulse ───────────────────────────────────────────── */
+/* ─── Radar Data Point ───────────────────────────────────────────── */
+/* Gentle constellation breathe — calm, premium feel */
 
 @keyframes dataPointPulse {
-  0%, 100% { r: 2.5; opacity: 1; }
-  50% { r: 4; opacity: 0.6; }
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.08); opacity: 1; }
 }
 
 .data-point-pulse {
-  animation: dataPointPulse 2s ease-in-out infinite;
+  transform-origin: center;
+  animation: dataPointPulse 4s ease-in-out infinite;
 }
 
 /* ─── Results Page Premium Animations ────────────────────────────────────── */
@@ -1054,12 +1130,12 @@
   animation-delay: -3.9s;
 }
 
-/* Radar holographic glow */
+/* Radar — subtle glow class (no aggressive filter) */
 .radar-holographic-glow {
-  filter: drop-shadow(0 0 20px rgba(37, 99, 235, 0.15)) drop-shadow(0 0 40px rgba(6, 182, 212, 0.08));
+  /* Glow handled by CSS behind SVG for premium Living Constellation aesthetic */
 }
 
-/* Scan line overlay for radar */
+/* Scan line overlay — disabled for Living Constellation */
 .scan-line-overlay {
   position: absolute;
   inset: 0;
@@ -1068,15 +1144,28 @@
 }
 
 .scan-line-overlay::after {
-  content: '';
+  display: none;
+}
+
+/* ─── Radar Orbit Particle (Living Constellation) ─────────────────────── */
+
+@keyframes radarOrbit {
+  0% { transform: rotate(0deg) translateX(var(--orbit-radius, 42%)) rotate(0deg); opacity: 0.3; }
+  25% { opacity: 0.7; }
+  50% { transform: rotate(180deg) translateX(var(--orbit-radius, 42%)) rotate(-180deg); opacity: 0.5; }
+  75% { opacity: 0.8; }
+  100% { transform: rotate(360deg) translateX(var(--orbit-radius, 42%)) rotate(-360deg); opacity: 0.3; }
+}
+
+.radar-orbit-particle {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 50%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.4), transparent);
-  transform-origin: left center;
-  animation: scanRotate 4s linear infinite;
+  margin-top: -1.5px;
+  margin-left: -1.5px;
+  border-radius: 50%;
+  animation: radarOrbit var(--orbit-duration, 20s) linear infinite;
+  pointer-events: none;
 }
 
 /* Pillar card gradient left border */
@@ -1102,24 +1191,72 @@
   opacity: 1;
 }
 
+/* ─── Premium Slider Styling ─────────────────────────────────────────────── */
+
+.slider-premium {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.3), rgba(6, 182, 212, 0.2));
+  outline: none;
+  position: relative;
+}
+
+.slider-premium::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #06b6d4);
+  cursor: pointer;
+  border: 3px solid #0d1117;
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.4), 0 0 20px rgba(6, 182, 212, 0.15);
+  transition: box-shadow 0.2s ease;
+}
+
+.slider-premium::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 14px rgba(37, 99, 235, 0.6), 0 0 28px rgba(6, 182, 212, 0.25);
+}
+
+.slider-premium::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #06b6d4);
+  cursor: pointer;
+  border: 3px solid #0d1117;
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.4), 0 0 20px rgba(6, 182, 212, 0.15);
+}
+
+.slider-premium::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.3), rgba(6, 182, 212, 0.2));
+}
+
 /* ─── Pipeline Status Premium Animations ───────────────────────────────── */
 
-/* Pulsing glow for active agent nodes */
-@keyframes nodeGlow {
-  0%, 100% {
-    box-shadow: 0 0 12px 2px var(--agent-color, rgba(59, 130, 246, 0.3)),
-                0 0 24px 4px var(--agent-color, rgba(59, 130, 246, 0.1));
-    filter: brightness(1);
-  }
-  50% {
-    box-shadow: 0 0 20px 6px var(--agent-color, rgba(59, 130, 246, 0.5)),
-                0 0 40px 12px var(--agent-color, rgba(59, 130, 246, 0.2));
-    filter: brightness(1.15);
-  }
+/* Pulsing glow for active agent nodes — pseudo-element avoids box-shadow and filter thrashing */
+@keyframes nodeGlowScale {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.08); opacity: 1; }
 }
 
 .pipeline-node-glow {
-  animation: nodeGlow 2s ease-in-out infinite;
+  position: relative;
+}
+
+.pipeline-node-glow::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--agent-color, rgba(59, 130, 246, 0.3)), transparent 70%);
+  animation: nodeGlowScale 2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
 }
 
 /* Orbital ring rotation for running agents */
@@ -1133,16 +1270,16 @@
   transform-origin: center;
 }
 
-/* SVG checkmark draw animation */
-@keyframes checkDraw {
-  0% { stroke-dashoffset: 24; }
-  100% { stroke-dashoffset: 0; }
+/* SVG checkmark draw animation for pipeline (24px dash) */
+@keyframes checkDraw24 {
+  from { stroke-dashoffset: 24; }
+  to { stroke-dashoffset: 0; }
 }
 
 .pipeline-check-draw {
   stroke-dasharray: 24;
   stroke-dashoffset: 24;
-  animation: checkDraw 0.5s ease-out forwards;
+  animation: checkDraw24 0.5s ease-out forwards;
 }
 
 /* Data particle flowing along path */
@@ -1157,6 +1294,7 @@
   offset-path: path(var(--flow-path, 'M0,0 L100,0'));
   animation: particleFlow var(--flow-duration, 2s) linear infinite;
   animation-delay: var(--flow-delay, 0s);
+  /* NOTE: offset-path is not supported in Safari. SVG animateMotion is used as fallback in pipeline-status.tsx */
 }
 
 /* Error shake animation */
@@ -1239,10 +1377,10 @@
   animation: typewriter 1s steps(20, end) forwards;
 }
 
-/* Agent detail expand slide */
+/* Agent detail expand slide — removed max-height for performance */
 @keyframes detailSlideIn {
-  from { opacity: 0; max-height: 0; transform: translateY(-8px); }
-  to { opacity: 1; max-height: 200px; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .pipeline-detail-expand {

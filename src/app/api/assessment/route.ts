@@ -3,6 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { checkRateLimit, getRateLimitHeaders, resolveIdentifier } from "@/lib/rate-limit";
+import { z } from "zod";
+
+const assessmentSchema = z.object({
+  responses: z.record(z.string(), z.number().int().min(1).max(5)),
+  sector: z.enum(['healthcare', 'finance', 'manufacturing', 'retail', 'government', 'technology', 'energy', 'education', 'general']).optional(),
+});
 
 // GET /api/assessment — List user's assessments
 export async function GET() {
@@ -46,11 +52,15 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { responses, sector } = body;
 
-    if (!responses || typeof responses !== "object") {
-      return NextResponse.json({ error: "Responses are required" }, { status: 400 });
+    const validation = assessmentSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: "Invalid assessment data", details: validation.error.flatten() },
+        { status: 400 }
+      );
     }
+    const { responses, sector } = validation.data;
 
     // Create assessment
     const assessment = await db.assessment.create({

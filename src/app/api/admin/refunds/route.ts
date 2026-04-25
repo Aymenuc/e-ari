@@ -3,27 +3,15 @@
 // POST /api/admin/refunds — Create manual refund (admin override)
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
+import { verifyAdmin } from '@/lib/verify-admin'
 
 export async function GET(request: NextRequest) {
   try {
     // ── Authenticate & authorize ──────────────────────────────────────────
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 },
-      )
-    }
-
-    if (session.user.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Admin access required' },
-        { status: 403 },
-      )
+    const adminCheck = await verifyAdmin();
+    if (!adminCheck.authorized) {
+      return NextResponse.json({ error: adminCheck.message }, { status: adminCheck.status });
     }
 
     // ── Parse query parameters ────────────────────────────────────────────
@@ -79,21 +67,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // ── Authenticate & authorize ──────────────────────────────────────────
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 },
-      )
+    const adminCheck = await verifyAdmin();
+    if (!adminCheck.authorized) {
+      return NextResponse.json({ error: adminCheck.message }, { status: adminCheck.status });
     }
-
-    if (session.user.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Admin access required' },
-        { status: 403 },
-      )
-    }
+    const session = adminCheck.session!
 
     // ── Parse body ────────────────────────────────────────────────────────
     const body = await request.json()

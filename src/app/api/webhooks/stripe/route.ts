@@ -35,11 +35,16 @@ export async function POST(request: NextRequest) {
         const tier = session.metadata?.tier
 
         if (userId && tier) {
-          await db.user.update({
-            where: { id: userId },
-            data: { tier },
-          })
-          console.log(`[stripe-webhook] User ${userId} upgraded to ${tier}`)
+          try {
+            await db.user.update({
+              where: { id: userId },
+              data: { tier },
+            })
+            console.log(`[stripe-webhook] User ${userId} upgraded to ${tier}`)
+          } catch (dbError) {
+            console.error('[stripe-webhook] Failed to process checkout.session.completed:', dbError)
+            return new NextResponse('Database update failed', { status: 500 })
+          }
         } else {
           console.warn('[stripe-webhook] checkout.session.completed missing metadata:', session.metadata)
         }
@@ -52,11 +57,16 @@ export async function POST(request: NextRequest) {
         const tier = subscription.metadata?.tier
 
         if (userId && tier) {
-          await db.user.update({
-            where: { id: userId },
-            data: { tier },
-          })
-          console.log(`[stripe-webhook] User ${userId} subscription updated to ${tier}`)
+          try {
+            await db.user.update({
+              where: { id: userId },
+              data: { tier },
+            })
+            console.log(`[stripe-webhook] User ${userId} subscription updated to ${tier}`)
+          } catch (dbError) {
+            console.error('[stripe-webhook] Failed to process customer.subscription.updated:', dbError)
+            return new NextResponse('Database update failed', { status: 500 })
+          }
         }
         break
       }
@@ -66,12 +76,16 @@ export async function POST(request: NextRequest) {
         const userId = subscription.metadata?.userId
 
         if (userId) {
-          // Downgrade to free when subscription is cancelled
-          await db.user.update({
-            where: { id: userId },
-            data: { tier: 'free' },
-          })
-          console.log(`[stripe-webhook] User ${userId} subscription deleted, downgraded to free`)
+          try {
+            await db.user.update({
+              where: { id: userId },
+              data: { tier: 'free' },
+            })
+            console.log(`[stripe-webhook] User ${userId} subscription deleted, downgraded to free`)
+          } catch (dbError) {
+            console.error('[stripe-webhook] Failed to process customer.subscription.deleted:', dbError)
+            return new NextResponse('Database update failed', { status: 500 })
+          }
         }
         break
       }
@@ -80,34 +94,37 @@ export async function POST(request: NextRequest) {
         const charge = event.data.object as Stripe.Charge
         const chargeId = charge.id
 
-        // Find any refund request associated with this charge
-        const refundRequest = await db.refundRequest.findFirst({
-          where: { chargeId },
-        })
-
-        if (refundRequest && refundRequest.status !== 'refunded') {
-          await db.refundRequest.update({
-            where: { id: refundRequest.id },
-            data: {
-              status: 'refunded',
-              refundId: charge.refunds?.data?.[0]?.id || null,
-              refundedAt: new Date(),
-            },
+        try {
+          const refundRequest = await db.refundRequest.findFirst({
+            where: { chargeId },
           })
-          console.log(`[stripe-webhook] Refund request ${refundRequest.id} auto-updated to refunded via charge.refunded webhook`)
-        } else if (!refundRequest) {
-          console.log(`[stripe-webhook] charge.refunded for ${chargeId} — no matching refund request found`)
+
+          if (refundRequest && refundRequest.status !== 'refunded') {
+            await db.refundRequest.update({
+              where: { id: refundRequest.id },
+              data: {
+                status: 'refunded',
+                refundId: charge.refunds?.data?.[0]?.id || null,
+                refundedAt: new Date(),
+              },
+            })
+            console.log(`[stripe-webhook] Refund request ${refundRequest.id} auto-updated to refunded via charge.refunded webhook`)
+          } else if (!refundRequest) {
+            console.log(`[stripe-webhook] charge.refunded for ${chargeId} — no matching refund request found`)
+          }
+        } catch (dbError) {
+          console.error('[stripe-webhook] Failed to process charge.refunded:', dbError)
+          return new NextResponse('Database update failed', { status: 500 })
         }
         break
       }
 
       default:
-        // Acknowledge unhandled event types (Stripe requirement)
         console.log(`[stripe-webhook] Unhandled event type: ${event.type}`)
     }
   } catch (err) {
     console.error('[stripe-webhook] Error processing event:', err)
-    // Still return 200 so Stripe doesn't retry indefinitely
+    return new NextResponse('Webhook processing failed', { status: 500 })
   }
 
   return NextResponse.json({ received: true })

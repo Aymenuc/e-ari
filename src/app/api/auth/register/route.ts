@@ -2,9 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { sendWelcomeEmail } from "@/lib/email-service";
+import { checkRateLimitFromRequest } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit registration (5 per minute)
+    const rateLimitError = checkRateLimitFromRequest(req, 'register', 5, 60);
+    if (rateLimitError) return rateLimitError;
+
     const body = await req.json();
     const { email, password, name, organization, sector, orgSize } = body;
 
@@ -15,9 +20,30 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: "Invalid email format" },
+        { status: 400 }
+      );
+    }
+
     if (password.length < 8) {
       return NextResponse.json(
         { error: "Password must be at least 8 characters" },
+        { status: 400 }
+      );
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      return NextResponse.json(
+        { error: "Password must contain at least one uppercase letter" },
+        { status: 400 }
+      );
+    }
+    if (!/[0-9]/.test(password)) {
+      return NextResponse.json(
+        { error: "Password must contain at least one number" },
         { status: 400 }
       );
     }

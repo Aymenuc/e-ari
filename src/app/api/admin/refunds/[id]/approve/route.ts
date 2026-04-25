@@ -3,11 +3,10 @@
 // Approves a refund request, issues a Stripe refund, updates DB, and emails the user.
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { stripe } from '@/lib/stripe'
 import { db } from '@/lib/db'
 import { sendRefundStatusEmail } from '@/lib/email-service'
+import { verifyAdmin } from '@/lib/verify-admin'
 
 export async function POST(
   request: NextRequest,
@@ -15,21 +14,11 @@ export async function POST(
 ) {
   try {
     // ── Authenticate & authorize ──────────────────────────────────────────
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 },
-      )
+    const adminCheck = await verifyAdmin();
+    if (!adminCheck.authorized) {
+      return NextResponse.json({ error: adminCheck.message }, { status: adminCheck.status });
     }
-
-    if (session.user.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Admin access required' },
-        { status: 403 },
-      )
-    }
+    const session = adminCheck.session!
 
     const { id } = await params
 

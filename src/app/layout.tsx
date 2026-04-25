@@ -3,6 +3,9 @@ import { Plus_Jakarta_Sans, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/components/shared/auth-provider";
+import { NavigationLoader } from "@/components/shared/navigation-loader";
+import { Suspense } from "react";
+import { MotionConfig } from "framer-motion";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -45,8 +48,13 @@ export default function RootLayout({
         className={`${plusJakartaSans.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground font-sans`}
       >
         <AuthProvider>
-          {children}
-          <Toaster />
+          <MotionConfig reducedMotion="user">
+            <Suspense>
+              <NavigationLoader />
+            </Suspense>
+            {children}
+            <Toaster />
+          </MotionConfig>
         </AuthProvider>
       </body>
     </html>

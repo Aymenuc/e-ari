@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useRef, useEffect, useState, useCallback } from 'react'
+import { useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import { motion, useInView, useTransform, useScroll, AnimatePresence } from 'framer-motion'
 import {
   Target,
@@ -104,19 +104,26 @@ function TypewriterText({ text, delay = 0, className }: { text: string; delay?: 
   useEffect(() => {
     if (!inView) return
     let i = 0
-    const timeout = setTimeout(() => {
-      const interval = setInterval(() => {
+    let intervalId: ReturnType<typeof setInterval> | null = null
+    let cursorTimeoutId: ReturnType<typeof setTimeout> | null = null
+
+    const timeoutId = setTimeout(() => {
+      intervalId = setInterval(() => {
         if (i < text.length) {
           setDisplayed(text.slice(0, i + 1))
           i++
         } else {
-          clearInterval(interval)
-          setTimeout(() => setShowCursor(false), 1500)
+          if (intervalId) clearInterval(intervalId)
+          cursorTimeoutId = setTimeout(() => setShowCursor(false), 1500)
         }
       }, 80)
-      return () => clearInterval(interval)
     }, delay * 1000)
-    return () => clearTimeout(timeout)
+
+    return () => {
+      clearTimeout(timeoutId)
+      if (intervalId) clearInterval(intervalId)
+      if (cursorTimeoutId) clearTimeout(cursorTimeoutId)
+    }
   }, [inView, text, delay])
 
   return (
@@ -139,39 +146,31 @@ function seededRandom(seed: number) {
 
 function ParticleGrid() {
   // Use deterministic seeded random values so SSR and client render match exactly
-  const particles = useRef(
-    Array.from({ length: 40 }, (_, i) => ({
+  const particles = useMemo(
+    () => Array.from({ length: 18 }, (_, i) => ({
       id: i,
       x: seededRandom(i * 5 + 1) * 100,
       y: seededRandom(i * 5 + 2) * 100,
       size: seededRandom(i * 5 + 3) * 3 + 1,
       duration: seededRandom(i * 5 + 4) * 8 + 6,
       delay: seededRandom(i * 5 + 5) * 4,
-    }))
-  ).current
+    })),
+    []
+  )
 
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
       {particles.map((p) => (
-        <motion.div
+        <div
           key={p.id}
-          className="particle-dot absolute"
+          className="particle-dot particle-float absolute"
           style={{
             left: `${p.x}%`,
             top: `${p.y}%`,
             width: p.size,
             height: p.size,
-          }}
-          animate={{
-            y: [0, -15, 5, -8, 0],
-            x: [0, 5, -3, 4, 0],
-            opacity: [0.2, 0.5, 0.3, 0.6, 0.2],
-          }}
-          transition={{
-            duration: p.duration,
-            delay: p.delay,
-            repeat: Infinity,
-            ease: 'easeInOut',
+            animationDuration: `${p.duration}s`,
+            animationDelay: `${p.delay}s`,
           }}
         />
       ))}
@@ -182,16 +181,15 @@ function ParticleGrid() {
 /* ─── Mouse Follow Spotlight ───────────────────────────────────────────── */
 
 function MouseSpotlight() {
-  const [pos, setPos] = useState({ x: 50, y: 50 })
+  const ref = useRef<HTMLDivElement>(null)
 
   const handleMove = useCallback((e: MouseEvent) => {
+    if (!ref.current) return
     const el = document.getElementById('hero-section')
     if (!el) return
     const rect = el.getBoundingClientRect()
-    setPos({
-      x: ((e.clientX - rect.left) / rect.width) * 100,
-      y: ((e.clientY - rect.top) / rect.height) * 100,
-    })
+    ref.current.style.setProperty('--mouse-x', `${((e.clientX - rect.left) / rect.width) * 100}%`)
+    ref.current.style.setProperty('--mouse-y', `${((e.clientY - rect.top) / rect.height) * 100}%`)
   }, [])
 
   useEffect(() => {
@@ -203,8 +201,9 @@ function MouseSpotlight() {
 
   return (
     <div
+      ref={ref}
       className="hero-spotlight absolute inset-0 pointer-events-none transition-all duration-300 ease-out"
-      style={{ '--mouse-x': `${pos.x}%`, '--mouse-y': `${pos.y}%` } as React.CSSProperties}
+      style={{ '--mouse-x': '50%', '--mouse-y': '50%' } as React.CSSProperties}
     />
   )
 }
@@ -240,19 +239,24 @@ function StreamingText({ text, delay = 0, speed = 18 }: { text: string; delay?: 
   useEffect(() => {
     if (!inView) return
     let i = 0
-    const timeout = setTimeout(() => {
-      const interval = setInterval(() => {
+    let intervalId: ReturnType<typeof setInterval> | null = null
+
+    const timeoutId = setTimeout(() => {
+      intervalId = setInterval(() => {
         if (i < text.length) {
           setDisplayed(text.slice(0, i + 1))
           i++
         } else {
-          clearInterval(interval)
+          if (intervalId) clearInterval(intervalId)
           setDone(true)
         }
       }, speed)
-      return () => clearInterval(interval)
     }, delay * 1000)
-    return () => clearTimeout(timeout)
+
+    return () => {
+      clearTimeout(timeoutId)
+      if (intervalId) clearInterval(intervalId)
+    }
   }, [inView, text, delay, speed])
 
   return (
@@ -344,49 +348,55 @@ function ROICalculator() {
   return (
     <div className="glass-card rounded-xl p-6 sm:p-8 max-w-2xl mx-auto">
       <div className="flex items-center gap-2 mb-6">
-        <Eye className="h-5 w-5 text-eari-blue-light" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-eari-blue/10">
+          <Eye className="h-4 w-4 text-eari-blue-light" />
+        </div>
         <h3 className="font-heading text-lg font-semibold text-foreground">ROI Estimator</h3>
       </div>
 
       {/* Sliders */}
       <div className="space-y-6">
         <div>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-3">
             <label className="text-sm font-sans text-muted-foreground">Organization Size</label>
-            <span className="font-mono text-sm text-foreground">{orgSize.toLocaleString()} employees</span>
+            <span className="font-mono text-sm text-foreground bg-navy-700/50 px-2.5 py-0.5 rounded-md">{orgSize.toLocaleString()} employees</span>
           </div>
-          <input
-            type="range"
-            min={50}
-            max={10000}
-            step={50}
-            value={orgSize}
-            onChange={(e) => setOrgSize(Number(e.target.value))}
-            className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-navy-700 accent-eari-blue"
-          />
-          <div className="flex justify-between mt-1">
-            <span className="text-xs text-muted-foreground/60">50</span>
-            <span className="text-xs text-muted-foreground/60">10,000</span>
+          <div className="relative">
+            <input
+              type="range"
+              min={50}
+              max={10000}
+              step={50}
+              value={orgSize}
+              onChange={(e) => setOrgSize(Number(e.target.value))}
+              className="w-full h-2 rounded-full appearance-none cursor-pointer bg-navy-700 accent-eari-blue slider-premium"
+            />
+          </div>
+          <div className="flex justify-between mt-1.5">
+            <span className="text-[10px] font-mono text-muted-foreground/50">50</span>
+            <span className="text-[10px] font-mono text-muted-foreground/50">10,000</span>
           </div>
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-3">
             <label className="text-sm font-sans text-muted-foreground">Current AI Maturity</label>
-            <span className="font-mono text-sm text-foreground">{maturity}%</span>
+            <span className="font-mono text-sm text-foreground bg-navy-700/50 px-2.5 py-0.5 rounded-md">{maturity}%</span>
           </div>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={5}
-            value={maturity}
-            onChange={(e) => setMaturity(Number(e.target.value))}
-            className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-navy-700 accent-eari-blue"
-          />
-          <div className="flex justify-between mt-1">
-            <span className="text-xs text-muted-foreground/60">0%</span>
-            <span className="text-xs text-muted-foreground/60">100%</span>
+          <div className="relative">
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={5}
+              value={maturity}
+              onChange={(e) => setMaturity(Number(e.target.value))}
+              className="w-full h-2 rounded-full appearance-none cursor-pointer bg-navy-700 accent-eari-blue slider-premium"
+            />
+          </div>
+          <div className="flex justify-between mt-1.5">
+            <span className="text-[10px] font-mono text-muted-foreground/50">0%</span>
+            <span className="text-[10px] font-mono text-muted-foreground/50">100%</span>
           </div>
         </div>
       </div>
@@ -396,21 +406,21 @@ function ROICalculator() {
 
       {/* Results */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="text-center p-3 rounded-lg bg-navy-800/60 border border-border/30">
-          <p className="text-xs text-muted-foreground font-sans mb-1">Est. Annual Savings</p>
-          <p className="font-heading text-xl font-bold text-emerald-400">{formattedSavings}</p>
+        <div className="text-center p-4 rounded-xl bg-navy-800/60 border border-border/30 hover:border-emerald-500/20 transition-colors">
+          <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider mb-1.5">Est. Annual Savings</p>
+          <p className="font-heading text-2xl font-bold text-emerald-400">{formattedSavings}</p>
         </div>
-        <div className="text-center p-3 rounded-lg bg-navy-800/60 border border-border/30">
-          <p className="text-xs text-muted-foreground font-sans mb-1">Risk Reduction</p>
-          <p className="font-heading text-xl font-bold text-eari-blue-light">{riskReduction}%</p>
+        <div className="text-center p-4 rounded-xl bg-navy-800/60 border border-border/30 hover:border-eari-blue/20 transition-colors">
+          <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider mb-1.5">Risk Reduction</p>
+          <p className="font-heading text-2xl font-bold text-eari-blue-light">{riskReduction}%</p>
         </div>
-        <div className="text-center p-3 rounded-lg bg-navy-800/60 border border-border/30">
-          <p className="text-xs text-muted-foreground font-sans mb-1">Time-to-Value</p>
-          <p className="font-heading text-xl font-bold text-[#d4a853]">{timeToValue} mo</p>
+        <div className="text-center p-4 rounded-xl bg-navy-800/60 border border-border/30 hover:border-amber-500/20 transition-colors">
+          <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider mb-1.5">Time-to-Value</p>
+          <p className="font-heading text-2xl font-bold text-[#d4a853]">{timeToValue} mo</p>
         </div>
       </div>
 
-      <p className="mt-4 text-xs text-muted-foreground/60 font-sans text-center">
+      <p className="mt-4 text-[10px] text-muted-foreground/50 font-mono text-center tracking-wide">
         Estimates based on industry benchmarks. Actual results may vary.
       </p>
     </div>
@@ -925,17 +935,17 @@ export default function Home() {
                         </div>
                       </div>
 
-                      {/* Mini radar chart with scan line */}
+                      {/* Mini radar chart — calm constellation style */}
                       <div className="mt-6 flex justify-center">
                         <div className="relative">
                           <svg width="200" height="200" viewBox="0 0 200 200" aria-label="Pillar radar chart">
                             <defs>
                               <linearGradient id="radarFill" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="rgba(37,99,235,0.2)" />
-                                <stop offset="100%" stopColor="rgba(6,182,212,0.1)" />
+                                <stop offset="0%" stopColor="rgba(37,99,235,0.12)" />
+                                <stop offset="100%" stopColor="rgba(6,182,212,0.05)" />
                               </linearGradient>
                             </defs>
-                            {/* Octagonal grid rings */}
+                            {/* Octagonal grid rings — solid, faint */}
                             {[0.25, 0.5, 0.75, 1].map((scale) => (
                               <polygon
                                 key={scale}
@@ -945,11 +955,11 @@ export default function Home() {
                                   return `${100 + r * Math.cos(angle)},${100 + r * Math.sin(angle)}`
                                 }).join(' ')}
                                 fill="none"
-                                stroke="rgba(48,57,74,0.3)"
-                                strokeWidth="0.5"
+                                stroke="rgba(48,57,74,0.15)"
+                                strokeWidth="0.4"
                               />
                             ))}
-                            {/* Axis lines */}
+                            {/* Axis lines — minimal */}
                             {SAMPLE_SCORES.map((_, i) => {
                               const angle = (Math.PI * 2 * i) / SAMPLE_SCORES.length - Math.PI / 2
                               return (
@@ -958,12 +968,12 @@ export default function Home() {
                                   x1="100" y1="100"
                                   x2={100 + 80 * Math.cos(angle)}
                                   y2={100 + 80 * Math.sin(angle)}
-                                  stroke="rgba(48,57,74,0.2)"
-                                  strokeWidth="0.5"
+                                  stroke="rgba(48,57,74,0.10)"
+                                  strokeWidth="0.4"
                                 />
                               )
                             })}
-                            {/* Data polygon */}
+                            {/* Data polygon — gentle fade-in */}
                             <motion.polygon
                               points={SAMPLE_SCORES.map((pillar, i) => {
                                 const angle = (Math.PI * 2 * i) / SAMPLE_SCORES.length - Math.PI / 2
@@ -972,41 +982,32 @@ export default function Home() {
                               }).join(' ')}
                               fill="url(#radarFill)"
                               stroke="url(#scoreGradient)"
-                              strokeWidth="1.5"
-                              initial={{ opacity: 0, scale: 0.5 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ duration: 1.2, delay: 0.8, ease: 'easeOut' }}
-                              style={{ transformOrigin: 'center' }}
+                              strokeWidth="1"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ duration: 1.5, delay: 0.6, ease: 'easeOut' }}
                             />
-                            {/* Data points with pulse */}
+                            {/* Constellation data points — gentle staggered breathe */}
                             {SAMPLE_SCORES.map((pillar, i) => {
                               const angle = (Math.PI * 2 * i) / SAMPLE_SCORES.length - Math.PI / 2
                               const r = (pillar.score / 100) * 80
+                              const cx = 100 + r * Math.cos(angle)
+                              const cy = 100 + r * Math.sin(angle)
                               return (
                                 <motion.circle
                                   key={i}
-                                  cx={100 + r * Math.cos(angle)}
-                                  cy={100 + r * Math.sin(angle)}
-                                  r="2.5"
+                                  cx={cx}
+                                  cy={cy}
+                                  r="2"
                                   fill={pillar.color}
-                                  className="data-point-pulse"
-                                  style={{ animationDelay: `${i * 0.3}s` }}
-                                  initial={{ scale: 0, opacity: 0 }}
-                                  animate={{ scale: 1, opacity: 1 }}
-                                  transition={{ duration: 0.3, delay: 1.2 + i * 0.06 }}
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: [0.6, 1, 0.6], scale: [1, 1.1, 1] }}
+                                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: i * 0.4 }}
+                                  style={{ transformOrigin: `${cx}px ${cy}px` }}
                                 />
                               )
                             })}
-                            {/* Scan line */}
-                            <g className="scan-line">
-                              <line
-                                x1="100" y1="100" x2="100" y2="20"
-                                stroke="rgba(6,182,212,0.4)"
-                                strokeWidth="1"
-                              />
-                              <circle cx="100" cy="20" r="2" fill="rgba(6,182,212,0.6)" />
-                            </g>
-                            {/* Pillar labels */}
+                            {/* Pillar labels — static */}
                             {SAMPLE_SCORES.map((pillar, i) => {
                               const angle = (Math.PI * 2 * i) / SAMPLE_SCORES.length - Math.PI / 2
                               const labelR = 95
@@ -1074,76 +1075,169 @@ export default function Home() {
             {/* ── Split layout: Radar left + Pillar list right ── */}
             <div className="mt-14 lg:mt-20 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
-              {/* LEFT — Radar */}
+              {/* LEFT — Living Constellation Radar */}
               <FadeUp delay={0.1}>
                 <div className="relative mx-auto w-full max-w-md aspect-square">
-                  <div className="absolute inset-[10%] rounded-full bg-eari-blue/5 blur-3xl" />
-                  <svg viewBox="0 0 200 200" className="w-full h-full" aria-label="8-pillar radar visualization">
+                  {/* Soft ambient glow behind radar — calm, single source */}
+                  <div className="absolute inset-[8%] rounded-full opacity-20" style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.15) 0%, rgba(6,182,212,0.06) 50%, transparent 80%)' }} />
+
+                  <svg viewBox="0 0 220 220" className="w-full h-full" aria-label="8-pillar radar visualization">
                     <defs>
+                      {/* Calm radial fill — softer center glow */}
                       <radialGradient id="methodRadarFill" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stopColor="rgba(6,182,212,0.25)" />
-                        <stop offset="100%" stopColor="rgba(59,130,246,0.05)" />
+                        <stop offset="0%" stopColor="rgba(6,182,212,0.18)" />
+                        <stop offset="50%" stopColor="rgba(59,130,246,0.08)" />
+                        <stop offset="100%" stopColor="rgba(37,99,235,0.02)" />
                       </radialGradient>
                       <linearGradient id="methodStrokeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stopColor="#06b6d4" />
-                        <stop offset="100%" stopColor="#3b82f6" />
+                        <stop offset="50%" stopColor="#3b82f6" />
+                        <stop offset="100%" stopColor="#8b5cf6" />
                       </linearGradient>
                     </defs>
-                    {[20, 40, 60, 80].map(r => (
-                      <circle key={r} cx="100" cy="100" r={r} fill="none" stroke="rgba(48,57,74,0.3)" strokeWidth="0.5" />
+
+                    {/* Watch-face grid rings — solid, faint, elegant */}
+                    {[20, 40, 60, 80].map((r, idx) => (
+                      <circle key={r} cx="110" cy="110" r={r} fill="none"
+                        stroke={idx === 3 ? 'rgba(37,99,235,0.10)' : 'rgba(48,57,74,0.14)'}
+                        strokeWidth={idx === 3 ? 0.6 : 0.4}
+                      />
                     ))}
+
+                    {/* Axis lines — minimal, refined */}
                     {PILLARS.map((_, i) => {
                       const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2
                       return (
-                        <line key={i} x1="100" y1="100"
-                          x2={100 + 80 * Math.cos(angle)} y2={100 + 80 * Math.sin(angle)}
-                          stroke="rgba(48,57,74,0.25)" strokeWidth="0.5" />
+                        <line key={i} x1="110" y1="110"
+                          x2={110 + 80 * Math.cos(angle)} y2={110 + 80 * Math.sin(angle)}
+                          stroke="rgba(48,57,74,0.12)" strokeWidth="0.4" />
                       )
                     })}
+
+                    {/* Data polygon — gentle fade-in, no aggressive scale */}
                     <motion.polygon
                       points={SAMPLE_SCORES.map((p, i) => {
                         const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2
                         const r = (p.score / 100) * 80
-                        return `${100 + r * Math.cos(angle)},${100 + r * Math.sin(angle)}`
+                        return `${110 + r * Math.cos(angle)},${110 + r * Math.sin(angle)}`
                       }).join(' ')}
                       fill="url(#methodRadarFill)"
                       stroke="url(#methodStrokeGrad)"
                       strokeWidth="1.5"
-                      initial={{ opacity: 0, scale: 0.6 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 1, delay: 0.4, ease: 'easeOut' }}
-                      style={{ transformOrigin: 'center' }}
+                      strokeLinejoin="round"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 1.8, delay: 0.3, ease: 'easeOut' }}
                     />
+
+                    {/* Subtle stroke opacity breathe on data polygon */}
+                    <motion.polygon
+                      points={SAMPLE_SCORES.map((p, i) => {
+                        const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2
+                        const r = (p.score / 100) * 80
+                        return `${110 + r * Math.cos(angle)},${110 + r * Math.sin(angle)}`
+                      }).join(' ')}
+                      fill="none"
+                      stroke="url(#methodStrokeGrad)"
+                      strokeWidth="0.5"
+                      animate={{ strokeOpacity: [0.2, 0.45, 0.2] }}
+                      transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+                    />
+
+                    {/* Constellation data points — gentle staggered breathe */}
                     {SAMPLE_SCORES.map((p, i) => {
                       const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2
                       const r = (p.score / 100) * 80
+                      const cx = 110 + r * Math.cos(angle)
+                      const cy = 110 + r * Math.sin(angle)
                       return (
-                        <motion.circle key={i}
-                          cx={100 + r * Math.cos(angle)} cy={100 + r * Math.sin(angle)}
-                          r="3" fill={p.color} stroke="rgba(15,23,42,0.6)" strokeWidth="1"
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{ duration: 0.3, delay: 0.9 + i * 0.06 }}
-                        />
+                        <g key={i}>
+                          {/* Soft outer halo */}
+                          <motion.circle
+                            cx={cx} cy={cy}
+                            r="6" fill={p.color}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: [0.04, 0.10, 0.04], scale: [1, 1.06, 1] }}
+                            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: i * 0.5 }}
+                            style={{ transformOrigin: `${cx}px ${cy}px` }}
+                          />
+                          {/* Core dot — breathe gently */}
+                          <motion.circle
+                            cx={cx} cy={cy}
+                            r="2.5" fill={p.color}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: [0.7, 1, 0.7], scale: [1, 1.08, 1] }}
+                            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: i * 0.5 }}
+                            style={{ transformOrigin: `${cx}px ${cy}px` }}
+                          />
+                        </g>
                       )
                     })}
+
+                    {/* Pillar labels — static, clean typography */}
                     {PILLARS.map((pillar, i) => {
                       const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2
-                      const labelR = 96
+                      const labelR = 98
+                      const cx = 110 + labelR * Math.cos(angle)
+                      const cy = 110 + labelR * Math.sin(angle)
                       return (
-                        <text key={i}
-                          x={100 + labelR * Math.cos(angle)} y={100 + labelR * Math.sin(angle)}
-                          textAnchor="middle" dominantBaseline="middle"
-                          fill="#8b949e" fontSize="7.5" fontFamily="monospace" fontWeight="500">
-                          {pillar.shortName}
-                        </text>
+                        <g key={i}>
+                          <text
+                            x={cx} y={cy - 3}
+                            textAnchor="middle" dominantBaseline="middle"
+                            fill="#8b949e" fontSize="7" fontFamily="var(--font-jetbrains)" fontWeight="500"
+                          >
+                            {pillar.shortName}
+                          </text>
+                          <text
+                            x={cx} y={cy + 7}
+                            textAnchor="middle" dominantBaseline="middle"
+                            fill={SAMPLE_SCORES[i].color} fontSize="8" fontFamily="var(--font-jetbrains)" fontWeight="700"
+                          >
+                            {SAMPLE_SCORES[i].score}
+                          </text>
+                        </g>
                       )
                     })}
+
+                    {/* Single slow ambient orbit particle — once every 20s */}
                   </svg>
+
+                  {/* Slow orbit particle outside SVG for smooth CSS animation */}
+                  <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+                    <div
+                      className="radar-orbit-particle"
+                      style={{
+                        width: 3,
+                        height: 3,
+                        background: 'rgba(6,182,212,0.6)',
+                        borderRadius: '50%',
+                        boxShadow: '0 0 6px rgba(6,182,212,0.3)',
+                        '--orbit-radius': '42%',
+                        '--orbit-duration': '20s',
+                      } as React.CSSProperties}
+                    />
+                  </div>
+
+                  {/* Center score overlay — fade in once, calm */}
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div className="text-center">
-                      <span className="block text-3xl font-heading font-bold text-foreground/90">63.8</span>
-                      <span className="block text-[10px] font-mono text-muted-foreground tracking-wider uppercase">E-ARI</span>
+                      <motion.span
+                        className="block text-4xl font-heading font-bold gradient-text-blue"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 1, delay: 1 }}
+                      >
+                        63.8
+                      </motion.span>
+                      <motion.span
+                        className="block text-[10px] font-mono text-muted-foreground tracking-[0.2em] uppercase mt-1"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.8, delay: 1.3 }}
+                      >
+                        E-ARI Score
+                      </motion.span>
                     </div>
                   </div>
                 </div>
@@ -1216,10 +1310,10 @@ export default function Home() {
             <FadeUp>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { icon: Award, title: 'Certified', desc: 'E-ARI Certification: Bronze to Platinum badging', color: '#d4a853' },
-                  { icon: Landmark, title: 'Compliant', desc: 'EU AI Act · NIST · ISO 42001 gap analysis', color: '#3b82f6' },
-                  { icon: Activity, title: 'Monitored', desc: 'Continuous drift detection & smart alerts', color: '#10b981' },
-                  { icon: BarChart3, title: 'Benchmarked', desc: 'Sector peer comparison with real data', color: '#06b6d4' },
+                  { icon: Award, title: 'Certified', desc: 'E-ARI Certification from Bronze to Platinum badging', color: '#d4a853' },
+                  { icon: Landmark, title: 'Compliant', desc: 'EU AI Act, NIST, and ISO 42001 gap analysis', color: '#3b82f6' },
+                  { icon: Activity, title: 'Monitored', desc: 'Continuous drift detection with smart alerts', color: '#10b981' },
+                  { icon: BarChart3, title: 'Benchmarked', desc: 'Sector peer comparison with real industry data', color: '#06b6d4' },
                 ].map((feat, i) => {
                   const Icon = feat.icon
                   return (
@@ -1230,17 +1324,17 @@ export default function Home() {
                       viewport={{ once: true }}
                       transition={{ duration: 0.4, delay: i * 0.08 }}
                       whileHover={{ y: -3 }}
-                      className="group"
+                      className="group h-full"
                     >
-                      <div className="glass-card rounded-lg p-4 text-center">
+                      <div className="glass-card rounded-lg p-5 text-center h-full flex flex-col items-center">
                         <div
-                          className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg mb-2.5"
+                          className="flex h-10 w-10 items-center justify-center rounded-xl mb-3"
                           style={{ backgroundColor: `${feat.color}15` }}
                         >
-                          <Icon className="h-4 w-4" style={{ color: feat.color }} />
+                          <Icon className="h-5 w-5" style={{ color: feat.color }} />
                         </div>
                         <h4 className="font-heading text-sm font-semibold text-foreground">{feat.title}</h4>
-                        <p className="mt-1 text-xs text-muted-foreground font-sans leading-relaxed">{feat.desc}</p>
+                        <p className="mt-1.5 text-xs text-muted-foreground font-sans leading-relaxed">{feat.desc}</p>
                       </div>
                     </motion.div>
                   )
@@ -1325,32 +1419,6 @@ export default function Home() {
           {/* Subtle grid background */}
           <div className="absolute inset-0 hex-grid-bg pointer-events-none" aria-hidden="true" />
 
-          {/* Full-section neural network background */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-            <svg className="w-full h-full" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice" fill="none">
-              {/* Connection lines drawing in */}
-              <motion.line x1="120" y1="80"  x2="360" y2="270" stroke="rgba(37,99,235,0.14)"  strokeWidth="1" strokeDasharray="5 12" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 2.0, delay: 0.3 }} />
-              <motion.line x1="360" y1="270" x2="650" y2="160" stroke="rgba(139,92,246,0.13)" strokeWidth="1" strokeDasharray="5 12" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 2.0, delay: 0.6 }} />
-              <motion.line x1="650" y1="160" x2="980" y2="310" stroke="rgba(6,182,212,0.13)"  strokeWidth="1" strokeDasharray="5 12" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 2.0, delay: 0.9 }} />
-              <motion.line x1="180" y1="440" x2="470" y2="340" stroke="rgba(16,185,129,0.12)" strokeWidth="1" strokeDasharray="5 12" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 2.0, delay: 1.1 }} />
-              <motion.line x1="470" y1="340" x2="860" y2="440" stroke="rgba(245,158,11,0.11)" strokeWidth="1" strokeDasharray="5 12" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 2.0, delay: 1.3 }} />
-              <motion.line x1="360" y1="270" x2="470" y2="340" stroke="rgba(236,72,153,0.13)" strokeWidth="1" strokeDasharray="5 12" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 2.0, delay: 1.5 }} />
-              <motion.line x1="650" y1="160" x2="650" y2="430" stroke="rgba(139,92,246,0.07)" strokeWidth="1"                          initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 2.0, delay: 1.7 }} />
-              <motion.line x1="980" y1="310" x2="1150" y2="490" stroke="rgba(37,99,235,0.07)" strokeWidth="1"                          initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 2.0, delay: 1.9 }} />
-              {/* Pulsing constellation nodes */}
-              <motion.circle cx="120"  cy="80"  r="3.5" fill="rgba(59,130,246,0.65)"  className="constellation-node" initial={{ scale: 0, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.4, type: 'spring' }} />
-              <motion.circle cx="360"  cy="270" r="5"   fill="rgba(139,92,246,0.65)" className="constellation-node" initial={{ scale: 0, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.7, type: 'spring' }} />
-              <motion.circle cx="650"  cy="160" r="4"   fill="rgba(6,182,212,0.65)"  className="constellation-node" initial={{ scale: 0, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }} transition={{ delay: 1.0, type: 'spring' }} />
-              <motion.circle cx="980"  cy="310" r="4.5" fill="rgba(16,185,129,0.65)" className="constellation-node" initial={{ scale: 0, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }} transition={{ delay: 1.2, type: 'spring' }} />
-              <motion.circle cx="470"  cy="340" r="3.5" fill="rgba(245,158,11,0.65)" className="constellation-node" initial={{ scale: 0, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }} transition={{ delay: 1.4, type: 'spring' }} />
-              <motion.circle cx="860"  cy="440" r="4"   fill="rgba(236,72,153,0.65)" className="constellation-node" initial={{ scale: 0, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }} transition={{ delay: 1.6, type: 'spring' }} />
-              <motion.circle cx="180"  cy="440" r="3"   fill="rgba(37,99,235,0.55)"  className="constellation-node" initial={{ scale: 0, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }} transition={{ delay: 1.8, type: 'spring' }} />
-              {/* Traveling data particles along the network */}
-              <motion.circle r="2" fill="rgba(59,130,246,0.8)"  animate={{ cx: [120, 360, 650, 980], cy: [80, 270, 160, 310] }} transition={{ duration: 7, repeat: Infinity, ease: 'linear' }} />
-              <motion.circle r="1.5" fill="rgba(236,72,153,0.8)" animate={{ cx: [180, 470, 860], cy: [440, 340, 440] }}       transition={{ duration: 5, repeat: Infinity, ease: 'linear', delay: 2.5 }} />
-            </svg>
-          </div>
-
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {/* Section header */}
             <FadeUp>
@@ -1407,20 +1475,15 @@ export default function Home() {
                             whileHover={{ scale: 1.15 }}
                             transition={{ duration: 0.2 }}
                           >
-                            <motion.div
+                            <div
                               className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.08]"
-                              style={{ backgroundColor: `${agent.color}15` }}
-                              animate={{
-                                boxShadow: [
-                                  `0 0 8px ${agent.color}25`,
-                                  `0 0 22px ${agent.color}80, 0 0 38px ${agent.color}35`,
-                                  `0 0 8px ${agent.color}25`,
-                                ],
+                              style={{
+                                backgroundColor: `${agent.color}15`,
+                                boxShadow: `0 0 20px ${agent.color}15`,
                               }}
-                              transition={{ duration: 2.5 + i * 0.4, repeat: Infinity, ease: 'easeInOut', delay: i * 0.4 }}
                             >
                               <Icon className="h-5 w-5" style={{ color: agent.color }} />
-                            </motion.div>
+                            </div>
                             {/* Agent name tooltip */}
                             <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                               <span className="text-[10px] font-mono text-muted-foreground/80 bg-navy-900/90 px-2 py-0.5 rounded border border-white/[0.06]">
@@ -1450,108 +1513,24 @@ export default function Home() {
                       </motion.div>
                     </div>
 
-                    {/* Neural network SVG — orbital connections + flowing data */}
+                    {/* Connecting lines from center to each agent */}
                     <svg className="absolute inset-0 w-full h-full" viewBox="0 0 380 380" aria-hidden="true">
-                      {/* Outer perimeter connecting adjacent agent nodes */}
-                      {AGENT_PROPERTIES.map((agent, i) => {
-                        const ni = (i + 1) % AGENT_PROPERTIES.length
-                        const a1 = (Math.PI * 2 * i)  / AGENT_PROPERTIES.length - Math.PI / 2
-                        const a2 = (Math.PI * 2 * ni) / AGENT_PROPERTIES.length - Math.PI / 2
-                        const r = 140
-                        return (
-                          <motion.line
-                            key={`outer-${i}`}
-                            x1={190 + r * Math.cos(a1)} y1={190 + r * Math.sin(a1)}
-                            x2={190 + r * Math.cos(a2)} y2={190 + r * Math.sin(a2)}
-                            stroke={agent.color} strokeWidth="0.7" strokeDasharray="3 8"
-                            initial={{ pathLength: 0, opacity: 0 }}
-                            whileInView={{ pathLength: 1, opacity: 0.18 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: 0.9 + i * 0.1, duration: 1.1 }}
-                          />
-                        )
-                      })}
-                      {/* Skip-one cross connections — neural star pattern */}
-                      {[0, 1, 2].map((i) => {
-                        const ni = (i + 2) % AGENT_PROPERTIES.length
-                        const a1 = (Math.PI * 2 * i)  / AGENT_PROPERTIES.length - Math.PI / 2
-                        const a2 = (Math.PI * 2 * ni) / AGENT_PROPERTIES.length - Math.PI / 2
-                        const r = 140
-                        return (
-                          <motion.line
-                            key={`cross-${i}`}
-                            x1={190 + r * Math.cos(a1)} y1={190 + r * Math.sin(a1)}
-                            x2={190 + r * Math.cos(a2)} y2={190 + r * Math.sin(a2)}
-                            stroke={AGENT_PROPERTIES[ni].color} strokeWidth="0.4"
-                            initial={{ pathLength: 0, opacity: 0 }}
-                            whileInView={{ pathLength: 1, opacity: 0.07 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: 1.4 + i * 0.12, duration: 1.3 }}
-                          />
-                        )
-                      })}
-                      {/* Base spokes: structural center-to-node lines */}
                       {AGENT_PROPERTIES.map((agent, i) => {
                         const angle = (Math.PI * 2 * i) / AGENT_PROPERTIES.length - Math.PI / 2
-                        const r = 140
+                        const radius = 140
+                        const x = 190 + radius * Math.cos(angle)
+                        const y = 190 + radius * Math.sin(angle)
                         return (
                           <motion.line
-                            key={`base-${agent.id}`}
-                            x1="190" y1="190"
-                            x2={190 + r * Math.cos(angle)} y2={190 + r * Math.sin(angle)}
-                            stroke={agent.color} strokeWidth="0.5"
+                            key={`line-${agent.id}`}
+                            x1="190" y1="190" x2={x} y2={y}
+                            stroke={agent.color}
+                            strokeWidth="0.5"
+                            strokeOpacity="0.12"
                             initial={{ pathLength: 0, opacity: 0 }}
-                            whileInView={{ pathLength: 1, opacity: 0.2 }}
+                            whileInView={{ pathLength: 1, opacity: 1 }}
                             viewport={{ once: true }}
-                            transition={{ delay: 0.4 + i * 0.08, duration: 0.6 }}
-                          />
-                        )
-                      })}
-                      {/* Flowing data lines — animated dashes moving outward */}
-                      {AGENT_PROPERTIES.map((agent, i) => {
-                        const angle = (Math.PI * 2 * i) / AGENT_PROPERTIES.length - Math.PI / 2
-                        const r = 140
-                        return (
-                          <motion.line
-                            key={`flow-${agent.id}`}
-                            x1="190" y1="190"
-                            x2={190 + r * Math.cos(angle)} y2={190 + r * Math.sin(angle)}
-                            stroke={agent.color} strokeWidth="1.8" strokeLinecap="round"
-                            strokeDasharray="5 25"
-                            initial={{ opacity: 0, strokeDashoffset: 30 }}
-                            whileInView={{ opacity: 0.65 }}
-                            animate={{ strokeDashoffset: [30, -30] }}
-                            viewport={{ once: true }}
-                            transition={{
-                              opacity: { delay: 0.7 + i * 0.1, duration: 0.5 },
-                              strokeDashoffset: { duration: 1.6 + i * 0.18, repeat: Infinity, ease: 'linear', delay: i * 0.28 },
-                            }}
-                          />
-                        )
-                      })}
-                      {/* Traveling data packets: dots moving center ↔ agent */}
-                      {AGENT_PROPERTIES.map((agent, i) => {
-                        const angle = (Math.PI * 2 * i) / AGENT_PROPERTIES.length - Math.PI / 2
-                        const r = 140
-                        const tx = 190 + r * Math.cos(angle)
-                        const ty = 190 + r * Math.sin(angle)
-                        return (
-                          <motion.circle
-                            key={`packet-${agent.id}`}
-                            r="2.5" fill={agent.color}
-                            style={{ filter: `drop-shadow(0 0 4px ${agent.color})` }}
-                            initial={{ cx: 190, cy: 190, opacity: 0 }}
-                            animate={{
-                              cx: [190, tx, 190],
-                              cy: [190, ty, 190],
-                              opacity: [0, 0.95, 0.7, 0.95, 0],
-                            }}
-                            transition={{
-                              duration: 2.2 + i * 0.28,
-                              repeat: Infinity,
-                              ease: 'easeInOut',
-                              delay: 1.0 + i * 0.38,
-                            }}
+                            transition={{ delay: 0.5 + i * 0.08, duration: 0.6 }}
                           />
                         )
                       })}

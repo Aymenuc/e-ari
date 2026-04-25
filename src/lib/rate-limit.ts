@@ -216,6 +216,46 @@ export function getRateLimitHeaders(
 }
 
 // ---------------------------------------------------------------------------
+// Convenience: check rate limit from request, return 429 response or null
+// ---------------------------------------------------------------------------
+
+/**
+ * Check rate limit from a request object directly.
+ * Returns a 429 NextResponse if rate-limited, or null if allowed.
+ * The limit/windowSeconds params override the ENDPOINT_LIMITS config.
+ */
+export function checkRateLimitFromRequest(
+  request: Request,
+  endpointType: string,
+  limit: number,
+  windowSeconds: number,
+): import('next/server').NextResponse | null {
+  const { NextResponse } = require('next/server');
+  const identifier = resolveIdentifier(null, request);
+  const now = Date.now();
+  const windowMs = windowSeconds * 1000;
+  const windowStart = now - windowMs;
+  const key = `${identifier}:${endpointType}`;
+
+  const existing = requestStore.get(key) ?? [];
+  const withinWindow = existing.filter((ts) => ts > windowStart);
+
+  if (withinWindow.length >= limit) {
+    const resetAt = withinWindow[0] + windowMs;
+    const retryAfter = Math.ceil((resetAt - now) / 1000);
+    requestStore.set(key, withinWindow);
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later.', retryAfter: retryAfter > 0 ? retryAfter : 1 },
+      { status: 429, headers: { 'Retry-After': String(retryAfter > 0 ? retryAfter : 1) } }
+    );
+  }
+
+  withinWindow.push(now);
+  requestStore.set(key, withinWindow);
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 // Convenience: derive identifier from request + session
 // ---------------------------------------------------------------------------
 

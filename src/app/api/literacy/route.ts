@@ -1,14 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { db } from '@/lib/db';
 import { checkRateLimit, getRateLimitHeaders, resolveIdentifier } from '@/lib/rate-limit';
+import { LLM_API_URL } from '@/lib/llm-config';
 
 export async function POST(req: NextRequest) {
   try {
-    // ── Auth Check (was missing) ──
+    // ── Auth Check ──
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // ── Tier Check: Literacy requires Professional, Growth, or Enterprise ──
+    const user = await db.user.findUnique({ where: { id: session.user.id } });
+    const tier = user?.tier || 'free';
+    if (tier === 'free') {
+      return NextResponse.json(
+        { error: 'AI Literacy training requires Professional, Growth, or Enterprise tier', upgradeRequired: true },
+        { status: 403 }
+      );
     }
 
     // Rate limit literacy (LLM-powered learning paths)
@@ -74,7 +86,7 @@ Rules:
 
     try {
       const glmResp1 = await fetch(
-        "https://api.us-west-2.modal.direct/v1/chat/completions",
+        LLM_API_URL,
         {
           method: "POST",
           headers: {
@@ -92,6 +104,13 @@ Rules:
           }),
         }
       );
+
+      if (!glmResp1.ok) {
+        const errorText = await glmResp1.text();
+        console.error('LLM API error:', glmResp1.status, errorText);
+        throw new Error('LLM service unavailable');
+      }
+
       const glmData1 = await glmResp1.json();
       const completion = { choices: glmData1.choices };
 
@@ -171,7 +190,7 @@ Rules:
 
   try {
     const glmResp2 = await fetch(
-      "https://api.us-west-2.modal.direct/v1/chat/completions",
+      LLM_API_URL,
       {
         method: "POST",
         headers: {
@@ -189,6 +208,13 @@ Rules:
         }),
       }
     );
+
+    if (!glmResp2.ok) {
+      const errorText = await glmResp2.text();
+      console.error('LLM API error:', glmResp2.status, errorText);
+      return NextResponse.json({ error: 'LLM service unavailable' }, { status: 503 });
+    }
+
     const glmData2 = await glmResp2.json();
     const completion = { choices: glmData2.choices };
 

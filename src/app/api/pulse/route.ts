@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { runPulse, savePulseRun } from "@/lib/pulse-engine";
+import { checkRateLimitFromRequest } from "@/lib/rate-limit";
 
 // GET /api/pulse?month=2026-04 — Returns user's pulse history
 export async function GET(req: NextRequest) {
@@ -42,8 +43,12 @@ export async function GET(req: NextRequest) {
 }
 
 // POST /api/pulse — Trigger a new Pulse run
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
+    // Rate limit pulse runs (5 per 15 minutes)
+    const rateLimitError = checkRateLimitFromRequest(req, 'pulse', 5, 900);
+    if (rateLimitError) return rateLimitError;
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
