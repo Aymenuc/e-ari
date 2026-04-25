@@ -1,3 +1,5 @@
+import { NextResponse } from 'next/server';
+
 /**
  * In-memory sliding window rate limiter for E-ARI.
  *
@@ -229,8 +231,7 @@ export function checkRateLimitFromRequest(
   endpointType: string,
   limit: number,
   windowSeconds: number,
-): import('next/server').NextResponse | null {
-  const { NextResponse } = require('next/server');
+): NextResponse | null {
   const identifier = resolveIdentifier(null, request);
   const now = Date.now();
   const windowMs = windowSeconds * 1000;
