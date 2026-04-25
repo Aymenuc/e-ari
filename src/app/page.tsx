@@ -661,30 +661,6 @@ const CLIENT_LOGOS = [
   'StratumIQ', 'HelixPartners', 'AxiomCore', 'TesseraCo', 'MeridianEdge', 'Quantiva',
 ]
 
-/* ─── Testimonials (from clients who used E-ARI for their business) ─────── */
-
-const TESTIMONIALS = [
-  {
-    quote: 'We used E-ARI to evaluate where our business stood before committing to a major AI investment. The structured breakdown gave us confidence in our decisions and clarity on where to focus first.',
-    name: 'James K.',
-    title: 'Client',
-    org: 'StratumIQ',
-  },
-  {
-    quote: 'The assessment surfaced gaps we had overlooked, especially around data governance. It directly influenced how we prioritized our AI roadmap for the following quarter.',
-    name: 'Amira R.',
-    title: 'Client',
-    org: 'HelixPartners',
-  },
-  {
-    quote: 'We ran E-ARI across multiple teams to baseline our AI readiness. The sector-tailored questions made the results feel relevant to our industry, not like a generic checklist.',
-    name: 'Daniel M.',
-    title: 'Client',
-    org: 'TesseraCo',
-  },
-]
-
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MAIN PAGE
@@ -2043,52 +2019,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        {/* ─── 5C. TESTIMONIALS SECTION ─────────────────────────────────────── */}
-        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-800/30">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <FadeUp>
-              <div className="text-center max-w-3xl mx-auto mb-12">
-                <h2 className="font-heading text-3xl sm:text-4xl font-bold gradient-text-blue">
-                  What Clients Say
-                </h2>
-                <p className="mt-4 text-lg text-muted-foreground font-sans">
-                  Businesses that have used E-ARI to understand and improve their AI readiness.
-                </p>
-              </div>
-            </FadeUp>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {TESTIMONIALS.map((t, i) => (
-                <FadeUp key={t.name} delay={i * 0.1}>
-                  <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }}>
-                    <Card className="bg-navy-800 border-border/50 h-full">
-                      <CardContent className="p-6">
-                        <div className="mb-4">
-                          {Array.from({ length: 5 }).map((_, si) => (
-                            <span key={si} className="text-[#d4a853] text-sm">&#9733;</span>
-                          ))}
-                        </div>
-                        <p className="text-sm text-muted-foreground font-sans leading-relaxed mb-6 italic">
-                          &ldquo;{t.quote}&rdquo;
-                        </p>
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-eari-blue/10 text-eari-blue-light font-heading font-bold text-sm">
-                            {t.name[0]}
-                          </div>
-                          <div>
-                            <p className="font-heading text-sm font-semibold text-foreground">{t.name}</p>
-                            <p className="text-xs text-muted-foreground font-sans">{t.title}, {t.org}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                </FadeUp>
-              ))}
-            </div>
-          </div>
-        </ParallaxSection>
 
         {/* ─── 5D. ROI CALCULATOR SECTION ─────────────────────────────────── */}
         <div className="section-gradient-separator" aria-hidden="true">
