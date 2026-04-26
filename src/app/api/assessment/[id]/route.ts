@@ -67,7 +67,7 @@ export async function PUT(
 
     const { id } = await params;
     const body = await req.json();
-    const { responses, action } = body; // action: "save" | "submit"
+    const { responses, action, orgContext } = body; // action: "save" | "submit"
 
     const assessment = await db.assessment.findUnique({
       where: { id },
@@ -147,6 +147,7 @@ export async function PUT(
           sector: assessment.sector,
           orgSize: user?.orgSize || undefined,
           organization: user?.organization || undefined,
+          orgContext: orgContext || undefined,
         }).catch(err => {
           // Pipeline runs in background — log errors but don't block the response
           console.error('Background pipeline execution failed:', err);
