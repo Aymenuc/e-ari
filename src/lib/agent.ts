@@ -17,6 +17,7 @@
  */
 
 import { PILLARS, getPillarById, MATURITY_BANDS, type MaturityBand } from './pillars';
+import { LLM_API_URL } from './llm-config';
 import { getSectorById } from './sectors';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -870,7 +871,7 @@ ${scoreInfo}`;
  */
 async function callLLM(systemPrompt: string, userPrompt: string, maxTokens: number = 3000): Promise<{ content: string; model: string }> {
   const response = await fetch(
-    "https://api.us-west-2.modal.direct/v1/chat/completions",
+    LLM_API_URL,
     {
       method: "POST",
       headers: {
@@ -888,6 +889,11 @@ async function callLLM(systemPrompt: string, userPrompt: string, maxTokens: numb
       }),
     }
   );
+  if (!response.ok) {
+    const errText = await response.text();
+    console.error('LLM API error:', response.status, errText);
+    throw new Error(`LLM service error: ${response.status}`);
+  }
   const data = await response.json();
   const completion = { choices: data.choices };
 
@@ -1444,7 +1450,7 @@ export async function queryAgent(request: AgentRequest): Promise<AgentResponse> 
 
     // Call LLM with increased max_tokens
     const glmResponse = await fetch(
-      "https://api.us-west-2.modal.direct/v1/chat/completions",
+      LLM_API_URL,
       {
         method: "POST",
         headers: {
@@ -1459,6 +1465,11 @@ export async function queryAgent(request: AgentRequest): Promise<AgentResponse> 
         }),
       }
     );
+    if (!glmResponse.ok) {
+      const errText = await glmResponse.text();
+      console.error('LLM API error:', glmResponse.status, errText);
+      throw new Error(`LLM service error: ${glmResponse.status}`);
+    }
     const glmData = await glmResponse.json();
     const completion = { choices: glmData.choices };
 

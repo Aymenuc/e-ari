@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { getPipelineContext } from '@/lib/orchestrator';
 import type { PipelineContext } from '@/lib/orchestrator';
 import { checkRateLimit, getRateLimitHeaders, resolveIdentifier } from '@/lib/rate-limit';
+import { LLM_API_URL } from '@/lib/llm-config';
 
 const SYSTEM_PROMPT = `You are the E-ARI AI Assistant, an expert in enterprise AI readiness assessment. You help users understand the 8-pillar framework (Strategy, Data, Technology, Talent, Governance, Culture, Process, Security), explain scoring methodology, interpret maturity bands (Laggard 0-25, Follower 26-50, Chaser 51-75, Pacesetter 76-100), and guide them through the assessment process. Be concise, professional, and actionable.
 
@@ -304,7 +305,7 @@ export async function POST(req: NextRequest) {
     ];
 
     const glmResp = await fetch(
-      "https://api.us-west-2.modal.direct/v1/chat/completions",
+      LLM_API_URL,
       {
         method: "POST",
         headers: {
@@ -319,6 +320,11 @@ export async function POST(req: NextRequest) {
         }),
       }
     );
+    if (!glmResp.ok) {
+      const errText = await glmResp.text();
+      console.error('LLM API error:', glmResp.status, errText);
+      throw new Error(`LLM service error: ${glmResp.status}`);
+    }
     const glmRespData = await glmResp.json();
     const completion = { choices: glmRespData.choices };
 
