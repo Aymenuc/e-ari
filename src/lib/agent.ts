@@ -876,7 +876,7 @@ async function callLLM(systemPrompt: string, userPrompt: string, maxTokens: numb
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.NVIDIA_API_KEY_PRO}`,
+        "Authorization": `Bearer ${process.env.GLM_API_KEY}`,
       },
       body: JSON.stringify({
         model: LLM_MODEL_PRO,
@@ -1455,7 +1455,7 @@ export async function queryAgent(request: AgentRequest): Promise<AgentResponse> 
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.NVIDIA_API_KEY_PRO}`,
+          "Authorization": `Bearer ${process.env.GLM_API_KEY}`,
         },
         body: JSON.stringify({
           model: LLM_MODEL_PRO,

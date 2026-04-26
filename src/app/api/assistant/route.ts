@@ -310,7 +310,7 @@ export async function POST(req: NextRequest) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.NVIDIA_API_KEY}`,
+          "Authorization": `Bearer ${process.env.GLM_API_KEY}`,
         },
         body: JSON.stringify({
           model: LLM_MODEL,

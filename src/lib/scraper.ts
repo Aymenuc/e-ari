@@ -144,7 +144,7 @@ async function tavilySearch(query: string, maxResults: number = 8): Promise<Tavi
 }
 
 async function glmComplete(systemPrompt: string, userPrompt: string, maxTokens: number = 1500): Promise<string | null> {
-  const apiKey = process.env.NVIDIA_API_KEY_PRO;
+  const apiKey = process.env.GLM_API_KEY;
   if (!apiKey) {
     console.warn('[scraper] NVIDIA_API_KEY_PRO not set');
     return null;

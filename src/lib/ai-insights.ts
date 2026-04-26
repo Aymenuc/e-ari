@@ -438,7 +438,7 @@ export async function generateAIInsights(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.NVIDIA_API_KEY_PRO}`,
+          "Authorization": `Bearer ${process.env.GLM_API_KEY}`,
         },
         body: JSON.stringify({
           model: LLM_MODEL_PRO,
