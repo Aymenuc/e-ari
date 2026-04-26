@@ -1,13 +1,15 @@
 /**
  * E-ARI Web Scraping / Context Enrichment Service
  *
- * Uses Tavily Search API for web search and GLM-5.1 for synthesis to enrich
+ * Uses Tavily Search API for web search and DeepSeek Pro for synthesis to enrich
  * organizational context for AI readiness assessments.
  *
  * Environment variables:
  * - TAVILY_API_KEY: Tavily Search API key
- * - GLM_API_KEY: GLM-5.1 API key
+ * - NVIDIA_API_KEY_PRO: DeepSeek Pro API key
  */
+
+import { LLM_API_URL_PRO, LLM_MODEL_PRO } from './llm-config';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -142,17 +144,17 @@ async function tavilySearch(query: string, maxResults: number = 8): Promise<Tavi
 }
 
 async function glmComplete(systemPrompt: string, userPrompt: string, maxTokens: number = 1500): Promise<string | null> {
-  const apiKey = process.env.GLM_API_KEY;
+  const apiKey = process.env.NVIDIA_API_KEY_PRO;
   if (!apiKey) {
-    console.warn('[scraper] GLM_API_KEY not set');
+    console.warn('[scraper] NVIDIA_API_KEY_PRO not set');
     return null;
   }
   try {
-    const res = await fetch('https://api.us-west-2.modal.direct/v1/chat/completions', {
+    const res = await fetch(LLM_API_URL_PRO, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
-        model: 'zai-org/GLM-5.1-FP8',
+        model: LLM_MODEL_PRO,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
@@ -161,11 +163,15 @@ async function glmComplete(systemPrompt: string, userPrompt: string, maxTokens: 
         temperature: 0.2,
       }),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const errText = await res.text();
+      console.warn('[scraper] LLM API error:', res.status, errText);
+      return null;
+    }
     const data = await res.json();
     return data.choices?.[0]?.message?.content ?? null;
   } catch (error) {
-    console.warn('[scraper] GLM completion error:', error);
+    console.warn('[scraper] LLM completion error:', error);
     return null;
   }
 }

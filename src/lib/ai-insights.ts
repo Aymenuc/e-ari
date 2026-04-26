@@ -19,6 +19,7 @@
 import { PILLARS, getPillarById, LIKERT_LABELS, type PillarDefinition } from './pillars';
 import { ScoringResult, generateTemplateInsights, type ResponseMap, type QuestionScoreDetail } from './assessment-engine';
 import { getSectorById, getEffectivePillarQuestions, type SectorDefinition } from './sectors';
+import { LLM_API_URL_PRO, LLM_MODEL_PRO } from './llm-config';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -432,15 +433,15 @@ export async function generateAIInsights(
     const prompt = buildInsightPrompt(result, orgContext, responses);
 
     const response = await fetch(
-      "https://api.us-west-2.modal.direct/v1/chat/completions",
+      LLM_API_URL_PRO,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.GLM_API_KEY}`,
+          "Authorization": `Bearer ${process.env.NVIDIA_API_KEY_PRO}`,
         },
         body: JSON.stringify({
-          model: "zai-org/GLM-5.1-FP8",
+          model: LLM_MODEL_PRO,
           messages: [
             { role: 'system', content: SYSTEM_PROMPT },
             { role: 'user', content: prompt },
@@ -450,6 +451,11 @@ export async function generateAIInsights(
         }),
       }
     );
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('[ai-insights] LLM API error:', response.status, errText);
+      throw new Error(`LLM service error: ${response.status}`);
+    }
     const data = await response.json();
     const completion = { choices: data.choices };
 
