@@ -17,7 +17,7 @@
  */
 
 import { PILLARS, getPillarById, MATURITY_BANDS, type MaturityBand } from './pillars';
-import { LLM_API_URL, LLM_MODEL } from './llm-config';
+import { LLM_API_URL_PRO, LLM_MODEL_PRO } from './llm-config';
 import { getSectorById } from './sectors';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -871,15 +871,15 @@ ${scoreInfo}`;
  */
 async function callLLM(systemPrompt: string, userPrompt: string, maxTokens: number = 3000): Promise<{ content: string; model: string }> {
   const response = await fetch(
-    LLM_API_URL,
+    LLM_API_URL_PRO,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.NVIDIA_API_KEY}`,
+        "Authorization": `Bearer ${process.env.NVIDIA_API_KEY_PRO}`,
       },
       body: JSON.stringify({
-        model: LLM_MODEL,
+        model: LLM_MODEL_PRO,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
@@ -1450,15 +1450,15 @@ export async function queryAgent(request: AgentRequest): Promise<AgentResponse> 
 
     // Call LLM with increased max_tokens
     const glmResponse = await fetch(
-      LLM_API_URL,
+      LLM_API_URL_PRO,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.NVIDIA_API_KEY}`,
+          "Authorization": `Bearer ${process.env.NVIDIA_API_KEY_PRO}`,
         },
         body: JSON.stringify({
-          model: LLM_MODEL,
+          model: LLM_MODEL_PRO,
           messages,
           max_tokens: 3000,
           temperature: 0.3,
