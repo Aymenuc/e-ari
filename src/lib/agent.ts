@@ -17,7 +17,7 @@
  */
 
 import { PILLARS, getPillarById, MATURITY_BANDS, type MaturityBand } from './pillars';
-import { LLM_API_URL } from './llm-config';
+import { LLM_API_URL, LLM_MODEL } from './llm-config';
 import { getSectorById } from './sectors';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -876,10 +876,10 @@ async function callLLM(systemPrompt: string, userPrompt: string, maxTokens: numb
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.GLM_API_KEY}`,
+        "Authorization": `Bearer ${process.env.NVIDIA_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "zai-org/GLM-5.1-FP8",
+        model: LLM_MODEL,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
@@ -1455,10 +1455,10 @@ export async function queryAgent(request: AgentRequest): Promise<AgentResponse> 
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.GLM_API_KEY}`,
+          "Authorization": `Bearer ${process.env.NVIDIA_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "zai-org/GLM-5.1-FP8",
+          model: LLM_MODEL,
           messages,
           max_tokens: 3000,
           temperature: 0.3,

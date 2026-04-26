@@ -5,7 +5,7 @@ import { db } from '@/lib/db';
 import { getPipelineContext } from '@/lib/orchestrator';
 import type { PipelineContext } from '@/lib/orchestrator';
 import { checkRateLimit, getRateLimitHeaders, resolveIdentifier } from '@/lib/rate-limit';
-import { LLM_API_URL } from '@/lib/llm-config';
+import { LLM_API_URL, LLM_MODEL } from '@/lib/llm-config';
 
 const SYSTEM_PROMPT = `You are the E-ARI AI Assistant, an expert in enterprise AI readiness assessment. You help users understand the 8-pillar framework (Strategy, Data, Technology, Talent, Governance, Culture, Process, Security), explain scoring methodology, interpret maturity bands (Laggard 0-25, Follower 26-50, Chaser 51-75, Pacesetter 76-100), and guide them through the assessment process. Be concise, professional, and actionable.
 
@@ -310,10 +310,10 @@ export async function POST(req: NextRequest) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.GLM_API_KEY}`,
+          "Authorization": `Bearer ${process.env.NVIDIA_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "zai-org/GLM-5.1-FP8",
+          model: LLM_MODEL,
           messages: chatMessages,
           max_tokens: 1500,
           temperature: 0.3,

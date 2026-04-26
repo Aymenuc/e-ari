@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { checkRateLimit, getRateLimitHeaders, resolveIdentifier } from '@/lib/rate-limit';
-import { LLM_API_URL } from '@/lib/llm-config';
+import { LLM_API_URL, LLM_MODEL } from '@/lib/llm-config';
 
 export async function POST(req: NextRequest) {
   try {
@@ -91,10 +91,10 @@ Rules:
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.GLM_API_KEY}`,
+            "Authorization": `Bearer ${process.env.NVIDIA_API_KEY}`,
           },
           body: JSON.stringify({
-            model: "zai-org/GLM-5.1-FP8",
+            model: LLM_MODEL,
             messages: [
               { role: 'system', content: 'You are an AI literacy training advisor. Generate personalized learning paths based on assessment data. Always respond with valid JSON only.' },
               { role: 'user', content: prompt },
@@ -195,10 +195,10 @@ Rules:
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.GLM_API_KEY}`,
+          "Authorization": `Bearer ${process.env.NVIDIA_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "zai-org/GLM-5.1-FP8",
+          model: LLM_MODEL,
           messages: [
             { role: 'system', content: 'You are an AI literacy analyst. Generate department-level AI IQ data based on organizational patterns. Always respond with valid JSON only.' },
             { role: 'user', content: prompt },
