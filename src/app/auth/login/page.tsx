@@ -36,10 +36,11 @@ function LoginForm() {
         redirect: false,
       });
 
-      if (result?.error) {
+      if (result?.error === 'EMAIL_NOT_VERIFIED') {
+        router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
+      } else if (result?.error) {
         setError("Invalid email or password. Please try again.");
       } else {
-        // Redirect to the callback URL (e.g., /checkout?plan=professional) or default to portal
         router.push(callbackUrl);
       }
     } catch {
@@ -80,7 +81,15 @@ function LoginForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password" className="font-sans text-sm">Password</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password" className="font-sans text-sm">Password</Label>
+              <Link
+                href="/auth/forgot-password"
+                className="text-xs text-muted-foreground hover:text-eari-blue-light font-sans underline underline-offset-4 hover:no-underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"

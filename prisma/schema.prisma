@@ -23,6 +23,7 @@ model User {
   role             String   @default("user") // "user" | "admin"
   image            String?
   stripeCustomerId String?  // Stripe customer ID for billing portal
+  emailVerified    DateTime?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -110,6 +111,14 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// ─── Platform Settings ────────────────────────────────────────────────────────
+
+model PlatformSetting {
+  key       String   @id
+  value     String   // JSON-encoded value
+  updatedAt DateTime @updatedAt
 }
 
 // ─── Orchestrator Pipeline Models ────────────────────────────────────────────

@@ -6,6 +6,7 @@ import TwitterProvider from "next-auth/providers/twitter";
 import { db } from "./db";
 import bcrypt from "bcryptjs";
 import { sendWelcomeEmail } from "./email-service";
+import { getSetting } from "./platform-settings";
 
 /**
  * Resolve the canonical NEXTAUTH_URL.
@@ -51,6 +52,12 @@ export const authOptions: NextAuthOptions = {
         const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!isValid) {
           return null;
+        }
+
+        // Check email verification requirement
+        const requireVerification = await getSetting('require_email_verification');
+        if (requireVerification && !user.emailVerified) {
+          throw new Error('EMAIL_NOT_VERIFIED');
         }
 
         return {
@@ -208,6 +215,16 @@ export const authOptions: NextAuthOptions = {
             token.tier = dbUser.tier;
             token.role = dbUser.role;
           }
+        }
+
+        // Auto-promote ADMIN_EMAIL to admin role
+        const adminEmail = process.env.ADMIN_EMAIL;
+        if (adminEmail && token.email === adminEmail && token.role !== "admin") {
+          await db.user.update({
+            where: { email: adminEmail },
+            data: { role: "admin" },
+          });
+          token.role = "admin";
         }
       }
       return token;

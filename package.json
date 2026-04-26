@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "prisma generate && next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && rm -rf next-service-dist && cp -r .next/standalone next-service-dist && cp -r .next/static next-service-dist/.next/ && cp -r public next-service-dist/ && cp -r prisma next-service-dist/",
+    "build": "prisma migrate deploy && prisma generate && next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && rm -rf next-service-dist && cp -r .next/standalone next-service-dist && cp -r .next/static next-service-dist/.next/ && cp -r public next-service-dist/ && cp -r prisma next-service-dist/",
     "start": "NODE_ENV=production HOSTNAME=0.0.0.0 PORT=3000 node --max-old-space-size=512 next-service-dist/server.js",
     "lint": "eslint .",
     "db:push": "prisma db push",

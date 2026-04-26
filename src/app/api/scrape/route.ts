@@ -20,6 +20,8 @@ import {
   type ScrapingInput,
 } from '@/lib/scraper';
 
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   try {
     // Auth check - scraping requires authentication

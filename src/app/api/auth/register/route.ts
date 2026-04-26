@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { sendWelcomeEmail } from "@/lib/email-service";
 import { checkRateLimitFromRequest } from "@/lib/rate-limit";
+import { getSetting } from "@/lib/platform-settings";
+import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
   try {
@@ -48,6 +50,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Check registration allowed
+    const allowRegistrations = await getSetting('allow_registrations');
+    if (!allowRegistrations) {
+      return NextResponse.json(
+        { error: "New registrations are currently disabled. Please contact support." },
+        { status: 403 }
+      );
+    }
+
     // Check if user already exists
     const existingUser = await db.user.findUnique({
       where: { email },
@@ -77,14 +88,35 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Send welcome email (fire-and-forget)
-    sendWelcomeEmail(user.id, user.email, user.name).catch(() => {});
+    // Check if email verification is required
+    const requireVerification = await getSetting('require_email_verification');
+    if (requireVerification) {
+      const BASE_URL = process.env.NEXTAUTH_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+      const token = crypto.randomBytes(32).toString('hex');
+      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      await db.verificationToken.create({ data: { identifier: email, token, expires } });
+      const verifyUrl = `${BASE_URL}/api/auth/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
+
+      // Send verification email (fire-and-forget)
+      fetch(`${BASE_URL}/api/auth/send-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      }).catch(() => {});
+
+      // Also log for dev
+      console.log('[register] Verification link:', verifyUrl);
+    } else {
+      // Send welcome email (fire-and-forget)
+      sendWelcomeEmail(user.id, user.email, user.name).catch(() => {});
+    }
 
     return NextResponse.json(
       {
         id: user.id,
         email: user.email,
         name: user.name,
+        requiresVerification: requireVerification,
       },
       { status: 201 }
     );

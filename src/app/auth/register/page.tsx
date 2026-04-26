@@ -84,6 +84,12 @@ function RegisterForm() {
         return;
       }
 
+      // If email verification is required, redirect to the verify page
+      if (data.requiresVerification) {
+        router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
+        return;
+      }
+
       // Auto sign in after registration
       const result = await signIn("credentials", {
         email: formData.email,
@@ -94,7 +100,6 @@ function RegisterForm() {
       if (result?.error) {
         router.push(`/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
       } else {
-        // Redirect to the callback URL (e.g., /checkout?plan=professional) or default to portal
         router.push(callbackUrl);
       }
     } catch {

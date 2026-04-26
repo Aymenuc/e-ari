@@ -17,7 +17,7 @@
  */
 
 import { PILLARS, getPillarById, MATURITY_BANDS, type MaturityBand } from './pillars';
-import { LLM_API_URL_PRO, LLM_MODEL_PRO } from './llm-config';
+import { LLM_API_URL_PRO, LLM_MODEL_PRO, LLM_API_KEY, withRetry } from './llm-config';
 import { getSectorById } from './sectors';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -870,39 +870,37 @@ ${scoreInfo}`;
  * Default max_tokens increased from 1500 to 3000.
  */
 async function callLLM(systemPrompt: string, userPrompt: string, maxTokens: number = 3000): Promise<{ content: string; model: string }> {
-  const response = await fetch(
-    LLM_API_URL_PRO,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.GLM_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: LLM_MODEL_PRO,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        max_tokens: maxTokens,
-        temperature: 0.3,
-      }),
+  return withRetry(async () => {
+    const response = await fetch(
+      LLM_API_URL_PRO,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${LLM_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: LLM_MODEL_PRO,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          max_tokens: maxTokens,
+          temperature: 0.3,
+        }),
+        signal: AbortSignal.timeout(90000),
+      }
+    );
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('LLM API error:', response.status, errText);
+      throw new Error(`LLM service error: ${response.status}`);
     }
-  );
-  if (!response.ok) {
-    const errText = await response.text();
-    console.error('LLM API error:', response.status, errText);
-    throw new Error(`LLM service error: ${response.status}`);
-  }
-  const data = await response.json();
-  const completion = { choices: data.choices };
-
-  const content = completion.choices[0]?.message?.content;
-  if (!content) {
-    throw new Error('Empty LLM response');
-  }
-
-  return { content, model: 'GLM-5.1' };
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) throw new Error('Empty LLM response');
+    return { content, model: 'GLM-5.1' };
+  }, { maxAttempts: 3, baseDelayMs: 3000 });
 }
 
 // ─── Fallback Response Generators ───────────────────────────────────────────
@@ -1449,34 +1447,34 @@ export async function queryAgent(request: AgentRequest): Promise<AgentResponse> 
     messages.push({ role: 'user', content: userPrompt });
 
     // Call LLM with increased max_tokens
-    const glmResponse = await fetch(
-      LLM_API_URL_PRO,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.GLM_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: LLM_MODEL_PRO,
-          messages,
-          max_tokens: 3000,
-          temperature: 0.3,
-        }),
+    const content = await withRetry(async () => {
+      const glmResponse = await fetch(
+        LLM_API_URL_PRO,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${LLM_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: LLM_MODEL_PRO,
+            messages,
+            max_tokens: 3000,
+            temperature: 0.3,
+          }),
+          signal: AbortSignal.timeout(90000),
+        }
+      );
+      if (!glmResponse.ok) {
+        const errText = await glmResponse.text();
+        console.error('LLM API error:', glmResponse.status, errText);
+        throw new Error(`LLM service error: ${glmResponse.status}`);
       }
-    );
-    if (!glmResponse.ok) {
-      const errText = await glmResponse.text();
-      console.error('LLM API error:', glmResponse.status, errText);
-      throw new Error(`LLM service error: ${glmResponse.status}`);
-    }
-    const glmData = await glmResponse.json();
-    const completion = { choices: glmData.choices };
-
-    const content = completion.choices[0]?.message?.content;
-    if (!content) {
-      throw new Error('Empty LLM response');
-    }
+      const glmData = await glmResponse.json();
+      const c = glmData.choices?.[0]?.message?.content;
+      if (!c) throw new Error('Empty LLM response');
+      return c;
+    }, { maxAttempts: 3, baseDelayMs: 3000 });
 
     // For context_insight, parse structured DiscoveryResult
     if (action === 'context_insight') {

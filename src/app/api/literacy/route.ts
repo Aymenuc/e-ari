@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { checkRateLimit, getRateLimitHeaders, resolveIdentifier } from '@/lib/rate-limit';
-import { LLM_API_URL, LLM_MODEL } from '@/lib/llm-config';
+import { LLM_API_URL, LLM_MODEL, LLM_API_KEY, withRetry } from '@/lib/llm-config';
 
 export async function POST(req: NextRequest) {
   try {
@@ -85,37 +85,39 @@ Rules:
 - Do not fabricate external course links`;
 
     try {
-      const glmResp1 = await fetch(
-        LLM_API_URL,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.GLM_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: LLM_MODEL,
-            messages: [
-              { role: 'system', content: 'You are an AI literacy training advisor. Generate personalized learning paths based on assessment data. Always respond with valid JSON only.' },
-              { role: 'user', content: prompt },
-            ],
-            max_tokens: 1200,
-            temperature: 0.4,
-          }),
+      const content = await withRetry(async () => {
+        const glmResp1 = await fetch(
+          LLM_API_URL,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${LLM_API_KEY}`,
+            },
+            body: JSON.stringify({
+              model: LLM_MODEL,
+              messages: [
+                { role: 'system', content: 'You are an AI literacy training advisor. Generate personalized learning paths based on assessment data. Always respond with valid JSON only.' },
+                { role: 'user', content: prompt },
+              ],
+              max_tokens: 1200,
+              temperature: 0.4,
+            }),
+            signal: AbortSignal.timeout(60000),
+          }
+        );
+
+        if (!glmResp1.ok) {
+          const errorText = await glmResp1.text();
+          console.error('LLM API error:', glmResp1.status, errorText);
+          throw new Error(`LLM service error: ${glmResp1.status}`);
         }
-      );
 
-      if (!glmResp1.ok) {
-        const errorText = await glmResp1.text();
-        console.error('LLM API error:', glmResp1.status, errorText);
-        throw new Error('LLM service unavailable');
-      }
-
-      const glmData1 = await glmResp1.json();
-      const completion = { choices: glmData1.choices };
-
-      const content = completion.choices[0]?.message?.content;
-      if (!content) throw new Error('Empty response');
+        const glmData1 = await glmResp1.json();
+        const c = glmData1.choices?.[0]?.message?.content;
+        if (!c) throw new Error('Empty response');
+        return c;
+      }, { maxAttempts: 3, baseDelayMs: 2000 });
 
       let jsonStr = content.trim();
       if (jsonStr.startsWith('```')) {
@@ -189,37 +191,39 @@ Rules:
 - Respond with valid JSON only`;
 
   try {
-    const glmResp2 = await fetch(
-      LLM_API_URL,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.GLM_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: LLM_MODEL,
-          messages: [
-            { role: 'system', content: 'You are an AI literacy analyst. Generate department-level AI IQ data based on organizational patterns. Always respond with valid JSON only.' },
-            { role: 'user', content: prompt },
-          ],
-          max_tokens: 800,
-          temperature: 0.3,
-        }),
+    const content = await withRetry(async () => {
+      const glmResp2 = await fetch(
+        LLM_API_URL,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${LLM_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: LLM_MODEL,
+            messages: [
+              { role: 'system', content: 'You are an AI literacy analyst. Generate department-level AI IQ data based on organizational patterns. Always respond with valid JSON only.' },
+              { role: 'user', content: prompt },
+            ],
+            max_tokens: 800,
+            temperature: 0.3,
+          }),
+          signal: AbortSignal.timeout(60000),
+        }
+      );
+
+      if (!glmResp2.ok) {
+        const errorText = await glmResp2.text();
+        console.error('LLM API error:', glmResp2.status, errorText);
+        throw new Error(`LLM service error: ${glmResp2.status}`);
       }
-    );
 
-    if (!glmResp2.ok) {
-      const errorText = await glmResp2.text();
-      console.error('LLM API error:', glmResp2.status, errorText);
-      return NextResponse.json({ error: 'LLM service unavailable' }, { status: 503 });
-    }
-
-    const glmData2 = await glmResp2.json();
-    const completion = { choices: glmData2.choices };
-
-    const content = completion.choices[0]?.message?.content;
-    if (!content) throw new Error('Empty response');
+      const glmData2 = await glmResp2.json();
+      const c = glmData2.choices?.[0]?.message?.content;
+      if (!c) throw new Error('Empty response');
+      return c;
+    }, { maxAttempts: 3, baseDelayMs: 2000 });
 
     let jsonStr = content.trim();
     if (jsonStr.startsWith('```')) {
@@ -233,7 +237,6 @@ Rules:
       modelUsed: 'z-ai-llm',
     });
   } catch {
-    // Fallback: return empty so client uses its own fallback data
     return NextResponse.json({
       departments: [],
       isAIGenerated: false,

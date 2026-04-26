@@ -9,7 +9,7 @@
  * - NVIDIA_API_KEY_PRO: DeepSeek Pro API key
  */
 
-import { LLM_API_URL_PRO, LLM_MODEL_PRO } from './llm-config';
+import { LLM_API_URL, LLM_MODEL, LLM_API_KEY } from './llm-config';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -100,12 +100,56 @@ function extractDomain(url: string): string {
   }
 }
 
+function cleanContent(text: string): string {
+  return text
+    .split('\n')
+    .map((line) => line.trim())
+    // Drop markdown headers
+    .filter((line) => !line.startsWith('#'))
+    // Drop lines that are mostly a URL or contain image format tokens
+    .filter((line) => !/https?:\/\/\S+/.test(line) && !/:format\(/.test(line))
+    // Drop very short lines (nav crumbs, breadcrumbs, single words)
+    .filter((line) => line.length > 30)
+    .join(' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+    .slice(0, 250);
+}
+
 function parseLLMJson<T>(content: string): T {
   let jsonStr = content.trim();
   if (jsonStr.startsWith('```')) {
     jsonStr = jsonStr.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
   }
   return JSON.parse(jsonStr) as T;
+}
+
+function sanitizeText(text: string): string {
+  return text
+    .replace(/^#+\s*/gm, '')           // markdown headers
+    .replace(/https?:\/\/\S+/g, '')    // URLs
+    .replace(/:format\(\w+\)[).]?/g, '') // image format tokens
+    .replace(/\*{1,2}([^*]+)\*{1,2}/g, '$1') // bold/italic
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+function sanitizeContext(obj: {
+  industryContext: string;
+  orgSpecificContext: string;
+  aiInitiatives: string[];
+  techStackSignals: string[];
+  regulatoryConsiderations: string[];
+  competitiveLandscape: string;
+}) {
+  return {
+    industryContext: sanitizeText(obj.industryContext || ''),
+    orgSpecificContext: sanitizeText(obj.orgSpecificContext || ''),
+    aiInitiatives: (obj.aiInitiatives || []).map(sanitizeText).filter((s) => s.length > 2),
+    techStackSignals: (obj.techStackSignals || []).map(sanitizeText).filter((s) => s.length > 1),
+    regulatoryConsiderations: (obj.regulatoryConsiderations || []).map(sanitizeText).filter((s) => s.length > 2),
+    competitiveLandscape: sanitizeText(obj.competitiveLandscape || ''),
+  };
 }
 
 function assessConfidence(
@@ -143,18 +187,18 @@ async function tavilySearch(query: string, maxResults: number = 8): Promise<Tavi
   }
 }
 
-async function glmComplete(systemPrompt: string, userPrompt: string, maxTokens: number = 1500): Promise<string | null> {
-  const apiKey = process.env.GLM_API_KEY;
+async function glmComplete(systemPrompt: string, userPrompt: string, maxTokens: number = 1000): Promise<string | null> {
+  const apiKey = LLM_API_KEY;
   if (!apiKey) {
-    console.warn('[scraper] NVIDIA_API_KEY_PRO not set');
+    console.warn('[scraper] GEMINI_API_KEY not set');
     return null;
   }
   try {
-    const res = await fetch(LLM_API_URL_PRO, {
+    const res = await fetch(LLM_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
-        model: LLM_MODEL_PRO,
+        model: LLM_MODEL,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
@@ -162,16 +206,17 @@ async function glmComplete(systemPrompt: string, userPrompt: string, maxTokens: 
         max_tokens: maxTokens,
         temperature: 0.2,
       }),
+      signal: AbortSignal.timeout(25000),
     });
     if (!res.ok) {
       const errText = await res.text();
-      console.warn('[scraper] LLM API error:', res.status, errText);
+      console.warn('[scraper] LLM API error:', res.status, errText.slice(0, 200));
       return null;
     }
     const data = await res.json();
     return data.choices?.[0]?.message?.content ?? null;
   } catch (error) {
-    console.warn('[scraper] LLM completion error:', error);
+    console.warn('[scraper] LLM completion error:', error instanceof Error ? error.message : error);
     return null;
   }
 }
@@ -186,16 +231,14 @@ export async function scrapeOrganizationContext(input: ScrapingInput): Promise<O
   const sectorInfo = sector ? SECTOR_MAP[sector] : null;
   const sectorName = sectorInfo?.name ?? sector ?? '';
 
-  // ── Step 1: Org-specific searches ──
+  // ── Step 1: Org-specific searches (reduced to 2 queries to stay within timeout) ──
   const orgSearchQueries = [
-    `${orgName}${domainHint} AI artificial intelligence initiatives`,
-    `${orgName}${domainHint} technology stack digital transformation`,
-    `${orgName}${domainHint} partnerships AI machine learning`,
+    `${orgName}${domainHint} AI artificial intelligence strategy initiatives`,
+    `${orgName}${domainHint} technology digital transformation`,
   ];
-  if (sectorName) orgSearchQueries.push(`${orgName}${domainHint} ${sectorName} AI adoption`);
   if (additionalContext) orgSearchQueries.push(`${orgName} ${additionalContext}`);
 
-  const orgResults = (await Promise.all(orgSearchQueries.map((q) => tavilySearch(q, 8)))).flat();
+  const orgResults = (await Promise.all(orgSearchQueries.map((q) => tavilySearch(q, 4)))).flat();
 
   const seenUrls = new Set<string>();
   const uniqueOrgResults = orgResults.filter((r) => {
@@ -204,16 +247,12 @@ export async function scrapeOrganizationContext(input: ScrapingInput): Promise<O
     return true;
   });
 
-  // ── Step 2: Sector-specific searches ──
+  // ── Step 2: Sector-specific searches (1 query) ──
   const sectorQueries = sectorInfo
-    ? [
-        `${sectorInfo.name} AI trends 2024 2025`,
-        `${sectorInfo.name} AI regulation compliance requirements`,
-        `${sectorInfo.searchKeywords[0]} ${sectorInfo.searchKeywords[1]} industry outlook`,
-      ]
-    : ['enterprise AI adoption trends 2024 2025', 'AI regulation compliance enterprise requirements'];
+    ? [`${sectorInfo.name} AI trends adoption 2025`]
+    : ['enterprise AI adoption trends 2025'];
 
-  const sectorResults = (await Promise.all(sectorQueries.map((q) => tavilySearch(q, 6)))).flat();
+  const sectorResults = (await Promise.all(sectorQueries.map((q) => tavilySearch(q, 4)))).flat();
 
   const seenSectorUrls = new Set<string>();
   const uniqueSectorResults = sectorResults.filter((r) => {
@@ -226,58 +265,50 @@ export async function scrapeOrganizationContext(input: ScrapingInput): Promise<O
     return buildFallbackContext(input, timestamp, 'No web search results returned');
   }
 
-  // ── Step 3: GLM synthesis ──
+  // ── Step 3: LLM synthesis ──
   try {
     const orgSnippets = uniqueOrgResults
-      .slice(0, 15)
-      .map((r, i) => `[${i + 1}] "${r.title}" — ${r.content} (Source: ${extractDomain(r.url)})`)
+      .slice(0, 6)
+      .map((r, i) => `[${i + 1}] ${r.title}: ${cleanContent(r.content)}`)
       .join('\n');
 
     const sectorSnippets = uniqueSectorResults
-      .slice(0, 10)
-      .map((r, i) => `[${i + 1}] "${r.title}" — ${r.content} (Source: ${extractDomain(r.url)})`)
+      .slice(0, 4)
+      .map((r, i) => `[${i + 1}] ${r.title}: ${cleanContent(r.content)}`)
       .join('\n');
 
     const allSourceUrls = [
-      ...uniqueOrgResults.slice(0, 15).map((r) => r.url),
-      ...uniqueSectorResults.slice(0, 10).map((r) => r.url),
+      ...uniqueOrgResults.slice(0, 6).map((r) => r.url),
+      ...uniqueSectorResults.slice(0, 4).map((r) => r.url),
     ];
 
-    const synthesisPrompt = `ORGANIZATION: ${orgName}${websiteUrl ? `\nWEBSITE: ${websiteUrl}` : ''}${sector ? `\nSECTOR: ${sectorName}` : ''}${additionalContext ? `\nADDITIONAL CONTEXT: ${additionalContext}` : ''}
+    const synthesisPrompt = `ORG: ${orgName}${sector ? ` | SECTOR: ${sectorName}` : ''}${additionalContext ? ` | CONTEXT: ${additionalContext}` : ''}
 
-ORGANIZATION SEARCH RESULTS:
-${orgSnippets || 'No organization-specific results found.'}
+ORG SEARCH RESULTS:
+${orgSnippets || 'No results.'}
 
-SECTOR/INDUSTRY SEARCH RESULTS:
-${sectorSnippets || 'No sector-specific results found.'}
+SECTOR RESULTS:
+${sectorSnippets || 'No results.'}
 
-RULES:
-- Base ALL findings ONLY on the search results provided above. Do not fabricate or infer information not supported by the snippets.
-- If the search results don't mention specific AI initiatives for this organization, return an empty array for aiInitiatives.
-- If the search results don't mention specific technologies, return an empty array for techStackSignals.
-- For regulatory considerations, combine what's in the search results with well-known sector regulations (e.g., HIPAA for healthcare, SOX for finance).
-- Be conservative: it's better to return less information than to fabricate.
-- Keep all text fields concise and actionable (2-4 sentences max).
+Return ONLY valid JSON. No markdown, no code fences, no explanation — raw JSON only.
+{"industryContext":"2-3 plain sentences on AI trends in this sector","orgSpecificContext":"2-3 plain sentences on what is known about this specific org","aiInitiatives":["short initiative label"],"techStackSignals":["technology name"],"regulatoryConsiderations":["regulation name"],"competitiveLandscape":"2-3 plain sentences on competitive positioning"}
 
-Respond in this exact JSON format:
-{
-  "industryContext": "2-3 sentence summary of AI trends in this sector",
-  "orgSpecificContext": "2-3 sentence summary of what search results reveal about THIS organization's AI readiness",
-  "aiInitiatives": ["initiative 1", "initiative 2"],
-  "techStackSignals": ["technology 1", "technology 2"],
-  "regulatoryConsiderations": ["regulation 1", "regulation 2"],
-  "competitiveLandscape": "2-3 sentence assessment of how this organization compares to sector peers"
-}`;
+STRICT RULES:
+- Every string value must be clean plain English — no markdown, no URLs, no hashtags, no image references, no special characters
+- Only include facts directly supported by the search results above
+- If nothing relevant is found for a field, use empty array [] or a short honest statement
+- Each string field must be under 200 characters
+- Do NOT copy-paste sentences from the search results verbatim`;
 
     const content = await glmComplete(
-      'You are an enterprise AI readiness research analyst. Extract only factual, source-supported insights from web search results. Never fabricate information. Be conservative and precise.',
+      'You are an AI readiness analyst. Extract insights from web search results and return valid JSON only. Be factual and concise.',
       synthesisPrompt,
-      1500,
+      800,
     );
 
     if (!content) throw new Error('Empty GLM response');
 
-    const parsed = parseLLMJson<{
+    const raw = parseLLMJson<{
       industryContext: string;
       orgSpecificContext: string;
       aiInitiatives: string[];
@@ -286,10 +317,12 @@ Respond in this exact JSON format:
       competitiveLandscape: string;
     }>(content);
 
+    const parsed = sanitizeContext(raw);
+
     const hasOrgSpecificData =
-      (Array.isArray(parsed.aiInitiatives) && parsed.aiInitiatives.length > 0) ||
-      (Array.isArray(parsed.techStackSignals) && parsed.techStackSignals.length > 0) ||
-      (typeof parsed.orgSpecificContext === 'string' && parsed.orgSpecificContext.length > 50);
+      parsed.aiInitiatives.length > 0 ||
+      parsed.techStackSignals.length > 0 ||
+      parsed.orgSpecificContext.length > 50;
 
     return {
       orgName,
@@ -297,11 +330,11 @@ Respond in this exact JSON format:
       sector,
       industryContext: parsed.industryContext || 'Industry context could not be determined from available sources.',
       orgSpecificContext: parsed.orgSpecificContext || 'No organization-specific information found in web sources.',
-      aiInitiatives: Array.isArray(parsed.aiInitiatives) ? parsed.aiInitiatives.slice(0, 10) : [],
-      techStackSignals: Array.isArray(parsed.techStackSignals) ? parsed.techStackSignals.slice(0, 15) : [],
-      regulatoryConsiderations: Array.isArray(parsed.regulatoryConsiderations)
+      aiInitiatives: parsed.aiInitiatives.slice(0, 10),
+      techStackSignals: parsed.techStackSignals.slice(0, 15),
+      regulatoryConsiderations: parsed.regulatoryConsiderations.length > 0
         ? parsed.regulatoryConsiderations.slice(0, 8)
-        : [],
+        : getDefaultRegulations(sector),
       competitiveLandscape:
         parsed.competitiveLandscape || 'Competitive positioning could not be assessed from available sources.',
       scrapingSources: allSourceUrls,
@@ -342,23 +375,23 @@ export async function getSectorAITrends(sectorId: string): Promise<string> {
   });
 
   const snippets = uniqueResults
-    .slice(0, 8)
-    .map((r, i) => `[${i + 1}] "${r.title}" — ${r.content}`)
+    .slice(0, 6)
+    .map((r, i) => `[${i + 1}] "${r.title}" — ${cleanContent(r.content)}`)
     .join('\n');
 
   const content = await glmComplete(
-    'You are an industry analyst specializing in AI adoption trends. Synthesize search results into a concise, factual trend summary. Do not fabricate data. Reference only what the search results support. Write 3-5 sentences.',
-    `Based on these search results about AI trends in the ${sectorName} sector, provide a concise summary:\n\n${snippets}`,
+    'You are an industry analyst. Write 3-5 plain English sentences summarising AI adoption trends in the given sector. Use only facts from the search results. No markdown, no headers, no bullet points, no URLs.',
+    `Sector: ${sectorName}\n\nSearch results:\n${snippets}\n\nWrite a plain paragraph (3-5 sentences) summarising the key AI trends. Do not use markdown or copy raw text from the results.`,
     500,
   );
 
-  if (content) return content.trim();
+  if (content) return sanitizeText(content.trim());
 
-  return uniqueResults
-    .slice(0, 4)
-    .map((r) => r.content)
-    .filter(Boolean)
-    .join(' ');
+  // Fallback: use titles only, never raw web content
+  const titles = uniqueResults.slice(0, 4).map((r) => r.title).filter(Boolean);
+  return titles.length > 0
+    ? `Recent AI trends in the ${sectorName} sector include topics such as: ${titles.join('; ')}.`
+    : `AI adoption in the ${sectorName} sector is accelerating. Key focus areas include operational efficiency, data-driven decision-making, and responsible AI governance.`;
 }
 
 export async function quickScrapeWebsite(url: string): Promise<QuickScrapeResult> {
@@ -434,22 +467,26 @@ function buildContextFromRawResults(
   const sectorInfo = input.sector ? SECTOR_MAP[input.sector] : null;
   const hasOrgData = orgResults.length > 0;
 
+  // Use article titles only — never raw web content which contains HTML/markdown artifacts
+  const sectorTitles = sectorResults.slice(0, 3).map((r) => r.title).filter(Boolean);
+  const orgTitles = orgResults.slice(0, 4).map((r) => r.title).filter(Boolean);
+
   return {
     orgName: input.orgName,
     websiteUrl: input.websiteUrl,
     sector: input.sector,
     industryContext: sectorInfo
-      ? `AI trends in ${sectorInfo.name}: ${sectorResults.slice(0, 3).map((r) => r.content).filter(Boolean).join(' ').slice(0, 400) || 'No sector trends could be extracted.'}`
-      : 'Sector-specific trends could not be determined.',
+      ? `${sectorInfo.name} organizations are actively investing in AI adoption. ${sectorTitles.length > 0 ? `Recent industry topics include: ${sectorTitles.slice(0, 2).join('; ')}.` : ''} Full AI readiness analysis will be generated from your assessment responses.`
+      : 'AI adoption context for this sector is being compiled. Your assessment responses will inform sector-specific benchmarking.',
     orgSpecificContext: hasOrgData
-      ? orgResults.slice(0, 4).map((r) => r.content).filter(Boolean).join(' ').slice(0, 500)
-      : `No web results found for ${input.orgName}. ${input.additionalContext || ''}`,
+      ? `Public information about ${input.orgName} was found across ${orgResults.length} sources. ${orgTitles.length > 0 ? `Topics found: ${orgTitles.slice(0, 2).join('; ')}.` : ''} ${input.additionalContext ? `Additional context provided: ${input.additionalContext}` : 'Complete your assessment for a full AI readiness analysis.'}`
+      : `No public web information was found for ${input.orgName}. ${input.additionalContext ? `Using provided context: ${input.additionalContext}` : 'Your assessment responses will be used for analysis.'}`,
     aiInitiatives: extractAIInitiativesFromSnippets(allSnippets),
     techStackSignals: extractTechSignalsFromSnippets(allSnippets),
     regulatoryConsiderations: getDefaultRegulations(input.sector),
     competitiveLandscape: hasOrgData
-      ? 'Partial data retrieved; competitive positioning requires deeper analysis.'
-      : 'Insufficient data to assess competitive positioning.',
+      ? `${input.orgName} has a measurable digital presence. Competitive positioning relative to ${sectorInfo?.name ?? 'sector'} peers will be assessed once your AI readiness scores are computed.`
+      : `Insufficient public data to assess ${input.orgName}'s competitive positioning. Sector benchmarking will apply once your assessment is complete.`,
     scrapingSources: allUrls,
     scrapedAt: timestamp,
     confidence: assessConfidence(orgResults, sectorResults, hasOrgData),

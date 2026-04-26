@@ -5,7 +5,7 @@ import { db } from '@/lib/db';
 import { getPipelineContext } from '@/lib/orchestrator';
 import type { PipelineContext } from '@/lib/orchestrator';
 import { checkRateLimit, getRateLimitHeaders, resolveIdentifier } from '@/lib/rate-limit';
-import { LLM_API_URL, LLM_MODEL } from '@/lib/llm-config';
+import { LLM_API_URL, LLM_MODEL, LLM_API_KEY, withRetry } from '@/lib/llm-config';
 
 const SYSTEM_PROMPT = `You are the E-ARI AI Assistant, an expert in enterprise AI readiness assessment. You help users understand the 8-pillar framework (Strategy, Data, Technology, Talent, Governance, Culture, Process, Security), explain scoring methodology, interpret maturity bands (Laggard 0-25, Follower 26-50, Chaser 51-75, Pacesetter 76-100), and guide them through the assessment process. Be concise, professional, and actionable.
 
@@ -304,31 +304,32 @@ export async function POST(req: NextRequest) {
       })),
     ];
 
-    const glmResp = await fetch(
-      LLM_API_URL,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.GLM_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: LLM_MODEL,
-          messages: chatMessages,
-          max_tokens: 1500,
-          temperature: 0.3,
-        }),
+    const content = await withRetry(async () => {
+      const glmResp = await fetch(
+        LLM_API_URL,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${LLM_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: LLM_MODEL,
+            messages: chatMessages,
+            max_tokens: 1500,
+            temperature: 0.3,
+          }),
+          signal: AbortSignal.timeout(60000),
+        }
+      );
+      if (!glmResp.ok) {
+        const errText = await glmResp.text();
+        console.error('LLM API error:', glmResp.status, errText);
+        throw new Error(`LLM service error: ${glmResp.status}`);
       }
-    );
-    if (!glmResp.ok) {
-      const errText = await glmResp.text();
-      console.error('LLM API error:', glmResp.status, errText);
-      throw new Error(`LLM service error: ${glmResp.status}`);
-    }
-    const glmRespData = await glmResp.json();
-    const completion = { choices: glmRespData.choices };
-
-    const content = completion.choices[0]?.message?.content;
+      const glmRespData = await glmResp.json();
+      return glmRespData.choices?.[0]?.message?.content ?? null;
+    }, { maxAttempts: 3, baseDelayMs: 2000 });
 
     if (!content) {
       return NextResponse.json({

@@ -60,6 +60,7 @@ import {
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Navigation } from "@/components/shared/navigation";
 import { Footer } from "@/components/shared/footer";
 import { Button } from "@/components/ui/button";
@@ -522,6 +523,200 @@ function PieChartTooltip({ active, payload }: { active?: boolean; payload?: Arra
       <p className="font-sans text-sm font-medium text-foreground capitalize">{payload[0].name}</p>
       <p className="font-heading text-sm font-bold text-eari-blue-light">{payload[0].value} users</p>
     </div>
+  );
+}
+
+// ─── Settings Tab ────────────────────────────────────────────────────────
+
+interface PlatformSettings {
+  allow_registrations: boolean;
+  require_email_verification: boolean;
+  enable_ai_assistant: boolean;
+  public_proposals_default: boolean;
+  maintenance_mode: boolean;
+  require_2fa: boolean;
+  session_timeout: number;
+  rate_limiting: boolean;
+  audit_logging: boolean;
+  ip_whitelisting: boolean;
+}
+
+function SettingsTab() {
+  const [settings, setSettings] = useState<PlatformSettings | null>(null);
+  const [saving, setSaving] = useState<string | null>(null);
+  const [savedKey, setSavedKey] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/admin/settings')
+      .then(r => r.json())
+      .then(data => setSettings(data))
+      .catch(() => setLoadError(true));
+  }, []);
+
+  const toggle = async (key: keyof PlatformSettings) => {
+    if (!settings) return;
+    const newVal = !settings[key];
+    setSettings(prev => prev ? { ...prev, [key]: newVal } : prev);
+    setSaving(key);
+    try {
+      await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: newVal }),
+      });
+      setSavedKey(key);
+      setTimeout(() => setSavedKey(null), 2000);
+    } catch {
+      // Revert on error
+      setSettings(prev => prev ? { ...prev, [key]: !newVal } : prev);
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  if (loadError) {
+    return (
+      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6 text-center">
+        <p className="text-sm text-destructive font-sans">Failed to load settings. Make sure the database migration has run.</p>
+      </div>
+    );
+  }
+
+  if (!settings) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  function SettingRow({ label, description, settingKey, destructive = false }: { label: string; description: string; settingKey: keyof PlatformSettings; destructive?: boolean }) {
+    const isOn = !!settings?.[settingKey];
+    const isSaving = saving === settingKey;
+    const justSaved = savedKey === settingKey;
+    return (
+      <div className="flex items-center justify-between gap-4 py-4">
+        <div className="flex-1 min-w-0">
+          <p className={`font-sans text-sm font-medium ${destructive && isOn ? 'text-destructive' : 'text-foreground'}`}>{label}</p>
+          <p className="font-sans text-xs text-muted-foreground mt-0.5">{description}</p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {justSaved && <CheckCircle2 className="h-3.5 w-3.5 text-green-400" />}
+          {isSaving && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+          <Switch
+            checked={isOn}
+            onCheckedChange={() => toggle(settingKey)}
+            disabled={isSaving}
+            className="data-[state=checked]:bg-eari-blue"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-6"
+    >
+      {/* Platform Settings */}
+      <Card className="bg-card/80 border-border">
+        <CardHeader>
+          <CardTitle className="font-heading text-lg flex items-center gap-2">
+            <Settings className="h-5 w-5 text-eari-blue" />
+            Platform Settings
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="divide-y divide-border/50">
+          <SettingRow
+            settingKey="allow_registrations"
+            label="Allow New Registrations"
+            description="Enable or disable user signups"
+          />
+          <SettingRow
+            settingKey="require_email_verification"
+            label="Require Email Verification"
+            description="Users must verify email before accessing the dashboard"
+          />
+          <SettingRow
+            settingKey="enable_ai_assistant"
+            label="Enable AI Assistant"
+            description="Allow users to access the AI governance assistant"
+          />
+          <SettingRow
+            settingKey="public_proposals_default"
+            label="Public Proposals by Default"
+            description="New proposals are visible to all users"
+          />
+          <SettingRow
+            settingKey="maintenance_mode"
+            label="Maintenance Mode"
+            description="Show maintenance page to non-admin users"
+            destructive
+          />
+        </CardContent>
+      </Card>
+
+      {/* Security & Access */}
+      <Card className="bg-card/80 border-border">
+        <CardHeader>
+          <CardTitle className="font-heading text-lg flex items-center gap-2">
+            <Shield className="h-5 w-5 text-eari-blue" />
+            Security &amp; Access
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="divide-y divide-border/50">
+          <SettingRow
+            settingKey="require_2fa"
+            label="Two-Factor Authentication"
+            description="Require 2FA for admin accounts"
+          />
+          <SettingRow
+            settingKey="rate_limiting"
+            label="Rate Limiting"
+            description="Limit API requests per user to 100/min"
+          />
+          <SettingRow
+            settingKey="audit_logging"
+            label="Audit Logging"
+            description="Log all admin actions for compliance"
+          />
+          <SettingRow
+            settingKey="ip_whitelisting"
+            label="IP Whitelisting"
+            description="Restrict admin access to known IPs"
+          />
+        </CardContent>
+      </Card>
+
+      {/* Integration Status */}
+      <Card className="bg-card/80 border-border">
+        <CardHeader>
+          <CardTitle className="font-heading text-base">Integration Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              { name: 'Stripe', status: 'Connected', color: 'emerald' },
+              { name: 'PostgreSQL', status: 'Connected', color: 'emerald' },
+              { name: 'Resend Email', status: 'Connected', color: 'emerald' },
+              { name: 'Gemini AI', status: 'Active', color: 'amber' },
+            ].map(({ name, status: s, color }) => (
+              <div key={name} className="flex items-center justify-between rounded-lg border border-border/50 bg-navy-700/30 px-3 py-2.5">
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${color === 'emerald' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                  <span className="font-sans text-sm text-foreground">{name}</span>
+                </div>
+                <Badge className={`text-[10px] ${color === 'emerald' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25' : 'bg-amber-500/15 text-amber-400 border-amber-500/25'}`}>{s}</Badge>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }
 
@@ -3048,97 +3243,7 @@ export default function AdminPage() {
           </Dialog>
 
           {activeTab === "settings" && (
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="space-y-6"
-            >
-              <Card className="bg-card/80 border-border">
-                <CardHeader>
-                  <CardTitle className="font-heading text-lg flex items-center gap-2">
-                    <Settings className="h-5 w-5 text-eari-blue" />
-                    Platform Settings
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    {/* Pricing Configuration */}
-                    <div className="rounded-lg border border-border/50 bg-navy-700/30 p-4">
-                      <h4 className="font-heading text-sm font-semibold text-foreground mb-3">Pricing Configuration</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div>
-                          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">Free Tier</p>
-                          <p className="font-heading text-2xl font-bold text-foreground">$0</p>
-                          <p className="text-xs text-muted-foreground font-sans">5 assessments / month</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">Professional</p>
-                          <p className="font-heading text-2xl font-bold text-eari-blue-light">$99</p>
-                          <p className="text-xs text-muted-foreground font-sans">Unlimited + AI insights</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">Enterprise</p>
-                          <p className="font-heading text-2xl font-bold text-gold">$499</p>
-                          <p className="text-xs text-muted-foreground font-sans">Full suite + priority</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Integration Status */}
-                    <div className="rounded-lg border border-border/50 bg-navy-700/30 p-4">
-                      <h4 className="font-heading text-sm font-semibold text-foreground mb-3">Integration Status</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-emerald" />
-                            <span className="font-sans text-sm text-foreground">Stripe</span>
-                          </div>
-                          <Badge className="bg-emerald/15 text-emerald border-emerald/25 text-[10px]">Connected</Badge>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-emerald" />
-                            <span className="font-sans text-sm text-foreground">Prisma / PostgreSQL</span>
-                          </div>
-                          <Badge className="bg-emerald/15 text-emerald border-emerald/25 text-[10px]">Connected</Badge>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-emerald" />
-                            <span className="font-sans text-sm text-foreground">Resend / Tavily</span>
-                          </div>
-                          <Badge className="bg-emerald/15 text-emerald border-emerald/25 text-[10px]">Connected</Badge>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-amber-400" />
-                            <span className="font-sans text-sm text-foreground">NextAuth</span>
-                          </div>
-                          <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/25 text-[10px]">Active</Badge>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Danger Zone */}
-                    <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-                      <h4 className="font-heading text-sm font-semibold text-destructive mb-2">Danger Zone</h4>
-                      <p className="text-xs text-muted-foreground font-sans mb-3">
-                        These actions are irreversible. Proceed with caution.
-                      </p>
-                      <div className="flex items-center gap-3">
-                        <Button variant="outline" size="sm" className="border-destructive/30 text-destructive hover:bg-destructive/10 font-sans" disabled>
-                          Reset All Data
-                        </Button>
-                        <Button variant="outline" size="sm" className="border-destructive/30 text-destructive hover:bg-destructive/10 font-sans" disabled>
-                          Purge Cache
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <SettingsTab />
           )}
         </div>
       </main>

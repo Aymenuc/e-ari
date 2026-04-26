@@ -19,7 +19,7 @@
 import { PILLARS, getPillarById, LIKERT_LABELS, type PillarDefinition } from './pillars';
 import { ScoringResult, generateTemplateInsights, type ResponseMap, type QuestionScoreDetail } from './assessment-engine';
 import { getSectorById, getEffectivePillarQuestions, type SectorDefinition } from './sectors';
-import { LLM_API_URL_PRO, LLM_MODEL_PRO } from './llm-config';
+import { LLM_API_URL_PRO, LLM_MODEL_PRO, LLM_API_KEY, withRetry } from './llm-config';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -432,37 +432,37 @@ export async function generateAIInsights(
   try {
     const prompt = buildInsightPrompt(result, orgContext, responses);
 
-    const response = await fetch(
-      LLM_API_URL_PRO,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.GLM_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: LLM_MODEL_PRO,
-          messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: prompt },
-          ],
-          max_tokens: 3000,
-          temperature: 0.2,
-        }),
+    const { content } = await withRetry(async () => {
+      const response = await fetch(
+        LLM_API_URL_PRO,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${LLM_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: LLM_MODEL_PRO,
+            messages: [
+              { role: 'system', content: SYSTEM_PROMPT },
+              { role: 'user', content: prompt },
+            ],
+            max_tokens: 3000,
+            temperature: 0.2,
+          }),
+          signal: AbortSignal.timeout(90000),
+        }
+      );
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error('[ai-insights] LLM API error:', response.status, errText);
+        throw new Error(`LLM service error: ${response.status}`);
       }
-    );
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('[ai-insights] LLM API error:', response.status, errText);
-      throw new Error(`LLM service error: ${response.status}`);
-    }
-    const data = await response.json();
-    const completion = { choices: data.choices };
-
-    const content = completion.choices[0]?.message?.content;
-    if (!content) {
-      throw new Error('Empty LLM response');
-    }
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+      if (!content) throw new Error('Empty LLM response');
+      return { content };
+    }, { maxAttempts: 3, baseDelayMs: 3000 });
 
     // Parse the JSON response from the LLM
     let jsonStr = content.trim();

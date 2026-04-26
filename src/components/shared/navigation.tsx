@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ChevronDown, LayoutDashboard, LogOut, Shield, Brain, Sparkles, Users, Activity, Plug, Menu, X } from "lucide-react";
+import { ChevronDown, LayoutDashboard, LogOut, Shield, Users, Plug, Menu, X } from "lucide-react";
 import { NotificationBell } from "@/components/shared/notification-bell";
 import { useState } from "react";
 
@@ -37,36 +37,8 @@ export function Navigation() {
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-1">
-            <Link href="/#methodology">
-              <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-sans">
-                Methodology
-              </Button>
-            </Link>
-            <Link href="/discovery">
-              <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-sans">
-                <Sparkles className="h-4 w-4 mr-1" />
-                Discovery Agent
-              </Button>
-            </Link>
-            <Link href="/literacy">
-              <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-sans">
-                <Brain className="h-4 w-4 mr-1" />
-                AI Literacy
-              </Button>
-            </Link>
-            <Link href="/pricing">
-              <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-sans">
-                Pricing
-              </Button>
-            </Link>
             {session && (
               <>
-                <Link href="/pulse">
-                  <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-sans">
-                    <Activity className="h-4 w-4 mr-1" />
-                    AI Pulse
-                  </Button>
-                </Link>
                 <Link href="/assessment">
                   <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-sans">
                     Assessment
@@ -80,7 +52,6 @@ export function Navigation() {
                 {session.user?.role === "admin" && (
                   <Link href="/admin">
                     <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-sans">
-                      <Shield className="h-4 w-4 mr-1" />
                       Admin
                     </Button>
                   </Link>
@@ -117,12 +88,6 @@ export function Navigation() {
                       <Link href="/portal" className="flex items-center gap-2 cursor-pointer">
                         <LayoutDashboard className="h-4 w-4" />
                         Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/pulse" className="flex items-center gap-2 cursor-pointer">
-                        <Activity className="h-4 w-4" />
-                        AI Pulse
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -190,37 +155,8 @@ export function Navigation() {
       {mobileOpen && (
         <div className="md:hidden border-t border-border/50 bg-navy-900/95 backdrop-blur-xl">
           <div className="px-4 py-3 space-y-1">
-            <Link href="/#methodology" onClick={() => setMobileOpen(false)}>
-              <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-sans">
-                Methodology
-              </Button>
-            </Link>
-            <Link href="/discovery" onClick={() => setMobileOpen(false)}>
-              <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-sans">
-                <Sparkles className="h-4 w-4 mr-2" />
-                Discovery Agent
-              </Button>
-            </Link>
-            <Link href="/literacy" onClick={() => setMobileOpen(false)}>
-              <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-sans">
-                <Brain className="h-4 w-4 mr-2" />
-                AI Literacy
-              </Button>
-            </Link>
-            <Link href="/pricing" onClick={() => setMobileOpen(false)}>
-              <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-sans">
-                Pricing
-              </Button>
-            </Link>
-            {session && (
+            {session ? (
               <>
-                <div className="border-t border-border/50 my-2" />
-                <Link href="/pulse" onClick={() => setMobileOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-sans">
-                    <Activity className="h-4 w-4 mr-2" />
-                    AI Pulse
-                  </Button>
-                </Link>
                 <Link href="/assessment" onClick={() => setMobileOpen(false)}>
                   <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-sans">
                     Assessment
@@ -234,16 +170,13 @@ export function Navigation() {
                 {session.user?.role === "admin" && (
                   <Link href="/admin" onClick={() => setMobileOpen(false)}>
                     <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-sans">
-                      <Shield className="h-4 w-4 mr-2" />
                       Admin
                     </Button>
                   </Link>
                 )}
               </>
-            )}
-            {!session && (
+            ) : (
               <>
-                <div className="border-t border-border/50 my-2" />
                 <Link href="/auth/login" onClick={() => setMobileOpen(false)}>
                   <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-sans">
                     Sign In
