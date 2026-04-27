@@ -7,6 +7,7 @@ import { NavigationLoader } from "@/components/shared/navigation-loader";
 import { Suspense } from "react";
 import { MotionConfig } from "framer-motion";
 import Script from "next/script";
+import { ConsentBanner } from "@/components/shared/consent-banner";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -49,6 +50,37 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* ── Consent Mode v2 defaults (must run before GA loads) ─────────── */}
+        <Script id="consent-defaults" strategy="beforeInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+
+            // Default: deny everything until the user consents
+            gtag('consent', 'default', {
+              analytics_storage:  'denied',
+              ad_storage:         'denied',
+              ad_user_data:       'denied',
+              ad_personalization: 'denied',
+              wait_for_update:    500,
+            });
+
+            // If the user already accepted in a previous visit, upgrade immediately
+            try {
+              var stored = localStorage.getItem('ea_consent');
+              if (stored === 'granted') {
+                gtag('consent', 'update', {
+                  analytics_storage:  'granted',
+                  ad_storage:         'granted',
+                  ad_user_data:       'granted',
+                  ad_personalization: 'granted',
+                });
+              }
+            } catch(e) {}
+          `}
+        </Script>
+
+        {/* ── Google Analytics ─────────────────────────────────────────────── */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-9DHWN4XT6E"
           strategy="afterInteractive"
@@ -72,6 +104,7 @@ export default function RootLayout({
             </Suspense>
             {children}
             <Toaster />
+            <ConsentBanner />
           </MotionConfig>
         </AuthProvider>
       </body>
