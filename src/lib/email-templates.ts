@@ -184,6 +184,101 @@ function base(content: string, previewText: string): string {
 </html>`;
 }
 
+// ─── Welcome email ────────────────────────────────────────────────────────────
+
+function iconUser(): string {
+  return `
+    <!--[if mso]>
+    <td width="44" height="44" style="width:44px;height:44px;background-color:#0d2218;border-radius:10px;text-align:center;vertical-align:middle;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:#3ecf8e">W</td>
+    <![endif]-->
+    <!--[if !mso]><!-->
+    <td style="width:44px;height:44px;background-color:#0d2218;border:1px solid #1a4a34;border-radius:10px;text-align:center;vertical-align:middle;padding:0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+        style="display:block;margin:11px auto 0">
+        <circle cx="12" cy="8" r="3.5" stroke="#3ecf8e" stroke-width="1.8"/>
+        <path d="M5 20c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="#3ecf8e" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </td>
+    <!--<![endif]-->`;
+}
+
+function stepRow(num: string, title: string, desc: string): string {
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px">
+      <tr>
+        <td width="32" style="vertical-align:top;padding-top:1px;padding-right:14px">
+          <div style="width:26px;height:26px;border-radius:50%;background-color:#0d1f3c;border:1px solid ${C.iconBorder};text-align:center;line-height:26px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;font-weight:700;color:${C.iconStroke}">${num}</div>
+        </td>
+        <td style="vertical-align:top;background-color:#0a1020;border:1px solid ${C.border};border-radius:10px;padding:14px 16px">
+          <p style="margin:0 0 5px;font-size:14px;font-weight:700;color:${C.heading};font-family:'Segoe UI',Helvetica,Arial,sans-serif">${title}</p>
+          <p style="margin:0;font-size:13px;color:${C.body};line-height:1.6;font-family:'Segoe UI',Helvetica,Arial,sans-serif">${desc}</p>
+        </td>
+      </tr>
+    </table>`;
+}
+
+export function welcomeEmailHtml(name: string, assessmentUrl: string): string {
+  const firstName = name.split(' ')[0];
+
+  const content = `
+    <!-- Header -->
+    <table class="card-hdr" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr><td style="background-color:${C.headerBg};padding:28px 40px;border-bottom:1px solid ${C.border}">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            ${iconUser()}
+            <td style="padding-left:16px;vertical-align:middle">
+              <h1 class="h1" style="margin:0 0 3px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:19px;font-weight:700;color:${C.heading};line-height:1.2">Welcome to E-ARI</h1>
+              <p style="margin:0;font-size:13px;color:${C.body};font-family:'Segoe UI',Helvetica,Arial,sans-serif">Your AI readiness journey starts here</p>
+            </td>
+          </tr>
+        </table>
+      </td></tr>
+    </table>
+
+    <!-- Body -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr><td style="padding:32px 40px">
+
+        <p class="body-p" style="margin:0 0 16px;font-size:15px;color:${C.body};line-height:1.7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+          Hi <strong class="strong-p" style="color:${C.bodyStrong}">${firstName}</strong>,
+        </p>
+        <p class="body-p" style="margin:0 0 28px;font-size:15px;color:${C.body};line-height:1.7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+          You have joined the platform that organizations use to measure, benchmark, and improve AI readiness.
+          Your first step is to establish a baseline score across <strong class="strong-p" style="color:${C.bodyStrong}">8 critical dimensions</strong>.
+        </p>
+
+        <!-- Steps -->
+        <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:${C.muted};letter-spacing:0.06em;text-transform:uppercase;font-family:'Segoe UI',Helvetica,Arial,sans-serif">Get started in 3 steps</p>
+
+        ${stepRow('1', 'Complete your first assessment', '40 questions across 8 pillars. Takes about 15 minutes. Results in your baseline E-ARI composite score and maturity band.')}
+        ${stepRow('2', 'Review your readiness profile', 'Pillar-by-pillar breakdown with AI-generated insights, sector benchmarking, and strategic recommendations.')}
+        ${stepRow('3', 'Track progress over time', 'Quarterly re-assessments and monthly AI Pulse reports measure improvement and unlock E-ARI Certification.')}
+
+        <!-- CTA -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:32px auto 0">
+          <tr>
+            <td style="border-radius:10px;background-color:${C.accent}">
+              <a href="${assessmentUrl}" target="_blank"
+                style="display:block;padding:14px 36px;color:${C.btnText};font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-weight:600;font-size:15px;text-decoration:none;letter-spacing:0.1px;white-space:nowrap">
+                Start Your First Assessment
+              </a>
+            </td>
+          </tr>
+        </table>
+
+        ${divider()}
+
+        <p style="margin:0;font-size:12px;color:${C.muted};text-align:center;font-family:'Segoe UI',Helvetica,Arial,sans-serif;line-height:1.6">
+          Free to start &middot; No credit card required &middot; Scoring engine v5.3
+        </p>
+
+      </td></tr>
+    </table>`;
+
+  return base(content, `Welcome, ${firstName}! Start your first AI readiness assessment today.`);
+}
+
 // ─── Verification email ───────────────────────────────────────────────────────
 
 export function verificationEmailHtml(verifyUrl: string, name: string): string {

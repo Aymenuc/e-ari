@@ -26,6 +26,7 @@
 import { Resend } from 'resend';
 import { db } from './db';
 import { PILLARS, MATURITY_BANDS } from './pillars';
+import { welcomeEmailHtml } from './email-templates';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -275,41 +276,9 @@ export async function sendWelcomeEmail(
   userName: string | null
 ): Promise<EmailResult> {
   const firstName = userName?.split(' ')[0] || 'there';
+  const assessmentUrl = `${BASE_URL}/assessment`;
 
-  const html = buildEmailWrapper(`
-    <div class="email-header">
-      <h1>Welcome to E-ARI</h1>
-      <p>Your AI readiness journey starts now</p>
-    </div>
-    <div class="email-content">
-      <p>Hi ${firstName},</p>
-      <p>You've just joined the platform that leading organizations trust to measure, benchmark, and improve their AI readiness. Your first step: establish a baseline score across <strong>8 critical dimensions</strong>.</p>
-
-      <h2>Get Started in 3 Steps</h2>
-      <div class="step-card">
-        <span class="step-number">1</span>
-        <span class="step-title">Complete Your First Assessment</span>
-        <p class="step-desc">40 Likert-scale questions across 8 pillars. Takes about 15 minutes. Your answers determine your baseline E-ARI composite score and maturity band.</p>
-      </div>
-      <div class="step-card">
-        <span class="step-number">2</span>
-        <span class="step-title">Review Your Readiness Profile</span>
-        <p class="step-desc">Get a detailed pillar-by-pillar breakdown with AI-generated narrative insights, sector benchmarking, and strategic recommendations.</p>
-      </div>
-      <div class="step-card">
-        <span class="step-number">3</span>
-        <span class="step-title">Track Progress Over Time</span>
-        <p class="step-desc">Use quarterly re-assessments and monthly AI Pulse reports to measure improvement and earn E-ARI Certification.</p>
-      </div>
-
-      <div style="text-align: center;">
-        <a href="${BASE_URL}/assessment" class="cta-button">Start Your First Assessment</a>
-      </div>
-
-      <div class="separator"></div>
-      <p style="font-size: 12px; color: ${DESIGN.textMuted}; text-align: center; margin: 0;">Free to start &mdash; no credit card required. Scoring is deterministic and versioned (v5.3).</p>
-    </div>
-  `, `Welcome to E-ARI! Start your first AI readiness assessment today.`);
+  const html = welcomeEmailHtml(firstName, assessmentUrl);
 
   const emailResult = await sendEmail({
     to: userEmail,
