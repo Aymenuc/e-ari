@@ -383,3 +383,484 @@ export function resetEmailHtml(resetUrl: string, name: string): string {
 
   return base(content, 'Reset your E-ARI password — link expires in 1 hour.');
 }
+
+// ─── Shared helpers ───────────────────────────────────────────────────────────
+
+function infoRow(label: string, value: string): string {
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:8px">
+      <tr>
+        <td width="110" style="font-size:12px;color:${C.muted};font-family:'Segoe UI',Helvetica,Arial,sans-serif;vertical-align:top;padding-top:1px">${label}</td>
+        <td style="font-size:13px;color:${C.bodyStrong};font-family:'Segoe UI',Helvetica,Arial,sans-serif">${value}</td>
+      </tr>
+    </table>`;
+}
+
+function metricBlock(label: string, value: string, sub?: string): string {
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+      style="margin-bottom:24px;background-color:${C.headerBg};border:1px solid ${C.border};border-radius:10px">
+      <tr><td style="padding:20px 24px">
+        <p style="margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${C.muted};font-family:'Segoe UI',Helvetica,Arial,sans-serif">${label}</p>
+        <p style="margin:0;font-size:30px;font-weight:800;color:${C.accent};font-family:'Segoe UI',Helvetica,Arial,sans-serif;letter-spacing:-0.03em;line-height:1">${value}</p>
+        ${sub ? `<p style="margin:6px 0 0;font-size:13px;color:${C.body};font-family:'Segoe UI',Helvetica,Arial,sans-serif">${sub}</p>` : ''}
+      </td></tr>
+    </table>`;
+}
+
+function pillarBar(name: string, score: number, color: string): string {
+  const fillW = Math.round(Math.min(100, Math.max(0, score)) * 1.8);
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:6px">
+      <tr>
+        <td width="110" style="font-size:12px;color:${C.body};font-family:'Segoe UI',Helvetica,Arial,sans-serif;padding-right:12px;white-space:nowrap">${name}</td>
+        <td style="padding-right:12px">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+            style="background-color:#111827;border-radius:4px;height:5px">
+            <tr>
+              <td width="${fillW}" style="background-color:${color};border-radius:4px;height:5px;font-size:0;line-height:0">&nbsp;</td>
+              <td style="height:5px;font-size:0;line-height:0"></td>
+            </tr>
+          </table>
+        </td>
+        <td width="28" style="font-size:12px;font-weight:700;color:${C.heading};font-family:'Segoe UI',Helvetica,Arial,sans-serif;text-align:right">${score}</td>
+      </tr>
+    </table>`;
+}
+
+function sectionLabel(text: string): string {
+  return `<p style="margin:0 0 12px;font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:${C.muted};font-family:'Segoe UI',Helvetica,Arial,sans-serif">${text}</p>`;
+}
+
+function alertPanel(text: string, color: string, bg: string): string {
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px">
+      <tr>
+        <td style="background-color:${bg};border-left:3px solid ${color};border-radius:0 6px 6px 0;padding:12px 16px">
+          <p style="margin:0;font-size:13px;color:${color};line-height:1.6;font-family:'Segoe UI',Helvetica,Arial,sans-serif">${text}</p>
+        </td>
+      </tr>
+    </table>`;
+}
+
+function emailHeader(icon: string, title: string, subtitle: string): string {
+  return `
+    <table class="card-hdr" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr><td style="background-color:${C.headerBg};padding:28px 40px;border-bottom:1px solid ${C.border}">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            ${icon}
+            <td style="padding-left:16px;vertical-align:middle">
+              <h1 class="h1" style="margin:0 0 3px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:19px;font-weight:700;color:${C.heading};line-height:1.2">${title}</h1>
+              <p style="margin:0;font-size:13px;color:${C.body};font-family:'Segoe UI',Helvetica,Arial,sans-serif">${subtitle}</p>
+            </td>
+          </tr>
+        </table>
+      </td></tr>
+    </table>`;
+}
+
+// ─── Icons for remaining templates ───────────────────────────────────────────
+
+function iconChart(): string {
+  return `
+    <!--[if mso]>
+    <td width="44" height="44" style="width:44px;height:44px;background-color:#0d1f3c;border-radius:10px;text-align:center;vertical-align:middle;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:${C.iconStroke}">A</td>
+    <![endif]-->
+    <!--[if !mso]><!-->
+    <td style="width:44px;height:44px;background-color:#0d1f3c;border:1px solid ${C.iconBorder};border-radius:10px;text-align:center;vertical-align:middle;padding:0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+        style="display:block;margin:11px auto 0">
+        <rect x="3" y="12" width="4" height="9" rx="1" stroke="${C.iconStroke}" stroke-width="1.8"/>
+        <rect x="10" y="7" width="4" height="14" rx="1" stroke="${C.iconStroke}" stroke-width="1.8"/>
+        <rect x="17" y="3" width="4" height="18" rx="1" stroke="${C.iconStroke}" stroke-width="1.8"/>
+      </svg>
+    </td>
+    <!--<![endif]-->`;
+}
+
+function iconStar(): string {
+  return `
+    <!--[if mso]>
+    <td width="44" height="44" style="width:44px;height:44px;background-color:#1a1400;border-radius:10px;text-align:center;vertical-align:middle;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:#c9900a">C</td>
+    <![endif]-->
+    <!--[if !mso]><!-->
+    <td style="width:44px;height:44px;background-color:#1a1400;border:1px solid #3a2e00;border-radius:10px;text-align:center;vertical-align:middle;padding:0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+        style="display:block;margin:11px auto 0">
+        <path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l7.1-1.01L12 2z"
+          stroke="#c9900a" stroke-width="1.8" stroke-linejoin="round"/>
+      </svg>
+    </td>
+    <!--<![endif]-->`;
+}
+
+function iconRefund(): string {
+  return `
+    <!--[if mso]>
+    <td width="44" height="44" style="width:44px;height:44px;background-color:#1a0f0a;border-radius:10px;text-align:center;vertical-align:middle;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:#d4820a">$</td>
+    <![endif]-->
+    <!--[if !mso]><!-->
+    <td style="width:44px;height:44px;background-color:#1a0f0a;border:1px solid #4a2800;border-radius:10px;text-align:center;vertical-align:middle;padding:0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+        style="display:block;margin:11px auto 0">
+        <circle cx="12" cy="12" r="8" stroke="#d4820a" stroke-width="1.8"/>
+        <path d="M12 7v1m0 8v1M9.5 9.5A2.5 2.5 0 0112 8a2.5 2.5 0 010 5 2.5 2.5 0 000 5 2.5 2.5 0 002.5-1.5" stroke="#d4820a" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    </td>
+    <!--<![endif]-->`;
+}
+
+function iconMsg(): string {
+  return `
+    <!--[if mso]>
+    <td width="44" height="44" style="width:44px;height:44px;background-color:#0d1f3c;border-radius:10px;text-align:center;vertical-align:middle;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:${C.iconStroke}">M</td>
+    <![endif]-->
+    <!--[if !mso]><!-->
+    <td style="width:44px;height:44px;background-color:#0d1f3c;border:1px solid ${C.iconBorder};border-radius:10px;text-align:center;vertical-align:middle;padding:0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+        style="display:block;margin:11px auto 0">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H6l-4 4V6c0-1.1.9-2 2-2z"
+          stroke="${C.iconStroke}" stroke-width="1.8" stroke-linejoin="round"/>
+      </svg>
+    </td>
+    <!--<![endif]-->`;
+}
+
+// ─── Assessment complete ──────────────────────────────────────────────────────
+
+export function assessmentCompleteEmailHtml(
+  name: string,
+  score: number,
+  maturityLabel: string,
+  pillarScores: Array<{ name: string; score: number; color: string }>,
+  reportUrl: string,
+): string {
+  const firstName = name.split(' ')[0];
+  const scoreRounded = Math.round(score);
+  const bars = pillarScores.map(p => pillarBar(p.name, Math.round(p.score), p.color)).join('');
+
+  const content = `
+    ${emailHeader(iconChart(), 'Assessment Complete', 'Your AI readiness profile is ready')}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr><td style="padding:32px 40px">
+        <p class="body-p" style="margin:0 0 24px;font-size:15px;color:${C.body};line-height:1.7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+          Hi <strong class="strong-p" style="color:${C.bodyStrong}">${firstName}</strong>,<br>
+          Your assessment has been processed through the E-ARI scoring pipeline (v5.3).
+        </p>
+        ${metricBlock('E-ARI Composite Score', String(scoreRounded), `${maturityLabel}${scoreRounded >= 80 ? ' &middot; Certified' : ''}`)}
+        ${sectionLabel('Pillar Breakdown')}
+        ${bars}
+        ${divider()}
+        <p class="body-p" style="margin:0 0 28px;font-size:14px;color:${C.body};line-height:1.7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+          Your full report includes AI-generated insights, sector benchmarks, and strategic recommendations.
+        </p>
+        ${ctaButton(reportUrl, 'View Full Report')}
+      </td></tr>
+    </table>`;
+
+  return base(content, `Assessment complete. E-ARI score: ${scoreRounded} (${maturityLabel}).`);
+}
+
+// ─── Quarterly reminder ───────────────────────────────────────────────────────
+
+export function quarterlyReminderEmailHtml(
+  name: string,
+  score: number,
+  maturityLabel: string,
+  lastAssessmentDate: string,
+  daysUntilReview: number,
+  isOverdue: boolean,
+): string {
+  const firstName = name.split(' ')[0];
+  const scoreRounded = Math.round(score);
+  const dateLabel = new Date(lastAssessmentDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const urgency = isOverdue
+    ? 'Your quarterly AI readiness review is <strong style="color:#e8edf5">overdue</strong>.'
+    : daysUntilReview <= 30
+    ? `Your quarterly review is due in <strong style="color:#e8edf5">${daysUntilReview} days</strong>.`
+    : `Your next quarterly review is in <strong style="color:#e8edf5">${daysUntilReview} days</strong>.`;
+
+  const bullets = ['Progress from recent AI initiatives', 'Governance changes from new regulations (EU AI Act)', 'Impact of talent acquisition or upskilling', 'Infrastructure and data pipeline improvements'];
+
+  const content = `
+    ${emailHeader(iconChart(), isOverdue ? 'Review Overdue' : 'Quarterly Review', isOverdue ? 'Action required' : `Due in ${daysUntilReview} days`)}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr><td style="padding:32px 40px">
+        <p class="body-p" style="margin:0 0 24px;font-size:15px;color:${C.body};line-height:1.7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+          Hi <strong class="strong-p" style="color:${C.bodyStrong}">${firstName}</strong>,<br>${urgency}
+          AI readiness evolves as your organization adopts new technology and changes governance posture.
+        </p>
+        ${metricBlock('Last Assessment Score', String(scoreRounded), `${maturityLabel} &middot; Assessed ${dateLabel}`)}
+        ${sectionLabel('Why Re-assess?')}
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px">
+          ${bullets.map(b => `<tr>
+            <td width="16" style="vertical-align:top;padding-right:10px">
+              <div style="width:5px;height:5px;border-radius:50%;background-color:${C.accent};margin-top:7px">&nbsp;</div>
+            </td>
+            <td style="font-size:13px;color:${C.body};line-height:1.6;font-family:'Segoe UI',Helvetica,Arial,sans-serif;padding-bottom:8px">${b}</td>
+          </tr>`).join('')}
+        </table>
+        ${ctaButton(`${SITE_URL}/assessment`, 'Re-run Assessment')}
+        <p style="margin:-16px 0 0;font-size:12px;color:${C.muted};text-align:center;font-family:'Segoe UI',Helvetica,Arial,sans-serif">Your previous answers will be pre-filled for quick updating.</p>
+      </td></tr>
+    </table>`;
+
+  return base(content, `Quarterly review ${isOverdue ? 'overdue' : `due in ${daysUntilReview} days`}. Last score: ${scoreRounded}.`);
+}
+
+// ─── Monthly pulse ────────────────────────────────────────────────────────────
+
+export function monthlyPulseEmailHtml(
+  name: string,
+  score: number,
+  delta: number | null,
+  topRisks: string[],
+  topQuickWins: string[],
+  monthLabel: string,
+): string {
+  const firstName = name.split(' ')[0];
+  const scoreRounded = Math.round(score);
+  const deltaStr = delta !== null ? `${delta >= 0 ? '+' : ''}${delta}%` : null;
+  const deltaColor = delta !== null && delta < 0 ? '#ef4444' : '#3ecf8e';
+
+  const content = `
+    ${emailHeader(iconChart(), 'AI Pulse Report', `${monthLabel} Readiness Summary`)}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr><td style="padding:32px 40px">
+        <p class="body-p" style="margin:0 0 24px;font-size:15px;color:${C.body};line-height:1.7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+          Hi <strong class="strong-p" style="color:${C.bodyStrong}">${firstName}</strong>,<br>
+          Your ${monthLabel} AI readiness pulse is ready.
+        </p>
+        ${metricBlock('Overall Readiness', `${scoreRounded}%${deltaStr ? ` <span style="font-size:16px;color:${deltaColor}">${deltaStr}</span>` : ''}`)}
+        ${topRisks.length ? `${sectionLabel('Top Risks')}${topRisks.slice(0, 3).map(r => alertPanel(r, '#d4820a', '#1a160a')).join('')}` : ''}
+        ${topQuickWins.length ? `${sectionLabel('Quick Wins')}${topQuickWins.slice(0, 3).map(w => alertPanel(w, '#3ecf8e', '#0d2218')).join('')}` : ''}
+        ${ctaButton(`${SITE_URL}/pulse`, 'View Full Pulse Report')}
+      </td></tr>
+    </table>`;
+
+  return base(content, `${monthLabel} AI Pulse: ${scoreRounded}%${deltaStr ? ` (${deltaStr})` : ''}. ${topRisks.length} risks, ${topQuickWins.length} quick wins.`);
+}
+
+// ─── Score change alert ───────────────────────────────────────────────────────
+
+export function scoreChangeAlertEmailHtml(
+  name: string,
+  previousScore: number,
+  currentScore: number,
+  changedPillars: Array<{ pillarName: string; previousScore: number; currentScore: number; delta: number }>,
+): string {
+  const firstName = name.split(' ')[0];
+  const overallDelta = Math.round(currentScore - previousScore);
+  const isUp = overallDelta > 0;
+
+  const changeRows = changedPillars.map(cp => `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+      style="margin-bottom:6px;background-color:${C.headerBg};border:1px solid ${C.border};border-radius:8px">
+      <tr>
+        <td style="padding:10px 14px;font-size:13px;color:${C.bodyStrong};font-family:'Segoe UI',Helvetica,Arial,sans-serif">${cp.pillarName}</td>
+        <td style="padding:10px 14px;font-size:13px;font-weight:700;color:${cp.delta > 0 ? '#3ecf8e' : '#ef4444'};font-family:'Segoe UI',Helvetica,Arial,sans-serif;text-align:right;white-space:nowrap">
+          ${cp.previousScore}% &rarr; ${cp.currentScore}% (${cp.delta > 0 ? '+' : ''}${cp.delta}%)
+        </td>
+      </tr>
+    </table>`).join('');
+
+  const content = `
+    ${emailHeader(iconChart(), isUp ? 'Score Increased' : 'Score Changed', `${isUp ? 'Improved' : 'Changed'} by ${Math.abs(overallDelta)} points`)}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr><td style="padding:32px 40px">
+        <p class="body-p" style="margin:0 0 24px;font-size:15px;color:${C.body};line-height:1.7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+          Hi <strong class="strong-p" style="color:${C.bodyStrong}">${firstName}</strong>,<br>
+          Your latest assessment shows a ${isUp ? 'positive' : 'significant'} shift in your readiness profile.
+        </p>
+        ${metricBlock('Overall Score Change', `${Math.round(previousScore)}% &rarr; ${Math.round(currentScore)}%`, `${isUp ? '+' : ''}${overallDelta} points`)}
+        ${sectionLabel('Pillar Changes')}
+        ${changeRows}
+        ${divider()}
+        <p class="body-p" style="margin:0 0 28px;font-size:14px;color:${C.body};line-height:1.7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+          ${isUp ? 'Your investments in AI readiness are paying off. Continue monitoring with monthly AI Pulse reports.' : 'A declining score often reflects shifts in organizational priorities. Review the pillars showing steepest declines.'}
+        </p>
+        ${ctaButton(`${SITE_URL}/portal`, 'View Full Results')}
+      </td></tr>
+    </table>`;
+
+  return base(content, `Your AI readiness score ${isUp ? 'increased' : 'changed'} by ${Math.abs(overallDelta)} points to ${Math.round(currentScore)}%.`);
+}
+
+// ─── Certification ────────────────────────────────────────────────────────────
+
+const CERT_DETAILS: Record<string, { range: string; description: string }> = {
+  Bronze:   { range: '40–55', description: 'Your organization has established foundational AI readiness practices and is on the path to systematic AI adoption.' },
+  Silver:   { range: '56–69', description: 'Your organization demonstrates developing AI readiness with structured processes and growing maturity across key dimensions.' },
+  Gold:     { range: '70–84', description: 'Your organization shows established AI readiness with strong governance, robust infrastructure, and strategic AI alignment.' },
+  Platinum: { range: '85–100', description: 'Your organization has achieved leading AI readiness with best-in-class practices across all eight pillars — among the most AI-prepared enterprises globally.' },
+};
+
+export function certificationEmailHtml(name: string, certificationLevel: string, score: number): string {
+  const firstName = name.split(' ')[0];
+  const scoreRounded = Math.round(score);
+  const detail = CERT_DETAILS[certificationLevel] || CERT_DETAILS.Bronze;
+  const isPlatinum = certificationLevel === 'Platinum';
+  const badgeColor = isPlatinum ? '#c9900a' : C.accent;
+  const badgeBg   = isPlatinum ? '#1a1400' : '#0d1f3c';
+
+  const content = `
+    ${emailHeader(iconStar(), 'Certification Achieved', `E-ARI ${certificationLevel} Certification`)}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr><td style="padding:32px 40px">
+        <p class="body-p" style="margin:0 0 24px;font-size:15px;color:${C.body};line-height:1.7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+          Hi <strong class="strong-p" style="color:${C.bodyStrong}">${firstName}</strong>,<br>
+          Congratulations. Your organization has earned
+          <strong class="strong-p" style="color:${C.bodyStrong}">E-ARI ${certificationLevel} Certification</strong>
+          with a composite score of <strong class="strong-p" style="color:${C.bodyStrong}">${scoreRounded}</strong>.
+        </p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+          style="margin-bottom:24px;background-color:${badgeBg};border:1px solid ${badgeColor}33;border-radius:10px">
+          <tr><td style="padding:24px;text-align:center">
+            <span style="display:inline-block;padding:8px 24px;border-radius:20px;background-color:${badgeColor}1a;border:1px solid ${badgeColor}55;font-size:15px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:${badgeColor};font-family:'Segoe UI',Helvetica,Arial,sans-serif">${certificationLevel}</span>
+            <p style="margin:10px 0 0;font-size:13px;color:${C.body};font-family:'Segoe UI',Helvetica,Arial,sans-serif">Score range: ${detail.range} &middot; Your score: ${scoreRounded}</p>
+          </td></tr>
+        </table>
+        <p class="body-p" style="margin:0 0 20px;font-size:14px;color:${C.body};line-height:1.7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">${detail.description}</p>
+        ${alertPanel('<strong>About E-ARI Certification:</strong> This certification validates your AI readiness maturity using our deterministic scoring engine (v5.3). Share it with stakeholders, partners, and auditors.', C.body, C.headerBg)}
+        ${ctaButton(`${SITE_URL}/portal`, 'View Your Certificate')}
+      </td></tr>
+    </table>`;
+
+  return base(content, `Congratulations! E-ARI ${certificationLevel} Certification achieved — score: ${scoreRounded}.`);
+}
+
+// ─── Custom admin message ─────────────────────────────────────────────────────
+
+export function customEmailHtml(firstName: string, subject: string, messageBody: string): string {
+  const safeBody = messageBody.replace(/\n/g, '<br>');
+  const content = `
+    ${emailHeader(iconMsg(), 'Message from E-ARI', subject)}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr><td style="padding:32px 40px">
+        <p class="body-p" style="margin:0 0 20px;font-size:15px;color:${C.body};line-height:1.7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+          Hi <strong class="strong-p" style="color:${C.bodyStrong}">${firstName}</strong>,
+        </p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+          style="margin-bottom:24px;background-color:${C.headerBg};border:1px solid ${C.border};border-radius:10px">
+          <tr><td style="padding:20px 24px;font-size:14px;color:${C.bodyStrong};line-height:1.8;font-family:'Segoe UI',Helvetica,Arial,sans-serif">${safeBody}</td></tr>
+        </table>
+        <p style="margin:0;font-size:12px;color:${C.muted};font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+          Reply to <a href="mailto:support@e-ari.com" style="color:${C.muted};text-decoration:underline">support@e-ari.com</a> if you have questions.
+        </p>
+      </td></tr>
+    </table>`;
+  return base(content, subject);
+}
+
+// ─── Contact form (to support) ────────────────────────────────────────────────
+
+export function contactFormEmailHtml(
+  name: string,
+  email: string,
+  company: string | null,
+  subject: string,
+  message: string,
+): string {
+  const safeMessage = message.replace(/\n/g, '<br>');
+  const content = `
+    ${emailHeader(iconMsg(), 'New Contact Message', `From ${name}${company ? ` · ${company}` : ''}`)}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr><td style="padding:32px 40px">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+          style="margin-bottom:24px;background-color:${C.headerBg};border:1px solid ${C.border};border-radius:10px">
+          <tr><td style="padding:16px 20px">
+            ${infoRow('Name', name)}
+            ${infoRow('Email', `<a href="mailto:${email}" style="color:${C.accent};text-decoration:none">${email}</a>`)}
+            ${company ? infoRow('Company', company) : ''}
+            ${infoRow('Subject', subject)}
+          </td></tr>
+        </table>
+        ${sectionLabel('Message')}
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+          style="margin-bottom:28px;background-color:${C.headerBg};border:1px solid ${C.border};border-radius:10px">
+          <tr><td style="padding:16px 20px;font-size:14px;color:${C.bodyStrong};line-height:1.8;font-family:'Segoe UI',Helvetica,Arial,sans-serif">${safeMessage}</td></tr>
+        </table>
+        ${ctaButton(`mailto:${email}`, `Reply to ${name}`)}
+      </td></tr>
+    </table>`;
+  return base(content, `Contact from ${name} (${email}): ${subject}`);
+}
+
+// ─── Refund request (to support) ─────────────────────────────────────────────
+
+export function refundRequestEmailHtml(
+  userFirstName: string,
+  userEmail: string,
+  amount: number,
+  reason: string,
+  details: string | null,
+  requestId: string,
+): string {
+  const content = `
+    ${emailHeader(iconRefund(), 'New Refund Request', 'Action required from the support team')}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr><td style="padding:32px 40px">
+        <p class="body-p" style="margin:0 0 24px;font-size:15px;color:${C.body};line-height:1.7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+          A new refund request has been submitted.
+        </p>
+        ${metricBlock('Refund Amount', `$${amount.toFixed(2)}`)}
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+          style="margin-bottom:28px;background-color:${C.headerBg};border:1px solid ${C.border};border-radius:10px">
+          <tr><td style="padding:16px 20px">
+            ${infoRow('User', `${userFirstName} &lt;${userEmail}&gt;`)}
+            ${infoRow('Reason', reason)}
+            ${details ? infoRow('Details', details) : ''}
+            ${infoRow('Request ID', `<span style="font-family:monospace;font-size:11px">${requestId}</span>`)}
+          </td></tr>
+        </table>
+        ${ctaButton(`${SITE_URL}/admin/refunds`, 'Review in Admin Panel')}
+      </td></tr>
+    </table>`;
+  return base(content, `New refund request from ${userEmail} for $${amount.toFixed(2)}.`);
+}
+
+// ─── Refund status (to user) ──────────────────────────────────────────────────
+
+const REFUND_STATUS: Record<string, { title: string; subtitle: string; message: string; color: string; bg: string }> = {
+  approved: { title: 'Refund Approved',         subtitle: 'Your refund is on its way',             message: 'Your refund has been approved. Funds will return to your original payment method within <strong style="color:#e8edf5">5–10 business days</strong>.', color: '#3ecf8e', bg: '#0d2218' },
+  rejected: { title: 'Refund Request Rejected',  subtitle: 'We could not process your refund',      message: 'Your refund request has been reviewed and could not be approved. Contact <a href="mailto:support@e-ari.com" style="color:#8b95a8;text-decoration:underline">support@e-ari.com</a> if you believe this is an error.', color: '#ef4444', bg: '#1a0a0a' },
+  refunded: { title: 'Refund Processed',          subtitle: 'Your refund has been issued',           message: 'Your refund has been successfully processed. Funds will appear within <strong style="color:#e8edf5">5–10 business days</strong>.', color: '#3ecf8e', bg: '#0d2218' },
+  pending:  { title: 'Refund Request Received',   subtitle: 'We are reviewing your request',         message: 'We have received your refund request and it is being reviewed by our support team. You will be notified once a decision is made.', color: '#d4820a', bg: '#1a160a' },
+};
+
+export function refundStatusEmailHtml(
+  firstName: string,
+  status: string,
+  amount: number,
+  reason: string,
+  rejectionReason: string | null,
+  requestId: string,
+): string {
+  const cfg = REFUND_STATUS[status] || REFUND_STATUS.pending;
+  const message = status === 'rejected' && rejectionReason
+    ? cfg.message.replace('Contact', `Reason: ${rejectionReason}. Contact`)
+    : cfg.message;
+
+  const content = `
+    ${emailHeader(iconRefund(), cfg.title, cfg.subtitle)}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr><td style="padding:32px 40px">
+        <p class="body-p" style="margin:0 0 20px;font-size:15px;color:${C.body};line-height:1.7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+          Hi <strong class="strong-p" style="color:${C.bodyStrong}">${firstName}</strong>,
+        </p>
+        ${alertPanel(message, cfg.color, cfg.bg)}
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+          style="margin-bottom:28px;background-color:${C.headerBg};border:1px solid ${C.border};border-radius:10px">
+          <tr><td style="padding:16px 20px">
+            ${infoRow('Amount', `$${amount.toFixed(2)}`)}
+            ${infoRow('Reason', reason)}
+            ${infoRow('Status', `<span style="text-transform:capitalize">${status}</span>`)}
+            ${infoRow('Request ID', `<span style="font-family:monospace;font-size:11px">${requestId}</span>`)}
+          </td></tr>
+        </table>
+        ${ctaButton(`${SITE_URL}/portal`, 'Go to Your Account')}
+      </td></tr>
+    </table>`;
+  return base(content, `${cfg.title}: refund of $${amount.toFixed(2)} has been ${status}.`);
+}
