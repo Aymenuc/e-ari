@@ -312,6 +312,54 @@ async function glmComplete(
   }
 }
 
+// ─── Sector auto-classification ─────────────────────────────────────────────
+// Avoids the `general` cross-industry trap that pulled unrelated headlines
+// into the synthesis prompt for famous orgs like Microsoft.
+
+const SECTOR_KEYS = Object.keys(SECTOR_MAP).filter((k) => k !== "general");
+
+async function classifySector(
+  orgName: string,
+  websiteUrl: string | undefined,
+): Promise<string | null> {
+  const domain = websiteUrl ? extractDomain(websiteUrl) : null;
+  const keysList = SECTOR_KEYS.join(", ");
+
+  // Quick public lookup snippet for grounding (best-effort, may be empty)
+  let snippet = "";
+  if (domain) {
+    try {
+      const r = await tavilySearch(`${orgName} company overview`, {
+        maxResults: 2,
+        include_domains: [domain],
+        search_depth: "basic",
+      });
+      snippet = r
+        .slice(0, 2)
+        .map((x) => `${x.title}: ${(x.content || "").slice(0, 240)}`)
+        .join("\n");
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const sys = "Classify the organization into ONE sector key. Reply with only the key. If unsure, reply 'unknown'.";
+  const user = `Organization: ${orgName}${domain ? `\nDomain: ${domain}` : ""}${snippet ? `\n\nPublic snippet:\n${snippet}` : ""}
+
+Allowed keys: ${keysList}, unknown
+
+Pick the single best fit. Reply with only the key, no explanation.`;
+
+  try {
+    const out = await glmComplete(sys, user, 30, 0);
+    const cleaned = (out || "").trim().toLowerCase().replace(/[^a-z]/g, "");
+    if (SECTOR_KEYS.includes(cleaned)) return cleaned;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 async function collectOrgResults(
   orgName: string,
   websiteUrl: string | undefined,
@@ -385,8 +433,13 @@ async function collectOrgResults(
 async function collectSectorResults(
   sectorInfo: { name: string; searchKeywords: string[] } | null,
 ): Promise<TavilyResult[]> {
+  // If sector cannot be resolved, skip sector queries entirely. Running
+  // "General / Cross-Industry" queries pulls unrelated headlines that
+  // poison the synthesis prompt (the bug surfaced for sector='general').
+  if (!sectorInfo) return [];
+
   const y = new Date().getFullYear();
-  const name = sectorInfo?.name ?? "enterprise organizations";
+  const name = sectorInfo.name;
   const tasks = [
     tavilySearch(`${name} AI deployments case studies ${y}`, {
       maxResults: 4,
@@ -404,9 +457,6 @@ async function collectSectorResults(
       time_range: "year",
     }),
   ];
-  if (!sectorInfo) {
-    tasks.push(tavilySearch("enterprise AI adoption benchmarks trends", { maxResults: 3 }));
-  }
 
   const flat = (await Promise.all(tasks)).flat();
   const seen = new Set<string>();
@@ -553,9 +603,17 @@ Rules:
 
 export async function scrapeOrganizationContext(input: ScrapingInput): Promise<OrgContext> {
   const timestamp = new Date().toISOString();
-  const { orgName, websiteUrl, sector, additionalContext } = input;
-  const sectorInfo = sector ? SECTOR_MAP[sector] : null;
-  const sectorName = sectorInfo?.name ?? sector ?? "";
+  const { orgName, websiteUrl, additionalContext } = input;
+
+  // Auto-resolve `general` and missing sector via a quick LLM classification.
+  // If we can't classify confidently, sectorInfo stays null and sector queries are skipped.
+  let resolvedSectorKey = input.sector;
+  if (!resolvedSectorKey || resolvedSectorKey === "general") {
+    resolvedSectorKey = (await classifySector(orgName, websiteUrl)) ?? undefined;
+  }
+  const sectorInfo = resolvedSectorKey ? SECTOR_MAP[resolvedSectorKey] : null;
+  const sectorName = sectorInfo?.name ?? resolvedSectorKey ?? "";
+  const sector = resolvedSectorKey;
   const orgDomain = websiteUrl ? extractDomain(websiteUrl) : null;
 
   const [uniqueOrgResults, uniqueSectorResults] = await Promise.all([
@@ -791,24 +849,30 @@ async function buildHonestFallbackFromResults(
   timestamp: string,
 ): Promise<OrgContext> {
   const sectorInfo = input.sector ? SECTOR_MAP[input.sector] : null;
-  const orgTitles = orgResults.slice(0, 6).map((r) => r.title).filter(Boolean);
-  const sectorTitles = sectorResults.slice(0, 5).map((r) => r.title).filter(Boolean);
   const signals = await llmExtractSignalsFromSnippets(input.orgName, numberedSnippets.slice(0, 24000));
 
   const thinOrg = orgResults.length === 0;
+
+  // No raw headlines in user-facing copy. When synthesis failed, the model
+  // could not produce grounded prose — saying so honestly is more useful than
+  // dumping unverified titles into the UI (which previously surfaced
+  // unrelated articles like "Shanghai Electric…" for a Microsoft assessment).
   const orgSpecificContext = thinOrg
-    ? `We could not reliably identify "${input.orgName}" in filtered public sources after synthesis failed. Self-reported answers and Compliance uploads carry the assessment.`
-    : `Automated synthesis failed; partial headings retrieved about ${input.orgName}: ${orgTitles.slice(0, 3).join("; ") || "no titles"}. Verify before relying on this text.`;
+    ? `We could not reliably identify "${input.orgName}" in filtered public sources. Your assessment will rely on your self-reported answers and any documents uploaded under the Compliance module.`
+    : `Public information about ${input.orgName} was retrieved but could not be synthesised into a defensible summary. Treat any inferences from this enrichment as preliminary; rely on your assessment responses and Compliance evidence for scoring.`;
 
-  const industryContext =
-    sectorTitles.length > 0
-      ? `${sectorInfo?.name ?? "This sector"} — headlines only (unverified synthesis): ${sectorTitles.slice(0, 4).join("; ")}.`
-      : sectorInfo
-        ? `AI adoption varies widely in ${sectorInfo.name}; detailed scoring should come from your questionnaire responses.`
-        : "Sector AI headlines were not retrieved.";
+  const industryContext = sectorInfo
+    ? `Automated industry context could not be reliably synthesised for ${sectorInfo.name}. Your assessment will use sector benchmarks from our internal database, not live web data.`
+    : `Sector context was not retrieved automatically. Your assessment will rely on your self-reported answers.`;
 
-  const confidence =
-    thinOrg && sectorResults.length === 0 ? "none" : thinOrg ? "low" : sectorResults.length >= 3 ? "medium" : "low";
+  const competitiveLandscape =
+    "Competitive positioning was not assessed automatically. Use the Compliance module to upload organisation documents for evidence-backed analysis.";
+
+  // Cap fallback confidence at 'low' or 'none'. Reaching 'medium' here was a
+  // bug — it implied trust in raw query results that the verifier had just
+  // rejected. Real 'medium'/'high' tiers are reserved for the success path.
+  const confidence: "low" | "none" =
+    orgResults.length === 0 && sectorResults.length === 0 ? "none" : "low";
 
   return {
     orgName: input.orgName,
@@ -819,10 +883,7 @@ async function buildHonestFallbackFromResults(
     aiInitiatives: signals.aiInitiatives,
     techStackSignals: signals.techStackSignals,
     regulatoryConsiderations: getDefaultRegulations(input.sector),
-    competitiveLandscape:
-      thinOrg || orgTitles.length === 0
-        ? "Competitive positioning was not inferred automatically."
-        : `Headline-only signals (${orgTitles.slice(0, 2).join("; ")}) — treat as unverified.`,
+    competitiveLandscape,
     scrapingSources: [...orgResults.map((r) => r.url), ...sectorResults.map((r) => r.url)],
     scrapedAt: timestamp,
     confidence,
