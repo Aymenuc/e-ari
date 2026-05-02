@@ -86,6 +86,16 @@ function RegisterForm() {
 
       // If email verification is required, redirect to the verify page
       if (data.requiresVerification) {
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem(
+            "pendingVerificationCreds",
+            JSON.stringify({
+              email: formData.email.trim().toLowerCase(),
+              password: formData.password,
+              callbackUrl,
+            })
+          );
+        }
         router.push(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
         return;
       }

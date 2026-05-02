@@ -186,7 +186,7 @@ export default function TermsOfServicePage() {
             {/* 4. Subscription Plans & Billing */}
             <Section id="subscription" icon={CreditCard} title="4. Subscription Plans & Billing">
               <p>
-                E-ARI offers three subscription tiers: Starter (free), Professional ($99 per month or $990 per year), and Enterprise (custom pricing). The features available under each tier are described on our pricing page and in these Terms. We reserve the right to modify pricing with 30 days' advance notice.
+                E-ARI offers three subscription tiers: Starter (free), Professional ($29 per month), and Enterprise (custom pricing). The features available under each tier are described on our pricing page and in these Terms. We reserve the right to modify pricing with 30 days' advance notice.
               </p>
 
               <h3 className="font-heading font-semibold text-foreground text-base pt-2">4.1 Billing and Payments</h3>
@@ -196,7 +196,7 @@ export default function TermsOfServicePage() {
 
               <h3 className="font-heading font-semibold text-foreground text-base pt-2">4.2 Cancellation</h3>
               <p>
-                You may cancel your Professional subscription at any time from your account settings or by contacting support@e-ari.com. Upon cancellation, your account will revert to the Starter plan at the end of your current billing period. You will retain access to Professional features until the end of the paid period. No partial refunds are provided for unused portions of a billing period. Annual subscribers who cancel within the first 30 days may request a prorated refund by contacting support.
+                You may cancel your Professional subscription at any time from your account settings or by contacting support@e-ari.com. Upon cancellation, your account will revert to the Starter plan at the end of your current billing period. You will retain access to Professional features until the end of the paid period. No partial refunds are provided for unused portions of a billing period. Annual subscribers who cancel within the first 24 hours may request a prorated refund by contacting support.
               </p>
 
               <h3 className="font-heading font-semibold text-foreground text-base pt-2">4.3 Enterprise Agreements</h3>

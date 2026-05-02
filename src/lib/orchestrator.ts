@@ -1022,6 +1022,7 @@ function updateContext(ctx: PipelineContext, agent: AgentId, result: unknown): v
 export async function getLatestPipelineRun(assessmentId: string): Promise<{
   id: string;
   status: PipelineStatus;
+  isStale: boolean;
   stages: Array<{
     agent: string;
     status: string;
@@ -1043,10 +1044,22 @@ export async function getLatestPipelineRun(assessmentId: string): Promise<{
   const totalDuration = run.completedAt && run.startedAt
     ? run.completedAt.getTime() - run.startedAt.getTime()
     : null;
+  const now = Date.now();
+  const staleCutoffMs = 2 * 60 * 1000;
+  const ageFromStart = run.startedAt ? now - run.startedAt.getTime() : now - run.createdAt.getTime();
+  const hasRunningStage = run.stages.some(s => s.status === 'running');
+  const hasOnlyPendingStages = run.stages.length > 0 && run.stages.every(s => s.status === 'pending');
+  const hasNoStagesYet = run.stages.length === 0;
+  const isStale =
+    (run.status === 'pending' || run.status === 'running') &&
+    !hasRunningStage &&
+    (hasOnlyPendingStages || hasNoStagesYet) &&
+    ageFromStart > staleCutoffMs;
 
   return {
     id: run.id,
     status: run.status as PipelineStatus,
+    isStale,
     stages: run.stages.map(s => ({
       agent: s.agent,
       status: s.status,

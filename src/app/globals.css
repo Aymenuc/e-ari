@@ -109,11 +109,16 @@
 }
 
 @layer base {
+  /* Prevent horizontal rubber-band / scroll on mobile when decorations extend past the layout width */
+  html {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
   * {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-x-hidden max-w-full;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;

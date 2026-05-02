@@ -41,8 +41,8 @@ const PLANS: Record<string, {
 }> = {
   professional: {
     name: 'Professional',
-    price: '$299',
-    period: '/assessment',
+    price: '$29',
+    period: '/month',
     icon: Award,
     color: 'text-eari-blue-light',
     bgColor: 'bg-eari-blue/15',
@@ -105,7 +105,7 @@ export default function CheckoutPageInner() {
   const router = useRouter()
   const { data: session, status: sessionStatus } = useSession()
 
-  const plan = searchParams.get('plan') || 'professional'
+  const plan = searchParams.get('plan') || searchParams.get('tier') || 'professional'
   const planConfig = PLANS[plan]
 
   const [loading, setLoading] = useState(false)
@@ -405,17 +405,8 @@ export default function CheckoutPageInner() {
             </div>
           </FadeUp>
 
-          {/* Money-back guarantee */}
-          <FadeUp delay={0.1}>
-            <div className="mt-6 text-center">
-              <p className="text-xs text-muted-foreground font-sans">
-                30-day money-back guarantee. No questions asked.
-              </p>
-            </div>
-          </FadeUp>
-
           {/* Compare plans link */}
-          <FadeUp delay={0.15}>
+          <FadeUp delay={0.1}>
             <div className="mt-8 text-center">
               <Link href="/pricing" className="inline-flex items-center gap-1.5 text-sm text-eari-blue-light hover:text-eari-blue transition-colors font-sans min-h-[44px]">
                 Compare all plans

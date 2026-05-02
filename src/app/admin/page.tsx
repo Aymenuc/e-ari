@@ -57,6 +57,8 @@ import {
   Mail,
   Send,
   Megaphone,
+  Trash2,
+  ScrollText,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -199,6 +201,18 @@ interface SubscriberRow {
   status: "active" | "cancelled";
   joinedDate: string;
   assessmentCount: number;
+}
+
+interface ComplianceLogRow {
+  id: string;
+  createdAt: string;
+  operation: string | null;
+  model: string;
+  durationMs: number;
+  inputTokens: number | null;
+  outputTokens: number | null;
+  success: boolean;
+  errorClass: string | null;
 }
 
 // ─── Agent Status Data ──────────────────────────────────────────────────
@@ -490,7 +504,17 @@ function formatMonthLabel(month: string) {
 
 // ─── Tab Navigation ─────────────────────────────────────────────────────
 
-type AdminTab = "overview" | "revenue" | "users" | "assessments" | "agents" | "refunds" | "inbox" | "social" | "settings";
+type AdminTab =
+  | "overview"
+  | "revenue"
+  | "users"
+  | "assessments"
+  | "agents"
+  | "refunds"
+  | "inbox"
+  | "social"
+  | "compliance"
+  | "settings";
 
 const NAV_ITEMS: { id: AdminTab; icon: React.ElementType; label: string }[] = [
   { id: "overview", icon: LayoutDashboard, label: "Dashboard" },
@@ -501,6 +525,7 @@ const NAV_ITEMS: { id: AdminTab; icon: React.ElementType; label: string }[] = [
   { id: "refunds", icon: RotateCcw, label: "Refunds" },
   { id: "inbox", icon: Mail, label: "Inbox" },
   { id: "social", icon: Share2, label: "Social" },
+  { id: "compliance", icon: ScrollText, label: "Compliance logs" },
   { id: "settings", icon: Settings, label: "Settings" },
 ];
 
@@ -539,18 +564,41 @@ interface PlatformSettings {
   rate_limiting: boolean;
   audit_logging: boolean;
   ip_whitelisting: boolean;
+  custom_branding_enabled: boolean;
+  custom_brand_name: string;
+  custom_brand_logo_url: string;
+  custom_brand_accent_color: string;
+  enterprise_price_label: string;
 }
 
 function SettingsTab() {
   const [settings, setSettings] = useState<PlatformSettings | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
   const [savedKey, setSavedKey] = useState<string | null>(null);
+  const [brandingDraft, setBrandingDraft] = useState({
+    custom_brand_name: '',
+    custom_brand_logo_url: '',
+    custom_brand_accent_color: '#2563EB',
+  });
+  const [pricingDraft, setPricingDraft] = useState({
+    enterprise_price_label: 'Custom',
+  });
   const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     fetch('/api/admin/settings')
       .then(r => r.json())
-      .then(data => setSettings(data))
+      .then(data => {
+        setSettings(data);
+        setBrandingDraft({
+          custom_brand_name: data.custom_brand_name || '',
+          custom_brand_logo_url: data.custom_brand_logo_url || '',
+          custom_brand_accent_color: data.custom_brand_accent_color || '#2563EB',
+        });
+        setPricingDraft({
+          enterprise_price_label: data.enterprise_price_label || 'Custom',
+        });
+      })
       .catch(() => setLoadError(true));
   }, []);
 
@@ -570,6 +618,44 @@ function SettingsTab() {
     } catch {
       // Revert on error
       setSettings(prev => prev ? { ...prev, [key]: !newVal } : prev);
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const saveBranding = async () => {
+    if (!settings) return;
+    setSaving('custom_branding_fields');
+    try {
+      await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(brandingDraft),
+      });
+      setSettings(prev => prev ? { ...prev, ...brandingDraft } : prev);
+      setSavedKey('custom_branding_fields');
+      setTimeout(() => setSavedKey(null), 2000);
+    } catch {
+      // Keep draft values for retry.
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const savePricing = async () => {
+    if (!settings) return;
+    setSaving('pricing_fields');
+    try {
+      await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pricingDraft),
+      });
+      setSettings(prev => prev ? { ...prev, ...pricingDraft } : prev);
+      setSavedKey('pricing_fields');
+      setTimeout(() => setSavedKey(null), 2000);
+    } catch {
+      // Keep draft value for retry.
     } finally {
       setSaving(null);
     }
@@ -657,6 +743,104 @@ function SettingsTab() {
             description="Show maintenance page to non-admin users"
             destructive
           />
+        </CardContent>
+      </Card>
+
+      <Card className="bg-card/80 border-border">
+        <CardHeader>
+          <CardTitle className="font-heading text-lg flex items-center gap-2">
+            <Crown className="h-5 w-5 text-amber-400" />
+            Enterprise Custom Branding
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <SettingRow
+            settingKey="custom_branding_enabled"
+            label="Enable Custom Branding in Exports"
+            description="When enabled, enterprise report exports use custom brand values below."
+          />
+          <div className="space-y-2">
+            <Label htmlFor="custom_brand_name">Brand Name</Label>
+            <Input
+              id="custom_brand_name"
+              value={brandingDraft.custom_brand_name}
+              onChange={(e) => setBrandingDraft(prev => ({ ...prev, custom_brand_name: e.target.value }))}
+              placeholder="Acme AI Office"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="custom_brand_logo_url">Brand Logo URL (PNG/JPG/SVG)</Label>
+            <Input
+              id="custom_brand_logo_url"
+              value={brandingDraft.custom_brand_logo_url}
+              onChange={(e) => setBrandingDraft(prev => ({ ...prev, custom_brand_logo_url: e.target.value }))}
+              placeholder="https://example.com/logo.png"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="custom_brand_accent_color">Accent Color (Hex)</Label>
+            <Input
+              id="custom_brand_accent_color"
+              value={brandingDraft.custom_brand_accent_color}
+              onChange={(e) => setBrandingDraft(prev => ({ ...prev, custom_brand_accent_color: e.target.value }))}
+              placeholder="#2563EB"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={saveBranding}
+              disabled={saving === 'custom_branding_fields'}
+              className="font-heading"
+            >
+              {saving === 'custom_branding_fields' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Save Branding
+            </Button>
+            {savedKey === 'custom_branding_fields' ? (
+              <span className="text-xs text-green-400 font-sans inline-flex items-center gap-1">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Saved
+              </span>
+            ) : null}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-card/80 border-border">
+        <CardHeader>
+          <CardTitle className="font-heading text-lg flex items-center gap-2">
+            <CreditCard className="h-5 w-5 text-eari-blue" />
+            Pricing Labels
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="enterprise_price_label">Enterprise Price Label</Label>
+            <Input
+              id="enterprise_price_label"
+              value={pricingDraft.enterprise_price_label}
+              onChange={(e) => setPricingDraft({ enterprise_price_label: e.target.value })}
+              placeholder="Custom"
+            />
+            <p className="text-xs text-muted-foreground font-sans">
+              Example values: Custom, From $499/mo, Contact Sales.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={savePricing}
+              disabled={saving === 'pricing_fields'}
+              className="font-heading"
+            >
+              {saving === 'pricing_fields' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Save Pricing Label
+            </Button>
+            {savedKey === 'pricing_fields' ? (
+              <span className="text-xs text-green-400 font-sans inline-flex items-center gap-1">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Saved
+              </span>
+            ) : null}
+          </div>
         </CardContent>
       </Card>
 
@@ -753,6 +937,14 @@ export default function AdminPage() {
   const [replyBody, setReplyBody] = useState("");
   const [replySending, setReplySending] = useState(false);
   const [replyResult, setReplyResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  const [complianceLogs, setComplianceLogs] = useState<ComplianceLogRow[]>([]);
+  const [complianceLogsTotal, setComplianceLogsTotal] = useState(0);
+  const [complianceLogsPage, setComplianceLogsPage] = useState(0);
+  const [complianceLogsLoading, setComplianceLogsLoading] = useState(false);
+  const [complianceLogsOpDraft, setComplianceLogsOpDraft] = useState("");
+  const [complianceLogsOpApplied, setComplianceLogsOpApplied] = useState("");
+  const [complianceLogsSuccessFilter, setComplianceLogsSuccessFilter] = useState<"all" | "true" | "false">("all");
 
   // Email dialog state
   const [showEmailDialog, setShowEmailDialog] = useState(false);
@@ -866,6 +1058,32 @@ export default function AdminPage() {
     } catch { /* silent */ }
   }, []);
 
+  const fetchComplianceLogs = useCallback(async () => {
+    setComplianceLogsLoading(true);
+    try {
+      const params = new URLSearchParams();
+      params.set("page", String(complianceLogsPage));
+      params.set("pageSize", "50");
+      if (complianceLogsOpApplied.trim()) params.set("operation", complianceLogsOpApplied.trim());
+      if (complianceLogsSuccessFilter === "true") params.set("success", "true");
+      if (complianceLogsSuccessFilter === "false") params.set("success", "false");
+      const res = await fetch(`/api/admin/compliance-logs?${params}`);
+      if (res.ok) {
+        const data = await res.json();
+        setComplianceLogs(data.logs ?? []);
+        setComplianceLogsTotal(typeof data.total === "number" ? data.total : 0);
+      }
+    } catch {
+      /* silent */
+    } finally {
+      setComplianceLogsLoading(false);
+    }
+  }, [
+    complianceLogsPage,
+    complianceLogsOpApplied,
+    complianceLogsSuccessFilter,
+  ]);
+
   useEffect(() => {
     if (status === "loading") return;
 
@@ -883,6 +1101,13 @@ export default function AdminPage() {
       fetchSubscribers();
     }
   }, [subscriberPlanFilter, fetchSubscribers, session]);
+
+  useEffect(() => {
+    if (status === "loading") return;
+    if (!session || session.user?.role !== "admin") return;
+    if (activeTab !== "compliance") return;
+    void fetchComplianceLogs();
+  }, [activeTab, fetchComplianceLogs, session, status]);
 
   // ─── Access Control ───────────────────────────────────────────────────
 
@@ -983,6 +1208,36 @@ export default function AdminPage() {
       }
     } catch {
       setError("Failed to update role");
+    } finally {
+      setUpdatingUserId(null);
+    }
+  };
+
+  const handleDeleteUser = async (userId: string, displayName?: string | null) => {
+    const confirmed = window.confirm(
+      `Delete user ${displayName || "this account"}? This permanently removes the account and related data.`
+    );
+    if (!confirmed) return;
+
+    setUpdatingUserId(userId);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/users?userId=${encodeURIComponent(userId)}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        setUsers((prev) => prev.filter((u) => u.id !== userId));
+        if (selectedUser?.id === userId) {
+          setSelectedUser(null);
+          setShowUserDetails(false);
+        }
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Failed to delete user");
+      }
+    } catch {
+      setError("Failed to delete user");
     } finally {
       setUpdatingUserId(null);
     }
@@ -2167,6 +2422,14 @@ export default function AdminPage() {
                                           <><Shield className="h-4 w-4 mr-2" />Grant Admin</>
                                         )}
                                       </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => handleDeleteUser(user.id, user.name || user.email)}
+                                        className="font-sans cursor-pointer text-destructive focus:text-destructive"
+                                        disabled={session?.user?.id === user.id}
+                                      >
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Delete User
+                                      </DropdownMenuItem>
                                       <DropdownMenuSeparator className="bg-border" />
                                       <DropdownMenuItem disabled className="font-sans text-muted-foreground text-xs">
                                         User ID: {user.id.slice(0, 8)}...
@@ -2248,8 +2511,8 @@ export default function AdminPage() {
                         </SelectTrigger>
                         <SelectContent className="bg-navy-800 border-border">
                           <SelectItem value="free" className="font-sans text-sm">Free</SelectItem>
-                          <SelectItem value="professional" className="font-sans text-sm">Pro ($99/mo)</SelectItem>
-                          <SelectItem value="enterprise" className="font-sans text-sm">Enterprise ($499/mo)</SelectItem>
+                          <SelectItem value="professional" className="font-sans text-sm">Pro ($29/mo)</SelectItem>
+                          <SelectItem value="enterprise" className="font-sans text-sm">Enterprise (Custom)</SelectItem>
                         </SelectContent>
                       </Select>
                       <Button
@@ -2274,6 +2537,16 @@ export default function AdminPage() {
                         <Mail className="h-3.5 w-3.5 mr-1" />
                         Email
                       </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteUser(selectedUser.id, selectedUser.name || selectedUser.email)}
+                        disabled={updatingUserId === selectedUser.id || session?.user?.id === selectedUser.id}
+                        className="h-8 text-xs font-sans border-destructive/40 text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-1" />
+                        Delete User
+                      </Button>
                     </div>
                   </div>
 
@@ -2291,7 +2564,7 @@ export default function AdminPage() {
                       <div>
                         <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">Monthly Spend</p>
                         <p className="font-heading text-2xl font-bold text-foreground">
-                          {selectedUser.tier === "enterprise" ? "$499" : selectedUser.tier === "professional" ? "$99" : "$0"}
+                          {selectedUser.tier === "enterprise" ? "Custom" : selectedUser.tier === "professional" ? "$29" : "$0"}
                         </p>
                       </div>
                     </div>
@@ -3241,6 +3514,190 @@ export default function AdminPage() {
               </div>
             </DialogContent>
           </Dialog>
+
+          {activeTab === "compliance" && (
+            <div className="space-y-6">
+              <Card className="bg-card/80 border-border/40">
+                <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between space-y-0">
+                  <div>
+                    <CardTitle className="font-heading text-lg flex items-center gap-2">
+                      <ScrollText className="h-5 w-5 text-eari-blue-light" />
+                      Compliance LLM logs
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground font-sans mt-1">
+                      Observability for compliance automation calls — no document content or PII.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-end gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] uppercase tracking-wide text-muted-foreground font-sans">
+                        Operation
+                      </Label>
+                      <Input
+                        placeholder="e.g. clause_extract"
+                        value={complianceLogsOpDraft}
+                        onChange={(e) => setComplianceLogsOpDraft(e.target.value)}
+                        className="w-[200px] font-mono text-xs bg-navy-700/60 border-border"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] uppercase tracking-wide text-muted-foreground font-sans">
+                        Success
+                      </Label>
+                      <Select
+                        value={complianceLogsSuccessFilter}
+                        onValueChange={(v) => {
+                          setComplianceLogsSuccessFilter(v as "all" | "true" | "false");
+                          setComplianceLogsPage(0);
+                        }}
+                      >
+                        <SelectTrigger className="w-[140px] font-sans text-sm bg-navy-700/60 border-border">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All</SelectItem>
+                          <SelectItem value="true">Success only</SelectItem>
+                          <SelectItem value="false">Failures only</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      className="font-sans bg-navy-700/80"
+                      onClick={() => {
+                        setComplianceLogsOpApplied(complianceLogsOpDraft.trim());
+                        setComplianceLogsPage(0);
+                      }}
+                    >
+                      Apply filters
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="font-sans border-border gap-1"
+                      onClick={() => void fetchComplianceLogs()}
+                      disabled={complianceLogsLoading}
+                    >
+                      {complianceLogsLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-4 w-4" />
+                      )}
+                      Refresh
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-sans text-muted-foreground">
+                    <span>
+                      {complianceLogsTotal.toLocaleString()} total · page {complianceLogsPage + 1} of{" "}
+                      {Math.max(1, Math.ceil(complianceLogsTotal / 50))} · showing{" "}
+                      {complianceLogs.length} rows
+                    </span>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={complianceLogsPage <= 0 || complianceLogsLoading}
+                        onClick={() => setComplianceLogsPage((p) => Math.max(0, p - 1))}
+                        className="font-sans border-border h-8"
+                      >
+                        Previous
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={
+                          complianceLogsLoading ||
+                          (complianceLogsPage + 1) * 50 >= complianceLogsTotal
+                        }
+                        onClick={() => setComplianceLogsPage((p) => p + 1)}
+                        className="font-sans border-border h-8"
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-border/40 overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-border/40 hover:bg-transparent">
+                          <TableHead className="font-heading text-xs whitespace-nowrap">Time</TableHead>
+                          <TableHead className="font-heading text-xs whitespace-nowrap">Operation</TableHead>
+                          <TableHead className="font-heading text-xs whitespace-nowrap">Model</TableHead>
+                          <TableHead className="font-heading text-xs whitespace-nowrap text-right">
+                            ms
+                          </TableHead>
+                          <TableHead className="font-heading text-xs whitespace-nowrap text-right">
+                            In/out tok
+                          </TableHead>
+                          <TableHead className="font-heading text-xs whitespace-nowrap">OK</TableHead>
+                          <TableHead className="font-heading text-xs whitespace-nowrap">Error</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {complianceLogsLoading && complianceLogs.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="py-12 text-center">
+                              <Loader2 className="h-8 w-8 animate-spin text-eari-blue mx-auto" />
+                            </TableCell>
+                          </TableRow>
+                        ) : complianceLogs.length === 0 ? (
+                          <TableRow>
+                            <TableCell
+                              colSpan={7}
+                              className="py-10 text-center text-muted-foreground font-sans text-sm"
+                            >
+                              No compliance logs yet.
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          complianceLogs.map((row) => (
+                            <TableRow key={row.id} className="border-border/40">
+                              <TableCell className="font-mono text-[11px] whitespace-nowrap">
+                                {new Date(row.createdAt).toLocaleString()}
+                              </TableCell>
+                              <TableCell className="font-mono text-[11px] max-w-[140px] truncate">
+                                {row.operation ?? "—"}
+                              </TableCell>
+                              <TableCell className="font-mono text-[11px] max-w-[160px] truncate">
+                                {row.model}
+                              </TableCell>
+                              <TableCell className="font-mono text-[11px] text-right">
+                                {row.durationMs}
+                              </TableCell>
+                              <TableCell className="font-mono text-[11px] text-right whitespace-nowrap">
+                                {row.inputTokens ?? "—"} / {row.outputTokens ?? "—"}
+                              </TableCell>
+                              <TableCell className="text-xs">
+                                {row.success ? (
+                                  <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/25 font-mono">
+                                    yes
+                                  </Badge>
+                                ) : (
+                                  <Badge className="bg-destructive/15 text-destructive border-destructive/25 font-mono">
+                                    no
+                                  </Badge>
+                                )}
+                              </TableCell>
+                              <TableCell className="font-mono text-[11px] max-w-[180px] truncate text-muted-foreground">
+                                {row.errorClass ?? "—"}
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {activeTab === "settings" && (
             <SettingsTab />

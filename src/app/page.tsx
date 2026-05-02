@@ -577,8 +577,8 @@ const PRICING_TIERS = [
   },
   {
     name: 'Professional',
-    price: '$49',
-    yearlyPrice: '$39',
+    price: '$29',
+    yearlyPrice: '$29',
     period: '/month',
     yearlyPeriod: '/mo, billed yearly',
     description: 'For practitioners running regular assessments with AI-powered insights.',
@@ -599,7 +599,7 @@ const PRICING_TIERS = [
     cta: 'Get Professional',
     href: '/checkout?tier=professional&billing=monthly',
     yearlyHref: '/checkout?tier=professional&billing=annual',
-    highlighted: false,
+    highlighted: true,
   },
   {
     name: 'Growth',
@@ -625,14 +625,14 @@ const PRICING_TIERS = [
     cta: 'Get Growth',
     href: '/checkout?tier=growth&billing=monthly',
     yearlyHref: '/checkout?tier=growth&billing=annual',
-    highlighted: true,
+    highlighted: false,
   },
   {
     name: 'Enterprise',
-    price: '$399',
-    yearlyPrice: '$319',
-    period: '/month',
-    yearlyPeriod: '/mo, billed yearly',
+    price: 'Custom',
+    yearlyPrice: 'Custom',
+    period: '',
+    yearlyPeriod: '',
     description: 'Organization-wide AI readiness at scale with dedicated support and SLAs.',
     icon: Shield,
     color: '#d4a853',
@@ -668,6 +668,27 @@ const CLIENT_LOGOS = [
 
 export default function Home() {
   const [isAnnual, setIsAnnual] = useState(false)
+  const [enterprisePriceLabel, setEnterprisePriceLabel] = useState('Custom')
+
+  useEffect(() => {
+    fetch('/api/pricing-config')
+      .then((r) => r.json())
+      .then((data) => {
+        if (typeof data.enterprisePriceLabel === 'string' && data.enterprisePriceLabel.trim()) {
+          setEnterprisePriceLabel(data.enterprisePriceLabel.trim())
+        }
+      })
+      .catch(() => {
+        // Keep default label
+      })
+  }, [])
+
+  const pricingTiers = PRICING_TIERS.map((tier) =>
+    tier.name === 'Enterprise'
+      ? { ...tier, price: enterprisePriceLabel, yearlyPrice: enterprisePriceLabel }
+      : tier
+  )
+
   return (
     <div className="min-h-screen flex flex-col bg-navy-900">
       <Navigation />
@@ -2527,7 +2548,7 @@ export default function Home() {
             </FadeUp>
 
             <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
-              {PRICING_TIERS.map((tier, i) => {
+              {pricingTiers.map((tier, i) => {
                 const TierIcon = tier.icon
                 const isPro = tier.highlighted
                 const isEnterprise = tier.name === 'Enterprise'

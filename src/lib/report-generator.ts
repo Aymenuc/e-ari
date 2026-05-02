@@ -94,6 +94,21 @@ const PAGE_MARGINS = {
 // ─── Logo ───────────────────────────────────────────────────────────────────
 
 let cachedLogoBuffer: Buffer | null = null;
+const remoteLogoCache = new Map<string, Buffer>();
+
+export interface ReportBranding {
+  enabled?: boolean;
+  brandName?: string;
+  logoUrl?: string;
+  accentColor?: string;
+}
+
+function normalizeHexColor(color?: string): string | null {
+  if (!color) return null;
+  const trimmed = color.trim();
+  const match = trimmed.match(/^#?([0-9a-fA-F]{6})$/);
+  return match ? match[1].toUpperCase() : null;
+}
 
 async function getLogoPngBuffer(): Promise<Buffer | undefined> {
   if (cachedLogoBuffer) return cachedLogoBuffer;
@@ -104,6 +119,29 @@ async function getLogoPngBuffer(): Promise<Buffer | undefined> {
     const pngBuffer = await sharp(svgBuffer).resize(240, 240).png().toBuffer();
     cachedLogoBuffer = Buffer.from(pngBuffer);
     return cachedLogoBuffer;
+  } catch {
+    return undefined;
+  }
+}
+
+async function getRemoteLogoPngBuffer(logoUrl?: string): Promise<Buffer | undefined> {
+  if (!logoUrl) return undefined;
+  const key = logoUrl.trim();
+  if (!key) return undefined;
+  const cached = remoteLogoCache.get(key);
+  if (cached) return cached;
+  try {
+    const res = await fetch(key, { cache: 'no-store' });
+    if (!res.ok) return undefined;
+    const contentType = res.headers.get('content-type') || '';
+    const bytes = Buffer.from(await res.arrayBuffer());
+    const sharp = (await import('sharp')).default;
+    const pngBuffer = contentType.includes('svg')
+      ? await sharp(bytes).resize(240, 240).png().toBuffer()
+      : await sharp(bytes).resize(240, 240, { fit: 'inside' }).png().toBuffer();
+    const out = Buffer.from(pngBuffer);
+    remoteLogoCache.set(key, out);
+    return out;
   } catch {
     return undefined;
   }
@@ -432,13 +470,16 @@ export interface AssessmentReportData {
   };
   previousScore?: number | null;
   previousDate?: string | null;
+  branding?: ReportBranding;
 }
 
 export async function generateAssessmentReport(data: AssessmentReportData): Promise<Buffer> {
-  const { scoringResult, insights, userName, organization, sector, completedAt, benchmarkData, previousScore, previousDate } = data;
+  const { scoringResult, insights, userName, organization, sector, completedAt, benchmarkData, previousScore, previousDate, branding } = data;
   const date = new Date(completedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const maturityColor = getMaturityColor(scoringResult.maturityBand);
   const sectorName = sector.charAt(0).toUpperCase() + sector.slice(1);
+  const accentColor = normalizeHexColor(branding?.accentColor) || COLOR_BLUE;
+  const reportBrand = branding?.enabled && branding.brandName?.trim() ? branding.brandName.trim() : 'E-ARI';
 
   // ─── Build Document Sections ────────────────────────────────────────────
 
@@ -448,7 +489,9 @@ export async function generateAssessmentReport(data: AssessmentReportData): Prom
   // SECTION 0: TITLE PAGE
   // ═══════════════════════════════════════════════════════════════════════
 
-  const logoBuffer = await getLogoPngBuffer();
+  const logoBuffer = branding?.enabled
+    ? (await getRemoteLogoPngBuffer(branding.logoUrl)) || (await getLogoPngBuffer())
+    : await getLogoPngBuffer();
 
   children.push(spacer(800));
 
@@ -461,7 +504,7 @@ export async function generateAssessmentReport(data: AssessmentReportData): Prom
   }
 
   children.push(new Paragraph({
-    children: [new TextRun({ text: 'E-ARI', font: FONT_HEADING, size: 72, bold: true, color: COLOR_BLUE })],
+    children: [new TextRun({ text: reportBrand, font: FONT_HEADING, size: 72, bold: true, color: accentColor })],
     alignment: AlignmentType.CENTER,
     spacing: { after: 60 },
   }));
@@ -936,7 +979,7 @@ export async function generateAssessmentReport(data: AssessmentReportData): Prom
         default: new Header({
           children: [new Paragraph({
             children: [
-              new TextRun({ text: 'E-ARI  |  ', font: FONT_HEADING, size: 16, color: COLOR_BLUE }),
+              new TextRun({ text: `${reportBrand}  |  `, font: FONT_HEADING, size: 16, color: accentColor }),
               new TextRun({ text: 'AI Readiness Assessment Report', font: FONT_BODY, size: 16, color: COLOR_TEXT_SECONDARY }),
               new TextRun({ text: `  |  ${organization}`, font: FONT_BODY, size: 16, color: COLOR_TEXT_SECONDARY }),
             ],
@@ -948,7 +991,7 @@ export async function generateAssessmentReport(data: AssessmentReportData): Prom
         default: new Footer({
           children: [new Paragraph({
             children: [
-              new TextRun({ text: 'CONFIDENTIAL  |  E-ARI  |  Page ', font: FONT_BODY, size: 14, color: COLOR_TEXT_SECONDARY }),
+              new TextRun({ text: `CONFIDENTIAL  |  ${reportBrand}  |  Page `, font: FONT_BODY, size: 14, color: COLOR_TEXT_SECONDARY }),
               new TextRun({ children: [PageNumber.CURRENT], font: FONT_BODY, size: 14, color: COLOR_TEXT_SECONDARY }),
             ],
             alignment: AlignmentType.CENTER,

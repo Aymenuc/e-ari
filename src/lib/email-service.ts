@@ -26,6 +26,8 @@
 import { Resend } from 'resend';
 import { db } from './db';
 import { PILLARS, MATURITY_BANDS } from './pillars';
+import { getBaseUrl } from './site-url';
+import { isOptedOut, unsubscribeUrl } from './email-preferences';
 import {
   welcomeEmailHtml,
   assessmentCompleteEmailHtml,
@@ -37,6 +39,10 @@ import {
   contactFormEmailHtml,
   refundRequestEmailHtml,
   refundStatusEmailHtml,
+  complianceClassifiedEmailHtml,
+  complianceFriaReadyEmailHtml,
+  complianceGapCriticalEmailHtml,
+  complianceAttestationDueEmailHtml,
 } from './email-templates';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -48,6 +54,7 @@ interface EmailPayload {
   text: string;
   from: string;
   category: string;
+  headers?: Record<string, string>;
 }
 
 interface EmailResult {
@@ -72,7 +79,8 @@ export interface RefundEmailDetails {
 
 const EMAIL_FROM_ADDRESS = process.env.EMAIL_FROM_ADDRESS || 'onboarding@resend.dev';
 const EMAIL_FROM_HELLO = process.env.EMAIL_FROM_HELLO || EMAIL_FROM_ADDRESS;
-const BASE_URL = process.env.NEXTAUTH_URL || 'https://e-ari.com';
+const BASE_URL = getBaseUrl();
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 const SIGNIFICANT_SCORE_THRESHOLD = 8;
 
@@ -91,6 +99,15 @@ async function sendEmail(payload: EmailPayload): Promise<EmailResult> {
     return { sent: false, method: 'notification_only' };
   }
 
+  if (IS_PRODUCTION) {
+    if (!process.env.EMAIL_FROM_ADDRESS) {
+      return { sent: false, method: 'notification_only', error: 'EMAIL_FROM_ADDRESS is required in production' };
+    }
+    if (!process.env.EMAIL_FROM_HELLO) {
+      return { sent: false, method: 'notification_only', error: 'EMAIL_FROM_HELLO is required in production' };
+    }
+  }
+
   try {
     const resend = new Resend(apiKey);
     const { error } = await resend.emails.send({
@@ -99,6 +116,7 @@ async function sendEmail(payload: EmailPayload): Promise<EmailResult> {
       subject: payload.subject,
       html: payload.html,
       text: payload.text,
+      headers: payload.headers,
     });
 
     if (error) {
@@ -214,6 +232,10 @@ export async function sendQuarterlyReminder(
   overallScore: number,
   maturityBand: string
 ): Promise<EmailResult> {
+  if (await isOptedOut(userEmail, 'quarterly_reminder')) {
+    return { sent: false, method: 'notification_only' };
+  }
+
   const firstName = userName?.split(' ')[0] || 'there';
   const maturityLabel = MATURITY_BANDS[maturityBand as keyof typeof MATURITY_BANDS]?.label || maturityBand;
   const scoreRounded = Math.round(overallScore);
@@ -226,6 +248,7 @@ export async function sendQuarterlyReminder(
     lastAssessmentDate,
     daysUntilReview,
     isOverdue,
+    unsubscribeUrl(userEmail, 'quarterly_reminder'),
   );
 
   const result = await sendEmail({
@@ -237,6 +260,10 @@ export async function sendQuarterlyReminder(
     text: `Hi ${firstName}, your quarterly AI readiness review is ${isOverdue ? 'overdue' : `due in ${daysUntilReview} days`}. Last score: ${scoreRounded} (${maturityLabel}). Re-run at ${BASE_URL}/assessment`,
     from: EMAIL_FROM_HELLO,
     category: 'quarterly_reminder',
+    headers: {
+      'List-Unsubscribe': `<${unsubscribeUrl(userEmail, 'quarterly_reminder')}>`,
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    },
   });
 
   try {
@@ -268,6 +295,10 @@ export async function sendMonthlyPulseEmail(
   topQuickWins: string[],
   month: string
 ): Promise<EmailResult> {
+  if (await isOptedOut(userEmail, 'pulse_ready')) {
+    return { sent: false, method: 'notification_only' };
+  }
+
   const firstName = userName?.split(' ')[0] || 'there';
   const delta = previousScore !== null ? Math.round(overallScore - previousScore) : null;
   const monthLabel = new Date(month + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -280,6 +311,7 @@ export async function sendMonthlyPulseEmail(
     topRisks,
     topQuickWins,
     monthLabel,
+    unsubscribeUrl(userEmail, 'pulse_ready'),
   );
 
   const result = await sendEmail({
@@ -289,6 +321,10 @@ export async function sendMonthlyPulseEmail(
     text: `${monthLabel} AI Pulse: Overall ${scoreRounded}%${delta !== null ? ` (${delta >= 0 ? '+' : ''}${delta}%)` : ''}. ${topRisks.length} risks and ${topQuickWins.length} quick wins. View at ${BASE_URL}/pulse`,
     from: EMAIL_FROM_HELLO,
     category: 'pulse_ready',
+    headers: {
+      'List-Unsubscribe': `<${unsubscribeUrl(userEmail, 'pulse_ready')}>`,
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    },
   });
 
   try {
@@ -635,4 +671,98 @@ export async function processScoreChangeAlerts(): Promise<number> {
   }
 
   return alertsSent;
+}
+
+// ─── Compliance vault emails ─────────────────────────────────────────────────
+
+export async function sendComplianceClassificationEmail(
+  _userId: string,
+  userEmail: string,
+  userName: string | null | undefined,
+  systemName: string,
+  riskTier: string
+): Promise<EmailResult> {
+  if (!userEmail) return { sent: false, method: 'notification_only' };
+  if (await isOptedOut(userEmail, 'system_classified')) {
+    return { sent: false, method: 'notification_only' };
+  }
+  const firstName = userName?.split(' ')[0] || 'there';
+  const html = complianceClassifiedEmailHtml(systemName, riskTier);
+  return sendEmail({
+    to: userEmail,
+    subject: `Compliance: ${systemName} classified (${riskTier})`,
+    html,
+    text: `Hi ${firstName}, ${systemName} was classified as ${riskTier} (draft). Review in E-ARI Compliance.`,
+    from: EMAIL_FROM_HELLO,
+    category: 'compliance',
+  });
+}
+
+export async function sendComplianceFriaReadyEmail(
+  _userId: string,
+  userEmail: string,
+  userName: string | null | undefined,
+  systemName: string
+): Promise<EmailResult> {
+  if (!userEmail) return { sent: false, method: 'notification_only' };
+  if (await isOptedOut(userEmail, 'fria_ready')) {
+    return { sent: false, method: 'notification_only' };
+  }
+  const firstName = userName?.split(' ')[0] || 'there';
+  const html = complianceFriaReadyEmailHtml(systemName);
+  return sendEmail({
+    to: userEmail,
+    subject: `FRIA draft ready — ${systemName}`,
+    html,
+    text: `Hi ${firstName}, a FRIA draft is ready for ${systemName}. Open Compliance in E-ARI.`,
+    from: EMAIL_FROM_HELLO,
+    category: 'compliance',
+  });
+}
+
+export async function sendComplianceGapCriticalEmail(
+  _userId: string,
+  userEmail: string,
+  userName: string | null | undefined,
+  systemName: string,
+  criticalCount: number
+): Promise<EmailResult> {
+  if (!userEmail) return { sent: false, method: 'notification_only' };
+  if (await isOptedOut(userEmail, 'gap_critical')) {
+    return { sent: false, method: 'notification_only' };
+  }
+  const firstName = userName?.split(' ')[0] || 'there';
+  const html = complianceGapCriticalEmailHtml(systemName, criticalCount);
+  return sendEmail({
+    to: userEmail,
+    subject: `Action: ${criticalCount} critical compliance gap(s) — ${systemName}`,
+    html,
+    text: `Hi ${firstName}, ${criticalCount} critical gap(s) for ${systemName}. Review the gap radar.`,
+    from: EMAIL_FROM_HELLO,
+    category: 'compliance',
+  });
+}
+
+export async function sendComplianceAttestationDueEmail(
+  _userId: string,
+  userEmail: string,
+  userName: string | null | undefined,
+  systemName: string,
+  dueIsoDate: string,
+): Promise<EmailResult> {
+  if (!userEmail) return { sent: false, method: 'notification_only' };
+  if (await isOptedOut(userEmail, 'attestation_due')) {
+    return { sent: false, method: 'notification_only' };
+  }
+  const firstName = userName?.split(' ')[0] || 'there';
+  const html = complianceAttestationDueEmailHtml(systemName, dueIsoDate);
+  const dueDay = dueIsoDate.slice(0, 10);
+  return sendEmail({
+    to: userEmail,
+    subject: `Reminder: conformity attestation due (${dueDay}) — ${systemName}`,
+    html,
+    text: `Hi ${firstName}, ${systemName} has an upcoming conformity attestation target (${dueDay}). Review Compliance → Monitoring.`,
+    from: EMAIL_FROM_HELLO,
+    category: 'compliance',
+  });
 }

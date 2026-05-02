@@ -1087,7 +1087,10 @@ function DiscoveryInterviewMode({
 
   useEffect(() => {
     if (response && interviewStarted) {
-      setChatHistory(prev => [...prev, { role: 'agent', content: response.content }]);
+      const timer = window.setTimeout(() => {
+        setChatHistory(prev => [...prev, { role: 'agent', content: response.content }]);
+      }, 0);
+      return () => window.clearTimeout(timer);
     }
   }, [response, interviewStarted]);
 

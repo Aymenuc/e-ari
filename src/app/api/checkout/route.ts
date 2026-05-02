@@ -4,13 +4,16 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import Stripe from 'stripe'
 import { authOptions } from '@/lib/auth'
+import { getBaseUrl } from '@/lib/site-url'
 import {
   createCheckoutSession,
   STRIPE_PRICE_PRO,
   STRIPE_PRICE_PRO_YEARLY,
   STRIPE_PRICE_GROWTH,
   STRIPE_PRICE_GROWTH_YEARLY,
+  isStripeSecretConfigured,
 } from '@/lib/stripe'
 
 export async function POST(request: NextRequest) {
@@ -54,9 +57,34 @@ export async function POST(request: NextRequest) {
       priceId = isAnnual ? STRIPE_PRICE_PRO_YEARLY : STRIPE_PRICE_PRO
     }
 
-    const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || ''
+    // Stripe requires absolute URLs; Origin can be missing on some server-side paths.
+    const origin = (
+      request.headers.get('origin') ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      getBaseUrl()
+    ).replace(/\/+$/, '')
     const successUrl = `${origin}/api/checkout/success?session_id={CHECKOUT_SESSION_ID}`
     const cancelUrl = `${origin}/pricing?canceled=1`
+
+    if (!isStripeSecretConfigured()) {
+      console.error('[checkout] STRIPE_SECRET_KEY is missing or placeholder.')
+      return NextResponse.json(
+        { error: 'Billing is temporarily unavailable.' },
+        { status: 503 },
+      )
+    }
+
+    if (priceId.includes('placeholder')) {
+      console.error(
+        '[checkout] Placeholder price ID for tier=%s billing=%s — check STRIPE_PRICE_* or STRIPE_*_PRICE_ID env vars.',
+        requestedTier,
+        billing || 'monthly',
+      )
+      return NextResponse.json(
+        { error: 'Billing is temporarily unavailable.' },
+        { status: 503 },
+      )
+    }
 
     const checkoutSession = await createCheckoutSession({
       userId: session.user.id,
@@ -69,6 +97,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ url: checkoutSession.url })
   } catch (error) {
+    if (error instanceof Stripe.errors.StripeError) {
+      console.error('[checkout] Stripe error:', error.type, error.message, error.code)
+      return NextResponse.json(
+        { error: 'Failed to create checkout session' },
+        { status: 502 },
+      )
+    }
     console.error('[checkout] Error creating checkout session:', error)
     return NextResponse.json(
       { error: 'Failed to create checkout session' },

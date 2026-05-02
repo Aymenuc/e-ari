@@ -52,6 +52,7 @@ export interface RateLimitHeaders extends Record<string, string> {
 // ---------------------------------------------------------------------------
 
 const FIFTEEN_MINUTES_MS = 15 * 60 * 1000;
+const ONE_HOUR_MS = 60 * 60 * 1000;
 
 export const ENDPOINT_LIMITS: Record<string, RateLimitConfig> = {
   assessment: { limit: 5, windowMs: FIFTEEN_MINUTES_MS },
@@ -59,6 +60,9 @@ export const ENDPOINT_LIMITS: Record<string, RateLimitConfig> = {
   agent: { limit: 15, windowMs: FIFTEEN_MINUTES_MS },
   assistant: { limit: 20, windowMs: FIFTEEN_MINUTES_MS },
   literacy: { limit: 10, windowMs: FIFTEEN_MINUTES_MS },
+  compliance_upload: { limit: 20, windowMs: ONE_HOUR_MS },
+  compliance_classify: { limit: 5, windowMs: ONE_HOUR_MS },
+  compliance_generate: { limit: 10, windowMs: ONE_HOUR_MS },
   default: { limit: 30, windowMs: FIFTEEN_MINUTES_MS },
 };
 

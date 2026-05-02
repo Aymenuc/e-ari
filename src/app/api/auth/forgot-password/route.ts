@@ -3,8 +3,9 @@ import { db } from '@/lib/db';
 import { Resend } from 'resend';
 import crypto from 'crypto';
 import { resetEmailHtml } from '@/lib/email-templates';
+import { getBaseUrl } from '@/lib/site-url';
 
-const BASE_URL = process.env.NEXTAUTH_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+const BASE_URL = getBaseUrl();
 
 export async function POST(req: NextRequest) {
   try {

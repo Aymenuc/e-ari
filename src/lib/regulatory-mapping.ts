@@ -336,6 +336,8 @@ export function getComplianceSummary(
   });
 }
 
+export { AI_ACT_OBLIGATIONS, type AiActObligation } from "@/lib/compliance/ai-act-obligations";
+
 function generateRecommendation(
   mapping: RegulatoryMapping,
   pillarId: string,

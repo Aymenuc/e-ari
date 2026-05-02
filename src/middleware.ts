@@ -6,6 +6,7 @@ import { getToken } from "next-auth/jwt";
 const PROTECTED_ROUTES = [
   "/assessment",
   "/portal",
+  "/compliance",
   "/checkout",
   "/results",
   "/pulse",
@@ -41,6 +42,7 @@ const PROTECTED_API_ROUTES = [
   "/api/billing-portal",
   "/api/checkout",
   "/api/notifications",
+  "/api/compliance",
 ];
 
 // Admin-only API routes

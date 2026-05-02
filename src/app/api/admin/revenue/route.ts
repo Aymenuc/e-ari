@@ -4,8 +4,9 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 // Pricing constants — directional MRR until Stripe webhooks are fully wired
-const PRO_MONTHLY = 99;
-const ENTERPRISE_MONTHLY = 499;
+const PRO_MONTHLY = 29;
+// Enterprise is custom pricing and excluded from fixed MRR estimates.
+const ENTERPRISE_MONTHLY = 0;
 
 // Helper: verify the requesting user is an admin via DB lookup
 async function verifyAdmin(): Promise<NextResponse | null> {
@@ -46,7 +47,7 @@ export async function GET() {
     const enterpriseUsers = users.filter((u) => u.tier === "enterprise");
     const freeUsers = users.filter((u) => u.tier === "free" || u.tier !== "professional" && u.tier !== "enterprise");
 
-    // MRR: count of active professional * $99 + count of active enterprise * $499
+    // MRR: count of active professional * $29 (enterprise is custom pricing)
     const mrr = proUsers.length * PRO_MONTHLY + enterpriseUsers.length * ENTERPRISE_MONTHLY;
 
     // ARR: MRR * 12

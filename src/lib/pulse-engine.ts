@@ -15,7 +15,7 @@
 
 import { db } from './db';
 import { PILLARS, getPillarById, SCORING_VERSION } from './pillars';
-import { scoreAssessment, type ResponseMap } from './assessment-engine';
+import { scoreAssessment, calculateOverallScore, type ResponseMap, type PillarScoreResult } from './assessment-engine';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -265,6 +265,45 @@ function generateTopQuickWins(
     .sort((a, b) => b.quickWinScore - a.quickWinScore)
     .slice(0, 3)
     .map(qw => qw.description);
+}
+
+/**
+ * Recompute previousOverallScore / overallDelta for PulseRun rows loaded from the DB.
+ * These fields are not persisted on PulseRun; GET /api/pulse hydrates them so clients
+ * match POST responses and avoid undefined vs null bugs.
+ */
+export function deriveStoredPulseOverallMetrics(input: {
+  overallScore: number;
+  pillarScores: PulseResult['pillarScores'];
+  scoreChanges: PillarScoreChange[];
+}): { previousOverallScore: number | null; overallDelta: number | null } {
+  const { overallScore, pillarScores, scoreChanges } = input;
+  if (!pillarScores.length || !scoreChanges.length) {
+    return { previousOverallScore: null, overallDelta: null };
+  }
+
+  const prevPillars: PillarScoreResult[] = pillarScores.map((p) => {
+    const ch = scoreChanges.find((c) => c.pillarId === p.pillarId);
+    const normalizedScore = ch !== undefined ? ch.previous : p.normalizedScore;
+    return {
+      pillarId: p.pillarId,
+      pillarName: p.pillarName,
+      rawScore: 0,
+      maxRaw: 1,
+      normalizedScore,
+      maturityBand: 'laggard',
+      maturityLabel: '',
+      maturityColor: '',
+      weight: p.weight,
+      questionDetails: [],
+      adjustments: [],
+    };
+  });
+
+  const previousOverallScore = calculateOverallScore(prevPillars);
+  const cur = Math.round(Math.max(0, Math.min(100, overallScore)) * 100) / 100;
+  const overallDelta = Math.round((cur - previousOverallScore) * 100) / 100;
+  return { previousOverallScore, overallDelta };
 }
 
 /**

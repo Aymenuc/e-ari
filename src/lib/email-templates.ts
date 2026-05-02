@@ -12,32 +12,34 @@
  *   - Font stack: 'Segoe UI', Helvetica, Arial
  */
 
-const SITE_URL = process.env.NEXTAUTH_URL || 'https://www.e-ari.com';
+import { getCanonicalSiteUrl } from "@/lib/site-url";
+
+const SITE_URL = getCanonicalSiteUrl();
 const LOGO_URL = `${SITE_URL}/logo-mark.png`;
 const YEAR = new Date().getFullYear();
 
 // ─── Color tokens ─────────────────────────────────────────────────────────────
 const C = {
-  bg:          '#06091a',
-  card:        '#0c1124',
-  border:      '#1e2a45',
-  headerBg:    '#0a1020',
-  accent:      '#3b5bdb',
-  heading:     '#e8edf5',
-  body:        '#8b95a8',
-  bodyStrong:  '#c8d0dc',
-  muted:       '#4a5568',
-  divider:     '#1a2236',
+  bg:          '#f3f6fb',
+  card:        '#ffffff',
+  border:      '#dbe4f0',
+  headerBg:    '#f8fbff',
+  accent:      '#2f5edb',
+  heading:     '#111827',
+  body:        '#4b5563',
+  bodyStrong:  '#0f172a',
+  muted:       '#6b7280',
+  divider:     '#e6edf5',
   btnText:     '#ffffff',
-  iconBgMail:  '#0d1f3c',
-  iconBgKey:   '#1a1230',
-  iconBorder:  '#1e3a6e',
-  iconBorderKey: '#2e1f5e',
-  iconStroke:  '#4a7fd4',
-  warnBg:      '#1a160a',
-  warnBorder:  '#78490a',
-  warnText:    '#d4820a',
-  footerText:  '#2d3748',
+  iconBgMail:  '#eef4ff',
+  iconBgKey:   '#f1f2ff',
+  iconBorder:  '#c8dafd',
+  iconBorderKey: '#d4d7ff',
+  iconStroke:  '#2f5edb',
+  warnBg:      '#fff8eb',
+  warnBorder:  '#e0a528',
+  warnText:    '#9a6400',
+  footerText:  '#7b8797',
 } as const;
 
 // ─── SVG icon components ──────────────────────────────────────────────────────
@@ -113,21 +115,21 @@ function base(content: string, previewText: string): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="color-scheme" content="dark light">
-  <meta name="supported-color-schemes" content="dark light">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
   <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
   <title>E-ARI</title>
   <style>
-    @media (prefers-color-scheme: light) {
-      .outer-bg  { background-color: #f0f4f8 !important; }
-      .card      { background-color: #ffffff !important; border-color: #d1dbe8 !important; }
-      .card-hdr  { background-color: #f7f9fc !important; border-color: #e2e8f0 !important; }
-      .h1        { color: #111827 !important; }
-      .body-p    { color: #374151 !important; }
-      .strong-p  { color: #111827 !important; }
-      .div-line td { border-color: #e2e8f0 !important; }
-      .ftr       { background-color: #f0f4f8 !important; border-color: #e2e8f0 !important; }
-      .ftr-p     { color: #6b7280 !important; }
+    @media (prefers-color-scheme: dark) {
+      .outer-bg  { background-color: #0b1220 !important; }
+      .card      { background-color: #0f172a !important; border-color: #25324a !important; }
+      .card-hdr  { background-color: #121d33 !important; border-color: #2b3953 !important; }
+      .h1        { color: #e6edf5 !important; }
+      .body-p    { color: #a8b4c7 !important; }
+      .strong-p  { color: #d8e1ee !important; }
+      .div-line td { border-color: #2a3851 !important; }
+      .ftr       { background-color: #0b1220 !important; border-color: #2a3851 !important; }
+      .ftr-p     { color: #8ea0b8 !important; }
     }
   </style>
 </head>
@@ -146,11 +148,12 @@ function base(content: string, previewText: string): string {
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto">
               <tr>
                 <td style="vertical-align:middle;padding-right:10px">
-                  <img src="${LOGO_URL}" alt="" width="32" height="32"
-                    style="display:block;width:32px;height:32px;border-radius:7px;border:0;outline:none">
+                  <img src="${LOGO_URL}" alt="E-ARI" width="38" height="38"
+                    style="display:block;width:38px;height:38px;border-radius:9px;border:0;outline:none">
                 </td>
                 <td style="vertical-align:middle">
-                  <span style="font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:700;color:#e8edf5;letter-spacing:-0.2px">E-ARI</span>
+                  <span style="font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:700;color:${C.heading};letter-spacing:-0.2px">E-ARI</span>
+                  <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;color:${C.muted};line-height:1.3">Enterprise AI Readiness</div>
                 </td>
               </tr>
             </table>
@@ -165,7 +168,7 @@ function base(content: string, previewText: string): string {
 
           <!-- Footer -->
           <table class="ftr" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-            <tr><td style="background-color:${C.bg};border-top:1px solid ${C.divider};padding:22px 40px;text-align:center">
+            <tr><td style="background-color:${C.headerBg};border-top:1px solid ${C.divider};padding:22px 40px;text-align:center">
               <p class="ftr-p" style="margin:0 0 4px;font-size:12px;color:${C.muted};line-height:1.6">
                 &copy; ${YEAR} E-ARI &middot; Enterprise AI Readiness Platform
               </p>
@@ -189,14 +192,14 @@ function base(content: string, previewText: string): string {
 function iconUser(): string {
   return `
     <!--[if mso]>
-    <td width="44" height="44" style="width:44px;height:44px;background-color:#0d2218;border-radius:10px;text-align:center;vertical-align:middle;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:#3ecf8e">W</td>
+    <td width="44" height="44" style="width:44px;height:44px;background-color:#eefcf3;border-radius:10px;text-align:center;vertical-align:middle;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:#1f8a4c">W</td>
     <![endif]-->
     <!--[if !mso]><!-->
-    <td style="width:44px;height:44px;background-color:#0d2218;border:1px solid #1a4a34;border-radius:10px;text-align:center;vertical-align:middle;padding:0">
+    <td style="width:44px;height:44px;background-color:#eefcf3;border:1px solid #b7ebcd;border-radius:10px;text-align:center;vertical-align:middle;padding:0">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
         style="display:block;margin:11px auto 0">
-        <circle cx="12" cy="8" r="3.5" stroke="#3ecf8e" stroke-width="1.8"/>
-        <path d="M5 20c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="#3ecf8e" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="12" cy="8" r="3.5" stroke="#1f8a4c" stroke-width="1.8"/>
+        <path d="M5 20c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="#1f8a4c" stroke-width="1.8" stroke-linecap="round"/>
       </svg>
     </td>
     <!--<![endif]-->`;
@@ -209,7 +212,7 @@ function stepRow(num: string, title: string, desc: string): string {
         <td width="32" style="vertical-align:top;padding-top:1px;padding-right:14px">
           <div style="width:26px;height:26px;border-radius:50%;background-color:#0d1f3c;border:1px solid ${C.iconBorder};text-align:center;line-height:26px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;font-weight:700;color:${C.iconStroke}">${num}</div>
         </td>
-        <td style="vertical-align:top;background-color:#0a1020;border:1px solid ${C.border};border-radius:10px;padding:14px 16px">
+        <td style="vertical-align:top;background-color:${C.headerBg};border:1px solid ${C.border};border-radius:10px;padding:14px 16px">
           <p style="margin:0 0 5px;font-size:14px;font-weight:700;color:${C.heading};font-family:'Segoe UI',Helvetica,Arial,sans-serif">${title}</p>
           <p style="margin:0;font-size:13px;color:${C.body};line-height:1.6;font-family:'Segoe UI',Helvetica,Arial,sans-serif">${desc}</p>
         </td>
@@ -282,6 +285,7 @@ export function welcomeEmailHtml(name: string, assessmentUrl: string): string {
 // ─── Verification email ───────────────────────────────────────────────────────
 
 export function verificationEmailHtml(verifyUrl: string, name: string): string {
+  const firstName = name.trim().split(/\s+/)[0] || "there";
   const content = `
     <!-- Header -->
     <table class="card-hdr" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -291,7 +295,7 @@ export function verificationEmailHtml(verifyUrl: string, name: string): string {
             ${iconMail()}
             <td style="padding-left:16px;vertical-align:middle">
               <h1 class="h1" style="margin:0 0 3px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:19px;font-weight:700;color:${C.heading};line-height:1.2">Verify your email</h1>
-              <p style="margin:0;font-size:13px;color:${C.body};font-family:'Segoe UI',Helvetica,Arial,sans-serif">Activate your E-ARI account</p>
+              <p style="margin:0;font-size:13px;color:${C.body};font-family:'Segoe UI',Helvetica,Arial,sans-serif">Activate your secure E-ARI workspace</p>
             </td>
           </tr>
         </table>
@@ -302,11 +306,24 @@ export function verificationEmailHtml(verifyUrl: string, name: string): string {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
       <tr><td style="padding:32px 40px">
         <p class="body-p" style="margin:0 0 16px;font-size:15px;color:${C.body};line-height:1.7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
-          Hi <strong class="strong-p" style="color:${C.bodyStrong}">${name}</strong>,
+          Hi <strong class="strong-p" style="color:${C.bodyStrong}">${firstName}</strong>,
         </p>
         <p class="body-p" style="margin:0 0 32px;font-size:15px;color:${C.body};line-height:1.7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
-          Thanks for signing up. Click the button below to verify your email address and activate your account.
-          This link is valid for <strong class="strong-p" style="color:${C.bodyStrong}">24 hours</strong>.
+          Welcome to E-ARI. Please confirm this email address to unlock your readiness dashboard,
+          reports, and assessment workflows.
+        </p>
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+          style="margin-bottom:24px;background-color:${C.headerBg};border:1px solid ${C.border};border-radius:10px">
+          <tr><td style="padding:16px 20px">
+            <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${C.muted};font-family:'Segoe UI',Helvetica,Arial,sans-serif">Verification details</p>
+            <p style="margin:0 0 6px;font-size:13px;color:${C.body};line-height:1.6;font-family:'Segoe UI',Helvetica,Arial,sans-serif"><strong style="color:${C.bodyStrong}">Security:</strong> This link is single-use and expires in 24 hours.</p>
+            <p style="margin:0;font-size:13px;color:${C.body};line-height:1.6;font-family:'Segoe UI',Helvetica,Arial,sans-serif"><strong style="color:${C.bodyStrong}">Next step:</strong> After verification, sign in to start your first assessment.</p>
+          </td></tr>
+        </table>
+
+        <p style="margin:0 0 16px;font-size:12px;color:${C.muted};font-family:'Segoe UI',Helvetica,Arial,sans-serif;text-transform:uppercase;letter-spacing:0.08em">
+          Confirm your account
         </p>
 
         ${ctaButton(verifyUrl, 'Verify Email Address')}
@@ -318,6 +335,10 @@ export function verificationEmailHtml(verifyUrl: string, name: string): string {
         </p>
         <p style="margin:0;font-size:11px;color:${C.accent};word-break:break-all;line-height:1.6;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
           ${verifyUrl}
+        </p>
+
+        <p style="margin:16px 0 0;font-size:12px;color:${C.muted};font-family:'Segoe UI',Helvetica,Arial,sans-serif;line-height:1.6">
+          Didn&apos;t create an account? You can ignore this email safely.
         </p>
       </td></tr>
     </table>`;
@@ -465,10 +486,10 @@ function emailHeader(icon: string, title: string, subtitle: string): string {
 function iconChart(): string {
   return `
     <!--[if mso]>
-    <td width="44" height="44" style="width:44px;height:44px;background-color:#0d1f3c;border-radius:10px;text-align:center;vertical-align:middle;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:${C.iconStroke}">A</td>
+    <td width="44" height="44" style="width:44px;height:44px;background-color:#eef4ff;border-radius:10px;text-align:center;vertical-align:middle;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:${C.iconStroke}">A</td>
     <![endif]-->
     <!--[if !mso]><!-->
-    <td style="width:44px;height:44px;background-color:#0d1f3c;border:1px solid ${C.iconBorder};border-radius:10px;text-align:center;vertical-align:middle;padding:0">
+    <td style="width:44px;height:44px;background-color:#eef4ff;border:1px solid ${C.iconBorder};border-radius:10px;text-align:center;vertical-align:middle;padding:0">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
         style="display:block;margin:11px auto 0">
         <rect x="3" y="12" width="4" height="9" rx="1" stroke="${C.iconStroke}" stroke-width="1.8"/>
@@ -482,14 +503,14 @@ function iconChart(): string {
 function iconStar(): string {
   return `
     <!--[if mso]>
-    <td width="44" height="44" style="width:44px;height:44px;background-color:#1a1400;border-radius:10px;text-align:center;vertical-align:middle;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:#c9900a">C</td>
+    <td width="44" height="44" style="width:44px;height:44px;background-color:#fff9ed;border-radius:10px;text-align:center;vertical-align:middle;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:#a87400">C</td>
     <![endif]-->
     <!--[if !mso]><!-->
-    <td style="width:44px;height:44px;background-color:#1a1400;border:1px solid #3a2e00;border-radius:10px;text-align:center;vertical-align:middle;padding:0">
+    <td style="width:44px;height:44px;background-color:#fff9ed;border:1px solid #f0d8a3;border-radius:10px;text-align:center;vertical-align:middle;padding:0">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
         style="display:block;margin:11px auto 0">
         <path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l7.1-1.01L12 2z"
-          stroke="#c9900a" stroke-width="1.8" stroke-linejoin="round"/>
+          stroke="#a87400" stroke-width="1.8" stroke-linejoin="round"/>
       </svg>
     </td>
     <!--<![endif]-->`;
@@ -498,14 +519,14 @@ function iconStar(): string {
 function iconRefund(): string {
   return `
     <!--[if mso]>
-    <td width="44" height="44" style="width:44px;height:44px;background-color:#1a0f0a;border-radius:10px;text-align:center;vertical-align:middle;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:#d4820a">$</td>
+    <td width="44" height="44" style="width:44px;height:44px;background-color:#fff7ec;border-radius:10px;text-align:center;vertical-align:middle;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:#b56c00">$</td>
     <![endif]-->
     <!--[if !mso]><!-->
-    <td style="width:44px;height:44px;background-color:#1a0f0a;border:1px solid #4a2800;border-radius:10px;text-align:center;vertical-align:middle;padding:0">
+    <td style="width:44px;height:44px;background-color:#fff7ec;border:1px solid #f2d1a1;border-radius:10px;text-align:center;vertical-align:middle;padding:0">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
         style="display:block;margin:11px auto 0">
-        <circle cx="12" cy="12" r="8" stroke="#d4820a" stroke-width="1.8"/>
-        <path d="M12 7v1m0 8v1M9.5 9.5A2.5 2.5 0 0112 8a2.5 2.5 0 010 5 2.5 2.5 0 000 5 2.5 2.5 0 002.5-1.5" stroke="#d4820a" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="12" cy="12" r="8" stroke="#b56c00" stroke-width="1.8"/>
+        <path d="M12 7v1m0 8v1M9.5 9.5A2.5 2.5 0 0112 8a2.5 2.5 0 010 5 2.5 2.5 0 000 5 2.5 2.5 0 002.5-1.5" stroke="#b56c00" stroke-width="1.6" stroke-linecap="round"/>
       </svg>
     </td>
     <!--<![endif]-->`;
@@ -514,10 +535,10 @@ function iconRefund(): string {
 function iconMsg(): string {
   return `
     <!--[if mso]>
-    <td width="44" height="44" style="width:44px;height:44px;background-color:#0d1f3c;border-radius:10px;text-align:center;vertical-align:middle;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:${C.iconStroke}">M</td>
+    <td width="44" height="44" style="width:44px;height:44px;background-color:#eef4ff;border-radius:10px;text-align:center;vertical-align:middle;font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:${C.iconStroke}">M</td>
     <![endif]-->
     <!--[if !mso]><!-->
-    <td style="width:44px;height:44px;background-color:#0d1f3c;border:1px solid ${C.iconBorder};border-radius:10px;text-align:center;vertical-align:middle;padding:0">
+    <td style="width:44px;height:44px;background-color:#eef4ff;border:1px solid ${C.iconBorder};border-radius:10px;text-align:center;vertical-align:middle;padding:0">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
         style="display:block;margin:11px auto 0">
         <path d="M4 4h16c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H6l-4 4V6c0-1.1.9-2 2-2z"
@@ -571,6 +592,7 @@ export function quarterlyReminderEmailHtml(
   lastAssessmentDate: string,
   daysUntilReview: number,
   isOverdue: boolean,
+  unsubscribeLink?: string,
 ): string {
   const firstName = name.split(' ')[0];
   const scoreRounded = Math.round(score);
@@ -603,6 +625,7 @@ export function quarterlyReminderEmailHtml(
         </table>
         ${ctaButton(`${SITE_URL}/assessment`, 'Re-run Assessment')}
         <p style="margin:-16px 0 0;font-size:12px;color:${C.muted};text-align:center;font-family:'Segoe UI',Helvetica,Arial,sans-serif">Your previous answers will be pre-filled for quick updating.</p>
+        ${unsubscribeLink ? `<p style="margin:20px 0 0;font-size:11px;color:${C.muted};text-align:center;font-family:'Segoe UI',Helvetica,Arial,sans-serif">Prefer not to receive reminders? <a href="${unsubscribeLink}" style="color:${C.muted};text-decoration:underline">Unsubscribe from quarterly reminders</a>.</p>` : ""}
       </td></tr>
     </table>`;
 
@@ -618,6 +641,7 @@ export function monthlyPulseEmailHtml(
   topRisks: string[],
   topQuickWins: string[],
   monthLabel: string,
+  unsubscribeLink?: string,
 ): string {
   const firstName = name.split(' ')[0];
   const scoreRounded = Math.round(score);
@@ -636,6 +660,7 @@ export function monthlyPulseEmailHtml(
         ${topRisks.length ? `${sectionLabel('Top Risks')}${topRisks.slice(0, 3).map(r => alertPanel(r, '#d4820a', '#1a160a')).join('')}` : ''}
         ${topQuickWins.length ? `${sectionLabel('Quick Wins')}${topQuickWins.slice(0, 3).map(w => alertPanel(w, '#3ecf8e', '#0d2218')).join('')}` : ''}
         ${ctaButton(`${SITE_URL}/pulse`, 'View Full Pulse Report')}
+        ${unsubscribeLink ? `<p style="margin:20px 0 0;font-size:11px;color:${C.muted};text-align:center;font-family:'Segoe UI',Helvetica,Arial,sans-serif">Prefer not to receive pulse emails? <a href="${unsubscribeLink}" style="color:${C.muted};text-decoration:underline">Unsubscribe from monthly pulse emails</a>.</p>` : ""}
       </td></tr>
     </table>`;
 
@@ -863,4 +888,73 @@ export function refundStatusEmailHtml(
       </td></tr>
     </table>`;
   return base(content, `${cfg.title}: refund of $${amount.toFixed(2)} has been ${status}.`);
+}
+
+// ─── Compliance (AI Act vault) ───────────────────────────────────────────────
+
+export function complianceClassifiedEmailHtml(systemName: string, riskTier: string): string {
+  const content = `
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${C.card};border:1px solid ${C.border};border-radius:12px">
+      <tr><td style="padding:24px 22px">
+        <p style="margin:0 0 12px;font-weight:600;color:${C.heading};font-size:17px">AI system classified</p>
+        <p style="margin:0;font-size:14px;line-height:1.55;color:${C.body}">
+          <strong>${escapeHtml(systemName)}</strong> was assigned provisional tier <strong>${escapeHtml(riskTier)}</strong> under the EU AI Act framing used in E-ARI.
+        </p>
+        <p style="margin:14px 0 0;font-size:13px;color:${C.muted}">
+          Review rationale on the compliance overview — classification is assistant-generated and requires human validation.
+        </p>
+      </td></tr>
+    </table>`;
+  return base(content, `Compliance: ${systemName} classified`);
+}
+
+export function complianceFriaReadyEmailHtml(systemName: string): string {
+  const content = `
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${C.card};border:1px solid ${C.border};border-radius:12px">
+      <tr><td style="padding:24px 22px">
+        <p style="margin:0 0 12px;font-weight:600;color:${C.heading};font-size:17px">FRIA draft ready</p>
+        <p style="margin:0;font-size:14px;line-height:1.55;color:${C.body}">
+          A Fundamental Rights Impact Assessment draft was generated for <strong>${escapeHtml(systemName)}</strong>.
+        </p>
+      </td></tr>
+    </table>`;
+  return base(content, `FRIA draft for ${systemName}`);
+}
+
+export function complianceGapCriticalEmailHtml(systemName: string, criticalCount: number): string {
+  const content = `
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${C.warnBg};border:1px solid ${C.warnBorder};border-radius:12px">
+      <tr><td style="padding:24px 22px">
+        <p style="margin:0 0 12px;font-weight:600;color:${C.warnText};font-size:17px">Critical compliance gaps</p>
+        <p style="margin:0;font-size:14px;line-height:1.55;color:${C.body}">
+          ${criticalCount} critical gap(s) detected for <strong>${escapeHtml(systemName)}</strong>. Open the gap radar to prioritize artifacts.
+        </p>
+      </td></tr>
+    </table>`;
+  return base(content, `Critical gaps: ${systemName}`);
+}
+
+export function complianceAttestationDueEmailHtml(systemName: string, dueIsoDate: string): string {
+  const dueLabel = dueIsoDate.slice(0, 10);
+  const content = `
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${C.card};border:1px solid ${C.border};border-radius:12px">
+      <tr><td style="padding:24px 22px">
+        <p style="margin:0 0 12px;font-weight:600;color:${C.heading};font-size:17px">Attestation deadline approaching</p>
+        <p style="margin:0;font-size:14px;line-height:1.55;color:${C.body}">
+          The monitoring plan for <strong>${escapeHtml(systemName)}</strong> has the next conformity attestation on or before <strong>${escapeHtml(dueLabel)}</strong> (UTC calendar date).
+        </p>
+        <p style="margin:14px 0 0;font-size:13px;color:${C.muted}">
+          Review evidence, gaps, and post-market duties in Compliance — this is a scheduling reminder only.
+        </p>
+      </td></tr>
+    </table>`;
+  return base(content, `Attestation reminder: ${systemName}`);
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }

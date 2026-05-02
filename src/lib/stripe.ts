@@ -17,19 +17,42 @@ export const stripe = new Stripe(
 
 // ---------------------------------------------------------------------------
 // Price IDs — set via env vars; fallbacks for local dev
+// Also accept legacy names from older .env templates (e.g. STRIPE_PRO_PRICE_ID).
 // ---------------------------------------------------------------------------
 
+function firstEnv(...keys: (string | undefined)[]): string | undefined {
+  for (const k of keys) {
+    const v = k?.trim()
+    if (v) return v
+  }
+  return undefined
+}
+
 export const STRIPE_PRICE_PRO =
-  process.env.STRIPE_PRICE_PRO || 'price_pro_placeholder'
+  firstEnv(process.env.STRIPE_PRICE_PRO, process.env.STRIPE_PRO_PRICE_ID) ||
+  'price_pro_placeholder'
 
 export const STRIPE_PRICE_PRO_YEARLY =
-  process.env.STRIPE_PRICE_PRO_YEARLY || 'price_pro_yearly_placeholder'
+  firstEnv(
+    process.env.STRIPE_PRICE_PRO_YEARLY,
+    process.env.STRIPE_PRO_YEARLY_PRICE_ID,
+  ) || 'price_pro_yearly_placeholder'
 
 export const STRIPE_PRICE_GROWTH =
-  process.env.STRIPE_PRICE_GROWTH || 'price_growth_placeholder'
+  firstEnv(process.env.STRIPE_PRICE_GROWTH, process.env.STRIPE_GROWTH_PRICE_ID) ||
+  'price_growth_placeholder'
 
 export const STRIPE_PRICE_GROWTH_YEARLY =
-  process.env.STRIPE_PRICE_GROWTH_YEARLY || 'price_growth_yearly_placeholder'
+  firstEnv(
+    process.env.STRIPE_PRICE_GROWTH_YEARLY,
+    process.env.STRIPE_GROWTH_YEARLY_PRICE_ID,
+  ) || 'price_growth_yearly_placeholder'
+
+/** True when STRIPE_SECRET_KEY is set and not a dev placeholder. */
+export function isStripeSecretConfigured(): boolean {
+  const key = process.env.STRIPE_SECRET_KEY?.trim() || ''
+  return !!key && !key.includes('placeholder')
+}
 
 // ---------------------------------------------------------------------------
 // Webhook secret — used to verify incoming Stripe events

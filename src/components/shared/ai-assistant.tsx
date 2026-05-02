@@ -137,7 +137,7 @@ export function AIAssistant({ userTier = 'free' }: AIAssistantProps) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
               transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              className="fixed bottom-6 right-6 z-50 flex w-[340px] max-w-[calc(100vw-2rem)] flex-col rounded-xl overflow-hidden shadow-2xl shadow-black/40"
+              className="fixed bottom-6 right-6 z-50 flex w-[340px] max-w-[calc(100%-2rem)] flex-col rounded-xl overflow-hidden shadow-2xl shadow-black/40"
               style={{ background: 'rgba(13, 17, 23, 0.95)', backdropFilter: 'blur(20px)', border: '1px solid rgba(48, 57, 74, 0.6)' }}
             >
               {/* Header */}
@@ -226,7 +226,7 @@ export function AIAssistant({ userTier = 'free' }: AIAssistantProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className="fixed bottom-6 right-6 z-50 flex h-[520px] w-[380px] max-w-[calc(100vw-2rem)] flex-col rounded-xl overflow-hidden shadow-2xl shadow-black/40"
+            className="fixed bottom-6 right-6 z-50 flex h-[520px] w-[380px] max-w-[calc(100%-2rem)] flex-col rounded-xl overflow-hidden shadow-2xl shadow-black/40"
             style={{ background: 'rgba(13, 17, 23, 0.95)', backdropFilter: 'blur(20px)', border: '1px solid rgba(48, 57, 74, 0.6)' }}
           >
             {/* Header */}

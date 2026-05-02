@@ -13,6 +13,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ChevronDown, LayoutDashboard, LogOut, Shield, Users, Plug, Menu, X } from "lucide-react";
 import { NotificationBell } from "@/components/shared/notification-bell";
+import { BrandWordmark } from "@/components/shared/brand-wordmark";
 import { useState } from "react";
 
 export function Navigation() {
@@ -30,9 +31,7 @@ export function Navigation() {
               alt="E-ARI"
               className="h-9 w-9 rounded-lg transition-transform duration-200 group-hover:scale-105"
             />
-            <span className="font-heading font-semibold text-lg text-foreground tracking-tight">
-              E-ARI
-            </span>
+            <BrandWordmark size="md" />
           </Link>
 
           {/* Navigation Links */}
@@ -47,6 +46,11 @@ export function Navigation() {
                 <Link href="/portal">
                   <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-sans">
                     Portal
+                  </Button>
+                </Link>
+                <Link href="/compliance">
+                  <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-sans">
+                    Compliance
                   </Button>
                 </Link>
                 {session.user?.role === "admin" && (
@@ -165,6 +169,11 @@ export function Navigation() {
                 <Link href="/portal" onClick={() => setMobileOpen(false)}>
                   <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-sans">
                     Portal
+                  </Button>
+                </Link>
+                <Link href="/compliance" onClick={() => setMobileOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-sans">
+                    Compliance
                   </Button>
                 </Link>
                 {session.user?.role === "admin" && (

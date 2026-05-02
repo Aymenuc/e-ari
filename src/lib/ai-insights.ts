@@ -20,6 +20,8 @@ import { PILLARS, getPillarById, LIKERT_LABELS, type PillarDefinition } from './
 import { ScoringResult, generateTemplateInsights, type ResponseMap, type QuestionScoreDetail } from './assessment-engine';
 import { getSectorById, getEffectivePillarQuestions, type SectorDefinition } from './sectors';
 import { LLM_API_URL_PRO, LLM_MODEL_PRO, LLM_API_KEY, withRetry } from './llm-config';
+import { complianceLLMChat } from '@/lib/compliance/llm';
+import type { Citation } from '@/lib/compliance/defensibility';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -668,4 +670,57 @@ export function generateTemplateInsightsSync(
   orgContext?: { sector?: string; orgSize?: string; organization?: string }
 ): AIInsightResult {
   return generateFallbackInsights(result, orgContext);
+}
+
+/** Context bundle for optional compliance-aware pillar narratives (scores unchanged). */
+export type AssessmentInsightContext = {
+  sector?: string;
+  orgSize?: string;
+  organization?: string;
+};
+
+/**
+ * Single-pillar narrative; when citations are provided, the model anchors wording to vault evidence counts only (no score changes).
+ */
+export async function generatePillarInsight(
+  pillarId: string,
+  pillarScore: number,
+  context: AssessmentInsightContext,
+  evidenceCitations?: Citation[],
+): Promise<string> {
+  const pillarDef = getPillarById(pillarId);
+  const pillarName = pillarDef?.name ?? pillarId;
+  const sector = context.sector ? getSectorById(context.sector) : undefined;
+
+  const citationLines =
+    evidenceCitations?.slice(0, 12).map(
+      (c) =>
+        `- ${c.evidenceFilename}${c.pageNumber != null ? ` p.${c.pageNumber}` : ''}: "${c.textExcerpt.slice(0, 160)}${c.textExcerpt.length > 160 ? '…' : ''}"`,
+    ) ?? [];
+
+  const citeBlock =
+    citationLines.length > 0
+      ? `\nEvidence excerpts (do not contradict; summarize coverage):\n${citationLines.join('\n')}`
+      : '';
+
+  const sys = `You write one short pillar readiness narrative for executives.
+Rules: no legal advice; tie language to the score and sector context; if evidence excerpts are listed, mention they support this pillar across uploaded documents (give approximate counts).
+Max 120 words; plain sentences; no banned hype. Temperature discipline: be precise.`;
+
+  const user = `Pillar: ${pillarName} (${pillarId})
+Normalized score: ${Math.round(pillarScore)}%
+Sector: ${sector?.shortName ?? context.sector ?? 'general'}
+Organization hint: ${context.organization ?? 'n/a'}
+${citeBlock}`;
+
+  try {
+    const raw = await complianceLLMChat(sys, user, { maxTokens: 512, operation: 'pillar_insight' });
+    return raw.trim().slice(0, 2500);
+  } catch {
+    const base = `${pillarName} is at ${Math.round(pillarScore)}% readiness${sector ? ` for ${sector.shortName}` : ''}.`;
+    if (evidenceCitations?.length) {
+      return `${base} Uploaded compliance evidence includes ${evidenceCitations.length} clause excerpt(s) mapped to this pillar — review the vault for citations.`;
+    }
+    return base;
+  }
 }

@@ -227,6 +227,20 @@ export const authOptions: NextAuthOptions = {
           token.role = "admin";
         }
       }
+
+      // Keep JWT claims aligned with DB changes made after login
+      // (e.g. admin tier updates), so the portal does not show stale tier.
+      if (!user && token.email) {
+        const dbUser = await db.user.findUnique({
+          where: { email: token.email as string },
+          select: { id: true, tier: true, role: true },
+        });
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.tier = dbUser.tier;
+          token.role = dbUser.role;
+        }
+      }
       return token;
     },
 

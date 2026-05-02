@@ -50,6 +50,7 @@ import {
   Bell,
   ShieldCheck,
   Minus,
+  Scale,
 } from 'lucide-react'
 import {
   RadarChart,
@@ -393,7 +394,19 @@ function LockedSectionCard({
 
 /* ─── Pillar Card Component ────────────────────────────────────────────── */
 
-function PillarCard({ pillar, index, showDetails }: { pillar: PillarScoreResult; index: number; showDetails: boolean }) {
+function PillarCard({
+  pillar,
+  index,
+  showDetails,
+  evidenceClauseCount,
+  complianceSystemId,
+}: {
+  pillar: PillarScoreResult
+  index: number
+  showDetails: boolean
+  evidenceClauseCount?: number
+  complianceSystemId?: string
+}) {
   const [isOpen, setIsOpen] = useState(false)
   const pillarDef = PILLARS.find(p => p.id === pillar.pillarId)
   const Icon = pillarDef ? ICON_MAP[pillarDef.icon] || Target : Target
@@ -498,6 +511,24 @@ function PillarCard({ pillar, index, showDetails }: { pillar: PillarScoreResult;
                       </div>
                     )
                   })}
+                  {(evidenceClauseCount ?? 0) > 0 && complianceSystemId ? (
+                    <div className="mt-4 rounded-lg border border-eari-blue/25 bg-eari-blue/5 p-3 space-y-2">
+                      <p className="text-[10px] font-heading uppercase tracking-wide text-eari-blue-light">
+                        Compliance evidence vault
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="outline" className="text-[10px] font-mono border-emerald-500/35 text-emerald-400">
+                          Evidence: {evidenceClauseCount} clause{evidenceClauseCount !== 1 ? 's' : ''}
+                        </Badge>
+                        <Link
+                          href={`/compliance/systems/${complianceSystemId}/evidence`}
+                          className="text-[11px] text-eari-blue-light hover:text-eari-blue font-heading underline underline-offset-2"
+                        >
+                          View backing documents
+                        </Link>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
                 {pillar.adjustments.length > 0 && (
                   <div className="mt-3 space-y-2">
@@ -586,6 +617,8 @@ export default function ResultsPage() {
   } | null>(null)
   const [benchmarkLoading, setBenchmarkLoading] = useState(true)
   const [benchmarkConsented, setBenchmarkConsented] = useState(false)
+  const [pillarEvidenceCounts, setPillarEvidenceCounts] = useState<Record<string, number>>({})
+  const [complianceSystemsForAssessment, setComplianceSystemsForAssessment] = useState<Array<{ id: string; name: string }>>([])
 
   /* ─── Tier from authoritative session source ─────────────────────────── */
   // Tier is read ONLY from the server-side session JWT, never client-switchable.
@@ -746,6 +779,26 @@ export default function ResultsPage() {
       fetchBenchmark(assessment.sector)
     }
   }, [assessment?.sector, fetchBenchmark])
+
+  useEffect(() => {
+    if (!assessment?.id || sessionStatus !== 'authenticated') return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/compliance/assessment/${assessment.id}/evidence-by-pillar`)
+        if (!res.ok) return
+        const data = await res.json().catch(() => ({}))
+        if (cancelled) return
+        setPillarEvidenceCounts(typeof data.pillarCounts === 'object' && data.pillarCounts ? data.pillarCounts : {})
+        setComplianceSystemsForAssessment(Array.isArray(data.systems) ? data.systems : [])
+      } catch {
+        /* optional enrichment */
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [assessment?.id, sessionStatus])
 
   /* ─── Scroll progress tracking ────────────────────────────────────────── */
   useEffect(() => {
@@ -1099,6 +1152,16 @@ export default function ResultsPage() {
                             )}
                             Re-run Assessment
                           </Button>
+                          <Link href={`/compliance/systems/new?assessmentId=${assessment.id}`}>
+                            <Button
+                              variant="outline"
+                              className="border-eari-blue/40 text-eari-blue-light hover:bg-eari-blue/10 font-heading font-semibold h-10 px-5 text-sm"
+                            >
+                              <Scale className="mr-2 h-4 w-4" />
+                              Move from readiness to compliance
+                              <ArrowUpRight className="ml-1.5 h-3.5 w-3.5 opacity-70" />
+                            </Button>
+                          </Link>
                           {/* Quarterly Review Countdown */}
                           {assessment.completedAt && (
                             <Badge
@@ -1493,7 +1556,7 @@ export default function ResultsPage() {
                       </div>
                       <div className="flex-1 text-center sm:text-left">
                         <p className="font-heading font-semibold text-foreground text-sm">
-                          Unlock all 6 AI agents with Professional at $99/month
+                          Unlock all 6 AI agents with Professional at $29/month
                         </p>
                         <p className="text-xs text-muted-foreground font-sans mt-0.5">
                           Get unlimited assessments, full AI narrative insights, PDF reports, benchmarking, and the interactive AI Assistant.
@@ -1641,7 +1704,14 @@ export default function ResultsPage() {
             </FadeUp>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {scoring.pillarScores.map((pillar, i) => (
-                <PillarCard key={pillar.pillarId} pillar={pillar} index={i} showDetails={isPro} />
+                <PillarCard
+                  key={pillar.pillarId}
+                  pillar={pillar}
+                  index={i}
+                  showDetails={isPro}
+                  evidenceClauseCount={pillarEvidenceCounts[pillar.pillarId]}
+                  complianceSystemId={complianceSystemsForAssessment[0]?.id}
+                />
               ))}
             </div>
           </section>
@@ -2095,7 +2165,7 @@ export default function ResultsPage() {
                           <p className="font-mono text-[10px] text-muted-foreground mt-0.5">{pulseData.month}</p>
                         </div>
                         <div className="p-4 rounded-xl bg-navy-700/40 border border-border/20 text-center">
-                          {pulseData.overallDelta !== null ? (
+                          {typeof pulseData.overallDelta === 'number' && Number.isFinite(pulseData.overallDelta) ? (
                             <>
                               <p className={`font-heading text-3xl font-extrabold ${pulseData.overallDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                 {pulseData.overallDelta > 0 ? '+' : ''}{pulseData.overallDelta.toFixed(1)}
@@ -2136,7 +2206,11 @@ export default function ResultsPage() {
                                   <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: pillarDef?.color ?? '#8b949e' }} />
                                   <span className="font-heading text-[11px] font-semibold">{pillarDef?.shortName ?? sc.pillarName}</span>
                                   <DirIcon className="h-3 w-3" />
-                                  <span className="font-mono text-[10px]">{sc.delta > 0 ? '+' : ''}{sc.delta.toFixed(1)}</span>
+                                  <span className="font-mono text-[10px]">
+                                    {typeof sc.delta === 'number' && Number.isFinite(sc.delta)
+                                      ? `${sc.delta > 0 ? '+' : ''}${sc.delta.toFixed(1)}`
+                                      : '—'}
+                                  </span>
                                 </div>
                               )
                             })}
@@ -3799,7 +3873,12 @@ export default function ResultsPage() {
                     <p className="font-heading text-sm font-semibold text-foreground">Custom Branding</p>
                     <p className="text-xs text-muted-foreground font-sans">Apply your organization&apos;s logo and colors to exported reports</p>
                   </div>
-                  <Button variant="outline" size="sm" className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10 font-heading">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.location.href = '/branding'}
+                    className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10 font-heading"
+                  >
                     <Palette className="mr-2 h-3.5 w-3.5" />
                     Configure
                   </Button>

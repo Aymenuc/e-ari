@@ -1,11 +1,13 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, XCircle, Clock, Mail, Loader2, RefreshCw, ArrowLeft, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { signIn } from 'next-auth/react';
+import { BrandWordmark } from '@/components/shared/brand-wordmark';
 
 // ─── Email client shortcuts ──────────────────────────────────────────────────
 
@@ -47,7 +49,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5 group">
             <img src="/logo.svg" alt="E-ARI" className="h-9 w-9 rounded-lg transition-transform duration-200 group-hover:scale-105" />
-            <span className="font-heading font-semibold text-lg text-foreground tracking-tight">E-ARI</span>
+            <BrandWordmark size="md" />
           </Link>
         </div>
 
@@ -65,20 +67,72 @@ function Shell({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ─── Verifying state (auto-processing token) ─────────────────────────────────
+function ConfirmState({ token, email }: { token: string; email: string }) {
+  const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
 
-function VerifyingState() {
+  const handleConfirm = async () => {
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/auth/verify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, email }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data?.success) {
+        if (typeof window !== 'undefined') {
+          const raw = sessionStorage.getItem('pendingVerificationCreds');
+          if (raw) {
+            try {
+              const creds = JSON.parse(raw) as { email?: string; password?: string; callbackUrl?: string };
+              if (creds?.email && creds?.password) {
+                const login = await signIn('credentials', {
+                  email: creds.email,
+                  password: creds.password,
+                  redirect: false,
+                });
+                sessionStorage.removeItem('pendingVerificationCreds');
+                if (!login?.error) {
+                  router.replace(creds.callbackUrl || '/portal');
+                  return;
+                }
+              }
+            } catch {
+              // Ignore malformed cached credentials.
+            }
+          }
+        }
+        router.replace('/auth/verify-email?success=true');
+        return;
+      }
+      router.replace(`/auth/verify-email?error=${encodeURIComponent(data?.error || 'server')}&email=${encodeURIComponent(email)}`);
+    } catch {
+      router.replace('/auth/verify-email?error=server');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
-    <div className="text-center space-y-5">
+    <div className="text-center space-y-6">
       <motion.div variants={iconPop} initial="hidden" animate="visible" className="flex justify-center">
         <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-eari-blue/10 border border-eari-blue/20">
-          <Loader2 className="h-9 w-9 text-eari-blue-light animate-spin" />
-          <div className="absolute inset-0 rounded-full border border-eari-blue/20 animate-ping opacity-30" />
+          <Mail className="h-9 w-9 text-eari-blue-light" />
         </div>
       </motion.div>
       <motion.div variants={fadeUp} custom={1} initial="hidden" animate="visible" className="space-y-2">
-        <h1 className="font-heading text-2xl font-bold text-foreground">Verifying your email</h1>
-        <p className="text-muted-foreground font-sans text-sm">Please wait while we confirm your email address…</p>
+        <h1 className="font-heading text-2xl font-bold text-foreground">Confirm your email</h1>
+        <p className="text-muted-foreground font-sans text-sm leading-relaxed">
+          Click below to verify <span className="text-foreground font-medium">{email}</span>.
+          <br />
+          This prevents automatic link scanners from activating accounts.
+        </p>
+      </motion.div>
+      <motion.div variants={fadeUp} custom={2} initial="hidden" animate="visible">
+        <Button onClick={handleConfirm} disabled={submitting} className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-sans h-11 gap-2">
+          {submitting ? <><Loader2 className="h-4 w-4 animate-spin" />Verifying…</> : 'Verify Email Address'}
+        </Button>
       </motion.div>
     </div>
   );
@@ -116,16 +170,23 @@ function SuccessState() {
 function ExpiredState({ email }: { email: string }) {
   const [resending, setResending] = useState(false);
   const [resent, setResent] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
 
   const handleResend = async () => {
     if (!email) return;
     setResending(true);
+    setResendError(null);
     try {
-      await fetch('/api/auth/send-verification', {
+      const res = await fetch('/api/auth/send-verification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setResendError(data?.error || 'Failed to resend verification email.');
+        return;
+      }
       setResent(true);
     } finally {
       setResending(false);
@@ -172,6 +233,9 @@ function ExpiredState({ email }: { email: string }) {
             </motion.div>
           )}
         </AnimatePresence>
+        {resendError ? (
+          <p className="text-xs text-red-400 font-sans">{resendError}</p>
+        ) : null}
 
         <Link href="/auth/login" className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-foreground font-sans transition-colors">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to sign in
@@ -213,16 +277,23 @@ function InvalidState() {
 function CheckEmailState({ email }: { email: string }) {
   const [resending, setResending] = useState(false);
   const [resent, setResent] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
 
   const handleResend = async () => {
     if (!email) return;
     setResending(true);
+    setResendError(null);
     try {
-      await fetch('/api/auth/send-verification', {
+      const res = await fetch('/api/auth/send-verification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setResendError(data?.error || 'Failed to resend verification email.');
+        return;
+      }
       setResent(true);
       setTimeout(() => setResent(false), 5000);
     } finally {
@@ -316,6 +387,9 @@ function CheckEmailState({ email }: { email: string }) {
             </motion.div>
           )}
         </AnimatePresence>
+        {resendError ? (
+          <p className="text-xs text-red-400 font-sans text-center">{resendError}</p>
+        ) : null}
 
         <div className="flex items-center justify-between text-xs text-muted-foreground/60 font-sans pt-1">
           <span>Link expires in 24 hours</span>
@@ -332,53 +406,17 @@ function CheckEmailState({ email }: { email: string }) {
 
 function VerifyEmailContent() {
   const params = useSearchParams();
-  const router = useRouter();
 
   const success = params.get('success') === 'true';
   const error = params.get('error');
   const email = params.get('email') || '';
   const token = params.get('token');
 
-  const [verifying, setVerifying] = useState(!!token && !success && !error);
-  const [verifyError, setVerifyError] = useState<string | null>(null);
-
-  // If a token lands on this page directly, call the API to process it
-  useEffect(() => {
-    if (!token || success || error) return;
-
-    const verify = async () => {
-      try {
-        const res = await fetch(
-          `/api/auth/verify-email?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`,
-          { redirect: 'manual' }
-        );
-        // The API always redirects; we follow the redirect destination
-        const location = res.headers.get('location') || res.url;
-        if (location) {
-          // Extract just the path+query from the Location header
-          try {
-            const dest = new URL(location, window.location.origin);
-            router.replace(dest.pathname + dest.search);
-          } catch {
-            router.replace('/auth/verify-email?error=server');
-          }
-        } else {
-          router.replace('/auth/verify-email?error=server');
-        }
-      } catch {
-        setVerifyError('server');
-        setVerifying(false);
-      }
-    };
-
-    verify();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  if (verifying) return <VerifyingState />;
-  if (verifyError === 'server' || error === 'server') return <InvalidState />;
+  if (error === 'server') return <InvalidState />;
   if (success) return <SuccessState />;
   if (error === 'expired') return <ExpiredState email={email} />;
   if (error === 'invalid') return <InvalidState />;
+  if (token && email) return <ConfirmState token={token} email={email} />;
 
   return <CheckEmailState email={email} />;
 }

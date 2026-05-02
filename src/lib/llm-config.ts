@@ -9,6 +9,10 @@ export const LLM_MODEL = process.env.LLM_MODEL || 'gemini-2.0-flash';
 export const LLM_API_URL_PRO = process.env.LLM_API_URL_PRO || GEMINI_BASE;
 export const LLM_MODEL_PRO = process.env.LLM_MODEL_PRO || 'gemini-2.5-pro';
 
+/** Compliance domain (classification, clauses, gaps) — deterministic; always temperature 0 in call sites. */
+export const COMPLIANCE_MODEL = process.env.COMPLIANCE_LLM_MODEL || LLM_MODEL_PRO;
+export const COMPLIANCE_TEMPERATURE = 0;
+
 // Key resolver — uses GEMINI_API_KEY, falls back to GLM_API_KEY for backwards compatibility
 export const LLM_API_KEY = process.env.GEMINI_API_KEY || process.env.GLM_API_KEY || '';
 

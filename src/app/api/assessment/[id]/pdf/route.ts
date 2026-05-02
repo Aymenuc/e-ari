@@ -6,6 +6,7 @@ import { scoreAssessment, type ResponseMap } from "@/lib/assessment-engine";
 import { generateAIInsights, generateTemplateInsightsSync } from "@/lib/ai-insights";
 import { generateAssessmentReport, type AssessmentReportData } from "@/lib/report-generator";
 import { getSectorStats } from "@/lib/benchmark-engine";
+import { getSetting } from "@/lib/platform-settings";
 
 // GET /api/assessment/[id]/pdf — Generate professional .docx assessment report
 export async function GET(
@@ -138,6 +139,21 @@ export async function GET(
       previousScore,
       previousDate,
     };
+
+    if (assessment.user.tier === "enterprise") {
+      const [enabled, brandName, logoUrl, accentColor] = await Promise.all([
+        getSetting("custom_branding_enabled"),
+        getSetting("custom_brand_name"),
+        getSetting("custom_brand_logo_url"),
+        getSetting("custom_brand_accent_color"),
+      ]);
+      reportData.branding = {
+        enabled,
+        brandName,
+        logoUrl,
+        accentColor,
+      };
+    }
 
     const docxBuffer = await generateAssessmentReport(reportData);
 

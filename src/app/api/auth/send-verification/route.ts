@@ -5,8 +5,9 @@ import { db } from '@/lib/db';
 import { Resend } from 'resend';
 import crypto from 'crypto';
 import { verificationEmailHtml } from '@/lib/email-templates';
+import { getBaseUrl } from '@/lib/site-url';
 
-const BASE_URL = process.env.NEXTAUTH_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+const BASE_URL = getBaseUrl();
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,13 +23,14 @@ export async function POST(req: NextRequest) {
       const u = await db.user.findUnique({ where: { id: session.user.id } });
       if (!u) return NextResponse.json({ error: 'User not found' }, { status: 404 });
       if (u.emailVerified) return NextResponse.json({ message: 'Already verified' });
-      userEmail = u.email;
+      userEmail = u.email.trim().toLowerCase();
       userName = u.name || u.email.split('@')[0];
     } else if (emailInput) {
-      const u = await db.user.findUnique({ where: { email: emailInput } });
+      const normalizedEmail = emailInput.trim().toLowerCase();
+      const u = await db.user.findUnique({ where: { email: normalizedEmail } });
       if (!u) return NextResponse.json({ error: 'User not found' }, { status: 404 });
       if (u.emailVerified) return NextResponse.json({ message: 'Already verified' });
-      userEmail = u.email;
+      userEmail = u.email.trim().toLowerCase();
       userName = u.name || u.email.split('@')[0];
     } else {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -42,20 +44,25 @@ export async function POST(req: NextRequest) {
     await db.verificationToken.deleteMany({ where: { identifier: userEmail } });
     await db.verificationToken.create({ data: { identifier: userEmail, token, expires } });
 
-    const verifyUrl = `${BASE_URL}/api/auth/verify-email?token=${token}&email=${encodeURIComponent(userEmail)}`;
+    const verifyUrl = `${BASE_URL}/auth/verify-email?token=${token}&email=${encodeURIComponent(userEmail)}`;
 
     const apiKey = process.env.RESEND_API_KEY;
     if (apiKey) {
       const resend = new Resend(apiKey);
-      await resend.emails.send({
+      const result = await resend.emails.send({
         from: process.env.EMAIL_FROM_HELLO || process.env.EMAIL_FROM_ADDRESS || 'hello@e-ari.com',
         to: userEmail,
         subject: 'Verify your E-ARI email address',
         html: verificationEmailHtml(verifyUrl, userName),
         text: `Hi ${userName},\n\nVerify your E-ARI account:\n${verifyUrl}\n\nThis link expires in 24 hours.`,
       });
+      if (result.error) {
+        console.error('[send-verification] resend error:', result.error);
+        return NextResponse.json({ error: 'Failed to send verification email' }, { status: 502 });
+      }
     } else {
-      console.log('[verify-email] RESEND not configured. Verification link:', verifyUrl);
+      console.warn('[verify-email] RESEND not configured. Verification link:', verifyUrl);
+      return NextResponse.json({ error: 'Email delivery is not configured' }, { status: 503 });
     }
 
     return NextResponse.json({ sent: true });

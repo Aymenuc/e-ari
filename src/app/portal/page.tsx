@@ -729,7 +729,7 @@ export default function PortalPage() {
 
                 {userTier === 'professional' && (
                   <p className="text-sm text-muted-foreground font-sans">
-                    Unlimited assessments with all 6 AI agents, full narrative insights, and PDF reports at $99/month.
+                    Unlimited assessments with all 6 AI agents, full narrative insights, and PDF reports at $29/month.
                   </p>
                 )}
 

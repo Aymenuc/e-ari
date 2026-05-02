@@ -11,6 +11,11 @@ export interface PlatformSettings {
   rate_limiting: boolean;
   audit_logging: boolean;
   ip_whitelisting: boolean;
+  custom_branding_enabled: boolean;
+  custom_brand_name: string;
+  custom_brand_logo_url: string;
+  custom_brand_accent_color: string;
+  enterprise_price_label: string;
 }
 
 const DEFAULTS: PlatformSettings = {
@@ -24,6 +29,11 @@ const DEFAULTS: PlatformSettings = {
   rate_limiting: true,
   audit_logging: true,
   ip_whitelisting: false,
+  custom_branding_enabled: false,
+  custom_brand_name: '',
+  custom_brand_logo_url: '',
+  custom_brand_accent_color: '#2563EB',
+  enterprise_price_label: 'Custom',
 };
 
 export async function getPlatformSettings(): Promise<PlatformSettings> {

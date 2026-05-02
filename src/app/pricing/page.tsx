@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -98,8 +98,8 @@ const PRICING_TIERS = [
   {
     id: 'professional',
     name: 'Professional',
-    price: '$49',
-    yearlyPrice: '$39',
+    price: '$29',
+    yearlyPrice: '$29',
     period: '/month',
     yearlyPeriod: '/mo, billed yearly',
     description: '5 assessments and 15 pulse checks per month with full Literacy Hub access',
@@ -119,7 +119,7 @@ const PRICING_TIERS = [
       { text: 'Email support (48h)', included: true },
       { text: 'API access', included: false },
     ],
-    highlighted: false,
+    highlighted: true,
     ctaText: 'Get Professional',
   },
   {
@@ -146,16 +146,16 @@ const PRICING_TIERS = [
       { text: 'Read-only API access', included: true },
       { text: 'Chat + Quarterly Review', included: true, highlight: true },
     ],
-    highlighted: true,
+    highlighted: false,
     ctaText: 'Get Growth',
   },
   {
     id: 'enterprise',
     name: 'Enterprise',
-    price: '$399',
-    yearlyPrice: '$319',
-    period: '/month',
-    yearlyPeriod: '/mo, billed yearly',
+    price: 'Custom',
+    yearlyPrice: 'Custom',
+    period: '',
+    yearlyPeriod: '',
     description: 'Unlimited everything with SSO/SAML, full CRUD API, and a dedicated CSM',
     icon: Shield,
     color: '#d4a853',
@@ -214,7 +214,7 @@ const COMPARISON_FEATURES = [
 
   { category: 'Support' },
   { feature: 'Support Level', starter: 'Community', professional: 'Email (48h)', growth: 'Chat + Quarterly Review', enterprise: 'Dedicated CSM + SLA' },
-  { feature: 'Annual Discount', starter: '–', professional: '$39/mo (20% off)', growth: '$119/mo (20% off)', enterprise: '$319/mo (20% off)' },
+  { feature: 'Annual Discount', starter: '–', professional: '$29/mo', growth: '$119/mo (20% off)', enterprise: 'Custom' },
 ]
 
 // ---------------------------------------------------------------------------
@@ -232,7 +232,7 @@ const FAQ_ITEMS = [
   },
   {
     question: 'How does annual billing work?',
-    answer: 'All paid plans offer 20% off when billed annually. Professional: $39/mo ($468/yr). Growth: $119/mo ($1,428/yr). Enterprise: $319/mo ($3,828/yr). Switch between monthly and yearly at any time — the new rate applies at your next billing cycle.',
+    answer: 'Paid plans support monthly or annual billing. Professional is $29/month. Growth is $119/mo billed yearly. Enterprise is custom pricing based on scope and support needs.',
   },
   {
     question: 'What is the $29 .docx add-on on Starter?',
@@ -263,6 +263,7 @@ const FAQ_ITEMS = [
 export default function PricingPage() {
   const { data: session, status: sessionStatus } = useSession()
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>('monthly')
+  const [enterprisePriceLabel, setEnterprisePriceLabel] = useState('Custom')
 
   const userTier = sessionStatus === 'authenticated'
     ? ((session?.user as Record<string, unknown>)?.tier as string) || 'free'
@@ -273,6 +274,25 @@ export default function PricingPage() {
   const isPro = userTier === 'professional'
   const isGrowth = userTier === 'growth'
   const isEnterprise = userTier === 'enterprise'
+
+  useEffect(() => {
+    fetch('/api/pricing-config')
+      .then((r) => r.json())
+      .then((data) => {
+        if (typeof data.enterprisePriceLabel === 'string' && data.enterprisePriceLabel.trim()) {
+          setEnterprisePriceLabel(data.enterprisePriceLabel.trim())
+        }
+      })
+      .catch(() => {
+        // Keep default label
+      })
+  }, [])
+
+  const pricingTiers = PRICING_TIERS.map((tier) =>
+    tier.id === 'enterprise'
+      ? { ...tier, price: enterprisePriceLabel, yearlyPrice: enterprisePriceLabel }
+      : tier
+  )
 
   // ---------------------------------------------------------------------------
   // Render CTA button per tier
@@ -467,7 +487,7 @@ export default function PricingPage() {
         <section className="pb-16 sm:pb-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 max-w-7xl mx-auto">
-              {PRICING_TIERS.map((tier, index) => {
+              {pricingTiers.map((tier, index) => {
                 const TierIcon = tier.icon
                 const displayPrice = billingPeriod === 'yearly' ? tier.yearlyPrice : tier.price
                 const displayPeriod = billingPeriod === 'yearly' ? tier.yearlyPeriod : tier.period

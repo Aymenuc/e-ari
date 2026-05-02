@@ -4,7 +4,10 @@ import bcrypt from "bcryptjs";
 import { sendWelcomeEmail } from "@/lib/email-service";
 import { checkRateLimitFromRequest } from "@/lib/rate-limit";
 import { getSetting } from "@/lib/platform-settings";
+import { Resend } from "resend";
 import crypto from "crypto";
+import { verificationEmailHtml } from "@/lib/email-templates";
+import { getBaseUrl } from "@/lib/site-url";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,8 +17,9 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { email, password, name, organization, sector, orgSize } = body;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
 
-    if (!email || !password) {
+    if (!normalizedEmail || !password) {
       return NextResponse.json(
         { error: "Email and password are required" },
         { status: 400 }
@@ -23,7 +27,7 @@ export async function POST(req: NextRequest) {
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(normalizedEmail)) {
       return NextResponse.json(
         { error: "Invalid email format" },
         { status: 400 }
@@ -61,7 +65,7 @@ export async function POST(req: NextRequest) {
 
     // Check if user already exists
     const existingUser = await db.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (existingUser) {
@@ -77,7 +81,7 @@ export async function POST(req: NextRequest) {
     // Create user
     const user = await db.user.create({
       data: {
-        email,
+        email: normalizedEmail,
         passwordHash,
         name: name || null,
         organization: organization || null,
@@ -91,21 +95,35 @@ export async function POST(req: NextRequest) {
     // Check if email verification is required
     const requireVerification = await getSetting('require_email_verification');
     if (requireVerification) {
-      const BASE_URL = process.env.NEXTAUTH_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+      const baseUrl = getBaseUrl();
       const token = crypto.randomBytes(32).toString('hex');
       const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      await db.verificationToken.create({ data: { identifier: email, token, expires } });
-      const verifyUrl = `${BASE_URL}/api/auth/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
-
-      // Send verification email (fire-and-forget)
-      fetch(`${BASE_URL}/api/auth/send-verification`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      }).catch(() => {});
-
-      // Also log for dev
-      console.log('[register] Verification link:', verifyUrl);
+      await db.verificationToken.deleteMany({ where: { identifier: normalizedEmail } });
+      await db.verificationToken.create({ data: { identifier: normalizedEmail, token, expires } });
+      const verifyUrl = `${baseUrl}/auth/verify-email?token=${token}&email=${encodeURIComponent(normalizedEmail)}`;
+      const apiKey = process.env.RESEND_API_KEY;
+      if (!apiKey) {
+        return NextResponse.json(
+          { error: "Email delivery is not configured" },
+          { status: 503 }
+        );
+      }
+      const resend = new Resend(apiKey);
+      const userName = user.name || normalizedEmail.split("@")[0];
+      const result = await resend.emails.send({
+        from: process.env.EMAIL_FROM_HELLO || process.env.EMAIL_FROM_ADDRESS || "hello@e-ari.com",
+        to: normalizedEmail,
+        subject: "Verify your E-ARI email address",
+        html: verificationEmailHtml(verifyUrl, userName),
+        text: `Hi ${userName},\n\nVerify your E-ARI account:\n${verifyUrl}\n\nThis link expires in 24 hours.`,
+      });
+      if (result.error) {
+        console.error("[register] verification email error:", result.error);
+        return NextResponse.json(
+          { error: "Failed to send verification email" },
+          { status: 502 }
+        );
+      }
     } else {
       // Send welcome email (fire-and-forget)
       sendWelcomeEmail(user.id, user.email, user.name).catch(() => {});

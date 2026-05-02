@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Mail, MessageSquare } from "lucide-react";
+import { BrandWordmark } from "@/components/shared/brand-wordmark";
 
 export function Footer() {
   return (
@@ -12,7 +13,7 @@ export function Footer() {
           <div className="sm:col-span-2 lg:col-span-1 space-y-4">
             <div className="flex items-center gap-2.5">
               <img src="/logo.svg" alt="E-ARI" className="h-8 w-8 rounded-lg" />
-              <span className="font-heading font-semibold text-base text-foreground">E-ARI</span>
+              <BrandWordmark size="sm" />
             </div>
             <p className="text-xs text-muted-foreground font-sans leading-relaxed">
               Enterprise AI Readiness Assessment. Evidence-based, actionable outputs for organizations advancing their AI journey.

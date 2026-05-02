@@ -36,6 +36,7 @@ model User {
   notifications     Notification[]
   benchmarkConsents BenchmarkConsent[]
   refundRequests    RefundRequest[]
+  aiSystems         AISystem[]
 }
 
 model Account {
@@ -89,6 +90,7 @@ model Assessment {
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   responses     Response[]
   pipelineRuns  PipelineRun[]
+  aiSystems     AISystem[]
 }
 
 model Response {
@@ -336,4 +338,173 @@ model RefundRequest {
   @@index([userId])
   @@index([status])
   @@index([chargeId])
+}
+
+// ─── Compliance domain (AI Act evidence & artifacts) ───────────────────────────
+// Prisma model ObligationGap avoids name clash with ComplianceGap interface in regulatory-mapping.ts
+
+model AISystem {
+  id                  String    @id @default(cuid())
+  userId              String
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessmentId        String?
+  assessment          Assessment? @relation(fields: [assessmentId], references: [id], onDelete: SetNull)
+
+  name                String
+  description         String    @db.Text
+  purpose             String    @db.Text
+  deployerRole        String // provider | deployer | importer | distributor
+  sector              String
+  populationsAffected String?   @db.Text
+
+  riskTier            String? // prohibited | high | limited | minimal
+  riskRationale       String?   @db.Text
+  classifiedAt        DateTime?
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  evidence            Evidence[]
+  fria                FRIA?
+  technicalFile       TechnicalFile?
+  monitoring          MonitoringPlan?
+  obligationGaps      ObligationGap[]
+
+  @@index([userId])
+  @@index([assessmentId])
+}
+
+model Evidence {
+  id               String   @id @default(cuid())
+  systemId         String
+  system           AISystem @relation(fields: [systemId], references: [id], onDelete: Cascade)
+
+  filename         String
+  mimeType         String
+  storageKey       String
+  sizeBytes        Int
+  sha256           String
+
+  artifactType     String? // contract | policy | model_card | dpia | etc.
+  classifiedAt     DateTime?
+
+  extractedText    String?  @db.Text
+  extractionStatus String   @default("pending") // pending | processing | extracted | failed
+  extractionError  String?
+
+  createdAt        DateTime @default(now())
+
+  clauses          EvidenceClause[]
+
+  @@index([systemId])
+  @@index([artifactType])
+}
+
+model EvidenceClause {
+  id           String   @id @default(cuid())
+  evidenceId   String
+  evidence     Evidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+
+  clauseType   String
+  textExcerpt  String   @db.Text
+  pageNumber   Int?
+  confidence   Float
+
+  aiActArticles String[]
+  pillarIds     String[]
+  frameworks    String[]
+
+  createdAt    DateTime @default(now())
+
+  @@index([evidenceId])
+}
+
+model FRIA {
+  id               String   @id @default(cuid())
+  systemId         String   @unique
+  system           AISystem @relation(fields: [systemId], references: [id], onDelete: Cascade)
+
+  status           String   @default("draft") // draft | review | finalized
+  affectedGroups   Json
+  rightsAtRisk     Json
+  mitigations      Json
+  residualRisk     String?  @db.Text
+  oversightDesign  String?  @db.Text
+
+  generatedPdfKey  String?
+  finalizedAt      DateTime?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model TechnicalFile {
+  id                   String   @id @default(cuid())
+  systemId             String   @unique
+  system               AISystem @relation(fields: [systemId], references: [id], onDelete: Cascade)
+
+  systemDescription    Json?
+  designSpecs          Json?
+  dataGovernance       Json?
+  monitoringPlan       Json?
+  riskManagement       Json?
+  performanceMetrics   Json?
+  instructionsForUse   Json?
+  euDeclaration        Json?
+
+  status               String   @default("draft")
+  generatedPdfKey      String?
+  generatedJsonKey     String?
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model MonitoringPlan {
+  id                  String    @id @default(cuid())
+  systemId            String    @unique
+  system              AISystem  @relation(fields: [systemId], references: [id], onDelete: Cascade)
+
+  conformityRoute     String // internal_control | notified_body
+  nextAttestationAt   DateTime?
+  triggers            Json
+  incidents           Json
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model ObligationGap {
+  id                       String   @id @default(cuid())
+  systemId                 String
+  system                   AISystem @relation(fields: [systemId], references: [id], onDelete: Cascade)
+
+  obligationCode           String
+  obligationLabel          String
+  severity                 String // critical | major | minor
+  recommendedArtifactType  String
+  draftDocumentText        String?  @db.Text
+  ownerRoleHint            String?
+  status                   String   @default("open") // open | in_progress | closed | wont_do
+
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  @@index([systemId])
+}
+
+/// Compliance LLM observability — no PII or document content.
+model ComplianceLog {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  operation    String?
+  model        String
+  durationMs   Int
+  inputTokens  Int?
+  outputTokens Int?
+  success      Boolean
+  errorClass   String?
+
+  @@index([createdAt])
+  @@index([operation])
 }

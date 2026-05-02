@@ -57,6 +57,10 @@ export async function register() {
         ON CONFLICT ("key") DO NOTHING
       `);
       console.log("[instrumentation] Runtime schema migrations applied.");
+
+      const { applyComplianceRuntimeMigrations } = await import("@/lib/compliance/apply-runtime-schema");
+      await applyComplianceRuntimeMigrations(db);
+      console.log("[instrumentation] Compliance runtime migrations applied.");
     } catch (err) {
       console.error("[instrumentation] Schema migration error:", err);
     }

@@ -42,6 +42,7 @@ interface StageInfo {
 interface PipelineRunInfo {
   id: string;
   status: PipelineStatusType;
+  isStale?: boolean;
   stages: StageInfo[];
   startedAt: string | null;
   completedAt: string | null;
@@ -738,11 +739,13 @@ export function PipelineStatus({ assessmentId, autoPoll = true, pollInterval = 3
 
   useEffect(() => {
     if (!autoPoll) return;
-    if (!pipelineRun || (pipelineRun.status !== 'running' && pipelineRun.status !== 'pending')) return;
+    if (!pipelineRun) return;
+    if (pipelineRun.isStale) return;
+    if (pipelineRun.status !== 'running' && pipelineRun.status !== 'pending') return;
 
     const interval = setInterval(fetchStatus, pollInterval);
     return () => clearInterval(interval);
-  }, [autoPoll, pipelineRun?.status, pollInterval, fetchStatus]);
+  }, [autoPoll, pipelineRun?.status, pipelineRun?.isStale, pollInterval, fetchStatus]);
 
   // Typewriter effect for total duration
   useEffect(() => {
@@ -860,7 +863,8 @@ export function PipelineStatus({ assessmentId, autoPoll = true, pollInterval = 3
   const stages = pipelineRun?.stages ?? [];
   const completedCount = stages.filter(s => s.status === 'completed').length;
   const totalActive = stages.filter(s => s.status !== 'skipped').length;
-  const isRunning = pipelineRun?.status === 'running' || pipelineRun?.status === 'pending';
+  const isStale = Boolean(pipelineRun?.isStale);
+  const isRunning = pipelineRun?.status === 'running' || (pipelineRun?.status === 'pending' && !isStale);
   const isFailed = pipelineRun?.status === 'failed';
   const isPartial = pipelineRun?.status === 'partial';
   const isComplete = pipelineRun?.status === 'completed';
@@ -1009,6 +1013,23 @@ export function PipelineStatus({ assessmentId, autoPoll = true, pollInterval = 3
 
                 {/* Premium Progress Bar */}
                 <PremiumProgressBar stages={stages} totalActive={totalActive} />
+
+                {/* Recovery path for stale pending/running runs */}
+                {isStale && (
+                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-xs text-amber-200">
+                        This pipeline run appears stuck in pending state. You can restart it safely.
+                      </p>
+                      <button
+                        onClick={handleTriggerPipeline}
+                        className="rounded-lg border border-amber-400/40 bg-amber-500/20 px-3 py-1.5 text-xs font-medium text-amber-100 hover:bg-amber-500/30"
+                      >
+                        Restart Pipeline
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Agent Detail Expansion */}
                 <AnimatePresence mode="wait">

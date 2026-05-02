@@ -14,6 +14,11 @@ const ALLOWED_KEYS = new Set([
   'rate_limiting',
   'audit_logging',
   'ip_whitelisting',
+  'custom_branding_enabled',
+  'custom_brand_name',
+  'custom_brand_logo_url',
+  'custom_brand_accent_color',
+  'enterprise_price_label',
 ]);
 
 const DEFAULTS: Record<string, unknown> = {
@@ -27,6 +32,11 @@ const DEFAULTS: Record<string, unknown> = {
   rate_limiting: true,
   audit_logging: true,
   ip_whitelisting: false,
+  custom_branding_enabled: false,
+  custom_brand_name: '',
+  custom_brand_logo_url: '',
+  custom_brand_accent_color: '#2563EB',
+  enterprise_price_label: 'Custom',
 };
 
 async function ensureTable() {

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { runPulse, savePulseRun } from "@/lib/pulse-engine";
+import { deriveStoredPulseOverallMetrics, runPulse, savePulseRun } from "@/lib/pulse-engine";
 import { checkRateLimitFromRequest } from "@/lib/rate-limit";
 
 // GET /api/pulse?month=2026-04 — Returns user's pulse history
@@ -26,14 +26,29 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
-    // Parse JSON fields for response
-    const parsed = pulseRuns.map(run => ({
-      ...run,
-      pillarScores: JSON.parse(run.pillarScores),
-      scoreChanges: JSON.parse(run.scoreChanges),
-      topRisks: JSON.parse(run.topRisks),
-      topQuickWins: JSON.parse(run.topQuickWins),
-    }));
+    // Parse JSON fields for response and hydrate metrics not stored on PulseRun rows
+    const parsed = pulseRuns.map((run) => {
+      const pillarScores = JSON.parse(run.pillarScores) as Parameters<
+        typeof deriveStoredPulseOverallMetrics
+      >[0]["pillarScores"];
+      const scoreChanges = JSON.parse(run.scoreChanges) as Parameters<
+        typeof deriveStoredPulseOverallMetrics
+      >[0]["scoreChanges"];
+      const { previousOverallScore, overallDelta } = deriveStoredPulseOverallMetrics({
+        overallScore: run.overallScore,
+        pillarScores,
+        scoreChanges,
+      });
+      return {
+        ...run,
+        pillarScores,
+        scoreChanges,
+        topRisks: JSON.parse(run.topRisks),
+        topQuickWins: JSON.parse(run.topQuickWins),
+        previousOverallScore,
+        overallDelta,
+      };
+    });
 
     return NextResponse.json(parsed);
   } catch (error) {

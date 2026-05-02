@@ -9,6 +9,7 @@ export function NavigationLoader() {
   const searchParams = useSearchParams()
   const [visible, setVisible] = useState(false)
   const isFirstRender = useRef(true)
+  const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -18,8 +19,9 @@ export function NavigationLoader() {
       return
     }
 
-    // Show loader immediately on route change
-    setVisible(true)
+    // Show loader on next tick to avoid synchronous state updates in effect
+    if (showTimer.current) clearTimeout(showTimer.current)
+    showTimer.current = setTimeout(() => setVisible(true), 0)
 
     // Auto-hide after a max of 1.2s in case the page loads fast or the
     // route change resolves instantly
@@ -27,6 +29,7 @@ export function NavigationLoader() {
     timer.current = setTimeout(() => setVisible(false), 1200)
 
     return () => {
+      if (showTimer.current) clearTimeout(showTimer.current)
       if (timer.current) clearTimeout(timer.current)
     }
   }, [pathname, searchParams])
