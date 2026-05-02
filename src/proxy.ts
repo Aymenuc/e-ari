@@ -13,12 +13,6 @@ const PROTECTED_ROUTES = [
   "/integrations",
 ];
 
-// Routes accessible without auth but with enhanced context when authenticated
-const PUBLIC_ENHANCED_ROUTES = [
-  "/discovery",
-  "/literacy",
-];
-
 // Routes that redirect to portal if already authenticated
 const AUTH_ROUTES = [
   "/auth/login",

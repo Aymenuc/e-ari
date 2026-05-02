@@ -124,7 +124,7 @@ export default function EvidenceVaultPage() {
               Evidence vault
             </CardTitle>
             <CardDescription className="font-sans">
-              PDF, Word, plain text, or images up to 20 MB. Files are stored privately (Vercel Blob). SHA-256 recorded for custody.
+              PDF, DOCX, or plain text (.txt / .md) up to your storage limit. Files are stored privately (Vercel Blob). SHA-256 recorded for custody.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -133,7 +133,7 @@ export default function EvidenceVaultPage() {
                 type="file"
                 className="hidden"
                 multiple
-                accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
+                accept=".pdf,.docx,.txt,.md"
                 disabled={uploading}
                 onChange={(e) => onFiles(e.target.files)}
               />

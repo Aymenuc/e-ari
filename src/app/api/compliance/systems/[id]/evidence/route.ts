@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { sha256Hex, uploadEvidenceBlob } from "@/lib/compliance/evidence-vault";
 import { findComplianceSystem } from "@/lib/compliance/access";
 import { checkRateLimit, getRateLimitHeaders, resolveIdentifier } from "@/lib/rate-limit";
+import { EVIDENCE_UPLOAD_TYPE_HINT, isEvidenceUploadAllowed } from "@/lib/compliance/evidence-upload-policy";
 
 /** GET /api/compliance/systems/[id]/evidence */
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
@@ -72,11 +73,13 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
       if (lower.endsWith(".pdf")) mimeType = "application/pdf";
       else if (lower.endsWith(".docx")) {
         mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-      } else if (lower.endsWith(".doc")) mimeType = "application/msword";
-      else if (lower.endsWith(".txt")) mimeType = "text/plain";
-      else if (lower.endsWith(".png")) mimeType = "image/png";
-      else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) mimeType = "image/jpeg";
+      } else if (lower.endsWith(".txt")) mimeType = "text/plain";
+      else if (lower.endsWith(".md")) mimeType = "text/markdown";
       else mimeType = "application/octet-stream";
+    }
+
+    if (!isEvidenceUploadAllowed(mimeType, file.name)) {
+      return NextResponse.json({ error: EVIDENCE_UPLOAD_TYPE_HINT }, { status: 400 });
     }
 
     let storageKey: string;

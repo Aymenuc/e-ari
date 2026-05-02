@@ -4,6 +4,22 @@ export async function extractTextFromUpload(buffer: Buffer, mimeType: string, fi
   const mt = mimeType.toLowerCase();
   const fn = filename.toLowerCase();
 
+  if (
+    mt.includes("wordprocessingml") ||
+    mt.includes("application/vnd.openxmlformats-officedocument.wordprocessingml.document") ||
+    fn.endsWith(".docx")
+  ) {
+    try {
+      const mammoth = await import("mammoth");
+      const { value } = await mammoth.extractRawText({ buffer });
+      const text = (value || "").trim();
+      return truncate(text);
+    } catch (e) {
+      console.error("[extract-text] mammoth docx failed:", e);
+      return null;
+    }
+  }
+
   if (mt.includes("pdf") || fn.endsWith(".pdf")) {
     try {
       const pdfParse = (await import("pdf-parse")).default;
