@@ -19,7 +19,6 @@ import {
   Plus,
   ArrowLeft,
   Info,
-  Sparkles,
   AlertTriangle,
   CheckCircle2,
   XCircle,
@@ -51,6 +50,7 @@ import {
   ShieldCheck,
   Minus,
   Scale,
+  Sparkles,
 } from 'lucide-react'
 import {
   RadarChart,
@@ -221,25 +221,18 @@ function ScoreRing({ score, maturityColor, pillarScores }: { score: number; matu
       <motion.div
         className="absolute inset-0 rounded-full"
         style={{
-          background: `radial-gradient(circle, ${maturityColor}15 0%, transparent 70%)`,
+          background: `radial-gradient(circle, ${maturityColor}12 0%, transparent 72%)`,
         }}
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1.3, opacity: 1 }}
-        transition={{ duration: 1.2, ease: 'easeOut' }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
       />
       <svg width="220" height="220" viewBox="0 0 220 220" aria-label={`Overall readiness score: ${Math.round(score)}%`}>
         <defs>
           <linearGradient id="scoreRingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor={maturityColor} />
-            <stop offset="100%" stopColor="#06b6d4" />
+            <stop offset="100%" stopColor={maturityColor} stopOpacity={0.82} />
           </linearGradient>
-          <filter id="scoreGlowFilter">
-            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
         </defs>
         {/* Background track */}
         <circle cx="110" cy="110" r="90" fill="none" stroke="rgba(48,57,74,0.3)" strokeWidth="10" />
@@ -267,7 +260,6 @@ function ScoreRing({ score, maturityColor, pillarScores }: { score: number; matu
           animate={{ strokeDashoffset: offset }}
           transition={{ duration: 2, ease: 'easeOut', delay: 0.3 }}
           transform="rotate(-90 110 110)"
-          filter="url(#scoreGlowFilter)"
         />
         {/* Score number */}
         <motion.text
@@ -276,7 +268,7 @@ function ScoreRing({ score, maturityColor, pillarScores }: { score: number; matu
           textAnchor="middle"
           fill="#e6edf3"
           fontSize="48"
-          fontWeight="800"
+          fontWeight="700"
           fontFamily="var(--font-plus-jakarta)"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -347,9 +339,7 @@ function LockedSectionCard({
   return (
     <FadeUp>
       <div className="relative rounded-xl overflow-hidden hover-lift">
-        {/* Animated gradient border */}
-        <div className="absolute inset-0 rounded-xl shimmer-border" />
-        <Card className="relative bg-navy-800 border-0 rounded-xl">
+        <Card className="relative bg-navy-800 border border-eari-blue/20 rounded-xl shadow-sm shadow-black/20">
           {/* Blurred preview behind the lock */}
           {previewContent && (
             <div className="absolute inset-0 blurred-preview overflow-hidden rounded-xl p-6">
@@ -375,11 +365,7 @@ function LockedSectionCard({
               </div>
               <Button
                 onClick={onUpgrade}
-                className={`font-heading font-semibold h-11 px-6 bg-gradient-to-r from-eari-blue to-eari-blue-dark hover:from-eari-blue-dark hover:to-eari-blue text-white shadow-lg shadow-eari-blue/20 shimmer-button`}
-                style={{
-                  backgroundSize: '200% auto',
-                  backgroundImage: 'linear-gradient(90deg, #2563eb, #06b6d4, #2563eb)',
-                }}
+                className="font-heading font-semibold h-11 px-6 bg-eari-blue hover:bg-eari-blue-dark text-white shadow-md shadow-eari-blue/15"
               >
                 <ArrowUpRight className="mr-2 h-4 w-4" />
                 Upgrade to {config.label}
@@ -1109,7 +1095,7 @@ export default function ResultsPage() {
                       <ScoreRing score={scoring.overallScore} maturityColor={scoring.maturityColor} pillarScores={scoring.pillarScores} />
 
                       <div className="text-center md:text-left flex-1">
-                        <h1 className="font-heading text-4xl sm:text-5xl font-extrabold gradient-text-blue tracking-tight">
+                        <h1 className="font-heading text-4xl sm:text-5xl font-semibold tracking-tight text-slate-100">
                           Assessment Results
                         </h1>
                         <p className="mt-2 text-muted-foreground font-sans">
@@ -1142,7 +1128,7 @@ export default function ResultsPage() {
                           <Button
                             onClick={handleRerun}
                             disabled={rerunning}
-                            className="bg-gradient-to-r from-eari-blue to-cyan-600 hover:from-eari-blue-dark hover:to-cyan-700 text-white font-heading font-semibold h-10 px-5 text-sm shadow-lg shadow-eari-blue/20"
+                            className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-10 px-5 text-sm shadow-md shadow-eari-blue/15"
                             title="Pre-filled with your previous answers for quick updating"
                           >
                             {rerunning ? (
@@ -1547,7 +1533,7 @@ export default function ResultsPage() {
           {!isPro && (
             <FadeUp delay={0.1}>
               <div className="relative rounded-xl overflow-hidden hover-lift">
-                <div className="absolute inset-0 rounded-xl p-[1px] bg-gradient-to-r from-eari-blue/30 via-amber-500/30 to-emerald-500/30" />
+                <div className="absolute inset-0 rounded-xl p-[1px] bg-eari-blue/25" />
                 <Card className="relative bg-navy-800 border-0 rounded-xl">
                   <CardContent className="p-4 sm:p-5">
                     <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -1563,7 +1549,7 @@ export default function ResultsPage() {
                         </p>
                       </div>
                       <Link href="/checkout?plan=professional">
-                        <Button className="bg-gradient-to-r from-eari-blue to-eari-blue-dark hover:from-eari-blue-dark hover:to-eari-blue text-white font-heading font-semibold h-10 px-5 text-sm shadow-lg shadow-eari-blue/20 flex-shrink-0">
+                        <Button className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-10 px-5 text-sm shadow-md shadow-eari-blue/15 flex-shrink-0">
                           <ArrowUpRight className="mr-1.5 h-3.5 w-3.5" />
                           Upgrade to Pro
                         </Button>
@@ -1592,7 +1578,7 @@ export default function ResultsPage() {
                     <div className="text-center sm:text-left flex-1">
                       <div className="flex items-center gap-2 justify-center sm:justify-start">
                         <h2 className="font-heading text-2xl font-bold text-foreground tracking-tight">
-                          Maturity Classification: <span className="gradient-text-gold">{scoring.maturityLabel}</span>
+                          Maturity Classification: <span className="font-semibold text-[#d4b878]">{scoring.maturityLabel}</span>
                         </h2>
                         <Badge variant="outline" className="font-mono text-[10px] border-border text-muted-foreground">
                           {scoring.maturityBand === 'laggard' && '0-25'}
@@ -2123,8 +2109,7 @@ export default function ResultsPage() {
                       <Activity className="h-5 w-5 text-eari-blue-light" />
                       {/* Pulse dot */}
                       <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-eari-blue-light opacity-75" />
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-eari-blue-light" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-eari-blue-light ring-2 ring-eari-blue/30" />
                       </span>
                     </div>
                     <div className="flex-1">
@@ -2142,7 +2127,7 @@ export default function ResultsPage() {
                       </CardDescription>
                     </div>
                     <Link href="/pulse">
-                      <Button className="bg-gradient-to-r from-eari-blue to-eari-blue-dark hover:from-eari-blue-dark hover:to-eari-blue text-white font-heading font-semibold h-9 px-4 text-sm shadow-lg shadow-eari-blue/20">
+                      <Button className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-9 px-4 text-sm shadow-md shadow-eari-blue/15">
                         <Activity className="mr-1.5 h-3.5 w-3.5" />
                         Open AI Pulse
                         <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
@@ -2503,7 +2488,7 @@ export default function ResultsPage() {
                         : 'border-border text-muted-foreground'
                     }`}
                   >
-                    <Sparkles className="h-3 w-3 mr-1" />
+                    <Brain className="h-3 w-3 mr-1" aria-hidden />
                     {insights.isAIGenerated ? 'AI-Assisted Narrative' : 'Calculated from Responses'}
                   </Badge>
                 )}
@@ -2745,7 +2730,7 @@ export default function ResultsPage() {
                           size="sm"
                           className="border-eari-blue/30 text-eari-blue-light hover:bg-eari-blue/10 font-heading text-xs mt-2"
                         >
-                          <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                          <RefreshCw className="mr-1.5 h-3.5 w-3.5" aria-hidden />
                           Retry Loading Insights
                         </Button>
                       </div>
@@ -2766,7 +2751,7 @@ export default function ResultsPage() {
                     <Card className="bg-navy-800 border-eari-blue/15 ring-1 ring-eari-blue/5 hover-lift">
                       <CardContent className="p-6">
                         <div className="flex items-center gap-2 mb-4">
-                          <Sparkles className="h-4 w-4 text-eari-blue-light" />
+                          <Brain className="h-4 w-4 text-eari-blue-light" aria-hidden />
                           <h3 className="font-heading font-semibold text-foreground tracking-tight">
                             AI Insight Summary
                           </h3>
@@ -3327,7 +3312,7 @@ export default function ResultsPage() {
                   {!benchmarkConsented && (
                     <div className="mb-6 rounded-xl overflow-hidden border border-eari-blue/20">
                       {/* Main consent content */}
-                      <div className="p-5 bg-gradient-to-r from-eari-blue/5 to-cyan-500/5">
+                      <div className="p-5 bg-eari-blue/[0.04] border border-white/[0.06] rounded-xl">
                         <div className="flex items-start gap-3 mb-4">
                           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-eari-blue/15 flex-shrink-0">
                             <Shield className="h-5 w-5 text-eari-blue-light" />
@@ -3378,7 +3363,7 @@ export default function ResultsPage() {
                         {/* Action buttons */}
                         <div className="flex flex-col sm:flex-row gap-2">
                           <Button
-                            className="bg-gradient-to-r from-eari-blue to-eari-blue-dark hover:from-eari-blue-dark hover:to-eari-blue text-white font-heading font-semibold h-9 px-5 text-sm shadow-lg shadow-eari-blue/20"
+                            className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-9 px-5 text-sm shadow-md shadow-eari-blue/15"
                             onClick={async () => {
                               try {
                                 const res = await fetch('/api/benchmark/consent', {
@@ -3455,7 +3440,7 @@ export default function ResultsPage() {
                         }
 
                         return (
-                          <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-amber-500/5 to-eari-blue/5 border border-amber-500/15">
+                          <div className="mb-6 p-4 rounded-xl bg-navy-800/60 border border-white/[0.08]">
                             <div className="flex items-center gap-3">
                               <Award className="h-6 w-6 text-amber-400 flex-shrink-0" />
                               <div>
@@ -3584,7 +3569,7 @@ export default function ResultsPage() {
                       </div>
                       {!benchmarkConsented && (
                         <Button
-                          className="bg-gradient-to-r from-eari-blue to-eari-blue-dark hover:from-eari-blue-dark hover:to-eari-blue text-white font-heading font-semibold h-9 px-5 text-sm shadow-lg shadow-eari-blue/20"
+                          className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-9 px-5 text-sm shadow-md shadow-eari-blue/15"
                           onClick={async () => {
                             try {
                               const res = await fetch('/api/benchmark/consent', {
@@ -3628,7 +3613,7 @@ export default function ResultsPage() {
                 <CardContent>
                   <div className="relative">
                     {/* Timeline line */}
-                    <div className="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-emerald-500/40 via-amber-500/40 to-eari-blue/40" />
+                    <div className="absolute left-6 top-0 bottom-0 w-px bg-eari-blue/25" />
 
                     <div className="space-y-6">
                       {roadmapPhases.map((phase, i) => (
@@ -3829,7 +3814,7 @@ export default function ResultsPage() {
                 <Button
                   onClick={handleExportPDF}
                   disabled={exporting}
-                  className="bg-gradient-to-r from-eari-blue to-eari-blue-dark hover:from-eari-blue-dark hover:to-eari-blue text-white font-heading font-semibold h-12 px-6 shadow-lg shadow-eari-blue/20"
+                  className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-12 px-6 shadow-md shadow-eari-blue/15"
                 >
                   {exporting ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
