@@ -179,4 +179,38 @@ export async function applyComplianceRuntimeMigrations(db: PrismaClient): Promis
       END $$
     `);
   }
+
+  await db.$executeRawUnsafe(`
+    ALTER TABLE "Evidence" ADD COLUMN IF NOT EXISTS "userId" TEXT
+  `);
+  await db.$executeRawUnsafe(`
+    ALTER TABLE "Evidence" ADD COLUMN IF NOT EXISTS "organizationLevel" BOOLEAN NOT NULL DEFAULT false
+  `);
+  await db.$executeRawUnsafe(`
+    UPDATE "Evidence" e SET "userId" = s."userId" FROM "AISystem" s
+    WHERE e."systemId" IS NOT NULL AND e."systemId" = s."id"
+      AND (e."userId" IS NULL OR e."userId" = '')
+  `);
+  await db.$executeRawUnsafe(`
+    DO $$ BEGIN
+      ALTER TABLE "Evidence" ALTER COLUMN "systemId" DROP NOT NULL;
+    EXCEPTION WHEN OTHERS THEN NULL;
+    END $$
+  `);
+  await db.$executeRawUnsafe(`
+    DO $$ BEGIN
+      ALTER TABLE "Evidence" ALTER COLUMN "userId" SET NOT NULL;
+    EXCEPTION WHEN OTHERS THEN NULL;
+    END $$
+  `);
+  await db.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS "Evidence_userId_idx" ON "Evidence"("userId")
+  `);
+  await db.$executeRawUnsafe(`
+    DO $$ BEGIN
+      ALTER TABLE "Evidence" ADD CONSTRAINT "Evidence_userId_fkey"
+        FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END $$
+  `);
 }

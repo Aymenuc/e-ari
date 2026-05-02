@@ -9,8 +9,25 @@ Include an obligation as a gap ONLY if evidence does not materially cover it. If
 draftDocumentText: optional 2–4 sentence starter memo if gap exists.`;
 
 export async function regenerateObligationGaps(systemId: string): Promise<number> {
+  const sys = await db.aISystem.findUnique({
+    where: { id: systemId },
+    select: { userId: true },
+  });
+  if (!sys) return 0;
+
   const clauses = await db.evidenceClause.findMany({
-    where: { evidence: { systemId } },
+    where: {
+      OR: [
+        { evidence: { systemId } },
+        {
+          evidence: {
+            userId: sys.userId,
+            organizationLevel: true,
+            systemId: null,
+          },
+        },
+      ],
+    },
     select: {
       clauseType: true,
       textExcerpt: true,

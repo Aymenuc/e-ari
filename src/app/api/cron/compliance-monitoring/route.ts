@@ -20,7 +20,7 @@ async function handleCron(req: NextRequest) {
     const due = plan.nextAttestationAt;
     if (!user?.email || !due) continue;
 
-    const actionUrl = `/compliance/systems/${sys.id}`;
+    const actionUrl = `/portal/use-cases/systems/${sys.id}`;
     const recent = await db.notification.findFirst({
       where: {
         userId: user.id,

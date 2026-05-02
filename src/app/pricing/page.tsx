@@ -312,7 +312,7 @@ export default function PricingPage() {
       if (tierId === 'professional') {
         return (
           <Link href="/auth/register" className="w-full">
-            <Button className="w-full bg-gradient-to-r from-eari-blue to-cyan-600 hover:from-eari-blue-dark hover:to-cyan-700 text-white font-heading font-semibold shadow-lg shadow-eari-blue/20 min-h-[44px]">
+            <Button className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold shadow-md shadow-eari-blue/15 min-h-[44px]">
               {ctaText} <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
@@ -321,7 +321,7 @@ export default function PricingPage() {
       if (tierId === 'growth') {
         return (
           <Link href="/auth/register" className="w-full">
-            <Button className="w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-heading font-semibold shadow-lg shadow-violet-500/20 min-h-[44px]">
+            <Button className="w-full bg-violet-600 hover:bg-violet-700 text-white font-heading font-semibold shadow-md shadow-violet-900/20 min-h-[44px]">
               {ctaText} <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
@@ -330,7 +330,7 @@ export default function PricingPage() {
       if (tierId === 'enterprise') {
         return (
           <Link href="/contact" className="w-full">
-            <Button className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-navy-900 font-heading font-semibold shadow-lg shadow-amber-500/20 min-h-[44px]">
+            <Button className="w-full bg-[#c9a227] hover:bg-[#b89220] text-navy-950 font-heading font-semibold shadow-md shadow-black/15 min-h-[44px]">
               {ctaText} <ArrowUpRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
@@ -351,7 +351,7 @@ export default function PricingPage() {
       if (isGrowth || isEnterprise) return <Button disabled className="w-full bg-navy-700 text-muted-foreground font-heading min-h-[44px]">Included in your plan</Button>
       return (
         <Link href="/checkout?plan=professional" className="w-full">
-          <Button className="w-full bg-gradient-to-r from-eari-blue to-cyan-600 hover:from-eari-blue-dark hover:to-cyan-700 text-white font-heading font-semibold shadow-lg shadow-eari-blue/20 min-h-[44px]">
+          <Button className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold shadow-md shadow-eari-blue/15 min-h-[44px]">
             {ctaText} <ArrowUpRight className="ml-2 h-4 w-4" />
           </Button>
         </Link>
@@ -362,7 +362,7 @@ export default function PricingPage() {
       if (isEnterprise) return <Button disabled className="w-full bg-navy-700 text-muted-foreground font-heading min-h-[44px]">Included in Enterprise</Button>
       return (
         <Link href="/checkout?plan=growth" className="w-full">
-          <Button className="w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-heading font-semibold shadow-lg shadow-violet-500/20 min-h-[44px]">
+          <Button className="w-full bg-violet-600 hover:bg-violet-700 text-white font-heading font-semibold shadow-md shadow-violet-900/20 min-h-[44px]">
             {ctaText} <ArrowUpRight className="ml-2 h-4 w-4" />
           </Button>
         </Link>
@@ -372,7 +372,7 @@ export default function PricingPage() {
       if (isEnterprise) return <Button disabled className="w-full bg-amber-500/20 text-amber-400 border border-amber-500/30 font-heading min-h-[44px]">Current Plan</Button>
       return (
         <Link href="/contact" className="w-full">
-          <Button className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-navy-900 font-heading font-semibold shadow-lg shadow-amber-500/20 min-h-[44px]">
+          <Button className="w-full bg-[#c9a227] hover:bg-[#b89220] text-navy-950 font-heading font-semibold shadow-md shadow-black/15 min-h-[44px]">
             {ctaText} <ArrowUpRight className="ml-2 h-4 w-4" />
           </Button>
         </Link>
@@ -416,7 +416,7 @@ export default function PricingPage() {
             <FadeUp delay={0.05}>
               <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight">
                 AI Readiness,{' '}
-                <span className="gradient-text-blue">Unlocked Your Way</span>
+                <span className="text-eari-blue-light font-semibold">Unlocked Your Way</span>
               </h1>
             </FadeUp>
             <FadeUp delay={0.1}>
@@ -497,7 +497,7 @@ export default function PricingPage() {
                       {/* Recommended badge */}
                       {tier.highlighted && (
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-                          <Badge className="bg-gradient-to-r from-eari-blue to-cyan-600 text-white border-0 font-heading text-xs px-3 py-1 shadow-lg shadow-eari-blue/20">
+                          <Badge className="bg-eari-blue text-white border-0 font-heading text-xs px-3 py-1 shadow-md shadow-eari-blue/15">
                             Most Popular
                           </Badge>
                         </div>
@@ -709,7 +709,7 @@ export default function PricingPage() {
                     {!isLoggedIn ? (
                       <>
                         <Link href="/auth/register">
-                          <Button size="lg" className="bg-gradient-to-r from-eari-blue to-cyan-600 hover:from-eari-blue-dark hover:to-cyan-700 text-white font-heading font-semibold shadow-lg shadow-eari-blue/20 min-h-[44px]">
+                          <Button size="lg" className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold shadow-md shadow-eari-blue/15 min-h-[44px]">
                             Start Free
                             <ArrowRight className="ml-2 h-5 w-5" />
                           </Button>
@@ -722,14 +722,14 @@ export default function PricingPage() {
                       </>
                     ) : isFree ? (
                       <Link href="/checkout?plan=professional">
-                        <Button size="lg" className="bg-gradient-to-r from-eari-blue to-cyan-600 hover:from-eari-blue-dark hover:to-cyan-700 text-white font-heading font-semibold shadow-lg shadow-eari-blue/20 min-h-[44px]">
+                        <Button size="lg" className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold shadow-md shadow-eari-blue/15 min-h-[44px]">
                           Upgrade to Pro
                           <ArrowUpRight className="ml-2 h-5 w-5" />
                         </Button>
                       </Link>
                     ) : isPro ? (
                       <Link href="/checkout?plan=enterprise">
-                        <Button size="lg" className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-navy-900 font-heading font-semibold shadow-lg shadow-amber-500/20 min-h-[44px]">
+                        <Button size="lg" className="bg-[#c9a227] hover:bg-[#b89220] text-navy-950 font-heading font-semibold shadow-md shadow-black/15 min-h-[44px]">
                           Contact Sales for Enterprise
                           <ArrowUpRight className="ml-2 h-5 w-5" />
                         </Button>

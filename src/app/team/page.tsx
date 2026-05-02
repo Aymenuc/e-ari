@@ -180,8 +180,8 @@ export default function TeamPage() {
               <FadeUp className="lg:col-span-2">
                 <Card className="bg-navy-800 border-border/50 overflow-hidden">
                   {/* Avatar placeholder with gradient */}
-                  <div className="relative h-64 bg-gradient-to-br from-eari-blue/30 via-navy-700 to-navy-800 flex items-center justify-center">
-                    <div className="w-28 h-28 rounded-full bg-gradient-to-br from-eari-blue to-eari-blue-dark flex items-center justify-center shadow-xl shadow-eari-blue/20">
+                  <div className="relative h-64 bg-navy-800/90 border-b border-white/[0.06] flex items-center justify-center">
+                    <div className="w-28 h-28 rounded-full bg-eari-blue flex items-center justify-center shadow-lg shadow-eari-blue/25">
                       <span className="font-heading text-4xl font-bold text-white">AB</span>
                     </div>
                     {/* Decorative elements */}
@@ -269,7 +269,7 @@ export default function TeamPage() {
                     <Card className="bg-navy-800 border-border/50 hover:border-eari-blue/30 transition-colors duration-300 h-full">
                       <CardContent className="p-6">
                         <div className="flex items-start gap-4">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-eari-blue/20 to-eari-blue/5 flex-shrink-0">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-eari-blue/12 border border-eari-blue/20 flex-shrink-0">
                             <Icon className="h-6 w-6 text-eari-blue-light" />
                           </div>
                           <div className="flex-1 min-w-0">

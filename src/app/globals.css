@@ -277,16 +277,10 @@
 }
 
 .shimmer-border {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(37, 99, 235, 0.4) 25%,
-    rgba(59, 130, 246, 0.6) 50%,
-    rgba(37, 99, 235, 0.4) 75%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 3s ease-in-out infinite;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(255, 255, 255, 0.04));
+  background-size: 100% 100%;
+  animation: none;
+  opacity: 0.9;
 }
 
 /* Gold shimmer for recommended card accent */
@@ -704,49 +698,31 @@
   animation: connectorGlowOpacity 3s ease-in-out infinite;
 }
 
-/* ─── Aurora / Holographic Card Effects ──────────────────────────────────── */
-
-@keyframes auroraShift {
-  0% { background-position: 0% 50%; }
-  25% { background-position: 100% 50%; }
-  50% { background-position: 100% 0%; }
-  75% { background-position: 0% 100%; }
-  100% { background-position: 0% 50%; }
-}
+/* ─── Card chrome (enterprise — static border, no rainbow animation) ───── */
 
 .aurora-card {
   position: relative;
-  background: rgba(13, 17, 23, 0.65);
-  backdrop-filter: blur(16px) saturate(1.4);
-  border: 1px solid transparent;
-  border-image: linear-gradient(
-    135deg,
-    rgba(37, 99, 235, 0.4),
-    rgba(6, 182, 212, 0.3),
-    rgba(139, 92, 246, 0.3),
-    rgba(37, 99, 235, 0.4)
-  ) 1;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(12px);
+  border: none;
   box-shadow:
-    0 0 30px rgba(37, 99, 235, 0.08),
-    0 0 60px rgba(6, 182, 212, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 40px -18px rgba(0, 0, 0, 0.45);
 }
 
 .aurora-card::before {
   content: '';
   position: absolute;
-  inset: -1px;
+  inset: 0;
   border-radius: inherit;
   padding: 1px;
   background: linear-gradient(
-    var(--aurora-angle, 135deg),
-    rgba(37, 99, 235, 0.5),
-    rgba(6, 182, 212, 0.4),
-    rgba(139, 92, 246, 0.35),
-    rgba(37, 99, 235, 0.5)
+    145deg,
+    rgba(255, 255, 255, 0.09),
+    rgba(37, 99, 235, 0.14) 45%,
+    rgba(255, 255, 255, 0.05)
   );
-  background-size: 300% 300%;
-  animation: auroraShift 8s ease-in-out infinite;
+  background-size: 100% 100%;
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -915,8 +891,8 @@
   position: absolute;
   inset: -8px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.4), transparent 60%);
-  animation: scoreGlowOpacity 3s ease-in-out infinite;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.12), transparent 62%);
+  animation: none;
   pointer-events: none;
 }
 
@@ -1020,10 +996,8 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse at 20% 50%, rgba(37, 99, 235, 0.12) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 60% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 90% 60%, rgba(212, 168, 83, 0.04) 0%, transparent 40%);
+    radial-gradient(ellipse at 25% 40%, rgba(37, 99, 235, 0.07) 0%, transparent 52%),
+    radial-gradient(ellipse at 85% 65%, rgba(30, 58, 138, 0.06) 0%, transparent 48%);
   pointer-events: none;
   z-index: 0;
 }
@@ -1053,8 +1027,8 @@
 }
 
 .shimmer-button {
-  background-size: 200% auto;
-  animation: shimmerButton 3s ease-in-out infinite;
+  background-size: auto;
+  animation: none;
 }
 
 /* Lock icon pulse */
@@ -1064,7 +1038,7 @@
 }
 
 .lock-pulse {
-  animation: lockPulse 2.5s ease-in-out infinite;
+  animation: none;
 }
 
 /* Blurred preview overlay for locked sections */
@@ -1077,23 +1051,13 @@
 
 /* Gradient progress bar fill */
 .gradient-progress-fill {
-  background: linear-gradient(90deg, var(--pillar-color, #3b82f6), var(--pillar-color-light, #06b6d4));
+  background: var(--pillar-color, #3b82f6);
   position: relative;
   overflow: hidden;
 }
 
 .gradient-progress-fill::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.2) 50%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 2s ease-in-out infinite;
+  display: none;
 }
 
 /* Maturity band progress bar */
@@ -1105,12 +1069,11 @@
 
 /* Section gradient separator */
 .section-gradient-separator {
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #2563eb, #06b6d4, #d4a853, transparent);
-  background-size: 300% 100%;
-  animation: corporateShimmer 6s linear infinite;
-  opacity: 0.4;
-  border-radius: 1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.22), transparent);
+  animation: none;
+  opacity: 1;
+  border-radius: 0;
 }
 
 /* Floating metric badge */
@@ -1120,19 +1083,19 @@
 }
 
 .metric-badge-float {
-  animation: metricFloat 4s ease-in-out infinite;
+  animation: none;
 }
 
 .metric-badge-float-delay-1 {
-  animation-delay: -1.3s;
+  animation-delay: 0s;
 }
 
 .metric-badge-float-delay-2 {
-  animation-delay: -2.6s;
+  animation-delay: 0s;
 }
 
 .metric-badge-float-delay-3 {
-  animation-delay: -3.9s;
+  animation-delay: 0s;
 }
 
 /* Radar — subtle glow class (no aggressive filter) */
@@ -1186,9 +1149,9 @@
   top: 0;
   bottom: 0;
   width: 3px;
-  background: linear-gradient(180deg, var(--pillar-color, #3b82f6), var(--pillar-color-light, #06b6d4));
+  background: var(--pillar-color, #3b82f6);
   border-radius: 3px 0 0 3px;
-  opacity: 0.8;
+  opacity: 0.85;
   transition: opacity 0.2s ease;
 }
 

@@ -987,7 +987,7 @@ function LiteracyPageContent() {
                 E-ARI Literacy
               </Badge>
               <h1 className="font-heading text-4xl sm:text-5xl font-bold text-foreground tracking-tight">
-                <span className="gradient-text-blue">AI Literacy Hub</span>
+                <span className="text-eari-blue-light font-semibold">AI Literacy Hub</span>
               </h1>
               <p className="mt-4 text-muted-foreground font-sans leading-relaxed text-lg">
                 Assess your AI knowledge, follow curated learning paths, and discover role-specific insights.
@@ -1007,7 +1007,7 @@ function LiteracyPageContent() {
                   </div>
                   <div className="w-48 h-1.5 rounded-full bg-navy-700/60 overflow-hidden">
                     <motion.div
-                      className="h-full rounded-full bg-gradient-to-r from-eari-blue to-eari-blue-light"
+                      className="h-full rounded-full bg-eari-blue"
                       initial={{ width: 0 }}
                       animate={{ width: `${(completedCount / QUIZ_CATEGORIES.length) * 100}%` }}
                       transition={{ duration: 1, ease: 'easeOut' }}
@@ -1101,7 +1101,7 @@ function LiteracyPageContent() {
                 {/* Targeted Training Banner */}
                 {fromResults && focusAreas.length > 0 && !dismissedBanner && !activeQuiz && (
                   <FadeUp>
-                    <div className="p-5 rounded-xl bg-gradient-to-r from-eari-blue/10 via-transparent to-amber-500/5">
+                    <div className="p-5 rounded-xl bg-eari-blue/[0.06] border border-white/[0.06]">
                       <div className="flex items-start gap-4">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-eari-blue/15 flex-shrink-0">
                           <Target className="h-5 w-5 text-eari-blue-light" />

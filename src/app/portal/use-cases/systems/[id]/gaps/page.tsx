@@ -3,8 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Navigation } from "@/components/shared/navigation";
-import { Footer } from "@/components/shared/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -65,12 +63,10 @@ export default function GapRadarPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900">
-      <Navigation />
-      <main className="flex-1 mx-auto max-w-4xl w-full px-4 py-10 space-y-6">
-        <Link href={`/compliance/systems/${id}`} className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground font-sans">
+    <div className="space-y-6">
+        <Link href={`/portal/use-cases/systems/${id}`} className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground font-sans">
           <ArrowLeft className="h-4 w-4 mr-1" />
-          System overview
+          Use case overview
         </Link>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -133,8 +129,6 @@ export default function GapRadarPage() {
             )}
           </CardContent>
         </Card>
-      </main>
-      <Footer />
     </div>
   );
 }

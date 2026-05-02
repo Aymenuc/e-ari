@@ -54,7 +54,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
           type: "system_classified",
           title: "AI system classified",
           message: `${system.name}: risk tier ${result.riskTier}.`,
-          actionUrl: `/compliance/systems/${id}`,
+          actionUrl: `/portal/use-cases/systems/${id}`,
         },
       });
     } catch {}

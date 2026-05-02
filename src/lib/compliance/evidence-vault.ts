@@ -33,7 +33,8 @@ export function assertEvidenceMime(mimeType: string): void {
 
 export async function uploadEvidenceBlob(params: {
   userId: string;
-  systemId: string;
+  /** Omit or null for organization-level vault uploads */
+  systemId?: string | null;
   filename: string;
   mimeType: string;
   buffer: Buffer;
@@ -49,7 +50,9 @@ export async function uploadEvidenceBlob(params: {
   }
 
   const safe = sanitizeFilename(params.filename);
-  const path = `compliance/${params.userId}/${params.systemId}/${randomUUID()}-${safe}`;
+  const scope =
+    params.systemId?.trim() ? params.systemId.trim() : `org`;
+  const path = `compliance/${params.userId}/${scope}/${randomUUID()}-${safe}`;
 
   const blob = await put(path, params.buffer, {
     access: "private",

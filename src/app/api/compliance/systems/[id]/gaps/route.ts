@@ -60,7 +60,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
             type: "gap_critical",
             title: "Critical compliance gaps detected",
             message: `${critical.length} critical gap(s) for ${sys.name}.`,
-            actionUrl: `/compliance/systems/${systemId}/gaps`,
+            actionUrl: `/portal/use-cases/systems/${systemId}/gaps`,
           },
         });
       } catch {}

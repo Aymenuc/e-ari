@@ -179,7 +179,7 @@ export function AIAssistant({ userTier = 'free' }: AIAssistantProps) {
                 </div>
                 <div className="w-full space-y-2">
                   <Link href="/checkout?plan=professional" className="w-full block">
-                    <Button className="w-full bg-gradient-to-r from-eari-blue to-cyan-600 hover:from-eari-blue-dark hover:to-cyan-700 text-white font-heading font-semibold h-11 shadow-lg shadow-eari-blue/20">
+                    <Button className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-11 shadow-md shadow-eari-blue/15">
                       <ArrowUpRight className="mr-2 h-4 w-4" />
                       Upgrade to Professional
                     </Button>

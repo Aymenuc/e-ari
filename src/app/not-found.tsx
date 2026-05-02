@@ -17,7 +17,7 @@ export default function NotFound() {
           <div className="rounded-xl border border-border/50 bg-navy-800 p-8 text-center shadow-lg">
             {/* 404 gradient text */}
             <h1
-              className="font-heading text-8xl font-extrabold mb-4 gradient-text-blue select-none"
+              className="font-heading text-8xl font-semibold mb-4 text-slate-100 tracking-tight select-none"
               style={{ animation: 'fadeInUp 0.5s ease-out 0.1s both' }}
             >
               404

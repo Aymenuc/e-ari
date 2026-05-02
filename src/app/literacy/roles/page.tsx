@@ -377,7 +377,7 @@ export default function RoleInsightsPage() {
               </Link>
               <h1 className="font-heading text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
                 Role-Specific{' '}
-                <span className="gradient-text-blue">Insights</span>
+                <span className="text-eari-blue-light font-semibold">Insights</span>
               </h1>
               <p className="mt-3 text-muted-foreground font-sans max-w-xl leading-relaxed">
                 Different stakeholders need different perspectives on AI readiness. Select a role to see tailored metrics and recommendations.

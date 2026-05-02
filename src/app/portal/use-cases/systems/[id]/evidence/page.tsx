@@ -3,8 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Navigation } from "@/components/shared/navigation";
-import { Footer } from "@/components/shared/footer";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, Upload, Trash2, Sparkles } from "lucide-react";
@@ -106,15 +104,13 @@ export default function EvidenceVaultPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900">
-      <Navigation />
-      <main className="flex-1 mx-auto max-w-4xl w-full px-4 sm:px-6 lg:px-8 py-10 space-y-6">
+    <div className="space-y-6">
         <Link
-          href={`/compliance/systems/${systemId}`}
+          href={`/portal/use-cases/systems/${systemId}`}
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground font-sans"
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
-          System overview
+          Use case overview
         </Link>
 
         <Card className="bg-navy-800/90 border-border/40 border-dashed border-2">
@@ -221,8 +217,6 @@ export default function EvidenceVaultPage() {
             )}
           </CardContent>
         </Card>
-      </main>
-      <Footer />
     </div>
   );
 }

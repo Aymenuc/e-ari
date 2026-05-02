@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRef, useEffect, useState, useCallback, useMemo } from 'react'
-import { motion, useInView, useTransform, useScroll, AnimatePresence } from 'framer-motion'
+import { motion, useInView, useTransform, useScroll, AnimatePresence, useReducedMotion } from 'framer-motion'
 import {
   Target,
   Database,
@@ -22,12 +22,7 @@ import {
   FileCheck,
   ArrowDownRight,
   Sparkles,
-  ClipboardList,
   Scale,
-  Weight,
-  SlidersHorizontal,
-  Calculator,
-  Tag,
   ArrowUp,
   Bot,
   Radar,
@@ -41,7 +36,6 @@ import {
   Landmark,
   BarChart3,
   TrendingUp,
-  TrendingDown,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
@@ -49,18 +43,24 @@ import { Badge } from '@/components/ui/badge'
 import { Navigation } from '@/components/shared/navigation'
 import { Footer } from '@/components/shared/footer'
 import { ProductSpotlightCarousel } from '@/components/marketing/product-spotlight-carousel'
+import { HowScoringWorks } from '@/components/marketing/how-scoring-works'
 import { AgentPanel } from '@/components/shared/agent-panel'
-import { PILLARS, MATURITY_BANDS } from '@/lib/pillars'
+import { PILLARS } from '@/lib/pillars'
 
 /* ─── Animation helpers ────────────────────────────────────────────────── */
 
 function FadeUp({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  const reduceMotion = useReducedMotion()
   return (
     <motion.div
-      initial={{ opacity: 0, y: 32 }}
+      initial={reduceMotion ? false : { opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-60px' }}
-      transition={{ duration: 0.6, ease: 'easeOut', delay }}
+      transition={{
+        duration: reduceMotion ? 0.01 : 0.45,
+        ease: 'easeOut',
+        delay: reduceMotion ? 0 : delay,
+      }}
       className={className}
     >
       {children}
@@ -72,11 +72,12 @@ function FadeUp({ children, className, delay = 0 }: { children: React.ReactNode;
 
 function ParallaxSection({ children, className, speed = 0.1, id }: { children: React.ReactNode; className?: string; speed?: number; id?: string }) {
   const ref = useRef(null)
+  const reduceMotion = useReducedMotion()
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start end', 'end start'],
   })
-  const y = useTransform(scrollYProgress, [0, 1], [0, speed * -100])
+  const y = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, speed * -100])
 
   return (
     <motion.section ref={ref} style={{ y }} className={className} id={id}>
@@ -90,11 +91,17 @@ function ParallaxSection({ children, className, speed = 0.1, id }: { children: R
 function TypewriterText({ text, delay = 0, className }: { text: string; delay?: number; className?: string }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true })
+  const reduceMotion = useReducedMotion()
   const [displayed, setDisplayed] = useState('')
   const [showCursor, setShowCursor] = useState(true)
 
   useEffect(() => {
     if (!inView) return
+    if (reduceMotion) {
+      setDisplayed(text)
+      setShowCursor(false)
+      return
+    }
     let i = 0
     let intervalId: ReturnType<typeof setInterval> | null = null
     let cursorTimeoutId: ReturnType<typeof setTimeout> | null = null
@@ -116,7 +123,7 @@ function TypewriterText({ text, delay = 0, className }: { text: string; delay?: 
       if (intervalId) clearInterval(intervalId)
       if (cursorTimeoutId) clearTimeout(cursorTimeoutId)
     }
-  }, [inView, text, delay])
+  }, [inView, text, delay, reduceMotion])
 
   return (
     <span ref={ref} className={className}>
@@ -137,6 +144,7 @@ function seededRandom(seed: number) {
 }
 
 function ParticleGrid() {
+  const reduceMotion = useReducedMotion()
   // Use deterministic seeded random values so SSR and client render match exactly
   const particles = useMemo(
     () => Array.from({ length: 18 }, (_, i) => ({
@@ -149,6 +157,8 @@ function ParticleGrid() {
     })),
     []
   )
+
+  if (reduceMotion) return null
 
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
@@ -174,6 +184,7 @@ function ParticleGrid() {
 
 function MouseSpotlight() {
   const ref = useRef<HTMLDivElement>(null)
+  const reduceMotion = useReducedMotion()
 
   const handleMove = useCallback((e: MouseEvent) => {
     if (!ref.current) return
@@ -191,6 +202,8 @@ function MouseSpotlight() {
     return () => el.removeEventListener('mousemove', handleMove)
   }, [handleMove])
 
+  if (reduceMotion) return null
+
   return (
     <div
       ref={ref}
@@ -207,7 +220,7 @@ function AnimatedCheck({ className, delay = 0 }: { className?: string; delay?: n
     <svg className={className} width="16" height="16" viewBox="0 0 16 16" fill="none">
       <motion.path
         d="M3 8L6.5 11.5L13 4.5"
-        stroke="#3b82f6"
+        stroke="#0369a1"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -225,11 +238,17 @@ function AnimatedCheck({ className, delay = 0 }: { className?: string; delay?: n
 function StreamingText({ text, delay = 0, speed = 18 }: { text: string; delay?: number; speed?: number }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true })
+  const reduceMotion = useReducedMotion()
   const [displayed, setDisplayed] = useState('')
   const [done, setDone] = useState(false)
 
   useEffect(() => {
     if (!inView) return
+    if (reduceMotion) {
+      setDisplayed(text)
+      setDone(true)
+      return
+    }
     let i = 0
     let intervalId: ReturnType<typeof setInterval> | null = null
 
@@ -249,16 +268,16 @@ function StreamingText({ text, delay = 0, speed = 18 }: { text: string; delay?: 
       clearTimeout(timeoutId)
       if (intervalId) clearInterval(intervalId)
     }
-  }, [inView, text, delay, speed])
+  }, [inView, text, delay, speed, reduceMotion])
 
   return (
     <span ref={ref}>
       {displayed}
-      {!done && inView && (
+      {!done && inView && !reduceMotion && (
         <motion.span
-          animate={{ opacity: [1, 0] }}
-          transition={{ duration: 0.5, repeat: Infinity, repeatType: 'reverse' }}
-          className="text-eari-blue-light"
+          animate={{ opacity: [1, 0.35] }}
+          transition={{ duration: 0.55, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
+          className="text-eari-blue-light/90"
         >
           ▊
         </motion.span>
@@ -270,25 +289,28 @@ function StreamingText({ text, delay = 0, speed = 18 }: { text: string; delay?: 
 /* ─── Sparkle Badge ────────────────────────────────────────────────────── */
 
 function SparkleBadge({ children, className }: { children: React.ReactNode; className?: string }) {
+  const reduceMotion = useReducedMotion()
   return (
     <motion.div
       className={`relative inline-flex ${className}`}
-      initial={{ opacity: 0, scale: 0.9 }}
-      whileInView={{ opacity: 1, scale: 1 }}
+      initial={reduceMotion ? false : { opacity: 0, y: 4 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: reduceMotion ? 0.01 : 0.4, ease: 'easeOut' }}
     >
-      <div className="absolute inset-0 rounded-md overflow-hidden">
-        <motion.div
-          className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
-            backgroundSize: '200% 100%',
-          }}
-          animate={{ backgroundPosition: ['-200% 0', '200% 0'] }}
-          transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
-        />
-      </div>
+      {!reduceMotion && (
+        <div className="absolute inset-0 rounded-md overflow-hidden pointer-events-none" aria-hidden="true">
+          <motion.div
+            className="absolute inset-0 opacity-40"
+            style={{
+              background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%)',
+              backgroundSize: '200% 100%',
+            }}
+            animate={{ backgroundPosition: ['-200% 0', '200% 0'] }}
+            transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
+          />
+        </div>
+      )}
       {children}
     </motion.div>
   )
@@ -313,109 +335,13 @@ function BackToTop() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 10 }}
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 right-6 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-eari-blue text-white shadow-lg shadow-eari-blue/30 hover:bg-eari-blue-dark transition-colors"
+          className="fixed bottom-6 right-6 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-eari-blue text-white border border-white/10 shadow-lg shadow-black/40 hover:bg-eari-blue-dark transition-colors"
           aria-label="Back to top"
         >
           <ArrowUp className="h-5 w-5" />
         </motion.button>
       )}
     </AnimatePresence>
-  )
-}
-
-/* ─── ROI Calculator ─────────────────────────────────────────────────── */
-
-function ROICalculator() {
-  const [orgSize, setOrgSize] = useState(500)
-  const [maturity, setMaturity] = useState(35)
-
-  // Deterministic calculations based on industry benchmarks
-  const savingsValue = Math.round(orgSize * (0.15 + (100 - maturity) * 0.008))
-  const formattedSavings = savingsValue >= 1000
-    ? `$${(savingsValue / 1000).toFixed(1)}M`
-    : `$${savingsValue}k`
-  const riskReduction = Math.min(95, Math.round(40 + (100 - maturity) * 0.5 + orgSize / 500))
-  const timeToValue = Math.max(2, Math.round(18 - maturity * 0.15 - orgSize / 2000))
-
-  return (
-    <div className="glass-card rounded-xl p-6 sm:p-8 max-w-2xl mx-auto">
-      <div className="flex items-center gap-2 mb-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-eari-blue/10">
-          <Eye className="h-4 w-4 text-eari-blue-light" />
-        </div>
-        <h3 className="font-heading text-lg font-semibold text-foreground">ROI Estimator</h3>
-      </div>
-
-      {/* Sliders */}
-      <div className="space-y-6">
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <label className="text-sm font-sans text-muted-foreground">Organization Size</label>
-            <span className="font-mono text-sm text-foreground bg-navy-700/50 px-2.5 py-0.5 rounded-md">{orgSize.toLocaleString()} employees</span>
-          </div>
-          <div className="relative">
-            <input
-              type="range"
-              min={50}
-              max={10000}
-              step={50}
-              value={orgSize}
-              onChange={(e) => setOrgSize(Number(e.target.value))}
-              className="w-full h-2 rounded-full appearance-none cursor-pointer bg-navy-700 accent-eari-blue slider-premium"
-            />
-          </div>
-          <div className="flex justify-between mt-1.5">
-            <span className="text-[10px] font-mono text-muted-foreground/50">50</span>
-            <span className="text-[10px] font-mono text-muted-foreground/50">10,000</span>
-          </div>
-        </div>
-
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <label className="text-sm font-sans text-muted-foreground">Current AI Maturity</label>
-            <span className="font-mono text-sm text-foreground bg-navy-700/50 px-2.5 py-0.5 rounded-md">{maturity}%</span>
-          </div>
-          <div className="relative">
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={5}
-              value={maturity}
-              onChange={(e) => setMaturity(Number(e.target.value))}
-              className="w-full h-2 rounded-full appearance-none cursor-pointer bg-navy-700 accent-eari-blue slider-premium"
-            />
-          </div>
-          <div className="flex justify-between mt-1.5">
-            <span className="text-[10px] font-mono text-muted-foreground/50">0%</span>
-            <span className="text-[10px] font-mono text-muted-foreground/50">100%</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Divider */}
-      <div className="h-px w-full my-6 bg-gradient-to-r from-transparent via-eari-blue/20 to-transparent" />
-
-      {/* Results */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="text-center p-4 rounded-xl bg-navy-800/60 border border-border/30 hover:border-emerald-500/20 transition-colors">
-          <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider mb-1.5">Est. Annual Savings</p>
-          <p className="font-heading text-2xl font-bold text-emerald-400">{formattedSavings}</p>
-        </div>
-        <div className="text-center p-4 rounded-xl bg-navy-800/60 border border-border/30 hover:border-eari-blue/20 transition-colors">
-          <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider mb-1.5">Risk Reduction</p>
-          <p className="font-heading text-2xl font-bold text-eari-blue-light">{riskReduction}%</p>
-        </div>
-        <div className="text-center p-4 rounded-xl bg-navy-800/60 border border-border/30 hover:border-amber-500/20 transition-colors">
-          <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider mb-1.5">Time-to-Value</p>
-          <p className="font-heading text-2xl font-bold text-[#d4a853]">{timeToValue} mo</p>
-        </div>
-      </div>
-
-      <p className="mt-4 text-[10px] text-muted-foreground/50 font-mono text-center tracking-wide">
-        Estimates based on industry benchmarks. Actual results may vary.
-      </p>
-    </div>
   )
 }
 
@@ -435,25 +361,14 @@ const ICON_MAP: Record<string, React.ElementType> = {
 /* ─── Sample pillar scores for the hero preview ────────────────────────── */
 
 const SAMPLE_SCORES = [
-  { name: 'Strategy', score: 72, color: '#3b82f6' },
-  { name: 'Data', score: 58, color: '#8b5cf6' },
-  { name: 'Technology', score: 65, color: '#06b6d4' },
-  { name: 'Talent', score: 44, color: '#f59e0b' },
-  { name: 'Governance', score: 78, color: '#ef4444' },
-  { name: 'Culture', score: 55, color: '#ec4899' },
-  { name: 'Process', score: 61, color: '#14b8a6' },
-  { name: 'Security', score: 83, color: '#64748b' },
-]
-
-/* ─── Pipeline steps ───────────────────────────────────────────────────── */
-
-const PIPELINE_STEPS = [
-  { icon: ClipboardList, label: 'Questionnaire', desc: '40 Likert-scale questions across 8 pillars' },
-  { icon: Scale, label: 'Normalize', desc: 'Raw scores normalized to 0-100 scale per pillar' },
-  { icon: Weight, label: 'Weight', desc: 'Apply calibrated pillar weights (sum = 1.0)' },
-  { icon: SlidersHorizontal, label: 'Adjust', desc: 'Cross-pillar correlation and boundary adjustments' },
-  { icon: Calculator, label: 'Score', desc: 'Weighted aggregate E-ARI composite score' },
-  { icon: Tag, label: 'Classify', desc: 'Assign maturity band: Laggard → Pacesetter' },
+  { name: 'Strategy', score: 72, color: '#2563eb' },
+  { name: 'Data', score: 58, color: '#475569' },
+  { name: 'Technology', score: 65, color: '#0369a1' },
+  { name: 'Talent', score: 44, color: '#64748b' },
+  { name: 'Governance', score: 78, color: '#0ea5e9' },
+  { name: 'Culture', score: 55, color: '#334155' },
+  { name: 'Process', score: 61, color: '#0284c7' },
+  { name: 'Security', score: 83, color: '#94a3b8' },
 ]
 
 /* ─── Agentic Properties ────────────────────────────────────────────────── */
@@ -466,7 +381,7 @@ const AGENT_PROPERTIES = [
     tagline: 'Autonomous Stakeholder Interviews',
     description: 'Conducts structured, adaptive interviews with stakeholders to map organizational readiness, surface blind spots, and capture qualitative context that questionnaires alone cannot reach.',
     capability: '5 question types · Adaptive follow-ups · Sector-aware prompts',
-    color: '#3b82f6',
+    color: '#2563eb',
     status: 'active',
     href: '/discovery',
   },
@@ -477,7 +392,7 @@ const AGENT_PROPERTIES = [
     tagline: 'Strategic Narrative Generation',
     description: 'Generates board-ready strategic narratives grounded in your actual assessment scores. Identifies cross-pillar correlations, risk patterns, and prioritized action paths.',
     capability: 'Score-grounded analysis · Cross-pillar correlation · Risk flags',
-    color: '#8b5cf6',
+    color: '#0369a1',
     status: 'active',
     href: '/assessment',
   },
@@ -488,7 +403,7 @@ const AGENT_PROPERTIES = [
     tagline: 'Adaptive Learning Paths',
     description: 'Creates personalized AI literacy curricula based on role, seniority, and assessment gaps. Serves tailored micro-lessons that build organizational competence over time.',
     capability: 'Role-based paths · Gap-driven content · Progress tracking',
-    color: '#06b6d4',
+    color: '#0ea5e9',
     status: 'active',
     href: '/literacy',
   },
@@ -499,7 +414,7 @@ const AGENT_PROPERTIES = [
     tagline: 'Deterministic Calculation Engine',
     description: 'Executes the six-step scoring pipeline with full reproducibility. Versioned methodology, auditable weights, and no randomness — every score is verifiable.',
     capability: 'Versioned scoring · Full audit trail · Zero randomness',
-    color: '#10b981',
+    color: '#475569',
     status: 'active',
     href: '/assessment',
   },
@@ -510,7 +425,7 @@ const AGENT_PROPERTIES = [
     tagline: 'Automated Board-Ready Output',
     description: 'Generates publication-quality PDF reports with executive summaries, radar visualizations, and maturity classifications. Formatted for board presentations and compliance records.',
     capability: 'PDF generation · Executive summary · Visual dashboards',
-    color: '#f59e0b',
+    color: '#64748b',
     status: 'active',
     href: '/assessment',
   },
@@ -521,7 +436,7 @@ const AGENT_PROPERTIES = [
     tagline: 'Context-Aware AI Companion',
     description: 'An always-available AI assistant that understands your assessment context, answers questions about methodology, and provides real-time guidance throughout your readiness journey.',
     capability: 'Context memory · Methodology expert · Real-time guidance',
-    color: '#ec4899',
+    color: '#334155',
     status: 'active',
     href: '/assessment',
   },
@@ -688,59 +603,24 @@ export default function Home() {
       <main className="flex-1">
         {/* ─── 1. HERO SECTION ──────────────────────────────────────────── */}
         <section id="hero-section" className="relative overflow-hidden pt-20 pb-24 sm:pt-28 sm:pb-32">
-          {/* Corporate gradient mesh background */}
+          {/* Navy base + restrained depth (single cool accent wash) */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,#070d18_0%,#0d1117_45%,#0f172a_100%)]" />
             <div
-              className="absolute inset-0"
-              style={{ background: 'linear-gradient(135deg, #0a1628 0%, #0d1117 40%, #162a4a 70%, #1e3a5f 100%)' }}
+              className="mesh-blob absolute -top-40 -right-24 w-[min(520px,90vw)] h-[min(520px,90vw)] rounded-full opacity-[0.07]"
+              style={{ background: 'radial-gradient(circle, #2563eb 0%, transparent 72%)' }}
             />
             <div
-              className="mesh-blob absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full opacity-20"
-              style={{ background: 'radial-gradient(circle, #2563eb 0%, transparent 70%)' }}
-            />
-            <div
-              className="mesh-blob absolute top-1/2 right-0 w-[600px] h-[600px] rounded-full opacity-15"
-              style={{ background: 'radial-gradient(circle, #d4a853 0%, transparent 70%)', animationDelay: '-7s' }}
-            />
-            <div
-              className="mesh-blob absolute bottom-0 left-1/3 w-[400px] h-[400px] rounded-full opacity-10"
-              style={{ background: 'radial-gradient(circle, #10b981 0%, transparent 70%)', animationDelay: '-13s' }}
-            />
-            <div
-              className="mesh-blob absolute top-1/4 left-1/2 w-[350px] h-[350px] rounded-full opacity-8"
-              style={{ background: 'radial-gradient(circle, #3b82f6 0%, transparent 70%)', animationDelay: '-4s' }}
+              className="mesh-blob absolute bottom-[-12%] left-[-10%] w-[420px] h-[420px] rounded-full opacity-[0.05]"
+              style={{ background: 'radial-gradient(circle, #1e293b 0%, transparent 70%)', animationDelay: '-9s' }}
             />
           </div>
 
-          {/* Floating geometric shapes */}
+          {/* Static framing accents — no looping motion */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-            <motion.div
-              className="absolute top-[15%] left-[8%] w-16 h-16 border border-eari-blue/10 rotate-45"
-              animate={{ y: [0, -20, 0], rotate: [45, 90, 45] }}
-              transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-            />
-            <motion.div
-              className="absolute top-[60%] right-[12%] w-20 h-20 border border-[#d4a853]/10 rounded-full"
-              animate={{ y: [0, 15, 0], x: [0, -10, 0] }}
-              transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
-            />
-            <motion.div
-              className="absolute bottom-[20%] left-[15%] w-12 h-12 border border-[#10b981]/10"
-              style={{ clipPath: 'polygon(50% 0%, 100% 100%, 0% 100%)' }}
-              animate={{ y: [0, -12, 0], rotate: [0, 180, 360] }}
-              transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
-            />
-            <motion.div
-              className="absolute top-[30%] right-[25%] w-10 h-10 border border-eari-blue/8 rotate-12"
-              style={{ clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)' }}
-              animate={{ y: [0, -8, 5, 0], scale: [1, 1.1, 0.95, 1] }}
-              transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-            />
-            <motion.div
-              className="absolute top-[45%] left-[5%] w-6 h-6 bg-[#d4a853]/5 rotate-45"
-              animate={{ y: [0, 10, 0], rotate: [45, 135, 45] }}
-              transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
-            />
+            <div className="absolute top-[14%] left-[7%] h-px w-24 bg-gradient-to-r from-transparent via-white/[0.07] to-transparent" />
+            <div className="absolute bottom-[22%] right-[10%] h-px w-20 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+            <div className="absolute top-[52%] right-[18%] w-20 h-20 rounded-full border border-white/[0.04]" />
           </div>
 
           {/* Particle grid overlay */}
@@ -761,42 +641,42 @@ export default function Home() {
                   </div>
                 </FadeUp>
 
-                <FadeUp delay={0.1}>
-                  <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground leading-[1.1]">
+                <FadeUp delay={0.08}>
+                  <h1 className="font-heading text-3xl sm:text-4xl lg:text-[2.65rem] font-semibold tracking-tight text-slate-100 leading-[1.12]">
                     Six AI Agents.{' '}
                     <span className="gradient-text-blue">
-                      <TypewriterText text="One Mission." delay={0.8} />
+                      <TypewriterText text="One Mission." delay={0.6} />
                     </span>
                   </h1>
                 </FadeUp>
 
-                <FadeUp delay={0.15}>
-                  <h2 className="mt-4 font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1]">
-                    <span className="gradient-text-blue">Enterprise AI Readiness</span>
-                    <span className="text-foreground"> — </span>
-                    <span className="gradient-text-gold">Agentic Assessment Platform</span>
-                  </h2>
+                <FadeUp delay={0.12}>
+                  <p className="mt-5 font-heading text-xl sm:text-2xl font-medium tracking-tight text-slate-300 leading-snug max-w-xl mx-auto lg:mx-0">
+                    Enterprise AI readiness assessment — orchestrated by an agentic platform built for governance-heavy teams.
+                  </p>
                 </FadeUp>
 
-                <FadeUp delay={0.2}>
-                  <p className="mt-4 text-lg sm:text-xl text-muted-foreground font-sans leading-relaxed max-w-xl mx-auto lg:mx-0">
+                <FadeUp delay={0.16}>
+                  <p className="mt-4 text-base sm:text-lg text-muted-foreground font-sans leading-relaxed max-w-xl mx-auto lg:mx-0">
                     Six specialized AI agents work in concert to assess, discover, analyze, educate, report, and guide your organization&apos;s AI readiness — delivering outputs no single tool can match.
                   </p>
                 </FadeUp>
 
-                <FadeUp delay={0.3}>
-                  <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <FadeUp delay={0.2}>
+                  <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
                     <Link href="/auth/register">
-                      <Button size="lg" className="group relative overflow-hidden bg-gradient-to-r from-eari-blue via-blue-600 to-cyan-600 hover:from-eari-blue-dark hover:via-blue-700 hover:to-cyan-700 text-white font-heading font-semibold h-12 px-8 text-base w-full sm:w-auto shadow-lg shadow-eari-blue/25 hover:shadow-eari-blue/40 transition-all duration-300">
-                        <span className="relative z-10 flex items-center">
+                      <Button
+                        size="lg"
+                        className="group bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-12 px-8 text-base w-full sm:w-auto shadow-md shadow-black/25 border border-white/[0.06] transition-colors duration-200"
+                      >
+                        <span className="flex items-center">
                           Start Free Assessment
-                          <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                          <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-200 group-hover:translate-x-0.5" />
                         </span>
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                       </Button>
                     </Link>
                     <Link href="#agentic">
-                      <Button variant="outline" size="lg" className="border-border hover:bg-navy-700 text-foreground font-heading font-semibold h-12 px-8 text-base w-full sm:w-auto">
+                      <Button variant="outline" size="lg" className="border-white/[0.12] bg-navy-900/40 hover:bg-navy-800/80 text-slate-100 font-heading font-semibold h-12 px-8 text-base w-full sm:w-auto">
                         Meet the Agents
                         <Bot className="ml-2 h-5 w-5" />
                       </Button>
@@ -806,61 +686,33 @@ export default function Home() {
               </div>
 
               {/* Right — immersive dashboard preview */}
-              <FadeUp delay={0.35} className="flex justify-center lg:justify-end">
+              <FadeUp delay={0.22} className="flex justify-center lg:justify-end">
                 <div className="relative w-full max-w-lg">
-                  {/* Ambient orbital particles behind the card */}
-                  <div className="absolute inset-0 pointer-events-none overflow-visible" aria-hidden="true">
-                    {[0, 1, 2, 3, 4, 5].map((i) => (
-                      <div
-                        key={i}
-                        className="orbital-particle absolute top-1/2 left-1/2"
-                        style={{
-                          width: seededRandom(i * 7 + 100) * 4 + 2,
-                          height: seededRandom(i * 7 + 100) * 4 + 2,
-                          background: i % 3 === 0 ? 'rgba(37,99,235,0.6)' : i % 3 === 1 ? 'rgba(6,182,212,0.5)' : 'rgba(139,92,246,0.5)',
-                          borderRadius: '50%',
-                          boxShadow: `0 0 6px ${i % 3 === 0 ? 'rgba(37,99,235,0.4)' : i % 3 === 1 ? 'rgba(6,182,212,0.3)' : 'rgba(139,92,246,0.3)'}`,
-                          '--orbit-radius': `${150 + seededRandom(i * 7 + 200) * 60}px`,
-                          '--orbit-duration': `${10 + seededRandom(i * 7 + 300) * 8}s`,
-                          animationDelay: `${-seededRandom(i * 7 + 400) * 10}s`,
-                        } as React.CSSProperties}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Floating metric badges around the card */}
-                  <div className="absolute -top-4 -left-4 z-20 float-badge" aria-hidden="true">
-                    <div className="glass-card rounded-lg px-3 py-1.5 text-xs font-mono flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-amber-400" />
-                      <span className="text-amber-300">Talent Gap</span>
-                      <span className="text-foreground font-bold">-24</span>
+                  {/* Floating metric badges — static surface, no CSS float */}
+                  <div className="absolute -top-3 -left-3 z-20" aria-hidden="true">
+                    <div className="rounded-lg border border-white/[0.08] bg-navy-950/90 px-3 py-1.5 text-xs font-mono flex items-center gap-1.5 shadow-lg shadow-black/30">
+                      <span className="w-2 h-2 rounded-full bg-slate-400" />
+                      <span className="text-slate-400">Talent gap</span>
+                      <span className="text-slate-100 font-semibold tabular-nums">−24</span>
                     </div>
                   </div>
-                  <div className="absolute top-8 -right-6 z-20 float-badge float-badge-delay-1" aria-hidden="true">
-                    <div className="glass-card rounded-lg px-3 py-1.5 text-xs font-mono flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                      <span className="text-emerald-300">Top Pillar</span>
-                      <span className="text-foreground font-bold">Security 83</span>
+                  <div className="absolute top-7 -right-4 z-20" aria-hidden="true">
+                    <div className="rounded-lg border border-white/[0.08] bg-navy-950/90 px-3 py-1.5 text-xs font-mono flex items-center gap-1.5 shadow-lg shadow-black/30">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500/90" />
+                      <span className="text-slate-400">Top pillar</span>
+                      <span className="text-slate-100 font-semibold tabular-nums">Sec 83</span>
                     </div>
                   </div>
-                  <div className="absolute -bottom-2 -left-2 z-20 float-badge float-badge-delay-2" aria-hidden="true">
-                    <div className="glass-card rounded-lg px-3 py-1.5 text-xs font-mono flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-orange-400" />
-                      <span className="text-orange-300">Risk</span>
-                      <span className="text-foreground font-bold">Medium</span>
+                  <div className="absolute -bottom-1 -left-1 z-20" aria-hidden="true">
+                    <div className="rounded-lg border border-white/[0.08] bg-navy-950/90 px-3 py-1.5 text-xs font-mono flex items-center gap-1.5 shadow-lg shadow-black/30">
+                      <span className="w-2 h-2 rounded-full bg-slate-500" />
+                      <span className="text-slate-400">Risk</span>
+                      <span className="text-slate-100 font-semibold">Medium</span>
                     </div>
                   </div>
 
-                  {/* Data stream lines from edges */}
-                  <div className="absolute -left-12 top-1/4 w-10 h-[2px] data-stream rounded-full" aria-hidden="true" />
-                  <div className="absolute -right-10 top-2/3 w-8 h-[2px] data-stream data-stream-delay-1 rounded-full" aria-hidden="true" />
-                  <div className="absolute left-1/4 -bottom-8 h-10 w-[2px] data-stream data-stream-delay-2 rounded-full" aria-hidden="true" style={{ backgroundSize: '100% 200%' }} />
-
-                  {/* Aurora border glow behind the card */}
-                  <div className="aurora-border-glow" aria-hidden="true" />
-
-                  {/* Main preview card */}
-                  <div className="aurora-card rounded-2xl overflow-hidden relative">
+                  {/* Main preview card — border elevation instead of aurora glass */}
+                  <div className="rounded-2xl overflow-hidden relative border border-white/[0.09] bg-[rgba(13,17,23,0.92)] backdrop-blur-md shadow-[0_28px_56px_-18px_rgba(0,0,0,0.65)]">
                     {/* Subtle window chrome */}
                     <div className="flex items-center gap-2 px-4 py-2 bg-navy-900/40 border-b border-white/5">
                       <span className="traffic-light traffic-light-red opacity-50" style={{ width: 8, height: 8 }} />
@@ -873,12 +725,12 @@ export default function Home() {
                       {/* Top row: Large score ring + info */}
                       <div className="flex items-center gap-6">
                         {/* Large animated score ring with gradient glow */}
-                        <div className="relative flex-shrink-0 score-ring-glow">
+                        <div className="relative flex-shrink-0">
                           <svg width="120" height="120" viewBox="0 0 120 120" aria-label="Overall readiness score: 67%">
                             <defs>
                               <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#2563eb" />
-                                <stop offset="100%" stopColor="#06b6d4" />
+                                <stop offset="0%" stopColor="#1d4ed8" />
+                                <stop offset="100%" stopColor="#0369a1" />
                               </linearGradient>
                             </defs>
                             <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(48,57,74,0.3)" strokeWidth="7" />
@@ -917,7 +769,7 @@ export default function Home() {
                             <Badge className="bg-eari-blue/15 text-eari-blue-light border-eari-blue/30 text-xs font-mono">
                               v5.3
                             </Badge>
-                            <Badge className="bg-cyan-500/10 text-cyan-300 border-cyan-500/20 text-xs font-mono">
+                            <Badge className="bg-navy-800/90 text-slate-300 border-white/[0.08] text-xs font-mono">
                               LIVE
                             </Badge>
                           </div>
@@ -930,8 +782,8 @@ export default function Home() {
                           <svg width="200" height="200" viewBox="0 0 200 200" aria-label="Pillar radar chart">
                             <defs>
                               <linearGradient id="radarFill" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="rgba(37,99,235,0.12)" />
-                                <stop offset="100%" stopColor="rgba(6,182,212,0.05)" />
+                                <stop offset="0%" stopColor="rgba(37,99,235,0.1)" />
+                                <stop offset="100%" stopColor="rgba(15,23,42,0.12)" />
                               </linearGradient>
                             </defs>
                             {/* Octagonal grid rings — solid, faint */}
@@ -976,7 +828,6 @@ export default function Home() {
                               animate={{ opacity: 1 }}
                               transition={{ duration: 1.5, delay: 0.6, ease: 'easeOut' }}
                             />
-                            {/* Constellation data points — gentle staggered breathe */}
                             {SAMPLE_SCORES.map((pillar, i) => {
                               const angle = (Math.PI * 2 * i) / SAMPLE_SCORES.length - Math.PI / 2
                               const r = (pillar.score / 100) * 80
@@ -990,9 +841,8 @@ export default function Home() {
                                   r="2"
                                   fill={pillar.color}
                                   initial={{ opacity: 0 }}
-                                  animate={{ opacity: [0.6, 1, 0.6], scale: [1, 1.1, 1] }}
-                                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: i * 0.4 }}
-                                  style={{ transformOrigin: `${cx}px ${cy}px` }}
+                                  animate={{ opacity: 1 }}
+                                  transition={{ duration: 0.35, delay: 0.75 + i * 0.04, ease: 'easeOut' }}
                                 />
                               )
                             })}
@@ -1027,7 +877,7 @@ export default function Home() {
                             className="flex items-center gap-1.5 rounded-md px-2 py-1 bg-navy-700/60 border border-white/5"
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3, delay: 1.5 + i * 0.05 }}
+                            transition={{ duration: 0.28, delay: 1 + i * 0.03 }}
                           >
                             <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: pillar.color }} />
                             <span className="text-[10px] font-mono text-muted-foreground">{pillar.name.slice(0, 3)}</span>
@@ -1052,7 +902,7 @@ export default function Home() {
             <FadeUp>
               <div className="text-center max-w-2xl mx-auto">
                 <span className="inline-block font-mono text-xs tracking-widest uppercase text-eari-blue/70 mb-3">Methodology</span>
-                <h2 className="font-heading text-3xl sm:text-4xl font-bold gradient-text-blue">
+                <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-tight text-slate-100">
                   The 8-Pillar Framework
                 </h2>
                 <p className="mt-4 text-base text-muted-foreground font-sans leading-relaxed">
@@ -1067,21 +917,19 @@ export default function Home() {
               {/* LEFT — Living Constellation Radar */}
               <FadeUp delay={0.1}>
                 <div className="relative mx-auto w-full max-w-md aspect-square">
-                  {/* Soft ambient glow behind radar — calm, single source */}
-                  <div className="absolute inset-[8%] rounded-full opacity-20" style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.15) 0%, rgba(6,182,212,0.06) 50%, transparent 80%)' }} />
+                  <div className="absolute inset-[8%] rounded-full opacity-[0.12]" style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 72%)' }} />
 
                   <svg viewBox="0 0 220 220" className="w-full h-full" aria-label="8-pillar radar visualization">
                     <defs>
                       {/* Calm radial fill — softer center glow */}
                       <radialGradient id="methodRadarFill" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stopColor="rgba(6,182,212,0.18)" />
-                        <stop offset="50%" stopColor="rgba(59,130,246,0.08)" />
-                        <stop offset="100%" stopColor="rgba(37,99,235,0.02)" />
+                        <stop offset="0%" stopColor="rgba(37,99,235,0.14)" />
+                        <stop offset="70%" stopColor="rgba(15,23,42,0.06)" />
+                        <stop offset="100%" stopColor="rgba(15,23,42,0.02)" />
                       </radialGradient>
                       <linearGradient id="methodStrokeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#06b6d4" />
-                        <stop offset="50%" stopColor="#3b82f6" />
-                        <stop offset="100%" stopColor="#8b5cf6" />
+                        <stop offset="0%" stopColor="#1d4ed8" />
+                        <stop offset="100%" stopColor="#0369a1" />
                       </linearGradient>
                     </defs>
 
@@ -1119,47 +967,20 @@ export default function Home() {
                       transition={{ duration: 1.8, delay: 0.3, ease: 'easeOut' }}
                     />
 
-                    {/* Subtle stroke opacity breathe on data polygon */}
-                    <motion.polygon
-                      points={SAMPLE_SCORES.map((p, i) => {
-                        const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2
-                        const r = (p.score / 100) * 80
-                        return `${110 + r * Math.cos(angle)},${110 + r * Math.sin(angle)}`
-                      }).join(' ')}
-                      fill="none"
-                      stroke="url(#methodStrokeGrad)"
-                      strokeWidth="0.5"
-                      animate={{ strokeOpacity: [0.2, 0.45, 0.2] }}
-                      transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-                    />
-
-                    {/* Constellation data points — gentle staggered breathe */}
                     {SAMPLE_SCORES.map((p, i) => {
                       const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2
                       const r = (p.score / 100) * 80
                       const cx = 110 + r * Math.cos(angle)
                       const cy = 110 + r * Math.sin(angle)
                       return (
-                        <g key={i}>
-                          {/* Soft outer halo */}
-                          <motion.circle
-                            cx={cx} cy={cy}
-                            r="6" fill={p.color}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: [0.04, 0.10, 0.04], scale: [1, 1.06, 1] }}
-                            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: i * 0.5 }}
-                            style={{ transformOrigin: `${cx}px ${cy}px` }}
-                          />
-                          {/* Core dot — breathe gently */}
-                          <motion.circle
-                            cx={cx} cy={cy}
-                            r="2.5" fill={p.color}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: [0.7, 1, 0.7], scale: [1, 1.08, 1] }}
-                            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: i * 0.5 }}
-                            style={{ transformOrigin: `${cx}px ${cy}px` }}
-                          />
-                        </g>
+                        <motion.circle
+                          key={i}
+                          cx={cx} cy={cy}
+                          r="2.5" fill={p.color}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.35, delay: 0.45 + i * 0.05, ease: 'easeOut' }}
+                        />
                       )
                     })}
 
@@ -1189,30 +1010,13 @@ export default function Home() {
                       )
                     })}
 
-                    {/* Single slow ambient orbit particle — once every 20s */}
                   </svg>
-
-                  {/* Slow orbit particle outside SVG for smooth CSS animation */}
-                  <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-                    <div
-                      className="radar-orbit-particle"
-                      style={{
-                        width: 3,
-                        height: 3,
-                        background: 'rgba(6,182,212,0.6)',
-                        borderRadius: '50%',
-                        boxShadow: '0 0 6px rgba(6,182,212,0.3)',
-                        '--orbit-radius': '42%',
-                        '--orbit-duration': '20s',
-                      } as React.CSSProperties}
-                    />
-                  </div>
 
                   {/* Center score overlay — fade in once, calm */}
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div className="text-center">
                       <motion.span
-                        className="block text-4xl font-heading font-bold gradient-text-blue"
+                        className="block text-4xl font-heading font-semibold tracking-tight text-slate-100"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 1, delay: 1 }}
@@ -1238,7 +1042,7 @@ export default function Home() {
                   const Icon = ICON_MAP[pillar.icon] || Target
                   const weightPct = Math.round(pillar.weight * 100)
                   return (
-                    <FadeUp key={pillar.id} delay={i * 0.05}>
+                    <FadeUp key={pillar.id} delay={i * 0.02}>
                       <motion.div
                         className="group relative py-4 border-b border-white/[0.04] last:border-b-0 cursor-default"
                         initial={false}
@@ -1267,7 +1071,7 @@ export default function Home() {
                                 style={{ backgroundColor: pillar.color }}
                                 initial={{ width: 0 }}
                                 animate={{ width: `${SAMPLE_SCORES[i].score}%` }}
-                                transition={{ duration: 0.8, delay: 0.6 + i * 0.07, ease: 'easeOut' }}
+                                transition={{ duration: 0.65, delay: 0.35 + i * 0.04, ease: 'easeOut' }}
                               />
                             </div>
                           </div>
@@ -1282,7 +1086,7 @@ export default function Home() {
               </div>
             </div>
 
-            <FadeUp delay={0.3}>
+            <FadeUp delay={0.15}>
               <p className="mt-12 text-center text-xs text-muted-foreground/50 font-mono tracking-wide">
                 Scoring is deterministic and versioned (v5.3) — reproducible, no hidden variables.
               </p>
@@ -1311,8 +1115,8 @@ export default function Home() {
                       initial={{ opacity: 0, y: 16 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
-                      transition={{ duration: 0.4, delay: i * 0.08 }}
-                      whileHover={{ y: -3 }}
+                      transition={{ duration: 0.38, delay: i * 0.04 }}
+                      whileHover={{ y: -1 }}
                       className="group h-full"
                     >
                       <div className="glass-card rounded-lg p-5 text-center h-full flex flex-col items-center">
@@ -1335,13 +1139,13 @@ export default function Home() {
 
         {/* ─── 2C. COMPLIANCE SPOTLIGHT ───────────────────────────────────── */}
         <div className="section-gradient-separator" aria-hidden="true">
-          <div className="h-px bg-gradient-to-r from-transparent via-emerald-500/25 to-transparent" />
+          <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
         </div>
         <section className="py-16 sm:py-20 bg-navy-900 relative overflow-hidden" aria-labelledby="compliance-spotlight-heading">
           <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
             <div
-              className="absolute top-1/2 right-0 translate-y-[-50%] w-[420px] h-[420px] rounded-full opacity-[0.07]"
-              style={{ background: 'radial-gradient(circle, #10b981 0%, transparent 70%)' }}
+              className="absolute top-1/2 right-0 translate-y-[-50%] w-[380px] h-[380px] rounded-full opacity-[0.05]"
+              style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.35) 0%, transparent 68%)' }}
             />
           </div>
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -1350,8 +1154,9 @@ export default function Home() {
                 <Badge variant="outline" className="font-mono text-xs border-emerald-500/35 text-emerald-300 bg-emerald-500/5 mb-4">
                   Compliance &amp; evidence
                 </Badge>
-                <h2 id="compliance-spotlight-heading" className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
-                  From assessment to <span className="gradient-text-blue">audit-ready artifacts</span>
+                <h2 id="compliance-spotlight-heading" className="font-heading text-2xl sm:text-3xl font-semibold tracking-tight text-slate-100">
+                  From assessment to{' '}
+                  <span className="text-eari-blue-light font-medium">audit-ready artifacts</span>
                 </h2>
                 <p className="mt-4 text-muted-foreground font-sans leading-relaxed max-w-xl">
                   Collect AI Act evidence, maintain FRIA and technical files, bundle regulator-facing submission packs, and rely on immutable admin logs—so governance teams ship filings without chasing screenshots.
@@ -1375,7 +1180,7 @@ export default function Home() {
                   </li>
                 </ul>
                 <div className="mt-8">
-                  <Link href="/compliance">
+                  <Link href="/portal/use-cases">
                     <Button size="lg" className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold">
                       Explore compliance workspace
                       <ArrowRight className="ml-2 h-5 w-5" aria-hidden />
@@ -1407,82 +1212,28 @@ export default function Home() {
         </div>
 
         {/* ─── 3. SCORING PIPELINE SECTION ──────────────────────────────── */}
-        <ParallaxSection speed={0.04} className="py-20 sm:py-28 bg-navy-800/50">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <FadeUp>
-              <div className="text-center max-w-2xl mx-auto">
-                <span className="inline-block font-mono text-xs tracking-widest uppercase text-eari-blue/70 mb-3">Pipeline</span>
-                <h2 className="font-heading text-3xl sm:text-4xl font-bold gradient-text-blue">
-                  How Scoring Works
-                </h2>
-                <p className="mt-4 text-base text-muted-foreground font-sans leading-relaxed">
-                  Six deterministic steps from raw responses to maturity classification. Every stage is auditable, versioned, and reproducible.
-                </p>
-              </div>
-            </FadeUp>
-
-            <div className="mt-14 lg:mt-20 relative">
-              {/* Animated connecting line */}
-              <div className="absolute top-[27px] left-0 right-0 hidden lg:block pointer-events-none" aria-hidden="true">
-                <motion.div
-                  className="h-px bg-gradient-to-r from-eari-blue/0 via-eari-blue/30 to-eari-blue/0"
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ duration: 1.8, delay: 0.4, ease: 'easeInOut' }}
-                  style={{ transformOrigin: 'left' }}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-y-10 gap-x-6 lg:gap-x-4">
-                {PIPELINE_STEPS.map((step, i) => {
-                  const Icon = step.icon
-                  return (
-                    <FadeUp key={step.label} delay={i * 0.07}>
-                      <div className="flex flex-col items-center text-center group">
-                        <motion.div
-                          className="relative flex h-14 w-14 items-center justify-center rounded-full border border-white/[0.06] bg-navy-800 mb-4 group-hover:border-eari-blue/40 transition-colors duration-300"
-                          whileHover={{ scale: 1.1 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <Icon className="h-5 w-5 text-eari-blue-light" />
-                          <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-eari-blue text-[9px] font-mono font-bold text-white">
-                            {i + 1}
-                          </span>
-                        </motion.div>
-                        <h3 className="font-heading text-sm font-semibold text-foreground">{step.label}</h3>
-                        <p className="mt-1 text-[11px] text-muted-foreground/70 leading-relaxed max-w-[140px]">{step.desc}</p>
-                      </div>
-                    </FadeUp>
-                  )
-                })}
-              </div>
-
-              <FadeUp delay={0.6}>
-                <div className="mt-12 flex justify-center">
-                  <div className="inline-flex items-center gap-3 rounded-full bg-navy-800/80 border border-white/[0.06] px-5 py-2.5">
-                    <span className="text-xs text-muted-foreground font-mono">Result</span>
-                    <span className="h-3 w-px bg-border/40" />
-                    <span className="text-sm font-heading font-semibold text-foreground">Weighted E-ARI Composite</span>
-                    <span className="h-3 w-px bg-border/40" />
-                    <span className="text-xs font-mono text-eari-blue-light">Maturity Band Assigned</span>
-                  </div>
-                </div>
-              </FadeUp>
-            </div>
-          </div>
+        <ParallaxSection speed={0.04} className="py-20 sm:py-28 bg-navy-800/50" id="how-scoring-works">
+          <HowScoringWorks />
         </ParallaxSection>
 
         {/* ─── 3B. AGENTIC PROPERTIES SECTION ─────────────────────────────── */}
         <ParallaxSection speed={0.04} className="py-20 sm:py-28 bg-navy-900 relative overflow-hidden" id="agentic">
-          {/* Subtle grid background */}
-          <div className="absolute inset-0 hex-grid-bg pointer-events-none" aria-hidden="true" />
+          <div
+            className="absolute inset-0 pointer-events-none opacity-[0.035]"
+            aria-hidden="true"
+            style={{
+              backgroundImage:
+                'linear-gradient(rgba(148,163,184,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.35) 1px, transparent 1px)',
+              backgroundSize: '56px 56px',
+            }}
+          />
 
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {/* Section header */}
             <FadeUp>
               <div className="text-center max-w-2xl mx-auto">
                 <span className="inline-block font-mono text-xs tracking-widest uppercase text-eari-blue/70 mb-3">Agentic Architecture</span>
-                <h2 className="font-heading text-3xl sm:text-4xl font-bold gradient-text-blue">
+                <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-tight text-slate-100">
                   The Innovation: Agentic AI Assessment
                 </h2>
                 <p className="mt-4 text-base text-muted-foreground font-sans leading-relaxed">
@@ -1495,21 +1246,12 @@ export default function Home() {
             <div className="mt-14 lg:mt-20 grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-14 items-center">
 
               {/* LEFT — Orbital agent constellation (3 cols) */}
-              <FadeUp delay={0.1} className="lg:col-span-3">
+              <FadeUp delay={0.08} className="lg:col-span-3">
                 <div className="relative flex flex-col items-center justify-center py-8">
                   {/* Central hub */}
                   <div className="relative w-[320px] h-[320px] sm:w-[380px] sm:h-[380px]">
-                    {/* Outer ring pulse */}
-                    <motion.div
-                      className="absolute inset-0 rounded-full border border-eari-blue/[0.08]"
-                      animate={{ scale: [1, 1.04, 1], opacity: [0.3, 0.6, 0.3] }}
-                      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                    />
-                    <motion.div
-                      className="absolute inset-4 rounded-full border border-eari-blue/[0.05]"
-                      animate={{ scale: [1, 1.03, 1], opacity: [0.2, 0.5, 0.2] }}
-                      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-                    />
+                    <div className="absolute inset-0 rounded-full border border-white/[0.06]" />
+                    <div className="absolute inset-5 rounded-full border border-white/[0.04]" />
 
                     {/* Agent orbital nodes */}
                     {AGENT_PROPERTIES.map((agent, i) => {
@@ -1523,21 +1265,20 @@ export default function Home() {
                           key={agent.id}
                           className="absolute z-10"
                           style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' }}
-                          initial={{ opacity: 0, scale: 0 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
+                          initial={{ opacity: 0, y: 6 }}
+                          whileInView={{ opacity: 1, y: 0 }}
                           viewport={{ once: true }}
-                          transition={{ delay: 0.3 + i * 0.1, type: 'spring', stiffness: 200 }}
+                          transition={{ delay: 0.15 + i * 0.06, duration: 0.45, ease: 'easeOut' }}
                         >
                           <motion.div
                             className="group relative cursor-default"
-                            whileHover={{ scale: 1.15 }}
-                            transition={{ duration: 0.2 }}
+                            whileHover={{ scale: 1.04 }}
+                            transition={{ duration: 0.18 }}
                           >
                             <div
-                              className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.08]"
+                              className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.1] shadow-sm shadow-black/40"
                               style={{
-                                backgroundColor: `${agent.color}15`,
-                                boxShadow: `0 0 20px ${agent.color}15`,
+                                backgroundColor: `${agent.color}18`,
                               }}
                             >
                               <Icon className="h-5 w-5" style={{ color: agent.color }} />
@@ -1549,7 +1290,7 @@ export default function Home() {
                               </span>
                             </div>
                             {/* Status dot */}
-                            <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5 rounded-full bg-emerald-400 agent-status border-2 border-navy-900" />
+                            <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-navy-900" />
                           </motion.div>
                         </motion.div>
                       )
@@ -1559,12 +1300,12 @@ export default function Home() {
                     <div className="absolute inset-0 flex items-center justify-center">
                       <motion.div
                         className="flex flex-col items-center gap-2"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
+                        initial={{ opacity: 0, y: 8 }}
+                        whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        transition={{ delay: 0.2, type: 'spring' }}
+                        transition={{ delay: 0.12, duration: 0.45, ease: 'easeOut' }}
                       >
-                        <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-eari-blue/20 to-cyan-500/10 border border-eari-blue/20 flex items-center justify-center shadow-lg shadow-eari-blue/10">
+                        <div className="h-16 w-16 rounded-2xl bg-navy-800/90 border border-white/[0.1] flex items-center justify-center shadow-md shadow-black/40">
                           <Workflow className="h-7 w-7 text-eari-blue-light" />
                         </div>
                         <span className="text-[10px] font-mono text-muted-foreground/50 uppercase tracking-widest">Orchestrator</span>
@@ -1588,7 +1329,7 @@ export default function Home() {
                             initial={{ pathLength: 0, opacity: 0 }}
                             whileInView={{ pathLength: 1, opacity: 1 }}
                             viewport={{ once: true }}
-                            transition={{ delay: 0.5 + i * 0.08, duration: 0.6 }}
+                            transition={{ delay: 0.35 + i * 0.05, duration: 0.45, ease: 'easeOut' }}
                           />
                         )
                       })}
@@ -1604,7 +1345,7 @@ export default function Home() {
                           initial={{ opacity: 0, scale: 0.9 }}
                           whileInView={{ opacity: 1, scale: 1 }}
                           viewport={{ once: true }}
-                          transition={{ delay: 0.3 + i * 0.08 }}
+                          transition={{ delay: 0.2 + i * 0.05, duration: 0.35, ease: 'easeOut' }}
                         >
                           <span className="text-[9px] font-mono font-bold text-eari-blue-light">{String(i + 1).padStart(2, '0')}</span>
                           <span className="text-[11px] font-heading font-semibold text-foreground">{step.label}</span>
@@ -1624,7 +1365,7 @@ export default function Home() {
                   const Icon = agent.icon
                   const isFeatured = i === 0
                   return (
-                    <FadeUp key={agent.id} delay={i * 0.06}>
+                    <FadeUp key={agent.id} delay={i * 0.03}>
                       <motion.div
                         className="group relative cursor-default"
                         whileHover={{ x: 3 }}
@@ -1643,7 +1384,7 @@ export default function Home() {
                               <div>
                                 <div className="flex items-center gap-2">
                                   <span className="font-heading text-sm font-semibold text-foreground">{agent.name}</span>
-                                  <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 agent-status" />
+                                  <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-navy-900" />
                                 </div>
                                 <span className="text-[10px] font-mono text-muted-foreground/50">{agent.tagline}</span>
                               </div>
@@ -1675,7 +1416,7 @@ export default function Home() {
                                 <span className="text-[9px] font-mono text-muted-foreground/30 hidden sm:inline">{agent.tagline}</span>
                               </div>
                             </div>
-                            <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 agent-status flex-shrink-0" />
+                            <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-navy-900 flex-shrink-0" />
                           </div>
                         )}
                       </motion.div>
@@ -1687,293 +1428,20 @@ export default function Home() {
           </div>
         </ParallaxSection>
 
-        {/* ─── 4. RESULTS PREVIEW SECTION ───────────────────────────────── */}
-        <ParallaxSection speed={0.04} className="py-20 sm:py-28 bg-navy-900">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <FadeUp>
-              <div className="text-center max-w-2xl mx-auto">
-                <span className="inline-block font-mono text-xs tracking-widest uppercase text-eari-blue/70 mb-3">Output</span>
-                <h2 className="font-heading text-3xl sm:text-4xl font-bold gradient-text-blue">
-                  What Your Results Look Like
-                </h2>
-                <p className="mt-4 text-base text-muted-foreground font-sans leading-relaxed">
-                  A comprehensive readiness profile — composite score, maturity classification, pillar breakdown, and strategic recommendations.
-                </p>
-              </div>
-            </FadeUp>
-
-            {/* ── Immersive dashboard mockup ── */}
-            <div className="mt-14 lg:mt-20">
-              <FadeUp delay={0.1}>
-                <div className="rounded-2xl border border-white/[0.06] bg-[#0a0f1a] overflow-hidden shadow-2xl shadow-eari-blue/5">
-                  {/* Window chrome */}
-                  <div className="flex items-center gap-2 px-5 py-3 border-b border-white/[0.04] bg-[#0d1220]">
-                    <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
-                    <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
-                    <span className="w-3 h-3 rounded-full bg-[#28c840]" />
-                    <span className="ml-4 text-[11px] font-mono text-muted-foreground/50">e-ari-dashboard.results</span>
-                    <div className="ml-auto flex items-center gap-3">
-                      <Badge className="bg-eari-blue/15 text-eari-blue-light border-eari-blue/30 text-[10px] font-mono">v5.3</Badge>
-                      <Badge className="bg-emerald-500/10 text-emerald-300 border-emerald-500/20 text-[10px] font-mono">LIVE</Badge>
-                    </div>
-                  </div>
-
-                  <div className="p-6 sm:p-8">
-                    {/* Top row: Score ring + Maturity + Certification */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-                      {/* Score ring */}
-                      <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-                        <div className="relative score-ring-glow">
-                          <svg width="100" height="100" viewBox="0 0 100 100" aria-label="E-ARI Score: 63.8">
-                            <defs>
-                              <linearGradient id="resultScoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#2563eb" />
-                                <stop offset="100%" stopColor="#06b6d4" />
-                              </linearGradient>
-                            </defs>
-                            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(48,57,74,0.3)" strokeWidth="5" />
-                            <motion.circle
-                              cx="50" cy="50" r="42"
-                              fill="none"
-                              stroke="url(#resultScoreGrad)"
-                              strokeWidth="5"
-                              strokeLinecap="round"
-                              strokeDasharray={264}
-                              initial={{ strokeDashoffset: 264 }}
-                              whileInView={{ strokeDashoffset: 264 - 264 * 0.638 }}
-                              viewport={{ once: true }}
-                              transition={{ duration: 1.5, ease: 'easeOut', delay: 0.3 }}
-                              transform="rotate(-90 50 50)"
-                            />
-                            <motion.text
-                              x="50" y="46" textAnchor="middle" fill="#e6edf3" fontSize="22" fontWeight="700" fontFamily="var(--font-plus-jakarta)"
-                              initial={{ opacity: 0 }}
-                              whileInView={{ opacity: 1 }}
-                              viewport={{ once: true }}
-                              transition={{ delay: 0.8 }}
-                            >
-                              63.8
-                            </motion.text>
-                            <text x="50" y="62" textAnchor="middle" fill="#8b949e" fontSize="9" fontFamily="var(--font-inter)">
-                              / 100
-                            </text>
-                          </svg>
-                        </div>
-                        <p className="mt-2 text-xs font-mono text-muted-foreground/50">Composite E-ARI Score</p>
-                      </div>
-
-                      {/* Maturity classification */}
-                      <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-                        <div className="flex items-center gap-2 rounded-full bg-emerald-400/10 border border-emerald-400/20 px-4 py-2 mb-3">
-                          <span className="flex h-2 w-2 rounded-full bg-emerald-400 agent-status" />
-                          <span className="text-sm font-heading font-bold text-emerald-400">Developing</span>
-                        </div>
-                        <p className="text-xs font-mono text-muted-foreground/40 mb-3">Maturity Band: 51–75</p>
-                        {/* Compact maturity scale */}
-                        <div className="w-full space-y-1">
-                          {Object.values(MATURITY_BANDS).map((band) => {
-                            const isActive = band.label === 'Chaser'
-                            return (
-                              <div key={band.label} className="flex items-center gap-2">
-                                <div
-                                  className="h-1.5 rounded-full"
-                                  style={{
-                                    backgroundColor: isActive ? band.color : `${band.color}30`,
-                                    width: isActive ? '100%' : `${(band.max / 100) * 100}%`,
-                                  }}
-                                />
-                                <span className={`text-[9px] font-mono flex-shrink-0 ${isActive ? 'text-foreground' : 'text-muted-foreground/30'}`}>
-                                  {band.label}
-                                </span>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Certification badge */}
-                      <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-                        <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-[#d4a853]/20 to-[#d4a853]/5 border border-[#d4a853]/20 flex items-center justify-center mb-3">
-                          <Award className="h-7 w-7 text-[#d4a853]" />
-                        </div>
-                        <span className="text-sm font-heading font-bold text-[#d4a853]">E-ARI Silver</span>
-                        <p className="text-[10px] font-mono text-muted-foreground/40 mt-1">Certification Eligible</p>
-                      </div>
-                    </div>
-
-                    {/* Bottom row: Radar + Key findings */}
-                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                      {/* Radar chart (3 cols) */}
-                      <div className="lg:col-span-3 flex items-center justify-center p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-                        <svg viewBox="0 0 300 300" className="w-full max-w-xs" aria-label="Pillar radar chart">
-                          {/* Background rings */}
-                          {[0.25, 0.5, 0.75, 1].map((scale, i) => (
-                            <polygon
-                              key={i}
-                              points={SAMPLE_SCORES.map((_, j) => {
-                                const angle = (Math.PI * 2 * j) / SAMPLE_SCORES.length - Math.PI / 2
-                                const r = 110 * scale
-                                return `${150 + r * Math.cos(angle)},${150 + r * Math.sin(angle)}`
-                              }).join(' ')}
-                              fill="none"
-                              stroke="rgba(48,57,74,0.3)"
-                              strokeWidth="0.5"
-                            />
-                          ))}
-                          {/* Axis lines */}
-                          {SAMPLE_SCORES.map((_, j) => {
-                            const angle = (Math.PI * 2 * j) / SAMPLE_SCORES.length - Math.PI / 2
-                            return (
-                              <line
-                                key={j}
-                                x1="150" y1="150"
-                                x2={150 + 110 * Math.cos(angle)}
-                                y2={150 + 110 * Math.sin(angle)}
-                                stroke="rgba(48,57,74,0.2)"
-                                strokeWidth="0.5"
-                              />
-                            )
-                          })}
-                          {/* Data polygon */}
-                          <motion.polygon
-                            points={SAMPLE_SCORES.map((s, j) => {
-                              const angle = (Math.PI * 2 * j) / SAMPLE_SCORES.length - Math.PI / 2
-                              const r = (s.score / 100) * 110
-                              return `${150 + r * Math.cos(angle)},${150 + r * Math.sin(angle)}`
-                            }).join(' ')}
-                            fill="rgba(37,99,235,0.12)"
-                            stroke="#3b82f6"
-                            strokeWidth="1.5"
-                            initial={{ opacity: 0, scale: 0.5 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
-                            style={{ transformOrigin: '150px 150px' }}
-                          />
-                          {/* Data points */}
-                          {SAMPLE_SCORES.map((s, j) => {
-                            const angle = (Math.PI * 2 * j) / SAMPLE_SCORES.length - Math.PI / 2
-                            const r = (s.score / 100) * 110
-                            return (
-                              <motion.circle
-                                key={j}
-                                cx={150 + r * Math.cos(angle)}
-                                cy={150 + r * Math.sin(angle)}
-                                r="3"
-                                fill={s.color}
-                                stroke="#0a0f1a"
-                                strokeWidth="1.5"
-                                initial={{ scale: 0, opacity: 0 }}
-                                whileInView={{ scale: 1, opacity: 1 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.3, delay: 0.8 + j * 0.06 }}
-                              />
-                            )
-                          })}
-                          {/* Labels */}
-                          {SAMPLE_SCORES.map((s, j) => {
-                            const angle = (Math.PI * 2 * j) / SAMPLE_SCORES.length - Math.PI / 2
-                            const r = 130
-                            const x = 150 + r * Math.cos(angle)
-                            const y = 150 + r * Math.sin(angle)
-                            return (
-                              <text
-                                key={j}
-                                x={x} y={y}
-                                textAnchor="middle"
-                                dominantBaseline="middle"
-                                fill="#8b949e"
-                                fontSize="9"
-                                fontFamily="var(--font-inter)"
-                              >
-                                {s.name} {s.score}
-                              </text>
-                            )
-                          })}
-                        </svg>
-                      </div>
-
-                      {/* Key findings panel (2 cols) */}
-                      <div className="lg:col-span-2 space-y-3">
-                        <h3 className="font-heading text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                          <Sparkles className="h-3.5 w-3.5 text-eari-blue-light" />
-                          Key Findings
-                        </h3>
-
-                        {/* Top strength */}
-                        <div className="rounded-lg p-3 bg-emerald-500/[0.06] border border-emerald-500/[0.12]">
-                          <div className="flex items-center gap-2 mb-1">
-                            <TrendingUp className="h-3 w-3 text-emerald-400" />
-                            <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider">Top Strength</span>
-                          </div>
-                          <p className="text-xs text-foreground font-heading font-semibold">Security &amp; Compliance — 83/100</p>
-                          <p className="text-[10px] text-muted-foreground/60 mt-0.5">Strongest pillar. Robust controls and audit practices in place.</p>
-                        </div>
-
-                        {/* Critical gap */}
-                        <div className="rounded-lg p-3 bg-amber-500/[0.06] border border-amber-500/[0.12]">
-                          <div className="flex items-center gap-2 mb-1">
-                            <TrendingDown className="h-3 w-3 text-amber-400" />
-                            <span className="text-[10px] font-mono text-amber-400 uppercase tracking-wider">Critical Gap</span>
-                          </div>
-                          <p className="text-xs text-foreground font-heading font-semibold">Talent &amp; Skills — 44/100</p>
-                          <p className="text-[10px] text-muted-foreground/60 mt-0.5">AI workforce readiness is the primary constraint on execution.</p>
-                        </div>
-
-                        {/* AI Insight */}
-                        <div className="rounded-lg p-3 bg-eari-blue/[0.06] border border-eari-blue/[0.12]">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Brain className="h-3 w-3 text-eari-blue-light" />
-                            <span className="text-[10px] font-mono text-eari-blue-light uppercase tracking-wider">AI Insight</span>
-                          </div>
-                          <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
-                            Strong governance foundations (78/100) offset by a critical talent gap (44/100) that could constrain AI execution capacity. Prioritize upskilling programs before scaling deployments.
-                          </p>
-                        </div>
-
-                        {/* Quick stats row */}
-                        <div className="grid grid-cols-3 gap-2 pt-1">
-                          <div className="text-center p-2 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-                            <p className="font-heading text-lg font-bold text-eari-blue-light">8</p>
-                            <p className="text-[8px] font-mono text-muted-foreground/40">Pillars</p>
-                          </div>
-                          <div className="text-center p-2 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-                            <p className="font-heading text-lg font-bold text-[#d4a853]">40</p>
-                            <p className="text-[8px] font-mono text-muted-foreground/40">Questions</p>
-                          </div>
-                          <div className="text-center p-2 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-                            <p className="font-heading text-lg font-bold text-emerald-400">v5.3</p>
-                            <p className="text-[8px] font-mono text-muted-foreground/40">Method</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </FadeUp>
-            </div>
-          </div>
-        </ParallaxSection>
-
-        {/* ─── 5. AI INSIGHTS SECTION ───────────────────────────────────── */}
+        {/* ─── 4. AI INSIGHTS SECTION ───────────────────────────────────── */}
         <ParallaxSection speed={0.04} className="py-20 sm:py-28 bg-navy-800/50">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center max-w-3xl mx-auto">
                 <div className="flex items-center justify-center gap-2 mb-4">
-                  <motion.div
-                    animate={{ rotate: [0, 10, -10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                  >
-                    <Brain className="h-6 w-6 text-eari-blue-light" />
-                  </motion.div>
+                  <Brain className="h-6 w-6 text-eari-blue-light/90" aria-hidden />
                   <SparkleBadge>
                     <Badge variant="outline" className="font-mono text-xs border-eari-blue/40 text-eari-blue-light relative z-10">
                       AI-Powered
                     </Badge>
                   </SparkleBadge>
                 </div>
-                <h2 className="font-heading text-3xl sm:text-4xl font-bold gradient-text-blue">
+                <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-tight text-slate-100">
                   Strategic Insights Powered by AI
                 </h2>
                 <p className="mt-4 text-lg text-muted-foreground font-sans">
@@ -1987,12 +1455,7 @@ export default function Home() {
               <FadeUp>
                 <div className="glass-card rounded-xl p-6 h-full">
                   <div className="flex items-center gap-2 mb-4">
-                    <motion.div
-                      animate={{ scale: [1, 1.15, 1] }}
-                      transition={{ duration: 2, repeat: Infinity, repeatDelay: 2 }}
-                    >
-                      <Sparkles className="h-4 w-4 text-eari-blue-light" />
-                    </motion.div>
+                    <Sparkles className="h-4 w-4 text-eari-blue-light/90 shrink-0" aria-hidden />
                     <span className="font-heading text-sm font-semibold text-eari-blue-light">Sample AI Insight</span>
                   </div>
                   <div className="border-l-2 border-eari-blue/40 pl-4">
@@ -2051,16 +1514,17 @@ export default function Home() {
                     return (
                       <motion.div
                         key={point.title}
-                        initial={{ opacity: 0, x: 20 }}
+                        initial={{ opacity: 0, x: 12 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
-                        transition={{ duration: 0.5, delay: i * 0.1 }}
+                        transition={{ duration: 0.42, delay: i * 0.05, ease: 'easeOut' }}
                         className="flex gap-4 items-start group"
                       >
                         <motion.div
-                          className="flex h-10 w-10 items-center justify-center rounded-lg flex-shrink-0 mt-0.5 icon-float"
-                          style={{ backgroundColor: `${point.color}20`, animationDelay: `${i * 0.5}s` }}
-                          whileHover={{ scale: 1.1 }}
+                          className="flex h-10 w-10 items-center justify-center rounded-lg flex-shrink-0 mt-0.5 border border-white/[0.06]"
+                          style={{ backgroundColor: `${point.color}14` }}
+                          whileHover={{ scale: 1.03 }}
+                          transition={{ duration: 0.18 }}
                         >
                           <Icon className="h-5 w-5" style={{ color: point.color }} />
                         </motion.div>
@@ -2077,7 +1541,7 @@ export default function Home() {
           </div>
         </ParallaxSection>
 
-        {/* ─── 5B. CLIENTS SECTION ─────────────────────────────────────────── */}
+        {/* ─── 4B. CLIENTS SECTION ─────────────────────────────────────────── */}
         <section className="py-12 bg-navy-900 border-t border-b border-border/20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
@@ -2093,7 +1557,7 @@ export default function Home() {
                   initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: i * 0.08, duration: 0.5 }}
+                  transition={{ delay: i * 0.03, duration: 0.42, ease: 'easeOut' }}
                 >
                   <span className="font-heading text-lg sm:text-xl font-bold tracking-tight">{name}</span>
                 </motion.div>
@@ -2102,37 +1566,13 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ─── 5D. ROI CALCULATOR SECTION ─────────────────────────────────── */}
+        {/* ─── 4E. COMPETITIVE COMPARISON SECTION ──────────────────────────── */}
         <div className="section-gradient-separator" aria-hidden="true">
-          <div className="h-px bg-gradient-to-r from-transparent via-eari-blue/20 to-transparent" />
-        </div>
-        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-800/30">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <FadeUp>
-              <div className="text-center max-w-3xl mx-auto mb-12">
-                <h2 className="font-heading text-3xl sm:text-4xl font-bold gradient-text-blue">
-                  What&apos;s the ROI of AI Readiness?
-                </h2>
-                <p className="mt-4 text-lg text-muted-foreground font-sans">
-                  Estimate the business value of improving your organization&apos;s AI readiness score.
-                </p>
-              </div>
-            </FadeUp>
-            <FadeUp delay={0.1}>
-              <ROICalculator />
-            </FadeUp>
-          </div>
-        </ParallaxSection>
-
-        {/* ─── 5E. COMPETITIVE COMPARISON SECTION ──────────────────────────── */}
-        <div className="section-gradient-separator" aria-hidden="true">
-          <div className="h-px bg-gradient-to-r from-transparent via-[#d4a853]/20 to-transparent" />
+          <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
         </div>
         <section className="py-20 sm:py-28 bg-navy-900 relative overflow-hidden">
-          {/* Subtle background glow */}
           <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full opacity-[0.06]" style={{ background: 'radial-gradient(circle, #2563eb 0%, transparent 70%)' }} />
-            <div className="absolute bottom-0 right-[10%] w-[300px] h-[300px] rounded-full opacity-[0.04]" style={{ background: 'radial-gradient(circle, #d4a853 0%, transparent 70%)' }} />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[560px] h-[380px] rounded-full opacity-[0.045]" style={{ background: 'radial-gradient(circle, #2563eb 0%, transparent 72%)' }} />
           </div>
 
           <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
@@ -2141,7 +1581,7 @@ export default function Home() {
                 <Badge variant="outline" className="font-mono text-xs border-[#d4a853]/30 text-[#d4a853] bg-[#d4a853]/5 mb-4">
                   Competitive Edge
                 </Badge>
-                <h2 className="font-heading text-3xl sm:text-4xl font-bold gradient-text-gold">
+                <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-tight text-[#d4b878]">
                   E-ARI vs. Traditional Tools
                 </h2>
                 <p className="mt-4 text-lg text-muted-foreground font-sans max-w-2xl mx-auto">
@@ -2157,53 +1597,38 @@ export default function Home() {
                   label: 'AI Agents',
                   traditional: 'Static questionnaires with fixed logic',
                   eari: '6 specialized agents that reason, adapt & collaborate',
-                  accent: 'from-blue-500/20 to-cyan-500/20',
-                  accentBorder: 'border-blue-500/20',
-                  iconColor: 'text-blue-400',
                 },
                 {
                   icon: Award,
                   label: 'Certification',
                   traditional: 'No formal readiness certification',
                   eari: 'Bronze through Platinum tier badging system',
-                  accent: 'from-amber-500/20 to-yellow-500/20',
-                  accentBorder: 'border-amber-500/20',
-                  iconColor: 'text-amber-400',
                 },
                 {
                   icon: Scale,
                   label: 'Compliance',
                   traditional: 'Manual research across regulatory frameworks',
                   eari: 'Auto-mapped to EU AI Act, NIST RMF & ISO 42001',
-                  accent: 'from-emerald-500/20 to-green-500/20',
-                  accentBorder: 'border-emerald-500/20',
-                  iconColor: 'text-emerald-400',
                 },
                 {
                   icon: Radar,
                   label: 'Monitoring',
                   traditional: 'One-time point-in-time snapshots',
                   eari: 'Continuous drift detection with real-time alerts',
-                  accent: 'from-violet-500/20 to-purple-500/20',
-                  accentBorder: 'border-violet-500/20',
-                  iconColor: 'text-violet-400',
                 },
                 {
                   icon: BarChart3,
                   label: 'Benchmarking',
                   traditional: 'Self-reported, unverifiable claims',
                   eari: 'Real sector data with percentile rankings',
-                  accent: 'from-rose-500/20 to-pink-500/20',
-                  accentBorder: 'border-rose-500/20',
-                  iconColor: 'text-rose-400',
                 },
               ].map((row, i) => (
-                <FadeUp key={row.label} delay={0.05 * i}>
-                  <div className={`group glass-card rounded-xl border ${row.accentBorder} hover:border-opacity-60 transition-all duration-300 hover:shadow-lg hover:shadow-eari-blue/5`}>
+                <FadeUp key={row.label} delay={0.03 * i}>
+                  <div className="group rounded-xl border border-white/[0.08] bg-navy-900/35 backdrop-blur-sm transition-colors duration-200 hover:border-white/[0.12] hover:bg-navy-900/45 hover:shadow-md hover:shadow-black/25">
                     <div className="flex flex-col sm:flex-row items-stretch">
                       {/* Feature label column */}
-                      <div className={`flex items-center gap-3 sm:w-44 shrink-0 px-5 py-4 sm:py-0 bg-gradient-to-br ${row.accent} rounded-t-xl sm:rounded-t-none sm:rounded-l-xl border-b sm:border-b-0 sm:border-r border-border/10`}>
-                        <row.icon className={`h-5 w-5 ${row.iconColor} shrink-0`} />
+                      <div className="flex items-center gap-3 sm:w-44 shrink-0 px-5 py-4 sm:py-0 bg-navy-950/40 rounded-t-xl sm:rounded-t-none sm:rounded-l-xl border-b sm:border-b-0 sm:border-r border-white/[0.06]">
+                        <row.icon className="h-5 w-5 text-slate-400 shrink-0" aria-hidden />
                         <span className="font-heading font-semibold text-foreground text-sm">{row.label}</span>
                       </div>
 
@@ -2218,11 +1643,11 @@ export default function Home() {
                       </div>
 
                       {/* E-ARI column */}
-                      <div className="flex-1 flex items-center gap-3 px-5 py-4 bg-eari-blue/[0.04] rounded-b-xl sm:rounded-b-none sm:rounded-r-xl group-hover:bg-eari-blue/[0.07] transition-colors duration-300">
+                      <div className="flex-1 flex items-center gap-3 px-5 py-4 bg-white/[0.02] rounded-b-xl sm:rounded-b-none sm:rounded-r-xl group-hover:bg-white/[0.035] transition-colors duration-200">
                         <div className="flex items-center justify-center w-6 h-6 rounded-full bg-eari-blue/15 shrink-0">
                           <AnimatedCheck className="shrink-0" delay={0.1 + i * 0.08} />
                         </div>
-                        <span className="text-sm text-eari-blue-light font-medium font-sans">{row.eari}</span>
+                        <span className="text-sm text-slate-200 font-medium font-sans">{row.eari}</span>
                       </div>
                     </div>
                   </div>
@@ -2231,7 +1656,7 @@ export default function Home() {
             </div>
 
             {/* Column headers legend */}
-            <FadeUp delay={0.35}>
+            <FadeUp delay={0.18}>
               <div className="flex justify-center gap-8 mt-8">
                 <div className="flex items-center gap-2">
                   <div className="flex items-center justify-center w-5 h-5 rounded-full bg-red-500/10">
@@ -2245,7 +1670,7 @@ export default function Home() {
                   <div className="flex items-center justify-center w-5 h-5 rounded-full bg-eari-blue/15">
                     <Check className="h-3 w-3 text-eari-blue-light" />
                   </div>
-                  <span className="text-xs text-eari-blue-light font-sans">E-ARI</span>
+                  <span className="text-xs text-slate-300 font-sans">E-ARI</span>
                 </div>
               </div>
             </FadeUp>
@@ -2256,26 +1681,21 @@ export default function Home() {
           <div className="h-px bg-gradient-to-r from-transparent via-eari-blue/20 to-transparent" />
         </div>
 
-        {/* ─── 6. PRICING SECTION ───────────────────────────────────────── */}
+        {/* ─── 5. PRICING SECTION ───────────────────────────────────────── */}
         <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-900 relative overflow-hidden" id="pricing">
           {/* Subtle grid background */}
           <div className="absolute inset-0 pricing-grid-bg pointer-events-none" aria-hidden="true" />
-          {/* Floating decorative orbs */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
             <div
-              className="absolute top-[20%] left-[10%] w-[300px] h-[300px] rounded-full opacity-[0.04]"
-              style={{ background: 'radial-gradient(circle, #2563eb 0%, transparent 70%)' }}
-            />
-            <div
-              className="absolute bottom-[10%] right-[5%] w-[250px] h-[250px] rounded-full opacity-[0.03]"
-              style={{ background: 'radial-gradient(circle, #d4a853 0%, transparent 70%)' }}
+              className="absolute top-[22%] left-[8%] w-[280px] h-[280px] rounded-full opacity-[0.035]"
+              style={{ background: 'radial-gradient(circle, #2563eb 0%, transparent 72%)' }}
             />
           </div>
 
           <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center max-w-3xl mx-auto">
-                <h2 className="font-heading text-3xl sm:text-4xl font-bold gradient-text-blue">
+                <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-tight text-slate-100">
                   Simple, Transparent Pricing
                 </h2>
                 <p className="mt-4 text-lg text-muted-foreground font-sans">
@@ -2302,40 +1722,26 @@ export default function Home() {
                 const isPro = tier.highlighted
                 const isEnterprise = tier.name === 'Enterprise'
                 return (
-                  <FadeUp key={tier.name} delay={i * 0.1}>
+                  <FadeUp key={tier.name} delay={i * 0.05}>
                     <motion.div
-                      whileHover={{ y: -8, scale: isPro ? 1.03 : 1.02 }}
-                      transition={{ duration: 0.3 }}
-                      className={`h-full ${isPro ? 'pricing-glow-pro' : ''} ${isEnterprise ? 'pricing-glow-enterprise' : ''}`}
+                      whileHover={isPro ? { y: -3 } : { y: -2 }}
+                      transition={{ duration: 0.22, ease: 'easeOut' }}
+                      className="h-full"
                     >
                       <Card
-                        className={`h-full relative overflow-hidden transition-all duration-300 ${
+                        className={`h-full relative overflow-hidden transition-colors duration-200 ${
                           isPro
-                            ? 'bg-navy-800/90 border-eari-blue/30 shadow-xl shadow-eari-blue/10 pricing-pattern-pro ring-1 ring-eari-blue/20'
+                            ? 'bg-navy-800/95 border-eari-blue/35 shadow-lg shadow-black/35 ring-1 ring-white/[0.04]'
                             : isEnterprise
-                            ? 'bg-navy-800/80 border-[#d4a853]/20 pricing-pattern-enterprise'
-                            : 'bg-navy-800/70 border-border/50 pricing-pattern'
+                            ? 'bg-navy-800/85 border-[#d4a853]/25 shadow-md shadow-black/30'
+                            : 'bg-navy-800/75 border-white/[0.08] shadow-md shadow-black/25'
                         }`}
                       >
-                        {/* Shimmer border on recommended card */}
                         {isPro && (
-                          <>
-                            <div className="absolute top-0 left-0 right-0 h-[2px] shimmer-border" />
-                            <div className="absolute bottom-0 left-0 right-0 h-[2px] shimmer-border" />
-                            <div className="absolute top-0 bottom-0 left-0 w-[2px] shimmer-border" />
-                            <div className="absolute top-0 bottom-0 right-0 w-[2px] shimmer-border" />
-                          </>
-                        )}
-
-                        {/* Popular badge for Professional */}
-                        {isPro && (
-                          <div className="absolute -top-0 left-1/2 -translate-x-1/2 z-10">
-                            <div className="relative">
-                              <div className="absolute inset-0 bg-eari-blue/30 blur-md rounded-full" />
-                              <Badge className="relative bg-eari-blue text-white font-heading text-xs px-4 py-1 shadow-lg shadow-eari-blue/40">
-                                ★ Most Popular
-                              </Badge>
-                            </div>
+                          <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10">
+                            <Badge className="bg-eari-blue text-white font-heading text-[10px] uppercase tracking-wide px-3 py-1 border border-white/10 shadow-sm shadow-black/30">
+                              Most popular
+                            </Badge>
                           </div>
                         )}
 
@@ -2357,11 +1763,11 @@ export default function Home() {
                         <CardContent>
                           <div className="mt-2 mb-6">
                             {isPro ? (
-                              <span className="font-heading text-5xl font-bold gradient-text-blue">{isAnnual ? tier.yearlyPrice : tier.price}</span>
+                              <span className="font-heading text-5xl font-semibold tracking-tight text-slate-100">{isAnnual ? tier.yearlyPrice : tier.price}</span>
                             ) : isEnterprise ? (
-                              <span className="font-heading text-5xl font-bold gradient-text-gold">{isAnnual ? tier.yearlyPrice : tier.price}</span>
+                              <span className="font-heading text-5xl font-semibold tracking-tight text-[#d4b878]">{isAnnual ? tier.yearlyPrice : tier.price}</span>
                             ) : (
-                              <span className="font-heading text-5xl font-bold text-foreground">{isAnnual ? tier.yearlyPrice : tier.price}</span>
+                              <span className="font-heading text-5xl font-semibold tracking-tight text-foreground">{isAnnual ? tier.yearlyPrice : tier.price}</span>
                             )}
                             {(isAnnual ? tier.yearlyPeriod : tier.period) && (
                               <span className="text-muted-foreground font-sans text-sm ml-1">{isAnnual ? tier.yearlyPeriod : tier.period}</span>
@@ -2407,10 +1813,10 @@ export default function Home() {
                             <Button
                               className={`w-full font-heading font-semibold h-11 ${
                                 isPro
-                                  ? 'pricing-cta-gradient text-white border-0'
+                                  ? 'bg-eari-blue hover:bg-eari-blue-dark text-white border border-white/[0.08]'
                                   : isEnterprise
-                                  ? 'pricing-cta-gold border-0'
-                                  : 'bg-transparent border border-border/60 text-foreground hover:bg-navy-700 hover:border-border'
+                                  ? 'bg-[#b8923f]/90 hover:bg-[#c9a44d] text-navy-950 border border-[#d4a853]/40'
+                                  : 'bg-transparent border border-white/[0.12] text-foreground hover:bg-navy-700/90 hover:border-white/[0.16]'
                               }`}
                             >
                               {tier.cta}
@@ -2440,12 +1846,14 @@ export default function Home() {
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/auth/register">
-                  <Button size="lg" className="group relative overflow-hidden bg-gradient-to-r from-eari-blue via-blue-600 to-cyan-600 hover:from-eari-blue-dark hover:via-blue-700 hover:to-cyan-700 text-white font-heading font-semibold h-12 px-8 text-base w-full sm:w-auto shadow-lg shadow-eari-blue/25 hover:shadow-eari-blue/40 transition-all duration-300">
-                    <span className="relative z-10 flex items-center">
+                  <Button
+                    size="lg"
+                    className="group bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-12 px-8 text-base w-full sm:w-auto shadow-md shadow-black/25 border border-white/[0.06] transition-colors duration-200"
+                  >
+                    <span className="flex items-center">
                       Start Free Assessment
-                      <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                      <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-200 group-hover:translate-x-0.5" />
                     </span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                   </Button>
                 </Link>
                 <Link href="#methodology">

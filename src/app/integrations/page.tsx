@@ -388,7 +388,7 @@ export default function IntegrationsPage() {
                         <Plug className="h-6 w-6 text-eari-blue-light" />
                       </div>
                       <div>
-                        <h1 className="font-heading text-3xl sm:text-4xl font-extrabold gradient-text-blue tracking-tight">
+                        <h1 className="font-heading text-3xl sm:text-4xl font-semibold tracking-tight text-slate-100">
                           Integrations
                         </h1>
                         <p className="text-muted-foreground font-sans mt-1">

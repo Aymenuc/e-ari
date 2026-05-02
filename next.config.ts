@@ -6,6 +6,16 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: false,
   },
   reactStrictMode: true,
+  async redirects() {
+    return [
+      { source: "/compliance", destination: "/portal/use-cases", permanent: false },
+      {
+        source: "/compliance/:path*",
+        destination: "/portal/use-cases/:path*",
+        permanent: false,
+      },
+    ];
+  },
   serverExternalPackages: ['docx'],
   images: {
     unoptimized: true,

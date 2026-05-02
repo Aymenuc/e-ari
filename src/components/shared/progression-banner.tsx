@@ -41,16 +41,16 @@ function defaultCta(state: ProgressionState): { label: string; href: string } {
       return state.firstUseCaseId
         ? {
             label: 'Add evidence',
-            href: `/compliance/systems/${state.firstUseCaseId}/evidence`,
+            href: `/portal/use-cases/systems/${state.firstUseCaseId}/evidence`,
           }
-        : { label: 'Add evidence', href: '/compliance/systems/new' };
+        : { label: 'Add evidence', href: '/portal/use-cases/systems/new' };
     case 'complying':
       return state.firstUseCaseId
         ? {
             label: 'Generate FRIA',
-            href: `/compliance/systems/${state.firstUseCaseId}/fria`,
+            href: `/portal/use-cases/systems/${state.firstUseCaseId}/fria`,
           }
-        : { label: 'Generate FRIA', href: '/compliance/systems/new' };
+        : { label: 'Generate FRIA', href: '/portal/use-cases/systems/new' };
     default:
       return { label: 'View inbox', href: '/portal#inbox' };
   }

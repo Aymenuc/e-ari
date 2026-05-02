@@ -3,8 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Navigation } from "@/components/shared/navigation";
-import { Footer } from "@/components/shared/footer";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -274,12 +272,10 @@ export default function AISystemOverviewPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900">
-      <Navigation />
-      <main className="flex-1 mx-auto max-w-4xl w-full px-4 sm:px-6 lg:px-8 py-10 space-y-6">
-        <Link href="/compliance" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground font-sans">
+    <div className="space-y-6">
+        <Link href="/portal/use-cases" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground font-sans">
           <ArrowLeft className="h-4 w-4 mr-1" />
-          Compliance home
+          Use cases home
         </Link>
 
         {error && (
@@ -324,7 +320,7 @@ export default function AISystemOverviewPage() {
                   </p>
                 ) : null}
               </div>
-              <Link href={`/compliance/systems/${id}/evidence`}>
+              <Link href={`/portal/use-cases/systems/${id}/evidence`}>
                 <Button className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading">
                   <FileStack className="h-4 w-4 mr-2" />
                   Evidence vault
@@ -423,19 +419,19 @@ export default function AISystemOverviewPage() {
                   {busy === "Annex IV" ? <Loader2 className="h-4 w-4 mr-2 animate-spin shrink-0" /> : <FileJson className="h-4 w-4 mr-2 shrink-0 text-cyan-400" />}
                   Generate Annex IV draft
                 </Button>
-                <Link href={`/compliance/systems/${id}/gaps`} className="sm:col-span-2">
+                <Link href={`/portal/use-cases/systems/${id}/gaps`} className="sm:col-span-2">
                   <Button variant="secondary" className="w-full justify-start font-heading bg-navy-700/50">
                     <Radar className="h-4 w-4 mr-2" />
                     Open gap radar
                   </Button>
                 </Link>
-                <Link href={`/compliance/systems/${id}/fria`} className="sm:col-span-2">
+                <Link href={`/portal/use-cases/systems/${id}/fria`} className="sm:col-span-2">
                   <Button variant="secondary" className="w-full justify-start font-heading bg-navy-700/50">
                     <ScrollText className="h-4 w-4 mr-2" />
                     Review FRIA JSON & export DOCX
                   </Button>
                 </Link>
-                <Link href={`/compliance/systems/${id}/technical-file`} className="sm:col-span-2">
+                <Link href={`/portal/use-cases/systems/${id}/technical-file`} className="sm:col-span-2">
                   <Button variant="secondary" className="w-full justify-start font-heading bg-navy-700/50">
                     <FileJson className="h-4 w-4 mr-2" />
                     Review technical file & export DOCX
@@ -443,7 +439,7 @@ export default function AISystemOverviewPage() {
                 </Link>
                 <Button
                   variant="secondary"
-                  className="sm:col-span-2 justify-start font-heading bg-gradient-to-r from-eari-blue/20 to-cyan-600/10 border border-eari-blue/30"
+                  className="sm:col-span-2 justify-start font-heading bg-eari-blue/10 border border-eari-blue/25"
                   disabled={!!busy}
                   onClick={() => downloadPack()}
                 >
@@ -482,8 +478,6 @@ export default function AISystemOverviewPage() {
             </Card>
           </>
         ) : null}
-      </main>
-      <Footer />
     </div>
   );
 }

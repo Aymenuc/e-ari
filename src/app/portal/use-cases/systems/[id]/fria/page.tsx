@@ -3,27 +3,25 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Navigation } from "@/components/shared/navigation";
-import { Footer } from "@/components/shared/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowLeft, Download, FileJson, Lock } from "lucide-react";
+import { Loader2, ArrowLeft, Download, ScrollText, Lock } from "lucide-react";
 
-export default function TechnicalFilePage() {
+export default function FriaPage() {
   const params = useParams();
   const id = params.id as string;
   const [data, setData] = useState<unknown | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const tfStatus =
+  const friaStatus =
     data && typeof data === "object" && data !== null && "status" in data
       ? String((data as { status: string }).status)
       : null;
 
   const load = useCallback(async () => {
-    const res = await fetch(`/api/compliance/systems/${id}/technical-file`);
+    const res = await fetch(`/api/compliance/systems/${id}/fria`);
     const j = await res.json().catch(() => null);
     if (!res.ok) throw new Error((j && (j as { error?: string }).error) || `HTTP ${res.status}`);
     setData(j === null ? null : j);
@@ -43,11 +41,11 @@ export default function TechnicalFilePage() {
     };
   }, [load]);
 
-  async function finalizeTf() {
+  async function finalizeFria() {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(`/api/compliance/systems/${id}/technical-file`, {
+      const res = await fetch(`/api/compliance/systems/${id}/fria`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "finalized" }),
@@ -63,20 +61,18 @@ export default function TechnicalFilePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900">
-      <Navigation />
-      <main className="flex-1 mx-auto max-w-4xl w-full px-4 py-10 space-y-6">
-        <Link href={`/compliance/systems/${id}`} className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground font-sans">
+    <div className="space-y-6">
+        <Link href={`/portal/use-cases/systems/${id}`} className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground font-sans">
           <ArrowLeft className="h-4 w-4 mr-1" />
-          System overview
+          Use case overview
         </Link>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-2">
-            <FileJson className="h-8 w-8 text-cyan-400" />
-            <h1 className="font-heading text-2xl font-bold text-foreground">Annex IV technical file</h1>
-            {tfStatus ? (
+            <ScrollText className="h-8 w-8 text-emerald-400" />
+            <h1 className="font-heading text-2xl font-bold text-foreground">FRIA draft</h1>
+            {friaStatus ? (
               <Badge variant="outline" className="font-mono text-[10px] capitalize border-border">
-                {tfStatus}
+                {friaStatus}
               </Badge>
             ) : null}
           </div>
@@ -85,19 +81,19 @@ export default function TechnicalFilePage() {
               type="button"
               variant="secondary"
               className="bg-navy-700/80 font-heading"
-              disabled={!data || data === null || tfStatus === "finalized" || busy}
-              onClick={() => void finalizeTf()}
+              disabled={!data || data === null || friaStatus === "finalized" || busy}
+              onClick={() => void finalizeFria()}
             >
               {busy ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Lock className="h-4 w-4 mr-2" />}
               Mark finalized
             </Button>
-            <a href={`/api/compliance/systems/${id}/technical-file/export`}>
+            <a href={`/api/compliance/systems/${id}/fria/export`}>
               <Button variant="outline" className="border-eari-blue/30" disabled={!data || data === null}>
                 <Download className="h-4 w-4 mr-2" />
                 DOCX
               </Button>
             </a>
-            <a href={`/api/compliance/systems/${id}/technical-file/export/pdf`}>
+            <a href={`/api/compliance/systems/${id}/fria/export/pdf`}>
               <Button variant="outline" className="border-eari-blue/30" disabled={!data || data === null}>
                 <Download className="h-4 w-4 mr-2" />
                 PDF
@@ -112,7 +108,7 @@ export default function TechnicalFilePage() {
         )}
         <Card className="bg-navy-800/90 border-border/40">
           <CardHeader>
-            <CardTitle className="font-heading text-lg">JSON sections</CardTitle>
+            <CardTitle className="font-heading text-lg">JSON (from API)</CardTitle>
           </CardHeader>
           <CardContent>
             {data === undefined ? (
@@ -120,7 +116,7 @@ export default function TechnicalFilePage() {
                 <Loader2 className="h-8 w-8 animate-spin text-eari-blue-light" />
               </div>
             ) : data === null ? (
-              <p className="text-sm text-muted-foreground font-sans">No technical file yet — generate from the system overview.</p>
+              <p className="text-sm text-muted-foreground font-sans">No FRIA yet — generate from the system overview.</p>
             ) : (
               <pre className="text-[11px] font-mono text-muted-foreground overflow-x-auto whitespace-pre-wrap break-words max-h-[70vh] overflow-y-auto">
                 {JSON.stringify(data, null, 2)}
@@ -128,8 +124,6 @@ export default function TechnicalFilePage() {
             )}
           </CardContent>
         </Card>
-      </main>
-      <Footer />
     </div>
   );
 }

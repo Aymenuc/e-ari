@@ -277,7 +277,7 @@ export default function PulsePage() {
                           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-eari-blue/15">
                             <Activity className="h-6 w-6 text-eari-blue-light" />
                           </div>
-                          <h1 className="font-heading text-3xl sm:text-4xl font-extrabold gradient-text-blue tracking-tight">
+                          <h1 className="font-heading text-3xl sm:text-4xl font-semibold tracking-tight text-slate-100">
                             AI Pulse
                           </h1>
                         </div>
@@ -288,7 +288,7 @@ export default function PulsePage() {
                       <Button
                         onClick={handleRunPulse}
                         disabled={running}
-                        className="bg-gradient-to-r from-eari-blue to-eari-blue-dark hover:from-eari-blue-dark hover:to-eari-blue text-white font-heading font-semibold h-12 px-6 shadow-lg shadow-eari-blue/20 min-w-[180px]"
+                        className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-12 px-6 shadow-md shadow-eari-blue/20 min-w-[180px]"
                       >
                         {running ? (
                           <>
@@ -353,7 +353,7 @@ export default function PulsePage() {
                   <Button
                     onClick={handleRunPulse}
                     disabled={running}
-                    className="bg-gradient-to-r from-eari-blue to-eari-blue-dark hover:from-eari-blue-dark hover:to-eari-blue text-white font-heading font-semibold h-12 px-8 shadow-lg shadow-eari-blue/20"
+                    className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-12 px-8 shadow-md shadow-eari-blue/20"
                   >
                     {running ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -584,7 +584,7 @@ export default function PulsePage() {
                 <CardContent>
                   <div className="relative">
                     {/* Timeline line */}
-                    <div className="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-eari-blue/40 via-cyan-500/30 to-transparent" />
+                    <div className="absolute left-6 top-0 bottom-0 w-px bg-eari-blue/20" />
                     <div className="space-y-4 max-h-96 overflow-y-auto">
                       {pulseRuns.slice(0, 12).map((run, i) => {
                         const delta = i < pulseRuns.length - 1

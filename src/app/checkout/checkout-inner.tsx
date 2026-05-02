@@ -243,15 +243,15 @@ export default function CheckoutPageInner() {
           {/* Order Summary Card */}
           <FadeUp delay={0.05}>
             <div className="relative">
-              {/* Gradient border glow for Pro */}
-              {effectivePlan === 'professional' && (
-                <div className="absolute -inset-px rounded-xl bg-gradient-to-r from-eari-blue/40 via-cyan-500/30 to-eari-blue/40 blur-sm" />
-              )}
-              {effectivePlan === 'enterprise' && (
-                <div className="absolute -inset-px rounded-xl bg-gradient-to-r from-amber-500/40 via-yellow-500/30 to-amber-500/40 blur-sm" />
-              )}
-
-              <Card className="relative bg-navy-800 border-border/60 rounded-xl">
+              <Card
+                className={`relative bg-navy-800 rounded-xl border ${
+                  effectivePlan === 'enterprise'
+                    ? 'border-[#c9a227]/35'
+                    : effectivePlan === 'professional'
+                      ? 'border-eari-blue/35'
+                      : 'border-border/60'
+                }`}
+              >
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -366,8 +366,8 @@ export default function CheckoutPageInner() {
                       disabled={loading || isAlreadyOnPlan}
                       className={`w-full font-heading font-semibold h-12 text-base ${
                         effectivePlan === 'enterprise'
-                          ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-navy-900 shadow-lg shadow-amber-500/20'
-                          : 'bg-gradient-to-r from-eari-blue to-cyan-600 hover:from-eari-blue-dark hover:to-cyan-700 text-white shadow-lg shadow-eari-blue/20'
+                          ? 'bg-[#c9a227] hover:bg-[#b89220] text-navy-950 shadow-md shadow-black/15'
+                          : 'bg-eari-blue hover:bg-eari-blue-dark text-white shadow-md shadow-eari-blue/15'
                       }`}
                     >
                       {loading ? (

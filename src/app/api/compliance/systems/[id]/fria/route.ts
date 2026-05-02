@@ -51,7 +51,7 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ id: strin
           type: "fria_ready",
           title: "FRIA draft generated",
           message: `A FRIA draft is ready for ${sys.name}.`,
-          actionUrl: `/compliance/systems/${systemId}/fria`,
+          actionUrl: `/portal/use-cases/systems/${systemId}/fria`,
         },
       });
     } catch {}

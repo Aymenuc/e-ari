@@ -111,15 +111,27 @@ export async function getProgressionState(userId: string): Promise<ProgressionSt
         orderBy: { createdAt: "asc" },
       }),
       db.evidenceClause.findMany({
-        where: { evidence: { system: { userId } } },
+        where: {
+          evidence: {
+            OR: [
+              { system: { userId } },
+              { userId, organizationLevel: true },
+            ],
+          },
+        },
         select: {
           aiActArticles: true,
-          evidence: { select: { systemId: true } },
+          evidence: { select: { systemId: true, organizationLevel: true } },
         },
         take: 8000,
       }),
       db.evidence.count({
-        where: { system: { userId } },
+        where: {
+          OR: [
+            { system: { userId } },
+            { userId, organizationLevel: true },
+          ],
+        },
       }),
       db.obligationGap.count({
         where: {
@@ -137,8 +149,12 @@ export async function getProgressionState(userId: string): Promise<ProgressionSt
   const systemIds = systems.map((s) => s.id);
   const clausesBySystem = new Map<string, typeof clausesAgg>();
   for (const sid of systemIds) clausesBySystem.set(sid, []);
+  const orgWideClauses = clausesAgg.filter(
+    (r) => r.evidence.systemId == null && r.evidence.organizationLevel,
+  );
   for (const row of clausesAgg) {
     const sid = row.evidence.systemId;
+    if (!sid) continue;
     const bucket = clausesBySystem.get(sid);
     if (bucket) bucket.push(row);
   }
@@ -149,7 +165,7 @@ export async function getProgressionState(userId: string): Promise<ProgressionSt
   for (const sys of systems) {
     const tier = sys.classifiedAt ? sys.riskTier : null;
     const applicable = applicableObligationsForTier(tier);
-    const clauses = clausesBySystem.get(sys.id) ?? [];
+    const clauses = [...(clausesBySystem.get(sys.id) ?? []), ...orgWideClauses];
     for (const ob of applicable) {
       applicableCodes.add(ob.code);
       if (

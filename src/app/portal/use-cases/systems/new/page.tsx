@@ -53,7 +53,7 @@ export default function NewAISystemPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-      router.push(`/compliance/systems/${data.id}`);
+      router.push(`/portal/use-cases/systems/${data.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create");
     } finally {
@@ -65,7 +65,7 @@ export default function NewAISystemPage() {
     <div className="min-h-screen flex flex-col bg-navy-900">
       <Navigation />
       <main className="flex-1 mx-auto max-w-2xl w-full px-4 sm:px-6 lg:px-8 py-10 space-y-6">
-        <Link href="/compliance" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground font-sans">
+        <Link href="/portal/use-cases" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground font-sans">
           <ArrowLeft className="h-4 w-4 mr-1" />
           Back to compliance
         </Link>
@@ -159,7 +159,7 @@ export default function NewAISystemPage() {
               <Button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-gradient-to-r from-eari-blue to-eari-blue-dark text-white font-heading"
+                className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-heading"
               >
                 {submitting ? (
                   <>

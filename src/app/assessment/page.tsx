@@ -23,7 +23,6 @@ import {
   Menu,
   X,
   Save,
-  Sparkles,
   Briefcase,
 } from 'lucide-react';
 
@@ -290,11 +289,13 @@ function LikertButton({
   isSelected,
   hasError,
   onSelect,
+  reduceMotion,
 }: {
   option: LikertOptionConfig;
   isSelected: boolean;
   hasError: boolean;
   onSelect: () => void;
+  reduceMotion?: boolean;
 }) {
   return (
     <motion.button
@@ -306,27 +307,27 @@ function LikertButton({
       } ${hasError && !isSelected ? 'border-destructive/50' : ''}`}
       aria-label={`${option.label} - ${option.value} out of 5`}
       aria-pressed={isSelected}
-      whileHover={{ scale: 1.04, y: -2 }}
-      whileTap={{ scale: 0.96 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+      whileHover={reduceMotion ? undefined : { scale: 1.02, y: -1 }}
+      whileTap={reduceMotion ? undefined : { scale: 0.99 }}
+      transition={{ type: 'spring', stiffness: 380, damping: 28 }}
     >
-      {/* Glow effect on selection */}
+      {/* Selection emphasis — restrained ring */}
       {isSelected && (
         <motion.div
-          className="absolute inset-0 rounded-lg"
-          style={{ boxShadow: `0 0 20px ${option.glowColor}, inset 0 0 12px ${option.glowColor}` }}
+          className="absolute inset-0 rounded-lg pointer-events-none"
+          style={{ boxShadow: `inset 0 0 0 1px ${option.glowColor}` }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.25 }}
         />
       )}
       <motion.span
         className={`text-lg font-heading font-bold relative z-10 ${
           isSelected ? option.selectedText : 'text-muted-foreground'
         }`}
-        animate={isSelected ? { scale: [1, 1.15, 1] } : {}}
-        transition={{ duration: 0.3, ease: 'easeOut' }}
+        animate={!reduceMotion && isSelected ? { scale: [1, 1.06, 1] } : {}}
+        transition={{ duration: 0.28, ease: 'easeOut' }}
       >
         {option.value}
       </motion.span>
@@ -344,6 +345,7 @@ function LikertButton({
 // ─── Animated Progress Bar ────────────────────────────────────────────────────
 
 function AnimatedProgressBar({ value, className, color }: { value: number; className?: string; color?: string }) {
+  const reduceMotion = useReducedMotion();
   return (
     <div className={`relative h-2.5 w-full overflow-hidden rounded-full bg-navy-700 ${className || ''}`}>
       <motion.div
@@ -351,17 +353,7 @@ function AnimatedProgressBar({ value, className, color }: { value: number; class
         style={{ backgroundColor: color || '#2563eb' }}
         initial={{ width: 0 }}
         animate={{ width: `${value}%` }}
-        transition={{ duration: 0.8, ease: EASE_OUT }}
-      />
-      {/* Shimmer effect */}
-      <motion.div
-        className="absolute inset-y-0 left-0 rounded-full opacity-30"
-        style={{
-          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)',
-          width: `${value}%`,
-        }}
-        animate={{ x: ['-100%', '200%'] }}
-        transition={{ duration: 2, repeat: Infinity, repeatDelay: 3, ease: 'easeInOut' }}
+        transition={{ duration: reduceMotion ? 0 : 0.8, ease: EASE_OUT }}
       />
     </div>
   );
@@ -1080,11 +1072,15 @@ export default function AssessmentPage() {
                       backgroundColor: `${pillar.color}15`,
                       color: pillar.color,
                     }}
-                    animate={justAnswered ? {
-                      scale: [1, 1.2, 1],
-                      backgroundColor: [`${pillar.color}15`, `${pillar.color}30`, `${pillar.color}15`],
-                    } : {}}
-                    transition={{ duration: 0.4 }}
+                    animate={
+                      prefersReducedMotion || !justAnswered
+                        ? {}
+                        : {
+                            scale: [1, 1.08, 1],
+                            backgroundColor: [`${pillar.color}15`, `${pillar.color}28`, `${pillar.color}15`],
+                          }
+                    }
+                    transition={{ duration: 0.35 }}
                   >
                     {qIdx + 1}
                   </motion.span>
@@ -1109,6 +1105,7 @@ export default function AssessmentPage() {
                         option={option}
                         isSelected={isSelected}
                         hasError={hasError}
+                        reduceMotion={!!prefersReducedMotion}
                         onSelect={() => handleAnswer(question.id, option.value)}
                       />
                     );
@@ -1125,12 +1122,9 @@ export default function AssessmentPage() {
                       animate="visible"
                       exit={{ opacity: 0, x: -8 }}
                     >
-                      <motion.span
-                        animate={{ x: [0, -3, 3, -2, 2, 0] }}
-                        transition={{ duration: 0.4 }}
-                      >
+                      <span className="inline-flex">
                         <AlertTriangle className="h-3.5 w-3.5" />
-                      </motion.span>
+                      </span>
                       Please select an answer
                     </motion.p>
                   )}
@@ -1231,8 +1225,8 @@ export default function AssessmentPage() {
               initial="hidden"
               animate="visible"
               custom={idx}
-              whileHover={{ scale: 1.02, y: -1 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={prefersReducedMotion ? undefined : { scale: 1.01, y: -1 }}
+              whileTap={prefersReducedMotion ? undefined : { scale: 0.99 }}
             >
               <div
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
@@ -1322,12 +1316,7 @@ export default function AssessmentPage() {
             <Card className="bg-orange-500/5 border-orange-500/20 mb-6">
               <CardContent className="pt-0">
                 <div className="flex items-start gap-3">
-                  <motion.div
-                    animate={{ rotate: [0, -5, 5, -3, 3, 0] }}
-                    transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 3 }}
-                  >
-                    <AlertTriangle className="h-5 w-5 text-orange-400 shrink-0 mt-0.5" />
-                  </motion.div>
+                  <AlertTriangle className="h-5 w-5 text-orange-400 shrink-0 mt-0.5" aria-hidden />
                   <div>
                     <p className="font-heading font-medium text-orange-400 text-sm">
                       Assessment incomplete
@@ -1353,7 +1342,7 @@ export default function AssessmentPage() {
         <Button
           onClick={handleSubmit}
           disabled={!allPillarsComplete || isSubmitting}
-          className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans h-11 px-8 relative overflow-hidden"
+          className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans h-11 px-8"
           size="lg"
         >
           {isSubmitting ? (
@@ -1368,23 +1357,12 @@ export default function AssessmentPage() {
           ) : (
             <motion.div
               className="flex items-center gap-2"
-              whileHover={{ x: 2 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+              whileHover={prefersReducedMotion ? undefined : { x: 2 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 26 }}
             >
               Submit Assessment
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4" aria-hidden />
             </motion.div>
-          )}
-          {/* Active shimmer on button */}
-          {allPillarsComplete && !isSubmitting && (
-            <motion.div
-              className="absolute inset-0 opacity-20"
-              style={{
-                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
-              }}
-              animate={{ x: ['-100%', '200%'] }}
-              transition={{ duration: 2, repeat: Infinity, repeatDelay: 2, ease: 'easeInOut' }}
-            />
           )}
         </Button>
         {!allPillarsComplete && (

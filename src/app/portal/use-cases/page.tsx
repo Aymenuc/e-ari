@@ -19,7 +19,7 @@ interface SystemRow {
   _count: { evidence: number; obligationGaps: number };
 }
 
-export default function ComplianceDashboardPage() {
+export default function UseCasesDashboardPage() {
   const [systems, setSystems] = useState<SystemRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,10 +57,10 @@ export default function ComplianceDashboardPage() {
               AI Act evidence vault — register AI systems, upload policies and artifacts, and anchor obligations to your readiness baseline (PR #1).
             </p>
           </div>
-          <Link href="/compliance/systems/new">
-            <Button className="bg-gradient-to-r from-eari-blue to-eari-blue-dark hover:from-eari-blue-dark hover:to-eari-blue text-white font-heading shadow-lg shadow-eari-blue/20">
+          <Link href="/portal/use-cases/systems/new">
+            <Button className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading shadow-md shadow-eari-blue/15">
               <Plus className="h-4 w-4 mr-2" />
-              New AI system
+              New use case
             </Button>
           </Link>
         </div>
@@ -75,10 +75,10 @@ export default function ComplianceDashboardPage() {
           <CardHeader>
             <CardTitle className="font-heading text-lg flex items-center gap-2">
               <FileStack className="h-5 w-5 text-eari-blue-light" />
-              Your AI systems
+              Your use cases
             </CardTitle>
             <CardDescription className="font-sans">
-              Each system represents one AI use case or deployment you need to evidence under the AI Act.
+              Each row is one deployment or application you evidence against the AI Act.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -88,7 +88,7 @@ export default function ComplianceDashboardPage() {
               </div>
             ) : systems.length === 0 ? (
               <p className="text-sm text-muted-foreground font-sans py-6 text-center">
-                No systems yet. Create one to open the evidence vault.
+                No use cases yet. Create one to open the evidence vault.
               </p>
             ) : (
               <ul className="divide-y divide-border/40">
@@ -109,13 +109,13 @@ export default function ComplianceDashboardPage() {
                       </p>
                     </div>
                     <div className="flex gap-2">
-                      <Link href={`/compliance/systems/${s.id}`}>
+                      <Link href={`/portal/use-cases/systems/${s.id}`}>
                         <Button variant="outline" size="sm" className="border-eari-blue/30 text-eari-blue-light">
                           Overview
                           <ArrowUpRight className="h-3 w-3 ml-1" />
                         </Button>
                       </Link>
-                      <Link href={`/compliance/systems/${s.id}/evidence`}>
+                      <Link href={`/portal/use-cases/systems/${s.id}/evidence`}>
                         <Button size="sm" className="bg-eari-blue/90 hover:bg-eari-blue text-white font-heading">
                           Evidence vault
                         </Button>

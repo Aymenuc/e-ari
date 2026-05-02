@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ChevronDown, LayoutDashboard, LogOut, Shield, Users, Plug, Menu, X } from "lucide-react";
+import { ChevronDown, LayoutDashboard, LogOut, Shield, Users, Plug, Menu, X, FileStack } from "lucide-react";
 import { NotificationBell } from "@/components/shared/notification-bell";
 import { BrandWordmark } from "@/components/shared/brand-wordmark";
 import { useState } from "react";
@@ -29,7 +29,7 @@ export function Navigation() {
             <img
               src="/logo.svg"
               alt="E-ARI"
-              className="h-9 w-9 rounded-lg transition-transform duration-200 group-hover:scale-105"
+              className="h-9 w-9 rounded-lg transition-opacity duration-200 group-hover:opacity-95"
             />
             <BrandWordmark size="md" />
           </Link>
@@ -46,11 +46,6 @@ export function Navigation() {
                 <Link href="/portal">
                   <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-sans">
                     Portal
-                  </Button>
-                </Link>
-                <Link href="/compliance">
-                  <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-sans">
-                    Compliance
                   </Button>
                 </Link>
                 {session.user?.role === "admin" && (
@@ -95,6 +90,18 @@ export function Navigation() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
+                      <Link href="/portal/use-cases" className="flex items-center gap-2 cursor-pointer">
+                        <Users className="h-4 w-4" />
+                        Use cases
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/portal/evidence" className="flex items-center gap-2 cursor-pointer">
+                        <FileStack className="h-4 w-4" />
+                        Org evidence vault
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
                       <Link href="/assessment" className="flex items-center gap-2 cursor-pointer">
                         <Shield className="h-4 w-4" />
                         New Assessment
@@ -136,9 +143,8 @@ export function Navigation() {
                   </Button>
                 </Link>
                 <Link href="/auth/register">
-                  <Button className="group relative overflow-hidden bg-gradient-to-r from-eari-blue via-blue-600 to-cyan-600 hover:from-eari-blue-dark hover:via-blue-700 hover:to-cyan-700 text-white font-sans shadow-md shadow-eari-blue/20 hover:shadow-eari-blue/35 transition-all duration-300">
-                    <span className="relative z-10">Get Started</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                  <Button className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans shadow-md shadow-eari-blue/15 transition-colors">
+                    Get Started
                   </Button>
                 </Link>
               </div>
@@ -171,11 +177,6 @@ export function Navigation() {
                     Portal
                   </Button>
                 </Link>
-                <Link href="/compliance" onClick={() => setMobileOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-sans">
-                    Compliance
-                  </Button>
-                </Link>
                 {session.user?.role === "admin" && (
                   <Link href="/admin" onClick={() => setMobileOpen(false)}>
                     <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-foreground font-sans">
@@ -192,7 +193,7 @@ export function Navigation() {
                   </Button>
                 </Link>
                 <Link href="/auth/register" onClick={() => setMobileOpen(false)}>
-                  <Button className="w-full bg-gradient-to-r from-eari-blue via-blue-600 to-cyan-600 text-white font-sans">
+                  <Button className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-sans shadow-md shadow-eari-blue/15">
                     Get Started
                   </Button>
                 </Link>

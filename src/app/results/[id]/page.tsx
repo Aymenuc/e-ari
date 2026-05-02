@@ -89,6 +89,11 @@ import { Footer } from '@/components/shared/footer'
 import { AIAssistant } from '@/components/shared/ai-assistant'
 import { AgentPanel } from '@/components/shared/agent-panel'
 import { PipelineStatus } from '@/components/shared/pipeline-status'
+import { ProgressionBanner } from '@/components/shared/progression-banner'
+import { ComplianceOutlook } from '@/components/shared/compliance-outlook'
+import { PillarEvidenceChip } from '@/components/shared/pillar-evidence-chip'
+import type { ProgressionState } from '@/lib/progression'
+import type { ComplianceOutlook as ComplianceOutlookModel } from '@/lib/compliance-outlook'
 import { AdvancedInsights } from '@/components/shared/advanced-insights'
 import { PILLARS, MATURITY_BANDS, type MaturityBand } from '@/lib/pillars'
 import { getSectorById } from '@/lib/sectors'
@@ -386,12 +391,14 @@ function PillarCard({
   showDetails,
   evidenceClauseCount,
   complianceSystemId,
+  evidenceVaultHref,
 }: {
   pillar: PillarScoreResult
   index: number
   showDetails: boolean
   evidenceClauseCount?: number
   complianceSystemId?: string
+  evidenceVaultHref?: string
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const pillarDef = PILLARS.find(p => p.id === pillar.pillarId)
@@ -437,7 +444,7 @@ function PillarCard({
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="text-right">
-                      <span className="font-heading text-xl font-extrabold text-foreground">
+                      <span className="font-heading text-xl font-semibold tabular-nums text-foreground">
                         {Math.round(pillar.normalizedScore)}
                       </span>
                       <span className="text-sm text-muted-foreground">%</span>
@@ -468,6 +475,8 @@ function PillarCard({
               />
             </div>
           </div>
+
+          <PillarEvidenceChip count={evidenceClauseCount ?? 0} vaultHref={evidenceVaultHref} />
 
           {showDetails && (
             <CollapsibleContent>
@@ -507,7 +516,12 @@ function PillarCard({
                           Evidence: {evidenceClauseCount} clause{evidenceClauseCount !== 1 ? 's' : ''}
                         </Badge>
                         <Link
-                          href={`/compliance/systems/${complianceSystemId}/evidence`}
+                          href={
+                            evidenceVaultHref ??
+                            (complianceSystemId
+                              ? `/portal/use-cases/systems/${complianceSystemId}/evidence`
+                              : '#')
+                          }
                           className="text-[11px] text-eari-blue-light hover:text-eari-blue font-heading underline underline-offset-2"
                         >
                           View backing documents
@@ -605,6 +619,8 @@ export default function ResultsPage() {
   const [benchmarkConsented, setBenchmarkConsented] = useState(false)
   const [pillarEvidenceCounts, setPillarEvidenceCounts] = useState<Record<string, number>>({})
   const [complianceSystemsForAssessment, setComplianceSystemsForAssessment] = useState<Array<{ id: string; name: string }>>([])
+  const [progressionState, setProgressionState] = useState<ProgressionState | null>(null)
+  const [complianceOutlook, setComplianceOutlook] = useState<ComplianceOutlookModel | null>(null)
 
   /* ─── Tier from authoritative session source ─────────────────────────── */
   // Tier is read ONLY from the server-side session JWT, never client-switchable.
@@ -779,6 +795,51 @@ export default function ResultsPage() {
         setComplianceSystemsForAssessment(Array.isArray(data.systems) ? data.systems : [])
       } catch {
         /* optional enrichment */
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [assessment?.id, sessionStatus])
+
+  useEffect(() => {
+    if (sessionStatus !== 'authenticated') return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch('/api/compliance/progression')
+        if (!res.ok) return
+        const raw = await res.json()
+        if (cancelled) return
+        const assessed = raw?.assessed ?? {}
+        setProgressionState({
+          ...raw,
+          assessed: {
+            ...assessed,
+            completedAt: assessed.completedAt ? new Date(String(assessed.completedAt)) : null,
+          },
+        } as ProgressionState)
+      } catch {
+        /* optional */
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [sessionStatus])
+
+  useEffect(() => {
+    if (!assessment?.id || sessionStatus !== 'authenticated') return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/compliance/outlook?assessmentId=${encodeURIComponent(assessment.id)}`)
+        if (!res.ok) return
+        const data = await res.json()
+        if (cancelled) return
+        setComplianceOutlook(data as ComplianceOutlookModel)
+      } catch {
+        /* optional */
       }
     })()
     return () => {
@@ -1138,7 +1199,7 @@ export default function ResultsPage() {
                             )}
                             Re-run Assessment
                           </Button>
-                          <Link href={`/compliance/systems/new?assessmentId=${assessment.id}`}>
+                          <Link href={`/portal/use-cases/systems/new?assessmentId=${assessment.id}`}>
                             <Button
                               variant="outline"
                               className="border-eari-blue/40 text-eari-blue-light hover:bg-eari-blue/10 font-heading font-semibold h-10 px-5 text-sm"
@@ -1186,6 +1247,33 @@ export default function ResultsPage() {
           {/* Section separator */}
           <div className="section-gradient-separator" />
 
+          {sessionStatus === 'authenticated' && progressionState ? (
+            <FadeUp>
+              <ProgressionBanner
+                state={progressionState}
+                cta={
+                  complianceSystemsForAssessment[0]?.id
+                    ? {
+                        label: 'Add evidence',
+                        href: `/portal/use-cases/systems/${complianceSystemsForAssessment[0].id}/evidence`,
+                      }
+                    : assessment?.id
+                      ? {
+                          label: 'Create use case',
+                          href: `/portal/use-cases/systems/new?assessmentId=${assessment.id}`,
+                        }
+                      : undefined
+                }
+              />
+            </FadeUp>
+          ) : null}
+
+          {isPro && sessionStatus === 'authenticated' && complianceOutlook ? (
+            <FadeUp>
+              <ComplianceOutlook outlook={complianceOutlook} baselineHref="/portal/use-cases" />
+            </FadeUp>
+          ) : null}
+
           {/* ─── CERTIFICATION BADGE SECTION (All Tiers) ─────────────────── */}
           <FadeUp>
             <div className="aurora-card rounded-2xl p-[1px]">
@@ -1225,7 +1313,7 @@ export default function ResultsPage() {
                       {certificationResult.isCertified ? (
                         <>
                           <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
-                            <span className="font-heading text-2xl font-extrabold" style={{ color: certificationResult.certification.color }}>
+                            <span className="font-heading text-2xl font-semibold tabular-nums" style={{ color: certificationResult.certification.color }}>
                               {certificationResult.certification.label} Certified
                             </span>
                           </div>
@@ -1571,7 +1659,7 @@ export default function ResultsPage() {
                       className="flex h-16 w-16 items-center justify-center rounded-xl flex-shrink-0"
                       style={{ backgroundColor: `${scoring.maturityColor}20` }}
                     >
-                      <span className="font-heading font-extrabold text-3xl count-up-animate" style={{ color: scoring.maturityColor }}>
+                      <span className="font-heading font-semibold text-3xl tabular-nums count-up-animate" style={{ color: scoring.maturityColor }}>
                         {Math.round(scoring.overallScore)}
                       </span>
                     </div>
@@ -1697,6 +1785,11 @@ export default function ResultsPage() {
                   showDetails={isPro}
                   evidenceClauseCount={pillarEvidenceCounts[pillar.pillarId]}
                   complianceSystemId={complianceSystemsForAssessment[0]?.id}
+                  evidenceVaultHref={
+                    isPro && complianceSystemsForAssessment[0]?.id
+                      ? `/portal/use-cases/systems/${complianceSystemsForAssessment[0].id}/evidence`
+                      : undefined
+                  }
                 />
               ))}
             </div>
@@ -1932,7 +2025,7 @@ export default function ResultsPage() {
                               )}
                               <span className="font-heading text-sm font-semibold text-foreground">Overall Drift</span>
                             </div>
-                            <p className={`font-heading text-2xl font-extrabold ${
+                            <p className={`font-heading text-2xl font-semibold tabular-nums ${
                               driftAnalysis.overallDrift >= 5 ? 'text-emerald-400'
                                 : driftAnalysis.overallDrift <= -5 ? 'text-red-400'
                                   : 'text-amber-400'
@@ -2145,14 +2238,14 @@ export default function ResultsPage() {
                       {/* Pulse Score Summary */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="p-4 rounded-xl bg-navy-700/40 border border-border/20 text-center">
-                          <p className="font-heading text-3xl font-extrabold text-eari-blue-light">{Math.round(pulseData.overallScore)}%</p>
+                          <p className="font-heading text-3xl font-semibold tabular-nums text-eari-blue-light">{Math.round(pulseData.overallScore)}%</p>
                           <p className="text-xs text-muted-foreground font-sans mt-1">Pulse Score</p>
                           <p className="font-mono text-[10px] text-muted-foreground mt-0.5">{pulseData.month}</p>
                         </div>
                         <div className="p-4 rounded-xl bg-navy-700/40 border border-border/20 text-center">
                           {typeof pulseData.overallDelta === 'number' && Number.isFinite(pulseData.overallDelta) ? (
                             <>
-                              <p className={`font-heading text-3xl font-extrabold ${pulseData.overallDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                              <p className={`font-heading text-3xl font-semibold tabular-nums ${pulseData.overallDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                 {pulseData.overallDelta > 0 ? '+' : ''}{pulseData.overallDelta.toFixed(1)}
                               </p>
                               <p className="text-xs text-muted-foreground font-sans mt-1">vs Previous</p>
@@ -2165,7 +2258,7 @@ export default function ResultsPage() {
                           )}
                         </div>
                         <div className="p-4 rounded-xl bg-navy-700/40 border border-border/20 text-center">
-                          <p className="font-heading text-3xl font-extrabold text-amber-400">{pulseData.scoreChanges.length}</p>
+                          <p className="font-heading text-3xl font-semibold tabular-nums text-amber-400">{pulseData.scoreChanges.length}</p>
                           <p className="text-xs text-muted-foreground font-sans mt-1">Score Changes</p>
                         </div>
                       </div>
@@ -2991,7 +3084,7 @@ export default function ResultsPage() {
                         {/* Overall literacy summary */}
                         <div className="p-4 rounded-lg bg-navy-700/30 border border-eari-blue/10 flex items-center gap-4 mb-4">
                           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-eari-blue/15">
-                            <span className="font-heading text-lg font-extrabold text-eari-blue-light">{avgScore}</span>
+                            <span className="font-heading text-lg font-semibold tabular-nums text-eari-blue-light">{avgScore}</span>
                           </div>
                           <div className="flex-1">
                             <p className="font-heading text-sm font-semibold text-foreground">Overall AI Literacy Score: {avgScore}%</p>

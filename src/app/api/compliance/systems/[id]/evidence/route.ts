@@ -101,6 +101,8 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     const row = await db.evidence.create({
       data: {
         systemId,
+        userId: session.user.id,
+        organizationLevel: false,
         filename: file.name,
         mimeType,
         storageKey,

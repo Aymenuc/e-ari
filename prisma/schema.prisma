@@ -37,6 +37,7 @@ model User {
   benchmarkConsents BenchmarkConsent[]
   refundRequests    RefundRequest[]
   aiSystems         AISystem[]
+  evidenceItems     Evidence[]
 }
 
 model Account {
@@ -376,8 +377,13 @@ model AISystem {
 
 model Evidence {
   id               String   @id @default(cuid())
-  systemId         String
-  system           AISystem @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  systemId         String?
+  system           AISystem? @relation(fields: [systemId], references: [id], onDelete: Cascade)
+
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  organizationLevel Boolean @default(false)
 
   filename         String
   mimeType         String
@@ -397,6 +403,7 @@ model Evidence {
   clauses          EvidenceClause[]
 
   @@index([systemId])
+  @@index([userId])
   @@index([artifactType])
 }
 

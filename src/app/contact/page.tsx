@@ -23,7 +23,7 @@ export default function ContactPage() {
           </div>
           <div className="relative mx-auto max-w-3xl px-4 sm:px-6 text-center">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-eari-blue/25 bg-eari-blue/10 px-3 py-1 text-xs font-mono text-eari-blue-light">
-              <span className="h-1.5 w-1.5 rounded-full bg-eari-blue animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-eari-blue opacity-90" />
               We respond within 24 hours
             </div>
             <h1 className="font-heading text-4xl font-bold tracking-tight text-foreground sm:text-5xl mb-4">

@@ -33,6 +33,14 @@ import {
 
 import { Navigation } from '@/components/shared/navigation';
 import { Footer } from '@/components/shared/footer';
+import { ProgressionBanner } from '@/components/shared/progression-banner';
+import {
+  ComplianceInboxCard,
+  type PortalInboxItem,
+} from '@/components/shared/compliance-inbox';
+import { CoverageGaugeCard } from '@/components/shared/coverage-gauge';
+import { RecentActivityCard } from '@/components/shared/recent-activity';
+import type { ProgressionState } from '@/lib/progression';
 import { AIAssistant } from '@/components/shared/ai-assistant';
 import { BillingCard } from '@/components/account/billing-card';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -165,6 +173,10 @@ export default function PortalPage() {
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [profileData, setProfileData] = useState({ organization: '', sector: '', orgSize: '' });
 
+  const [progressionState, setProgressionState] = useState<ProgressionState | null>(null);
+  const [inboxLoading, setInboxLoading] = useState(false);
+  const [inboxItems, setInboxItems] = useState<PortalInboxItem[]>([]);
+
   // Auth gate — redirect if unauthenticated
   useEffect(() => {
     if (sessionStatus === 'unauthenticated') {
@@ -205,6 +217,42 @@ export default function PortalPage() {
     }
 
     fetchAssessments();
+  }, [sessionStatus]);
+
+  useEffect(() => {
+    if (sessionStatus !== 'authenticated') return;
+    let cancelled = false;
+    (async () => {
+      setInboxLoading(true);
+      try {
+        const [progRes, inboxRes] = await Promise.all([
+          fetch('/api/compliance/progression'),
+          fetch('/api/portal/inbox'),
+        ]);
+        if (!cancelled && progRes.ok) {
+          const raw = await progRes.json();
+          const assessed = raw?.assessed ?? {};
+          setProgressionState({
+            ...raw,
+            assessed: {
+              ...assessed,
+              completedAt: assessed.completedAt ? new Date(String(assessed.completedAt)) : null,
+            },
+          } as ProgressionState);
+        }
+        if (!cancelled && inboxRes.ok) {
+          const inboxJson = await inboxRes.json();
+          setInboxItems(Array.isArray(inboxJson.items) ? inboxJson.items : []);
+        }
+      } catch {
+        /* optional */
+      } finally {
+        if (!cancelled) setInboxLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [sessionStatus]);
 
   // Derive stats
@@ -286,6 +334,24 @@ export default function PortalPage() {
                   </Button>
                 </Link>
               </div>
+            </div>
+          </section>
+
+          <section id="inbox" className="mb-8 space-y-6 scroll-mt-24">
+            {progressionState ? (
+              <ProgressionBanner state={progressionState} />
+            ) : null}
+            <div className="grid gap-4 lg:grid-cols-3">
+              <ComplianceInboxCard items={inboxItems} loading={inboxLoading} />
+              {progressionState ? (
+                <CoverageGaugeCard
+                  obligationsApplicable={progressionState.verifying.obligationsApplicable}
+                  obligationsEvidenced={progressionState.verifying.obligationsEvidenced}
+                />
+              ) : (
+                <CoverageGaugeCard obligationsApplicable={0} obligationsEvidenced={0} />
+              )}
+              <RecentActivityCard assessments={assessments} />
             </div>
           </section>
 
