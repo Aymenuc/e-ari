@@ -1,5 +1,5 @@
 {
-  "buildCommand": "prisma migrate deploy && prisma generate && vitest run && next build",
+  "buildCommand": "prisma generate && vitest run && next build",
   "installCommand": "npm install",
   "framework": "nextjs",
   "crons": [
