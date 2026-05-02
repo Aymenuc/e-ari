@@ -42,21 +42,13 @@ import {
   BarChart3,
   TrendingUp,
   TrendingDown,
-  RefreshCw,
-  Calendar,
-  Plug,
-  Webhook,
-  Cloud,
-  KeyRound,
-  Globe,
-  Code2,
-  Layers,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Navigation } from '@/components/shared/navigation'
 import { Footer } from '@/components/shared/footer'
+import { ProductSpotlightCarousel } from '@/components/marketing/product-spotlight-carousel'
 import { AgentPanel } from '@/components/shared/agent-panel'
 import { PILLARS, MATURITY_BANDS } from '@/lib/pillars'
 
@@ -1341,6 +1333,75 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ─── 2C. COMPLIANCE SPOTLIGHT ───────────────────────────────────── */}
+        <div className="section-gradient-separator" aria-hidden="true">
+          <div className="h-px bg-gradient-to-r from-transparent via-emerald-500/25 to-transparent" />
+        </div>
+        <section className="py-16 sm:py-20 bg-navy-900 relative overflow-hidden" aria-labelledby="compliance-spotlight-heading">
+          <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+            <div
+              className="absolute top-1/2 right-0 translate-y-[-50%] w-[420px] h-[420px] rounded-full opacity-[0.07]"
+              style={{ background: 'radial-gradient(circle, #10b981 0%, transparent 70%)' }}
+            />
+          </div>
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="glass-card rounded-2xl border border-emerald-500/15 bg-navy-800/40 p-8 sm:p-10 lg:p-12 flex flex-col lg:flex-row lg:items-center gap-8 lg:gap-12">
+              <div className="flex-1">
+                <Badge variant="outline" className="font-mono text-xs border-emerald-500/35 text-emerald-300 bg-emerald-500/5 mb-4">
+                  Compliance &amp; evidence
+                </Badge>
+                <h2 id="compliance-spotlight-heading" className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
+                  From assessment to <span className="gradient-text-blue">audit-ready artifacts</span>
+                </h2>
+                <p className="mt-4 text-muted-foreground font-sans leading-relaxed max-w-xl">
+                  Collect AI Act evidence, maintain FRIA and technical files, bundle regulator-facing submission packs, and rely on immutable admin logs—so governance teams ship filings without chasing screenshots.
+                </p>
+                <ul className="mt-6 grid sm:grid-cols-2 gap-3 text-sm text-muted-foreground font-sans">
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" aria-hidden />
+                    AI Act evidence trails
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" aria-hidden />
+                    FRIA &amp; technical documentation
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" aria-hidden />
+                    Submission-ready packs
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" aria-hidden />
+                    Admin audit logs
+                  </li>
+                </ul>
+                <div className="mt-8">
+                  <Link href="/compliance">
+                    <Button size="lg" className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold">
+                      Explore compliance workspace
+                      <ArrowRight className="ml-2 h-5 w-5" aria-hidden />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+              <div className="flex-shrink-0 w-full lg:w-auto lg:max-w-sm">
+                <div className="rounded-xl border border-white/[0.06] bg-navy-900/60 p-6 font-mono text-xs text-muted-foreground/80 space-y-3">
+                  <div className="flex items-center gap-2 text-emerald-400/90">
+                    <FileCheck className="h-4 w-4" aria-hidden />
+                    <span>Evidence vault · versioned</span>
+                  </div>
+                  <div className="h-px bg-border/30" />
+                  <p className="leading-relaxed">
+                    Technical file and FRIA drafts tied to systems; export packs for submissions; activity preserved in admin logs.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── 2D. PRODUCT MODULES CAROUSEL (Pulse, Literacy, Discovery, Assistant) ─── */}
+        <ProductSpotlightCarousel />
+
         <div className="section-gradient-separator" aria-hidden="true">
           <div className="h-px bg-gradient-to-r from-transparent via-eari-blue/20 to-transparent" />
         </div>
@@ -2188,318 +2249,6 @@ export default function Home() {
                 </div>
               </div>
             </FadeUp>
-          </div>
-        </section>
-
-        {/* ─── 5F. AI PULSE SECTION ─────────────────────────────────────────── */}
-        <div className="section-gradient-separator" aria-hidden="true">
-          <div className="h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
-        </div>
-        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-800/30 relative overflow-hidden" id="ai-pulse">
-          {/* Subtle pulse-wave background */}
-          <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-[0.04]" style={{ background: 'radial-gradient(circle, #06b6d4 0%, transparent 70%)' }} />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full opacity-[0.06]" style={{ background: 'radial-gradient(circle, #2563eb 0%, transparent 70%)' }} />
-          </div>
-
-          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <FadeUp>
-              <div className="text-center max-w-3xl mx-auto mb-14">
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                  >
-                    <Activity className="h-6 w-6 text-cyan-400" />
-                  </motion.div>
-                  <SparkleBadge>
-                    <Badge variant="outline" className="font-mono text-xs border-cyan-500/40 text-cyan-300 relative z-10 bg-cyan-500/5">
-                      Continuous Monitoring
-                    </Badge>
-                  </SparkleBadge>
-                </div>
-                <h2 className="font-heading text-3xl sm:text-4xl font-bold">
-                  <span className="gradient-text-blue">AI Pulse</span>
-                  <span className="text-foreground"> — Always-On Readiness</span>
-                </h2>
-                <p className="mt-4 text-lg text-muted-foreground font-sans">
-                  Stop relying on point-in-time snapshots. AI Pulse runs monthly readiness checks that track score drift, surface emerging risks, and highlight quick wins — so your AI strategy never goes stale.
-                </p>
-              </div>
-            </FadeUp>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-              {/* Left: Visual Pulse Preview */}
-              <FadeUp>
-                <div className="relative">
-                  {/* Pulse rings animation behind the card */}
-                  <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-                    {[0, 1, 2].map((i) => (
-                      <motion.div
-                        key={i}
-                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-500/10"
-                        style={{ width: 160 + i * 80, height: 160 + i * 80 }}
-                        animate={{ scale: [1, 1.1, 1], opacity: [0.15, 0.05, 0.15] }}
-                        transition={{ duration: 3 + i, repeat: Infinity, delay: i * 0.5, ease: 'easeInOut' }}
-                      />
-                    ))}
-                  </div>
-
-                  <div className="aurora-card rounded-2xl p-[1px] relative">
-                    <div className="bg-navy-800/90 backdrop-blur-sm rounded-2xl p-6 relative z-10">
-                      {/* Pulse header */}
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/15">
-                            <Activity className="h-5 w-5 text-cyan-400" />
-                          </div>
-                          <div>
-                            <p className="font-heading text-sm font-semibold text-foreground">AI Pulse</p>
-                            <p className="text-xs text-muted-foreground font-mono">Monthly Drift Check</p>
-                          </div>
-                        </div>
-                        <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/20 text-xs font-mono">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 inline-block animate-pulse" />
-                          LIVE
-                        </Badge>
-                      </div>
-
-                      {/* Simulated trend sparkline */}
-                      <div className="mb-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs text-muted-foreground font-sans">Overall Score Trend</span>
-                          <span className="text-xs font-mono text-emerald-400">+8% this quarter</span>
-                        </div>
-                        <svg viewBox="0 0 300 60" className="w-full h-16" aria-label="Score trend sparkline">
-                          <defs>
-                            <linearGradient id="pulseGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="rgba(6,182,212,0.3)" />
-                              <stop offset="100%" stopColor="rgba(6,182,212,0)" />
-                            </linearGradient>
-                          </defs>
-                          {/* Area fill */}
-                          <motion.path
-                            d="M0,45 Q30,40 60,38 T120,30 T180,25 T240,18 T300,10 L300,60 L0,60 Z"
-                            fill="url(#pulseGrad)"
-                            initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.8, delay: 0.3 }}
-                          />
-                          {/* Line */}
-                          <motion.path
-                            d="M0,45 Q30,40 60,38 T120,30 T180,25 T240,18 T300,10"
-                            fill="none"
-                            stroke="#06b6d4"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            initial={{ pathLength: 0 }}
-                            whileInView={{ pathLength: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 1.5, delay: 0.2, ease: 'easeOut' }}
-                          />
-                          {/* Current dot */}
-                          <motion.circle
-                            cx="300" cy="10" r="4"
-                            fill="#06b6d4"
-                            stroke="#0d1117"
-                            strokeWidth="2"
-                            initial={{ scale: 0 }}
-                            whileInView={{ scale: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.3, delay: 1.5 }}
-                          />
-                        </svg>
-                      </div>
-
-                      {/* Risk & Quick Win pills */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
-                          <div className="flex items-center gap-1.5 mb-1.5">
-                            <TrendingDown className="h-3 w-3 text-amber-400" />
-                            <span className="text-[10px] font-heading font-semibold text-amber-400 uppercase tracking-wider">Top Risk</span>
-                          </div>
-                          <p className="text-xs text-foreground font-sans leading-relaxed">Talent pipeline shrinking — 3 key AI roles unfilled for 90+ days</p>
-                        </div>
-                        <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
-                          <div className="flex items-center gap-1.5 mb-1.5">
-                            <TrendingUp className="h-3 w-3 text-emerald-400" />
-                            <span className="text-[10px] font-heading font-semibold text-emerald-400 uppercase tracking-wider">Quick Win</span>
-                          </div>
-                          <p className="text-xs text-foreground font-sans leading-relaxed">Formalize data governance policy — could lift Data pillar by 12 points</p>
-                        </div>
-                      </div>
-
-                      {/* Monthly comparison */}
-                      <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground font-mono">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="h-3 w-3" />
-                          <span>Mar 2025</span>
-                        </div>
-                        <div className="flex-1 h-px bg-border/30" />
-                        <span className="text-foreground font-semibold">67%</span>
-                        <span className="text-emerald-400">+3</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </FadeUp>
-
-              {/* Right: Feature points */}
-              <FadeUp delay={0.1}>
-                <div className="space-y-6">
-                  {[
-                    {
-                      icon: RefreshCw,
-                      title: 'Monthly Auto-Pulse',
-                      desc: 'Automated monthly readiness re-assessments that compare your current scores against the previous month, so you always know which direction your AI readiness is trending without manual effort.',
-                      color: '#06b6d4',
-                    },
-                    {
-                      icon: TrendingDown,
-                      title: 'Drift Detection & Alerts',
-                      desc: 'Intelligent drift detection flags pillars where scores have declined, triggering proactive alerts before small gaps become strategic liabilities. Catch regressions within 30 days, not 12 months.',
-                      color: '#f59e0b',
-                    },
-                    {
-                      icon: TrendingUp,
-                      title: 'Quick Wins Surfaced',
-                      desc: 'Each pulse run identifies the highest-impact, lowest-effort improvements you can make right now. Not generic advice — actionable steps grounded in your actual pillar scores and sector benchmarks.',
-                      color: '#10b981',
-                    },
-                    {
-                      icon: Activity,
-                      title: 'Trend Visualization',
-                      desc: 'Visual trend charts track your overall and per-pillar readiness over time, with sector average reference lines so you can see how you compare against industry peers month after month.',
-                      color: '#8b5cf6',
-                    },
-                  ].map((point, i) => {
-                    const Icon = point.icon
-                    return (
-                      <motion.div
-                        key={point.title}
-                        initial={{ opacity: 0, x: 20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5, delay: i * 0.1 }}
-                        className="flex gap-4 items-start group"
-                      >
-                        <motion.div
-                          className="flex h-10 w-10 items-center justify-center rounded-lg flex-shrink-0 mt-0.5 icon-float"
-                          style={{ backgroundColor: `${point.color}20`, animationDelay: `${i * 0.5}s` }}
-                          whileHover={{ scale: 1.1 }}
-                        >
-                          <Icon className="h-5 w-5" style={{ color: point.color }} />
-                        </motion.div>
-                        <div>
-                          <h4 className="font-heading font-semibold text-foreground">{point.title}</h4>
-                          <p className="mt-1 text-sm text-muted-foreground font-sans leading-relaxed">{point.desc}</p>
-                        </div>
-                      </motion.div>
-                    )
-                  })}
-                </div>
-              </FadeUp>
-            </div>
-          </div>
-        </ParallaxSection>
-
-        {/* ─── 5G. INTEGRATIONS SECTION ────────────────────────────────────── */}
-        <div className="section-gradient-separator" aria-hidden="true">
-          <div className="h-px bg-gradient-to-r from-transparent via-[#d4a853]/20 to-transparent" />
-        </div>
-        <section className="py-20 sm:py-28 bg-navy-900 relative overflow-hidden" id="integrations">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <FadeUp>
-              <div className="text-center max-w-2xl mx-auto mb-14">
-                <span className="inline-block font-mono text-xs tracking-widest uppercase text-[#d4a853]/70 mb-3">Enterprise-Ready</span>
-                <h2 className="font-heading text-3xl sm:text-4xl font-bold gradient-text-gold">
-                  Integrations That Fit Your Stack
-                </h2>
-                <p className="mt-4 text-base text-muted-foreground font-sans leading-relaxed">
-                  Connect to your existing ecosystem — identity, cloud, compliance, and data. No rip-and-replace.
-                </p>
-              </div>
-            </FadeUp>
-
-            {/* ── 2-col: Featured API panel + compact integration rows ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
-
-              {/* LEFT — Featured API panel */}
-              <FadeUp delay={0.1}>
-                <div className="h-full rounded-2xl border border-white/[0.06] bg-navy-800/60 overflow-hidden flex flex-col">
-                  <div className="flex items-center gap-3 px-6 py-5 border-b border-white/[0.04]">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-500/10">
-                      <Code2 className="h-5 w-5 text-violet-400" />
-                    </div>
-                    <div>
-                      <h3 className="font-heading text-base font-semibold text-foreground">REST API</h3>
-                      <p className="text-xs text-muted-foreground/70 mt-0.5">OpenAPI 3.0 · TypeScript & Python SDKs</p>
-                    </div>
-                  </div>
-                  <div className="flex-1 p-5">
-                    <div className="rounded-lg bg-navy-900/70 border border-white/[0.04] p-4 font-mono text-xs leading-6 overflow-x-auto">
-                      <span className="text-muted-foreground/50"># Fetch your latest assessment scores</span><br />
-                      <span className="text-[#d4a853]">curl</span> <span className="text-emerald-400">-H</span> <span className="text-amber-300">&quot;Authorization: Bearer eari_sk_...&quot;</span> \<br />
-                      &nbsp;&nbsp;<span className="text-eari-blue-light">https://api.e-ari.io/v1/assessments/latest/scores</span><br /><br />
-                      <span className="text-muted-foreground/50"># Response</span><br />
-                      <span className="text-muted-foreground/40">{'{'}</span><br />
-                      &nbsp;&nbsp;<span className="text-violet-400">&quot;composite&quot;</span>: <span className="text-amber-300">63.8</span>,<br />
-                      &nbsp;&nbsp;<span className="text-violet-400">&quot;band&quot;</span>: <span className="text-emerald-400">&quot;Developing&quot;</span>,<br />
-                      &nbsp;&nbsp;<span className="text-violet-400">&quot;pillars&quot;</span>: <span className="text-muted-foreground/40">[...8 scores]</span><br />
-                      <span className="text-muted-foreground/40">{'}'}</span>
-                    </div>
-                  </div>
-                  <div className="px-6 py-4 border-t border-white/[0.04] flex flex-wrap gap-2">
-                    {['Assessment CRUD', 'Score retrieval', 'Benchmark queries', 'User management'].map(item => (
-                      <span key={item} className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-violet-500/10 text-violet-300/80 border border-violet-500/10">
-                        {item}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </FadeUp>
-
-              {/* RIGHT — Stacked integration rows */}
-              <div className="space-y-3">
-                {[
-                  { icon: KeyRound, title: 'SSO & Identity', items: ['SAML 2.0', 'OAuth 2.0 / OIDC', 'Active Directory', 'Okta / Azure AD'], desc: 'Single sign-on with your existing identity provider.', color: '#3b82f6' },
-                  { icon: Cloud, title: 'Cloud Platforms', items: ['AWS', 'Azure', 'Google Cloud', 'Multi-cloud'], desc: 'Deploy on any major cloud or in your own VPC.', color: '#06b6d4' },
-                  { icon: Webhook, title: 'Webhooks & Events', items: ['Score change events', 'Certification milestones', 'Drift alerts', 'Custom triggers'], desc: 'Real-time notifications into your workflows.', color: '#10b981' },
-                  { icon: Globe, title: 'Compliance Frameworks', items: ['EU AI Act', 'NIST AI RMF', 'ISO 42001', 'SOC 2 Type II'], desc: 'Pre-mapped regulatory gap analyses.', color: '#f59e0b' },
-                  { icon: Layers, title: 'Data & Export', items: ['PDF reports', 'DOCX exports', 'CSV data dumps', 'BI tool feeds'], desc: 'Export or pipe data into your BI tools.', color: '#ec4899' },
-                ].map((integration, i) => {
-                  const Icon = integration.icon
-                  return (
-                    <FadeUp key={integration.title} delay={i * 0.05}>
-                      <motion.div
-                        className="group flex items-center gap-4 rounded-xl border border-white/[0.04] bg-navy-800/40 px-5 py-4 hover:border-white/[0.08] hover:bg-navy-800/60 transition-all duration-200 cursor-default"
-                        whileHover={{ x: 4 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg flex-shrink-0" style={{ backgroundColor: `${integration.color}12` }}>
-                          <Icon className="h-4 w-4" style={{ color: integration.color }} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-heading text-sm font-semibold text-foreground group-hover:text-white transition-colors">{integration.title}</span>
-                            <span className="text-[10px] text-muted-foreground/50 hidden sm:inline">{integration.desc}</span>
-                          </div>
-                          <div className="mt-1.5 flex flex-wrap gap-1.5">
-                            {integration.items.map(item => (
-                              <span key={item} className="text-[9px] font-mono px-2 py-0.5 rounded-full border border-white/[0.04] text-muted-foreground/60 bg-white/[0.02]">
-                                {item}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                        <ArrowRight className="h-4 w-4 text-muted-foreground/20 group-hover:text-muted-foreground/50 transition-colors flex-shrink-0" />
-                      </motion.div>
-                    </FadeUp>
-                  )
-                })}
-              </div>
-            </div>
           </div>
         </section>
 
