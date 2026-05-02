@@ -113,7 +113,7 @@ function FadeUp({
 
 // ─── Confidence badge helper ────────────────────────────────────────────────
 
-function ConfidenceIndicator({ confidence }: { confidence: 'high' | 'medium' | 'low' }) {
+function ConfidenceIndicator({ confidence }: { confidence: 'high' | 'medium' | 'low' | 'none' }) {
   const config = {
     high: {
       label: 'High confidence',
@@ -135,6 +135,13 @@ function ConfidenceIndicator({ confidence }: { confidence: 'high' | 'medium' | '
       bgColor: 'bg-red-500/10',
       borderColor: 'border-red-500/25',
       dotColor: 'bg-red-500',
+    },
+    none: {
+      label: 'Insufficient web evidence',
+      color: 'text-slate-400',
+      bgColor: 'bg-slate-500/10',
+      borderColor: 'border-slate-500/25',
+      dotColor: 'bg-slate-500',
     },
   };
 
