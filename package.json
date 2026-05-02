@@ -4,9 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "prisma migrate deploy && prisma generate && next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && rm -rf next-service-dist && cp -r .next/standalone next-service-dist && cp -r .next/static next-service-dist/.next/ && cp -r public next-service-dist/ && cp -r prisma next-service-dist/",
+    "build": "prisma migrate deploy && prisma generate && vitest run && next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && rm -rf next-service-dist && cp -r .next/standalone next-service-dist && cp -r .next/static next-service-dist/.next/ && cp -r public next-service-dist/ && cp -r prisma next-service-dist/",
     "start": "NODE_ENV=production HOSTNAME=0.0.0.0 PORT=3000 node --max-old-space-size=512 next-service-dist/server.js",
     "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:integration": "RUN_INTEGRATION_TESTS=1 vitest run src/test/supabase.integration.test.ts",
+    "env:test": "vercel env pull .env.test --environment=preview --yes",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -96,10 +100,12 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "bun-types": "^1.3.4",
+    "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "^16.1.1",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.5",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.5"
   }
 }

@@ -44,8 +44,9 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
       try {
         const key = row.key as keyof PlatformSettings;
         if (key in DEFAULTS) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (settings as any)[key] = JSON.parse(row.value);
+          (settings as Record<typeof key, PlatformSettings[typeof key]>)[key] = JSON.parse(
+            row.value,
+          ) as PlatformSettings[typeof key];
         }
       } catch { /* skip malformed */ }
     }

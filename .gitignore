@@ -12,6 +12,7 @@ prisma/dev.db-journal
 # Environment variables (never commit secrets)
 .env.local
 .env*.local
+.env.test
 
 # Vercel
 .vercel/
