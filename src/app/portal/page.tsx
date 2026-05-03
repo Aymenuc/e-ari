@@ -356,133 +356,126 @@ export default function PortalPage() {
           </section>
 
           {/* ── Quick Stats Row ───────────────────────────────────────────── */}
-          <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <Card className="bg-navy-800 border-border/60">
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-eari-blue/20">
-                    <ClipboardCheck className="h-5 w-5 text-eari-blue-light" />
-                  </div>
-                  <div>
-                    {loading ? (
-                      <Skeleton className="h-7 w-12 mb-1" />
-                    ) : (
-                      <p className="font-heading text-2xl font-bold text-foreground">{totalAssessments}</p>
-                    )}
-                    <p className="text-xs text-muted-foreground font-sans">Total Assessments</p>
-                  </div>
+          <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+            <Card className="bg-navy-800/70 border-border/50 transition-colors hover:border-border">
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-baseline justify-between">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Total assessments
+                  </p>
+                  <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground/50" aria-hidden />
                 </div>
+                {loading ? (
+                  <Skeleton className="mt-3 h-8 w-16" />
+                ) : (
+                  <p className="mt-2 font-heading text-3xl font-semibold tabular-nums text-foreground">
+                    {totalAssessments}
+                  </p>
+                )}
               </CardContent>
             </Card>
 
-            <Card className="bg-navy-800 border-border/60">
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/20">
-                    <Shield className="h-5 w-5 text-emerald-400" />
-                  </div>
-                  <div>
-                    {loading ? (
-                      <Skeleton className="h-7 w-12 mb-1" />
-                    ) : (
-                      <p className="font-heading text-2xl font-bold text-foreground">{completedAssessments}</p>
-                    )}
-                    <p className="text-xs text-muted-foreground font-sans">Completed</p>
-                  </div>
+            <Card className="bg-navy-800/70 border-border/50 transition-colors hover:border-border">
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-baseline justify-between">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Completed
+                  </p>
+                  <Shield className="h-3.5 w-3.5 text-muted-foreground/50" aria-hidden />
                 </div>
+                {loading ? (
+                  <Skeleton className="mt-3 h-8 w-16" />
+                ) : (
+                  <p className="mt-2 font-heading text-3xl font-semibold tabular-nums text-foreground">
+                    {completedAssessments}
+                  </p>
+                )}
               </CardContent>
             </Card>
 
-            <Card className="bg-navy-800 border-border/60">
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/20">
-                    <BarChart3 className="h-5 w-5 text-amber-400" />
-                  </div>
-                  <div>
-                    {loading ? (
-                      <Skeleton className="h-7 w-12 mb-1" />
-                    ) : (
-                      <p className="font-heading text-2xl font-bold text-foreground">
-                        {averageScore > 0 ? `${averageScore}%` : '—'}
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground font-sans">Average Score</p>
-                  </div>
+            <Card className="bg-navy-800/70 border-border/50 transition-colors hover:border-border">
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-baseline justify-between">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Average score
+                  </p>
+                  <BarChart3 className="h-3.5 w-3.5 text-muted-foreground/50" aria-hidden />
                 </div>
+                {loading ? (
+                  <Skeleton className="mt-3 h-8 w-16" />
+                ) : (
+                  <p className="mt-2 font-heading text-3xl font-semibold tabular-nums text-foreground">
+                    {averageScore > 0 ? (
+                      <>
+                        {averageScore}
+                        <span className="ml-0.5 text-base font-medium text-muted-foreground">%</span>
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </p>
+                )}
               </CardContent>
             </Card>
 
-            <Card className="bg-navy-800 border-border/60">
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/20">
-                    <Award className="h-5 w-5 text-purple-400" />
-                  </div>
-                  <div>
-                    {loading ? (
-                      <Skeleton className="h-7 w-20 mb-1" />
-                    ) : (
-                      <p className="font-heading text-2xl font-bold text-foreground">{tierLabel(userTier)}</p>
-                    )}
-                    <p className="text-xs text-muted-foreground font-sans">Current Tier</p>
-                  </div>
+            <Card className="bg-navy-800/70 border-border/50 transition-colors hover:border-border">
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-baseline justify-between">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Current tier
+                  </p>
+                  <Award className="h-3.5 w-3.5 text-muted-foreground/50" aria-hidden />
                 </div>
+                {loading ? (
+                  <Skeleton className="mt-3 h-8 w-24" />
+                ) : (
+                  <p className="mt-2 font-heading text-3xl font-semibold text-foreground">
+                    {tierLabel(userTier)}
+                  </p>
+                )}
               </CardContent>
             </Card>
           </section>
 
           {/* ── Quick Access ────────────────────────────────────────────────────── */}
           <section className="mb-8">
-            <h2 className="font-heading text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-              <Zap className="h-5 w-5 text-eari-blue-light" />
-              Quick Access
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <Link href="/pulse">
-                <Card className="bg-navy-800 border-border/60 hover:border-eari-blue/30 transition-colors cursor-pointer group h-full">
-                  <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-eari-blue/15 group-hover:bg-eari-blue/25 transition-colors">
-                      <Activity className="h-5 w-5 text-eari-blue-light" />
-                    </div>
-                    <span className="font-heading text-sm font-semibold text-foreground">AI Pulse</span>
-                    <span className="text-[10px] text-muted-foreground font-sans">Monthly monitoring</span>
-                  </CardContent>
-                </Card>
-              </Link>
-              <Link href="/literacy">
-                <Card className="bg-navy-800 border-border/60 hover:border-purple-500/30 transition-colors cursor-pointer group h-full">
-                  <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/15 group-hover:bg-purple-500/25 transition-colors">
-                      <GraduationCap className="h-5 w-5 text-purple-400" />
-                    </div>
-                    <span className="font-heading text-sm font-semibold text-foreground">AI Literacy</span>
-                    <span className="text-[10px] text-muted-foreground font-sans">Training & quizzes</span>
-                  </CardContent>
-                </Card>
-              </Link>
-              <Link href="/discovery">
-                <Card className="bg-navy-800 border-border/60 hover:border-emerald-500/30 transition-colors cursor-pointer group h-full">
-                  <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 group-hover:bg-emerald-500/25 transition-colors">
-                      <Search className="h-5 w-5 text-emerald-400" />
-                    </div>
-                    <span className="font-heading text-sm font-semibold text-foreground">Discovery</span>
-                    <span className="text-[10px] text-muted-foreground font-sans">AI profile builder</span>
-                  </CardContent>
-                </Card>
-              </Link>
-              <Link href="/integrations">
-                <Card className="bg-navy-800 border-border/60 hover:border-cyan-500/30 transition-colors cursor-pointer group h-full">
-                  <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/15 group-hover:bg-cyan-500/25 transition-colors">
-                      <Plug className="h-5 w-5 text-cyan-400" />
-                    </div>
-                    <span className="font-heading text-sm font-semibold text-foreground">Integrations</span>
-                    <span className="text-[10px] text-muted-foreground font-sans">Connect & extend</span>
-                  </CardContent>
-                </Card>
-              </Link>
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-8 bg-eari-blue/60" aria-hidden />
+                <h2 className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                  Quick access
+                </h2>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { href: '/pulse', icon: Activity, label: 'AI Pulse', sub: 'Monthly monitoring' },
+                { href: '/literacy', icon: GraduationCap, label: 'AI Literacy', sub: 'Training & quizzes' },
+                { href: '/discovery', icon: Search, label: 'Discovery', sub: 'AI profile builder' },
+                { href: '/integrations', icon: Plug, label: 'Integrations', sub: 'Connect & extend' },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link key={item.href} href={item.href} className="group">
+                    <Card className="h-full border-border/50 bg-navy-800/70 transition-all duration-200 hover:border-eari-blue/30 hover:bg-navy-800">
+                      <CardContent className="flex flex-col gap-3 p-4 sm:p-5">
+                        <Icon
+                          className="h-5 w-5 text-muted-foreground/70 transition-colors group-hover:text-eari-blue-light"
+                          aria-hidden
+                        />
+                        <div>
+                          <p className="font-heading text-sm font-semibold text-foreground">
+                            {item.label}
+                          </p>
+                          <p className="mt-0.5 font-sans text-[11px] text-muted-foreground">
+                            {item.sub}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
             </div>
           </section>
 
