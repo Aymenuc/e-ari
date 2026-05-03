@@ -861,12 +861,18 @@ export default function Home() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center max-w-2xl mx-auto">
-                <span className="inline-block font-mono text-xs tracking-widest uppercase text-eari-blue/70 mb-3">Methodology</span>
-                <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-tight text-slate-100">
+                <div className="mb-5 flex items-center justify-center gap-3">
+                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                    Methodology
+                  </span>
+                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                </div>
+                <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
                   The 8-Pillar Framework
                 </h2>
-                <p className="mt-4 text-base text-muted-foreground font-sans leading-relaxed">
-                  Eight critical dimensions, weighted by strategic importance, validated against industry benchmarks — one composite score.
+                <p className="mt-4 text-[17px] text-slate-400 font-sans leading-relaxed">
+                  Eight critical dimensions, weighted by strategic importance, validated against industry benchmarks &mdash; one composite score.
                 </p>
               </div>
             </FadeUp>
@@ -1079,7 +1085,7 @@ export default function Home() {
                       whileHover={{ y: -1 }}
                       className="group h-full"
                     >
-                      <div className="glass-card rounded-lg p-5 text-center h-full flex flex-col items-center">
+                      <div className="rounded-lg border border-white/[0.06] bg-[#0e131c] p-5 text-center h-full flex flex-col items-center transition-colors duration-200 group-hover:border-white/[0.1]">
                         <div
                           className="flex h-10 w-10 items-center justify-center rounded-xl mb-3"
                           style={{ backgroundColor: `${feat.color}15` }}
@@ -1109,7 +1115,7 @@ export default function Home() {
             />
           </div>
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="glass-card rounded-2xl border border-emerald-500/15 bg-navy-800/40 p-8 sm:p-10 lg:p-12 flex flex-col lg:flex-row lg:items-center gap-8 lg:gap-12">
+            <div className="rounded-2xl border border-emerald-500/[0.18] bg-[#0e131c] p-8 sm:p-10 lg:p-12 flex flex-col lg:flex-row lg:items-center gap-8 lg:gap-12 shadow-[0_30px_70px_-30px_rgba(0,0,0,0.7)]">
               <div className="flex-1">
                 <Badge variant="outline" className="font-mono text-xs border-emerald-500/35 text-emerald-300 bg-emerald-500/5 mb-4">
                   Compliance &amp; evidence
@@ -1192,12 +1198,18 @@ export default function Home() {
             {/* Section header */}
             <FadeUp>
               <div className="text-center max-w-2xl mx-auto">
-                <span className="inline-block font-mono text-xs tracking-widest uppercase text-eari-blue/70 mb-3">Agentic Architecture</span>
-                <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-tight text-slate-100">
+                <div className="mb-5 flex items-center justify-center gap-3">
+                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                    Agentic architecture
+                  </span>
+                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                </div>
+                <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
                   The Innovation: Agentic AI Assessment
                 </h2>
-                <p className="mt-4 text-base text-muted-foreground font-sans leading-relaxed">
-                  Six specialized AI agents work in a coordinated pipeline — each feeding context to the next, compounding insight depth at every stage. Not a chatbot. An AI workforce for readiness.
+                <p className="mt-4 text-[17px] text-slate-400 font-sans leading-relaxed">
+                  Six specialised AI agents work in a coordinated pipeline &mdash; each feeding context to the next, compounding insight depth at every stage. Not a chatbot. An AI workforce for readiness.
                 </p>
               </div>
             </FadeUp>
@@ -1393,19 +1405,18 @@ export default function Home() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center max-w-3xl mx-auto">
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <Brain className="h-6 w-6 text-eari-blue-light/90" aria-hidden />
-                  <SparkleBadge>
-                    <Badge variant="outline" className="font-mono text-xs border-eari-blue/40 text-eari-blue-light relative z-10">
-                      AI-Powered
-                    </Badge>
-                  </SparkleBadge>
+                <div className="mb-5 flex items-center justify-center gap-3">
+                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                    AI-powered insights
+                  </span>
+                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
                 </div>
-                <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-tight text-slate-100">
+                <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
                   Strategic Insights Powered by AI
                 </h2>
-                <p className="mt-4 text-lg text-muted-foreground font-sans">
-                  AI generates narrative context for your scores. It does not alter, inflate, or modify the calculated results — ever.
+                <p className="mt-4 text-[17px] text-slate-400 font-sans leading-relaxed">
+                  AI generates narrative context for your scores. It does not alter, inflate, or modify the calculated results &mdash; ever.
                 </p>
               </div>
             </FadeUp>
@@ -1413,30 +1424,28 @@ export default function Home() {
             <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-10">
               {/* Sample insight card with streaming text */}
               <FadeUp>
-                <div className="glass-card rounded-xl p-6 h-full">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Sparkles className="h-4 w-4 text-eari-blue-light/90 shrink-0" aria-hidden />
-                    <span className="font-heading text-sm font-semibold text-eari-blue-light">Sample AI Insight</span>
+                <div className="rounded-xl border border-white/[0.06] bg-[#0e131c] p-7 h-full shadow-[0_20px_50px_-25px_rgba(0,0,0,0.6)]">
+                  <div className="flex items-center justify-between mb-5">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                      Sample insight
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-1 font-mono text-[10px] text-slate-400 tracking-[0.12em] uppercase">
+                      Generated
+                    </span>
                   </div>
-                  <div className="border-l-2 border-eari-blue/40 pl-4">
-                    <p className="text-foreground font-sans leading-relaxed">
-                      <StreamingText
-                        text="Your organization demonstrates strong governance foundations (78/100) but faces a critical talent gap (44/100) that could constrain AI execution capacity. The gap between governance maturity and talent readiness suggests that while policies and frameworks are in place, the human capital to operationalize them is insufficient."
-                        delay={0.5}
-                        speed={12}
-                      />
+                  <div className="border-l-2 border-eari-blue/45 pl-5">
+                    <p className="text-slate-100 font-sans leading-[1.65] text-[15px]">
+                      Your organization demonstrates strong governance foundations
+                      <span className="font-mono tabular-nums text-eari-blue-light"> (78/100)</span> but faces a critical talent gap
+                      <span className="font-mono tabular-nums text-amber-300/90"> (44/100)</span> that could constrain AI execution capacity. The gap between governance maturity and talent readiness suggests that while policies and frameworks are in place, the human capital to operationalize them is insufficient.
                     </p>
-                    <p className="mt-3 text-foreground font-sans leading-relaxed">
-                      <strong>Recommended priority:</strong>{' '}
-                      <StreamingText
-                        text="Invest in upskilling programs and AI career frameworks before scaling AI deployments. Without adequate talent, governance structures risk becoming aspirational rather than operational."
-                        delay={4}
-                        speed={12}
-                      />
+                    <p className="mt-4 text-slate-100 font-sans leading-[1.65] text-[15px]">
+                      <span className="font-heading font-semibold text-slate-50">Recommended priority &mdash;</span>{' '}
+                      Invest in upskilling programs and AI career frameworks before scaling AI deployments. Without adequate talent, governance structures risk becoming aspirational rather than operational.
                     </p>
                   </div>
-                  <p className="mt-4 text-xs font-mono text-muted-foreground">
-                    Generated by AI — clearly labeled, grounded in scores, not altering results
+                  <p className="mt-5 pt-4 border-t border-white/[0.05] text-[11px] font-mono text-slate-500 tracking-[0.04em]">
+                    Generated by AI &middot; grounded in your scores &middot; never alters calculated results
                   </p>
                 </div>
               </FadeUp>
@@ -1584,7 +1593,7 @@ export default function Home() {
                 },
               ].map((row, i) => (
                 <FadeUp key={row.label} delay={0.03 * i}>
-                  <div className="group rounded-xl border border-white/[0.08] bg-navy-900/35 backdrop-blur-sm transition-colors duration-200 hover:border-white/[0.12] hover:bg-navy-900/45 hover:shadow-md hover:shadow-black/25">
+                  <div className="group rounded-xl border border-white/[0.07] bg-[#0e131c] transition-colors duration-200 hover:border-white/[0.12] hover:bg-[#10161f]">
                     <div className="flex flex-col sm:flex-row items-stretch">
                       {/* Feature label column */}
                       <div className="flex items-center gap-3 sm:w-44 shrink-0 px-5 py-4 sm:py-0 bg-navy-950/40 rounded-t-xl sm:rounded-t-none sm:rounded-l-xl border-b sm:border-b-0 sm:border-r border-white/[0.06]">
@@ -1655,10 +1664,17 @@ export default function Home() {
           <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center max-w-3xl mx-auto">
-                <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-tight text-slate-100">
+                <div className="mb-5 flex items-center justify-center gap-3">
+                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                    Pricing
+                  </span>
+                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                </div>
+                <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
                   Simple, Transparent Pricing
                 </h2>
-                <p className="mt-4 text-lg text-muted-foreground font-sans">
+                <p className="mt-4 text-[17px] text-slate-400 font-sans leading-relaxed">
                   From individual assessments to enterprise-wide deployment. No hidden fees.
                 </p>
                 <button
