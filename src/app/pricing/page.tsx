@@ -86,7 +86,7 @@ const PRICING_TIERS = [
       { text: '3 pulse checks / month', included: true },
       { text: '1 team member', included: true },
       { text: 'Basic Literacy Hub', included: true },
-      { text: '1 .docx report / month ($29 add-on)', included: true },
+      { text: '1 .docx report / month (€29 add-on)', included: true },
       { text: '1 sector benchmark', included: true },
       { text: 'Community support', included: true },
       { text: 'Admin portal', included: false },
@@ -98,8 +98,8 @@ const PRICING_TIERS = [
   {
     id: 'professional',
     name: 'Professional',
-    price: '$29',
-    yearlyPrice: '$29',
+    price: '€49',
+    yearlyPrice: '€40.83',
     period: '/month',
     yearlyPeriod: '/mo, billed yearly',
     description: '5 assessments and 15 pulse checks per month with full Literacy Hub access',
@@ -125,8 +125,8 @@ const PRICING_TIERS = [
   {
     id: 'growth',
     name: 'Growth',
-    price: '$149',
-    yearlyPrice: '$119',
+    price: '€149',
+    yearlyPrice: '€124.17',
     period: '/month',
     yearlyPeriod: '/mo, billed yearly',
     description: '20 assessments and 50 pulse checks with full admin portal, all sectors, and read-only API',
@@ -202,7 +202,7 @@ const COMPARISON_FEATURES = [
   { feature: 'Team Members', starter: '1', professional: '5', growth: '25', enterprise: 'Unlimited' },
 
   { category: 'Reports' },
-  { feature: '.docx Report Downloads', starter: '1/mo ($29 add-on)', professional: '3 included', growth: 'Unlimited', enterprise: 'Unlimited + Custom Branding' },
+  { feature: '.docx Report Downloads', starter: '1/mo (€29 add-on)', professional: '3 included', growth: 'Unlimited', enterprise: 'Unlimited + Custom Branding' },
 
   { category: 'Learning & Benchmarking' },
   { feature: 'Literacy Hub Access', starter: 'Basic only', professional: 'Full library', growth: 'Full + Learning Paths', enterprise: 'Full + Custom Content' },
@@ -214,7 +214,7 @@ const COMPARISON_FEATURES = [
 
   { category: 'Support' },
   { feature: 'Support Level', starter: 'Community', professional: 'Email (48h)', growth: 'Chat + Quarterly Review', enterprise: 'Dedicated CSM + SLA' },
-  { feature: 'Annual Discount', starter: '–', professional: '$29/mo', growth: '$119/mo (20% off)', enterprise: 'Custom' },
+  { feature: 'Annual Discount', starter: '–', professional: '€40.83/mo (17% off)', growth: '€124.17/mo (17% off)', enterprise: 'Custom' },
 ]
 
 // ---------------------------------------------------------------------------
@@ -232,11 +232,11 @@ const FAQ_ITEMS = [
   },
   {
     question: 'How does annual billing work?',
-    answer: 'Paid plans support monthly or annual billing. Professional is $29/month. Growth is $119/mo billed yearly. Enterprise is custom pricing based on scope and support needs.',
+    answer: 'Paid plans support monthly or annual billing. Professional is €49/month or €490/year (€40.83/mo, save 17%). Growth is €149/month or €1,490/year (€124.17/mo, save 17%). Enterprise is custom pricing based on scope and support needs.',
   },
   {
-    question: 'What is the $29 .docx add-on on Starter?',
-    answer: 'Starter includes 1 .docx report download per month. If you need additional downloads without upgrading, you can purchase extra reports at $29 each. Professional includes 3, and Growth and Enterprise are unlimited.',
+    question: 'What is the €29 .docx add-on on Starter?',
+    answer: 'Starter includes 1 .docx report download per month. If you need additional downloads without upgrading, you can purchase extra reports at €29 each. Professional includes 3, and Growth and Enterprise are unlimited.',
   },
   {
     question: 'Can I cancel anytime?',
@@ -537,13 +537,10 @@ export default function PricingPage() {
                               )}
                             </div>
                             {billingPeriod === 'yearly' && tier.id === 'professional' && (
-                              <p className="mt-1 text-xs text-emerald-400 font-sans">Save $120/yr vs monthly</p>
+                              <p className="mt-1 text-xs text-emerald-400 font-sans">Save €98/yr (17% off)</p>
                             )}
                             {billingPeriod === 'yearly' && tier.id === 'growth' && (
-                              <p className="mt-1 text-xs text-emerald-400 font-sans">Save $360/yr vs monthly</p>
-                            )}
-                            {billingPeriod === 'yearly' && tier.id === 'enterprise' && (
-                              <p className="mt-1 text-xs text-emerald-400 font-sans">Save $960/yr vs monthly</p>
+                              <p className="mt-1 text-xs text-emerald-400 font-sans">Save €298/yr (17% off)</p>
                             )}
                           </div>
                         </CardHeader>
@@ -650,7 +647,7 @@ export default function PricingPage() {
         </section>
 
         {/* --- FAQ Section --- */}
-        <section className="pb-16 sm:pb-20">
+        <section id="faq" className="pb-16 sm:pb-20 scroll-mt-24">
           <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground text-center mb-2">

@@ -4,7 +4,9 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 // Pricing constants — directional MRR until Stripe webhooks are fully wired
-const PRO_MONTHLY = 29;
+// In EUR. Mirrors pricing on /pricing.
+const PRO_MONTHLY = 49;
+const GROWTH_MONTHLY = 149;
 // Enterprise is custom pricing and excluded from fixed MRR estimates.
 const ENTERPRISE_MONTHLY = 0;
 
@@ -44,11 +46,19 @@ export async function GET() {
     });
 
     const proUsers = users.filter((u) => u.tier === "professional");
+    const growthUsers = users.filter((u) => u.tier === "growth");
     const enterpriseUsers = users.filter((u) => u.tier === "enterprise");
-    const freeUsers = users.filter((u) => u.tier === "free" || u.tier !== "professional" && u.tier !== "enterprise");
+    const freeUsers = users.filter(
+      (u) =>
+        u.tier === "free" ||
+        (u.tier !== "professional" && u.tier !== "growth" && u.tier !== "enterprise"),
+    );
 
-    // MRR: count of active professional * $29 (enterprise is custom pricing)
-    const mrr = proUsers.length * PRO_MONTHLY + enterpriseUsers.length * ENTERPRISE_MONTHLY;
+    // MRR: count of active paid users * tier price (enterprise is custom pricing).
+    const mrr =
+      proUsers.length * PRO_MONTHLY +
+      growthUsers.length * GROWTH_MONTHLY +
+      enterpriseUsers.length * ENTERPRISE_MONTHLY;
 
     // ARR: MRR * 12
     const arr = mrr * 12;
@@ -68,9 +78,14 @@ export async function GET() {
     }
 
     // Calculate revenue per user per month
-    for (const user of [...proUsers, ...enterpriseUsers]) {
+    for (const user of [...proUsers, ...growthUsers, ...enterpriseUsers]) {
       const joinDate = new Date(user.createdAt);
-      const monthlyAmount = user.tier === "enterprise" ? ENTERPRISE_MONTHLY : PRO_MONTHLY;
+      const monthlyAmount =
+        user.tier === "enterprise"
+          ? ENTERPRISE_MONTHLY
+          : user.tier === "growth"
+            ? GROWTH_MONTHLY
+            : PRO_MONTHLY;
 
       // Calculate months this user has been active
       const monthsActive =
@@ -105,6 +120,7 @@ export async function GET() {
     const planDistribution = {
       free: freeUsers.length,
       professional: proUsers.length,
+      growth: growthUsers.length,
       enterprise: enterpriseUsers.length,
     };
 
@@ -112,7 +128,7 @@ export async function GET() {
     // In production, this would come from Stripe
     const recentPaidUsers = await db.user.findMany({
       where: {
-        tier: { in: ["professional", "enterprise"] },
+        tier: { in: ["professional", "growth", "enterprise"] },
       },
       select: {
         email: true,
@@ -128,7 +144,12 @@ export async function GET() {
       id: `txn_${i}_${u.email.slice(0, 8)}`,
       email: u.email,
       name: u.name,
-      amount: u.tier === "enterprise" ? ENTERPRISE_MONTHLY : PRO_MONTHLY,
+      amount:
+        u.tier === "enterprise"
+          ? ENTERPRISE_MONTHLY
+          : u.tier === "growth"
+            ? GROWTH_MONTHLY
+            : PRO_MONTHLY,
       plan: u.tier,
       date: u.createdAt,
       status: "paid" as const,

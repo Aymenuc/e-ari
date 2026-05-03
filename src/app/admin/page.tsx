@@ -2511,7 +2511,8 @@ export default function AdminPage() {
                         </SelectTrigger>
                         <SelectContent className="bg-navy-800 border-border">
                           <SelectItem value="free" className="font-sans text-sm">Free</SelectItem>
-                          <SelectItem value="professional" className="font-sans text-sm">Pro ($29/mo)</SelectItem>
+                          <SelectItem value="professional" className="font-sans text-sm">Pro (€49/mo)</SelectItem>
+                          <SelectItem value="growth" className="font-sans text-sm">Growth (€149/mo)</SelectItem>
                           <SelectItem value="enterprise" className="font-sans text-sm">Enterprise (Custom)</SelectItem>
                         </SelectContent>
                       </Select>
@@ -2564,7 +2565,7 @@ export default function AdminPage() {
                       <div>
                         <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">Monthly Spend</p>
                         <p className="font-heading text-2xl font-bold text-foreground">
-                          {selectedUser.tier === "enterprise" ? "Custom" : selectedUser.tier === "professional" ? "$29" : "$0"}
+                          {selectedUser.tier === "enterprise" ? "Custom" : selectedUser.tier === "growth" ? "€149" : selectedUser.tier === "professional" ? "€49" : "€0"}
                         </p>
                       </div>
                     </div>

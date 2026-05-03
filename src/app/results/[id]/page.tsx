@@ -1270,7 +1270,15 @@ export default function ResultsPage() {
 
           {isPro && sessionStatus === 'authenticated' && complianceOutlook ? (
             <FadeUp>
-              <ComplianceOutlook outlook={complianceOutlook} baselineHref="/portal/use-cases" />
+              <ComplianceOutlook
+                outlook={complianceOutlook}
+                baselineHref="/portal/use-cases"
+                createUseCaseHref={
+                  assessment?.id
+                    ? `/portal/use-cases/systems/new?assessmentId=${assessment.id}`
+                    : undefined
+                }
+              />
             </FadeUp>
           ) : null}
 
@@ -1630,7 +1638,7 @@ export default function ResultsPage() {
                       </div>
                       <div className="flex-1 text-center sm:text-left">
                         <p className="font-heading font-semibold text-foreground text-sm">
-                          Unlock all 6 AI agents with Professional at $29/month
+                          Unlock all 6 AI agents with Professional at €49/month
                         </p>
                         <p className="text-xs text-muted-foreground font-sans mt-0.5">
                           Get unlimited assessments, full AI narrative insights, PDF reports, benchmarking, and the interactive AI Assistant.
@@ -1844,7 +1852,7 @@ export default function ResultsPage() {
                               <div className="flex items-center justify-between mb-1">
                                 <span className="text-[10px] text-muted-foreground font-sans">Compliance Rate</span>
                                 <span className="font-mono text-sm font-bold" style={{ color: regColor }}>
-                                  {summary.complianceRate}%
+                                  {summary.complianceRate != null ? `${summary.complianceRate}%` : '—'}
                                 </span>
                               </div>
                               <div className="h-2 rounded-full bg-navy-700 overflow-hidden">
@@ -1852,7 +1860,9 @@ export default function ResultsPage() {
                                   className="h-full rounded-full"
                                   style={{ backgroundColor: regColor }}
                                   initial={{ width: 0 }}
-                                  animate={{ width: `${summary.complianceRate}%` }}
+                                  animate={{
+                                    width: `${summary.complianceRate ?? 0}%`,
+                                  }}
                                   transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }}
                                 />
                               </div>
@@ -1860,7 +1870,9 @@ export default function ResultsPage() {
                             {/* Stats row */}
                             <div className="flex items-center gap-3 text-xs">
                               <span className="text-muted-foreground font-sans">
-                                {summary.compliantCount}/{summary.totalRelevant} compliant
+                                {summary.totalRelevant > 0
+                                  ? `${summary.compliantCount}/${summary.totalRelevant} checks passed`
+                                  : 'No mapped pillar scores'}
                               </span>
                               {summary.criticalGaps > 0 && (
                                 <Badge variant="outline" className="text-[9px] font-mono border-red-500/30 text-red-400 px-1.5 py-0">

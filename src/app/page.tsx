@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useRef, useEffect, useState, useCallback, useMemo } from 'react'
-import { motion, useInView, useTransform, useScroll, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { useRef, useEffect, useState } from 'react'
+import { motion, useTransform, useScroll, AnimatePresence, useReducedMotion } from 'framer-motion'
 import {
   Target,
   Database,
@@ -14,13 +14,11 @@ import {
   Lock,
   ArrowRight,
   Check,
-  FileText,
   Zap,
   Brain,
   Eye,
   LockKeyhole,
   FileCheck,
-  ArrowDownRight,
   Sparkles,
   Scale,
   ArrowUp,
@@ -36,10 +34,12 @@ import {
   Landmark,
   BarChart3,
   TrendingUp,
+  HelpCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Navigation } from '@/components/shared/navigation'
 import { Footer } from '@/components/shared/footer'
 import { ProductSpotlightCarousel } from '@/components/marketing/product-spotlight-carousel'
@@ -86,133 +86,6 @@ function ParallaxSection({ children, className, speed = 0.1, id }: { children: R
   )
 }
 
-/* ─── Typewriter effect ─────────────────────────────────────────────────── */
-
-function TypewriterText({ text, delay = 0, className }: { text: string; delay?: number; className?: string }) {
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true })
-  const reduceMotion = useReducedMotion()
-  const [displayed, setDisplayed] = useState('')
-  const [showCursor, setShowCursor] = useState(true)
-
-  useEffect(() => {
-    if (!inView) return
-    if (reduceMotion) {
-      setDisplayed(text)
-      setShowCursor(false)
-      return
-    }
-    let i = 0
-    let intervalId: ReturnType<typeof setInterval> | null = null
-    let cursorTimeoutId: ReturnType<typeof setTimeout> | null = null
-
-    const timeoutId = setTimeout(() => {
-      intervalId = setInterval(() => {
-        if (i < text.length) {
-          setDisplayed(text.slice(0, i + 1))
-          i++
-        } else {
-          if (intervalId) clearInterval(intervalId)
-          cursorTimeoutId = setTimeout(() => setShowCursor(false), 1500)
-        }
-      }, 80)
-    }, delay * 1000)
-
-    return () => {
-      clearTimeout(timeoutId)
-      if (intervalId) clearInterval(intervalId)
-      if (cursorTimeoutId) clearTimeout(cursorTimeoutId)
-    }
-  }, [inView, text, delay, reduceMotion])
-
-  return (
-    <span ref={ref} className={className}>
-      {displayed}
-      {showCursor && inView && (
-        <span className="typewriter-cursor" />
-      )}
-    </span>
-  )
-}
-
-/* ─── Particle Grid Background ─────────────────────────────────────────── */
-
-// Deterministic pseudo-random using a seed, so server and client produce the same values
-function seededRandom(seed: number) {
-  const x = Math.sin(seed * 9301 + 49297) * 49297
-  return x - Math.floor(x)
-}
-
-function ParticleGrid() {
-  const reduceMotion = useReducedMotion()
-  // Use deterministic seeded random values so SSR and client render match exactly
-  const particles = useMemo(
-    () => Array.from({ length: 18 }, (_, i) => ({
-      id: i,
-      x: seededRandom(i * 5 + 1) * 100,
-      y: seededRandom(i * 5 + 2) * 100,
-      size: seededRandom(i * 5 + 3) * 3 + 1,
-      duration: seededRandom(i * 5 + 4) * 8 + 6,
-      delay: seededRandom(i * 5 + 5) * 4,
-    })),
-    []
-  )
-
-  if (reduceMotion) return null
-
-  return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-      {particles.map((p) => (
-        <div
-          key={p.id}
-          className="particle-dot particle-float absolute"
-          style={{
-            left: `${p.x}%`,
-            top: `${p.y}%`,
-            width: p.size,
-            height: p.size,
-            animationDuration: `${p.duration}s`,
-            animationDelay: `${p.delay}s`,
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
-/* ─── Mouse Follow Spotlight ───────────────────────────────────────────── */
-
-function MouseSpotlight() {
-  const ref = useRef<HTMLDivElement>(null)
-  const reduceMotion = useReducedMotion()
-
-  const handleMove = useCallback((e: MouseEvent) => {
-    if (!ref.current) return
-    const el = document.getElementById('hero-section')
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    ref.current.style.setProperty('--mouse-x', `${((e.clientX - rect.left) / rect.width) * 100}%`)
-    ref.current.style.setProperty('--mouse-y', `${((e.clientY - rect.top) / rect.height) * 100}%`)
-  }, [])
-
-  useEffect(() => {
-    const el = document.getElementById('hero-section')
-    if (!el) return
-    el.addEventListener('mousemove', handleMove)
-    return () => el.removeEventListener('mousemove', handleMove)
-  }, [handleMove])
-
-  if (reduceMotion) return null
-
-  return (
-    <div
-      ref={ref}
-      className="hero-spotlight absolute inset-0 pointer-events-none transition-all duration-300 ease-out"
-      style={{ '--mouse-x': '50%', '--mouse-y': '50%' } as React.CSSProperties}
-    />
-  )
-}
-
 /* ─── Animated Checkmark ───────────────────────────────────────────────── */
 
 function AnimatedCheck({ className, delay = 0 }: { className?: string; delay?: number }) {
@@ -230,89 +103,6 @@ function AnimatedCheck({ className, delay = 0 }: { className?: string; delay?: n
         transition={{ duration: 0.4, delay, ease: 'easeOut' }}
       />
     </svg>
-  )
-}
-
-/* ─── Typing/Streaming Effect for AI Insight ───────────────────────────── */
-
-function StreamingText({ text, delay = 0, speed = 18 }: { text: string; delay?: number; speed?: number }) {
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true })
-  const reduceMotion = useReducedMotion()
-  const [displayed, setDisplayed] = useState('')
-  const [done, setDone] = useState(false)
-
-  useEffect(() => {
-    if (!inView) return
-    if (reduceMotion) {
-      setDisplayed(text)
-      setDone(true)
-      return
-    }
-    let i = 0
-    let intervalId: ReturnType<typeof setInterval> | null = null
-
-    const timeoutId = setTimeout(() => {
-      intervalId = setInterval(() => {
-        if (i < text.length) {
-          setDisplayed(text.slice(0, i + 1))
-          i++
-        } else {
-          if (intervalId) clearInterval(intervalId)
-          setDone(true)
-        }
-      }, speed)
-    }, delay * 1000)
-
-    return () => {
-      clearTimeout(timeoutId)
-      if (intervalId) clearInterval(intervalId)
-    }
-  }, [inView, text, delay, speed, reduceMotion])
-
-  return (
-    <span ref={ref}>
-      {displayed}
-      {!done && inView && !reduceMotion && (
-        <motion.span
-          animate={{ opacity: [1, 0.35] }}
-          transition={{ duration: 0.55, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
-          className="text-eari-blue-light/90"
-        >
-          ▊
-        </motion.span>
-      )}
-    </span>
-  )
-}
-
-/* ─── Sparkle Badge ────────────────────────────────────────────────────── */
-
-function SparkleBadge({ children, className }: { children: React.ReactNode; className?: string }) {
-  const reduceMotion = useReducedMotion()
-  return (
-    <motion.div
-      className={`relative inline-flex ${className}`}
-      initial={reduceMotion ? false : { opacity: 0, y: 4 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: reduceMotion ? 0.01 : 0.4, ease: 'easeOut' }}
-    >
-      {!reduceMotion && (
-        <div className="absolute inset-0 rounded-md overflow-hidden pointer-events-none" aria-hidden="true">
-          <motion.div
-            className="absolute inset-0 opacity-40"
-            style={{
-              background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%)',
-              backgroundSize: '200% 100%',
-            }}
-            animate={{ backgroundPosition: ['-200% 0', '200% 0'] }}
-            transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
-          />
-        </div>
-      )}
-      {children}
-    </motion.div>
   )
 }
 
@@ -453,6 +243,35 @@ const ORCHESTRATION_FLOW = [
   { label: 'Guide', desc: 'Assistant Agent advises' },
 ]
 
+/** Single coordinate system for orbit lines + HTML nodes (SVG viewBox units). */
+const ORBIT_VB = 380
+const ORBIT_CX = 190
+const ORBIT_CY = 190
+/** Distance from hub center to each agent icon center — matches connector endpoints. */
+const ORBIT_R = 140
+
+/**
+ * Clockwise from top (−90°): same sequence as ORCHESTRATION_FLOW / pipeline strip.
+ * Each spoke lands on a vertex of a regular hexagon centered on the hub.
+ */
+const AGENT_ORBIT_IDS = ['scoring', 'discovery', 'insight', 'literacy', 'report', 'assistant'] as const
+
+function orbitAngleRad(index: number, total: number) {
+  return -Math.PI / 2 + (index * 2 * Math.PI) / total
+}
+
+function orbitPositionPct(angleRad: number) {
+  const x = ORBIT_CX + ORBIT_R * Math.cos(angleRad)
+  const y = ORBIT_CY + ORBIT_R * Math.sin(angleRad)
+  return { leftPct: (x / ORBIT_VB) * 100, topPct: (y / ORBIT_VB) * 100 }
+}
+
+const AGENTS_ORBIT_ORDERED = AGENT_ORBIT_IDS.map((id) => {
+  const agent = AGENT_PROPERTIES.find((a) => a.id === id)
+  if (!agent) throw new Error(`Agent orbit: missing "${id}" in AGENT_PROPERTIES`)
+  return agent
+})
+
 /* ─── Pricing tiers ────────────────────────────────────────────────────── */
 
 const PRICING_TIERS = [
@@ -484,8 +303,8 @@ const PRICING_TIERS = [
   },
   {
     name: 'Professional',
-    price: '$29',
-    yearlyPrice: '$29',
+    price: '€49',
+    yearlyPrice: '€40.83',
     period: '/month',
     yearlyPeriod: '/mo, billed yearly',
     description: 'For practitioners running regular assessments with AI-powered insights.',
@@ -510,8 +329,8 @@ const PRICING_TIERS = [
   },
   {
     name: 'Growth',
-    price: '$149',
-    yearlyPrice: '$119',
+    price: '€149',
+    yearlyPrice: '€124.17',
     period: '/month',
     yearlyPeriod: '/mo, billed yearly',
     description: 'For scaling organizations that need broader coverage and team collaboration.',
@@ -564,10 +383,33 @@ const PRICING_TIERS = [
 
 /* ─── Client logos (businesses that have used E-ARI) ────────────────────── */
 
-const CLIENT_LOGOS = [
-  'StratumIQ', 'HelixPartners', 'AxiomCore', 'TesseraCo', 'MeridianEdge', 'Quantiva',
+const ORG_ARCHETYPES = [
+  'Regulated enterprise',
+  'Professional services',
+  'B2B SaaS',
+  'Public sector',
+  'Healthcare systems',
+  'Research & academia',
 ]
 
+const LANDING_FAQ = [
+  {
+    q: 'Does AI change my E-ARI scores?',
+    a: 'No. Scoring is deterministic and versioned. AI only adds narrative context on top of your calculated results — it never inflates, alters, or overrides the numbers.',
+  },
+  {
+    q: 'How long does an assessment take?',
+    a: 'Most organizations complete their first pass in under 20 minutes. You can save progress and return; deeper evidence work happens in the portal over time.',
+  },
+  {
+    q: 'What makes this “agentic” instead of a chatbot?',
+    a: 'Six specialised agents each do a discrete job — discovery interviews, deterministic scoring, narrative insight, literacy paths, reporting, and in-context guidance — and pass structured context forward. It is orchestration, not a single generic assistant.',
+  },
+  {
+    q: 'Can we use E-ARI for EU AI Act or other compliance workflows?',
+    a: 'Yes. The platform supports evidence trails, technical documentation workflows, and submission-oriented packs alongside your readiness scores. Use the compliance workspace in the portal for mapped use cases and evidence.',
+  },
+]
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MAIN PAGE
@@ -638,7 +480,7 @@ export default function Home() {
                   </p>
 
                   <p className="mt-5 max-w-xl mx-auto lg:mx-0 text-[15px] sm:text-base text-slate-400 font-sans leading-relaxed">
-                    Six specialised agents — Discovery, Assessment, Analysis, Literacy, Reporting, and Guidance — work in concert to deliver outputs no single tool can match.
+                    Six specialised agents — Discovery, Insight, Literacy, Scoring, Report, and Assistant — work in concert to deliver outputs no single tool can match.
                   </p>
 
                   <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
@@ -1060,40 +902,60 @@ export default function Home() {
           </div>
         </ParallaxSection>
 
-        {/* ─── 2B. FEATURE HIGHLIGHTS STRIP ──────────────────────────────── */}
+        {/* ─── 2B. CAPABILITY STRIP (no card chrome — matches calm landing rhythm) ─── */}
         <div className="section-gradient-separator" aria-hidden="true">
           <div className="h-px bg-gradient-to-r from-transparent via-eari-blue/20 to-transparent" />
         </div>
-        <section className="py-12 bg-navy-900">
+        <section className="border-y border-white/[0.05] bg-navy-900/80 py-10 sm:py-11" aria-labelledby="capabilities-strip-heading">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="mb-8 flex flex-col gap-2 text-center lg:mb-9 lg:text-left">
+                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/85">
+                  Platform capabilities
+                </span>
+                <h2 id="capabilities-strip-heading" className="font-heading text-lg font-semibold tracking-tight text-slate-100 sm:text-xl">
+                  Governance-grade signals, without the clutter
+                </h2>
+              </div>
+              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-x-10 sm:gap-y-9 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-0">
                 {[
-                  { icon: Award, title: 'Certified', desc: 'E-ARI Certification from Bronze to Platinum badging', color: '#d4a853' },
-                  { icon: Landmark, title: 'Compliant', desc: 'EU AI Act, NIST, and ISO 42001 gap analysis', color: '#3b82f6' },
-                  { icon: Activity, title: 'Monitored', desc: 'Continuous drift detection with smart alerts', color: '#10b981' },
-                  { icon: BarChart3, title: 'Benchmarked', desc: 'Sector peer comparison with real industry data', color: '#06b6d4' },
+                  {
+                    icon: Award,
+                    title: 'Certification tiers',
+                    desc: 'Bronze through Platinum readiness badging tied to your composite score.',
+                  },
+                  {
+                    icon: Landmark,
+                    title: 'Regulatory mapping',
+                    desc: 'Structured gap views across EU AI Act, NIST AI RMF, and ISO/IEC 42001.',
+                  },
+                  {
+                    icon: Activity,
+                    title: 'Ongoing monitoring',
+                    desc: 'Pulse checks and drift-oriented alerts when posture shifts.',
+                  },
+                  {
+                    icon: BarChart3,
+                    title: 'Sector benchmarks',
+                    desc: 'Percentile-style comparisons where benchmark data is available.',
+                  },
                 ].map((feat, i) => {
                   const Icon = feat.icon
                   return (
                     <motion.div
                       key={feat.title}
-                      initial={{ opacity: 0, y: 16 }}
+                      initial={{ opacity: 0, y: 12 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
-                      transition={{ duration: 0.38, delay: i * 0.04 }}
-                      whileHover={{ y: -1 }}
-                      className="group h-full"
+                      transition={{ duration: 0.35, delay: i * 0.05 }}
+                      className={`relative flex gap-4 lg:flex-col lg:gap-3 ${i > 0 ? 'lg:border-l lg:border-white/[0.06] lg:pl-8' : ''}`}
                     >
-                      <div className="rounded-lg border border-white/[0.06] bg-[#0e131c] p-5 text-center h-full flex flex-col items-center transition-colors duration-200 group-hover:border-white/[0.1]">
-                        <div
-                          className="flex h-10 w-10 items-center justify-center rounded-xl mb-3"
-                          style={{ backgroundColor: `${feat.color}15` }}
-                        >
-                          <Icon className="h-5 w-5" style={{ color: feat.color }} />
-                        </div>
-                        <h4 className="font-heading text-sm font-semibold text-foreground">{feat.title}</h4>
-                        <p className="mt-1.5 text-xs text-muted-foreground font-sans leading-relaxed">{feat.desc}</p>
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/[0.07] bg-white/[0.02]">
+                        <Icon className="h-[18px] w-[18px] text-slate-400" strokeWidth={1.75} aria-hidden />
+                      </div>
+                      <div className="min-w-0 flex-1 lg:flex-none">
+                        <h3 className="font-heading text-[15px] font-semibold tracking-tight text-slate-100">{feat.title}</h3>
+                        <p className="mt-1.5 font-sans text-[13px] leading-relaxed text-muted-foreground/88">{feat.desc}</p>
                       </div>
                     </motion.div>
                   )
@@ -1217,96 +1079,120 @@ export default function Home() {
             {/* ── Orbital diagram left + Agent spotlight right ── */}
             <div className="mt-14 lg:mt-20 grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-14 items-center">
 
-              {/* LEFT — Orbital agent constellation (3 cols) */}
+              {/* LEFT — Orbital hub: hexagonal spokes from shared geometry + pipeline order */}
               <FadeUp delay={0.08} className="lg:col-span-3">
-                <div className="relative flex flex-col items-center justify-center py-8">
-                  {/* Central hub */}
-                  <div className="relative w-[320px] h-[320px] sm:w-[380px] sm:h-[380px]">
-                    <div className="absolute inset-0 rounded-full border border-white/[0.06]" />
-                    <div className="absolute inset-5 rounded-full border border-white/[0.04]" />
-
-                    {/* Agent orbital nodes */}
-                    {AGENT_PROPERTIES.map((agent, i) => {
-                      const Icon = agent.icon
-                      const angle = (Math.PI * 2 * i) / AGENT_PROPERTIES.length - Math.PI / 2
-                      const radius = 140
-                      const x = 50 + (radius / 190) * 50 * Math.cos(angle)
-                      const y = 50 + (radius / 190) * 50 * Math.sin(angle)
-                      return (
-                        <motion.div
-                          key={agent.id}
-                          className="absolute z-10"
-                          style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' }}
-                          initial={{ opacity: 0, y: 6 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: 0.15 + i * 0.06, duration: 0.45, ease: 'easeOut' }}
-                        >
-                          <motion.div
-                            className="group relative cursor-default"
-                            whileHover={{ scale: 1.04 }}
-                            transition={{ duration: 0.18 }}
-                          >
-                            <div
-                              className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.1] shadow-sm shadow-black/40"
-                              style={{
-                                backgroundColor: `${agent.color}18`,
-                              }}
-                            >
-                              <Icon className="h-5 w-5" style={{ color: agent.color }} />
-                            </div>
-                            {/* Agent name tooltip */}
-                            <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                              <span className="text-[10px] font-mono text-muted-foreground/80 bg-navy-900/90 px-2 py-0.5 rounded border border-white/[0.06]">
-                                {agent.name}
-                              </span>
-                            </div>
-                            {/* Status dot */}
-                            <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-navy-900" />
-                          </motion.div>
-                        </motion.div>
-                      )
-                    })}
-
-                    {/* Center core */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <motion.div
-                        className="flex flex-col items-center gap-2"
-                        initial={{ opacity: 0, y: 8 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.12, duration: 0.45, ease: 'easeOut' }}
-                      >
-                        <div className="h-16 w-16 rounded-2xl bg-navy-800/90 border border-white/[0.1] flex items-center justify-center shadow-md shadow-black/40">
-                          <Workflow className="h-7 w-7 text-eari-blue-light" />
-                        </div>
-                        <span className="text-[10px] font-mono text-muted-foreground/50 uppercase tracking-widest">Orchestrator</span>
-                      </motion.div>
-                    </div>
-
-                    {/* Connecting lines from center to each agent */}
-                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 380 380" aria-hidden="true">
-                      {AGENT_PROPERTIES.map((agent, i) => {
-                        const angle = (Math.PI * 2 * i) / AGENT_PROPERTIES.length - Math.PI / 2
-                        const radius = 140
-                        const x = 190 + radius * Math.cos(angle)
-                        const y = 190 + radius * Math.sin(angle)
+                <div className="relative flex flex-col items-center justify-center py-6 sm:py-8">
+                  <p id="orbit-diagram-desc" className="sr-only">
+                    Six agents arranged clockwise from the top following the orchestration pipeline: Assess with Scoring Agent,
+                    then Discover, Analyze, Educate, Report, and Guide with Assistant Agent. Lines connect each agent to the central orchestrator hub.
+                  </p>
+                  <div
+                    className="relative mx-auto aspect-square w-full max-w-[min(380px,92vw)]"
+                    role="img"
+                    aria-labelledby="orbit-diagram-desc"
+                  >
+                    {/* Geometry layer — circles + spokes share ORBIT_CX, ORBIT_CY, ORBIT_R */}
+                    <svg
+                      className="absolute inset-0 z-0 h-full w-full text-white/[0.06]"
+                      viewBox={`0 0 ${ORBIT_VB} ${ORBIT_VB}`}
+                      preserveAspectRatio="xMidYMid meet"
+                      aria-hidden
+                    >
+                      <circle cx={ORBIT_CX} cy={ORBIT_CY} r={ORBIT_R} fill="none" stroke="currentColor" strokeWidth="0.75" />
+                      <circle cx={ORBIT_CX} cy={ORBIT_CY} r={52} fill="none" stroke="currentColor" strokeWidth="0.5" opacity={0.65} />
+                      {AGENTS_ORBIT_ORDERED.map((agent, i) => {
+                        const angle = orbitAngleRad(i, AGENTS_ORBIT_ORDERED.length)
+                        const x2 = ORBIT_CX + ORBIT_R * Math.cos(angle)
+                        const y2 = ORBIT_CY + ORBIT_R * Math.sin(angle)
                         return (
                           <motion.line
-                            key={`line-${agent.id}`}
-                            x1="190" y1="190" x2={x} y2={y}
+                            key={`spoke-${agent.id}`}
+                            x1={ORBIT_CX}
+                            y1={ORBIT_CY}
+                            x2={x2}
+                            y2={y2}
                             stroke={agent.color}
-                            strokeWidth="0.5"
-                            strokeOpacity="0.12"
-                            initial={{ pathLength: 0, opacity: 0 }}
-                            whileInView={{ pathLength: 1, opacity: 1 }}
+                            strokeWidth="0.65"
+                            strokeOpacity={0.14}
+                            strokeLinecap="round"
+                            vectorEffect="non-scaling-stroke"
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
                             viewport={{ once: true }}
-                            transition={{ delay: 0.35 + i * 0.05, duration: 0.45, ease: 'easeOut' }}
+                            transition={{ delay: 0.28 + i * 0.045, duration: 0.42, ease: 'easeOut' }}
                           />
                         )
                       })}
                     </svg>
+
+                    {/* Hub */}
+                    <div className="absolute inset-0 z-[1] flex items-center justify-center pointer-events-none">
+                      <motion.div
+                        className="flex flex-col items-center gap-1.5 sm:gap-2"
+                        initial={{ opacity: 0, scale: 0.96 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.1, duration: 0.4, ease: 'easeOut' }}
+                      >
+                        <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-navy-800/95 border border-white/[0.1] shadow-md shadow-black/40">
+                          <Workflow className="h-6 w-6 sm:h-7 sm:w-7 text-eari-blue-light" />
+                        </div>
+                        <span className="text-[9px] sm:text-[10px] font-mono text-muted-foreground/55 uppercase tracking-widest text-center px-1">
+                          Orchestrator
+                        </span>
+                      </motion.div>
+                    </div>
+
+                    {/* Agent nodes — percentage position = same math as spokes */}
+                    {AGENTS_ORBIT_ORDERED.map((agent, i) => {
+                      const Icon = agent.icon
+                      const angle = orbitAngleRad(i, AGENTS_ORBIT_ORDERED.length)
+                      const { leftPct, topPct } = orbitPositionPct(angle)
+                      const shortLabel = agent.name.replace(/\s+Agent$/, '')
+                      return (
+                        <motion.div
+                          key={agent.id}
+                          className="absolute z-[2] -translate-x-1/2 -translate-y-1/2"
+                          style={{ left: `${leftPct}%`, top: `${topPct}%` }}
+                          initial={{ opacity: 0, scale: 0.94 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: 0.14 + i * 0.05, duration: 0.42, ease: 'easeOut' }}
+                        >
+                          <div className="relative flex flex-col items-center gap-1 group">
+                            <motion.div
+                              className="relative cursor-default"
+                              whileHover={{ scale: 1.04 }}
+                              transition={{ duration: 0.18 }}
+                            >
+                              <div
+                                className="relative flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl border border-white/[0.1] shadow-sm shadow-black/40"
+                                style={{ backgroundColor: `${agent.color}18` }}
+                              >
+                                <Icon className="h-[18px] w-[18px] sm:h-5 sm:w-5" style={{ color: agent.color }} />
+                              </div>
+                              <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-navy-900" />
+                            </motion.div>
+                            {/* Phones / tablets: label always visible (no hover orbit) */}
+                            <span className="max-w-[5.25rem] text-center font-mono text-[8px] sm:text-[9px] leading-snug text-muted-foreground/90 lg:hidden pointer-events-none">
+                              {shortLabel}
+                            </span>
+                            {/* Large screens: full name on hover */}
+                            <div className="pointer-events-none absolute left-1/2 top-full z-10 mt-1 hidden -translate-x-1/2 opacity-0 transition-opacity duration-200 group-hover:opacity-100 lg:block">
+                              <span className="whitespace-nowrap rounded border border-white/[0.06] bg-navy-900/95 px-2 py-0.5 font-mono text-[10px] text-muted-foreground/90 shadow-lg">
+                                {agent.name}
+                              </span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )
+                    })}
                   </div>
+
+                  <p className="mt-4 max-w-sm text-center font-sans text-[11px] leading-relaxed text-muted-foreground/80 sm:text-xs lg:mt-5">
+                    <span className="font-mono text-eari-blue-light/90">Clockwise from top</span> matches the pipeline:{' '}
+                    {ORCHESTRATION_FLOW.map((s) => s.label).join(' → ')}.
+                  </p>
 
                   {/* Pipeline flow — compact horizontal below orbital */}
                   <div className="mt-10 flex items-center justify-center gap-0 flex-wrap">
@@ -1331,11 +1217,11 @@ export default function Home() {
                 </div>
               </FadeUp>
 
-              {/* RIGHT — Featured agent spotlight (2 cols) */}
+              {/* RIGHT — Featured agent spotlight (same order as orbit / pipeline) */}
               <div className="lg:col-span-2 space-y-0">
-                {AGENT_PROPERTIES.map((agent, i) => {
+                {AGENTS_ORBIT_ORDERED.map((agent, i) => {
                   const Icon = agent.icon
-                  const isFeatured = i === 0
+                  const isFeatured = i === 0 || i === 1
                   return (
                     <FadeUp key={agent.id} delay={i * 0.03}>
                       <motion.div
@@ -1511,25 +1397,30 @@ export default function Home() {
         </ParallaxSection>
 
         {/* ─── 4B. CLIENTS SECTION ─────────────────────────────────────────── */}
-        <section className="py-12 bg-navy-900 border-t border-b border-border/20">
+        <section className="py-14 sm:py-16 bg-navy-900 border-t border-b border-border/20" aria-labelledby="social-proof-heading">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
-              <p className="text-center text-xs text-muted-foreground font-sans uppercase tracking-wider mb-8">
-                Trusted by teams at growing organizations
-              </p>
+              <div className="text-center max-w-2xl mx-auto mb-10">
+                <h2 id="social-proof-heading" className="font-heading text-lg sm:text-xl font-semibold tracking-tight text-slate-100">
+                  Built for serious AI programs
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground font-sans leading-relaxed">
+                  Teams that need auditability and repeatable methodology — not slide-deck guesses.
+                </p>
+              </div>
             </FadeUp>
-            <div className="flex items-center justify-center gap-8 sm:gap-12 lg:gap-16 flex-wrap">
-              {CLIENT_LOGOS.map((name, i) => (
-                <motion.div
-                  key={name}
-                  className="text-muted-foreground/30 hover:text-muted-foreground/70 transition-colors duration-300"
-                  initial={{ opacity: 0, y: 10 }}
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+              {ORG_ARCHETYPES.map((label, i) => (
+                <motion.span
+                  key={label}
+                  className="rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 text-xs sm:text-sm font-medium text-slate-300 font-sans tracking-tight hover:border-eari-blue/25 hover:bg-eari-blue/[0.06] transition-colors duration-300"
+                  initial={{ opacity: 0, y: 8 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: i * 0.03, duration: 0.42, ease: 'easeOut' }}
+                  transition={{ delay: i * 0.04, duration: 0.38, ease: 'easeOut' }}
                 >
-                  <span className="font-heading text-lg sm:text-xl font-bold tracking-tight">{name}</span>
-                </motion.div>
+                  {label}
+                </motion.span>
               ))}
             </div>
           </div>
@@ -1810,8 +1701,61 @@ export default function Home() {
           </div>
         </ParallaxSection>
 
+        {/* ─── FAQ ───────────────────────────────────────────────── */}
+        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-800/35 border-t border-border/25 scroll-mt-24" id="faq">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+            <FadeUp>
+              <div className="text-center mb-10">
+                <div className="mb-5 flex items-center justify-center gap-3">
+                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                    FAQ
+                  </span>
+                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                </div>
+                <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
+                  Questions, answered
+                </h2>
+                <p className="mt-3 text-muted-foreground font-sans text-[15px] leading-relaxed">
+                  Straight answers on scoring, agents, and compliance — before you sign up.
+                </p>
+              </div>
+            </FadeUp>
+            <FadeUp delay={0.06}>
+              <Card className="bg-[#0e131c]/90 border-white/[0.08] shadow-[0_24px_60px_-28px_rgba(0,0,0,0.65)] overflow-hidden">
+                <CardContent className="p-0">
+                  <Accordion type="single" collapsible className="px-4 sm:px-6">
+                    {LANDING_FAQ.map((item, index) => (
+                      <AccordionItem key={item.q} value={`landing-faq-${index}`} className="border-white/[0.06]">
+                        <AccordionTrigger className="py-5 font-heading font-semibold text-foreground text-left hover:no-underline hover:bg-white/[0.02] rounded-md px-2 -mx-2 transition-colors min-h-[48px] text-[15px] sm:text-base">
+                          <span className="flex items-start gap-3 text-left">
+                            <HelpCircle className="h-5 w-5 text-eari-blue-light shrink-0 mt-0.5" aria-hidden />
+                            {item.q}
+                          </span>
+                        </AccordionTrigger>
+                        <AccordionContent className="text-muted-foreground font-sans leading-relaxed text-[15px] pl-9 pr-2 pb-5">
+                          {item.a}
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                  <div className="border-t border-white/[0.06] px-6 py-4 bg-navy-900/40">
+                    <p className="text-center text-sm text-muted-foreground font-sans">
+                      Pricing and billing questions?{' '}
+                      <Link href="/pricing#faq" className="text-eari-blue-light hover:text-eari-blue-light/90 font-medium underline-offset-4 hover:underline">
+                        See the pricing FAQ
+                      </Link>
+                      .
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </FadeUp>
+          </div>
+        </ParallaxSection>
+
         {/* ─── CTA Banner ───────────────────────────────────────────────── */}
-        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-900" id="faq">
+        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-900" id="cta">
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
             <FadeUp>
               <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground">

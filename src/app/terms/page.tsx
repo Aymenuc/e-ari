@@ -186,7 +186,7 @@ export default function TermsOfServicePage() {
             {/* 4. Subscription Plans & Billing */}
             <Section id="subscription" icon={CreditCard} title="4. Subscription Plans & Billing">
               <p>
-                E-ARI offers three subscription tiers: Starter (free), Professional ($29 per month), and Enterprise (custom pricing). The features available under each tier are described on our pricing page and in these Terms. We reserve the right to modify pricing with 30 days' advance notice.
+                E-ARI offers four subscription tiers: Starter (free), Professional (€49 per month), Growth (€149 per month), and Enterprise (custom pricing). Annual billing is available on paid tiers at a 17% discount. The features available under each tier are described on our pricing page and in these Terms. We reserve the right to modify pricing with 30 days' advance notice.
               </p>
 
               <h3 className="font-heading font-semibold text-foreground text-base pt-2">4.1 Billing and Payments</h3>

@@ -17,6 +17,7 @@ import {
   Crown,
   Lock,
   Award,
+  TrendingUp,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -41,20 +42,38 @@ const PLANS: Record<string, {
 }> = {
   professional: {
     name: 'Professional',
-    price: '$29',
+    price: '€49',
     period: '/month',
     icon: Award,
     color: 'text-eari-blue-light',
     bgColor: 'bg-eari-blue/15',
     borderColor: 'border-eari-blue/30',
     features: [
-      'Unlimited assessments',
-      'AI-powered narrative insights',
-      'PDF report generation',
-      'Historical benchmarking',
-      'Custom weighting options',
-      'Priority email support',
-      'All 6 AI agents',
+      '5 assessments per month',
+      '15 pulse checks per month',
+      '5 team members',
+      '3 .docx reports included',
+      'Full Literacy Hub access',
+      'Email support (48h)',
+      'Basic admin portal',
+    ],
+  },
+  growth: {
+    name: 'Growth',
+    price: '€149',
+    period: '/month',
+    icon: TrendingUp,
+    color: 'text-violet-400',
+    bgColor: 'bg-violet-500/15',
+    borderColor: 'border-violet-500/30',
+    features: [
+      '20 assessments per month',
+      '50 pulse checks per month',
+      '25 team members',
+      'Unlimited .docx reports',
+      'All sector benchmarks',
+      'Full admin portal',
+      'Read-only API + Quarterly review',
     ],
   },
   enterprise: {
