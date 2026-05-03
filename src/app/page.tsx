@@ -603,122 +603,84 @@ export default function Home() {
       <main className="flex-1">
         {/* ─── 1. HERO SECTION ──────────────────────────────────────────── */}
         <section id="hero-section" className="relative overflow-hidden pt-20 pb-24 sm:pt-28 sm:pb-32">
-          {/* Navy base + restrained depth (single cool accent wash) */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,#070d18_0%,#0d1117_45%,#0f172a_100%)]" />
+          {/* Quiet navy base — one calm radial accent, no animation, no particles */}
+          <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,#070d18_0%,#0d1117_55%,#0d1117_100%)]" />
             <div
-              className="mesh-blob absolute -top-40 -right-24 w-[min(520px,90vw)] h-[min(520px,90vw)] rounded-full opacity-[0.07]"
-              style={{ background: 'radial-gradient(circle, #2563eb 0%, transparent 72%)' }}
+              className="absolute -top-32 right-[-5%] w-[min(640px,75vw)] h-[min(640px,75vw)] rounded-full opacity-[0.08]"
+              style={{ background: 'radial-gradient(circle, #2563eb 0%, transparent 65%)' }}
             />
-            <div
-              className="mesh-blob absolute bottom-[-12%] left-[-10%] w-[420px] h-[420px] rounded-full opacity-[0.05]"
-              style={{ background: 'radial-gradient(circle, #1e293b 0%, transparent 70%)', animationDelay: '-9s' }}
-            />
+            {/* Single ultra-faint hairline at the bottom — quiet section divider */}
+            <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
           </div>
-
-          {/* Static framing accents — no looping motion */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-            <div className="absolute top-[14%] left-[7%] h-px w-24 bg-gradient-to-r from-transparent via-white/[0.07] to-transparent" />
-            <div className="absolute bottom-[22%] right-[10%] h-px w-20 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-            <div className="absolute top-[52%] right-[18%] w-20 h-20 rounded-full border border-white/[0.04]" />
-          </div>
-
-          {/* Particle grid overlay */}
-          <ParticleGrid />
-
-          {/* Mouse follow spotlight */}
-          <MouseSpotlight />
 
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
               {/* Left — copy */}
               <div className="text-center lg:text-left">
                 <FadeUp>
-                  <div className="mb-6 flex items-center gap-2 flex-wrap justify-center lg:justify-start">
-                    <Badge variant="outline" className="font-mono text-xs border-border/60 text-muted-foreground/80 bg-navy-800/50">
+                  {/* Hairline rule + label — calmer than a pill badge */}
+                  <div className="mb-7 flex items-center gap-3 justify-center lg:justify-start">
+                    <span aria-hidden className="h-px w-10 bg-eari-blue/60" />
+                    <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
                       Agentic AI Readiness Platform
-                    </Badge>
-                  </div>
-                </FadeUp>
-
-                <FadeUp delay={0.08}>
-                  <h1 className="font-heading text-3xl sm:text-4xl lg:text-[2.65rem] font-semibold tracking-tight text-slate-100 leading-[1.12]">
-                    Six AI Agents.{' '}
-                    <span className="gradient-text-blue">
-                      <TypewriterText text="One Mission." delay={0.6} />
                     </span>
-                  </h1>
-                </FadeUp>
+                  </div>
 
-                <FadeUp delay={0.12}>
-                  <p className="mt-5 font-heading text-xl sm:text-2xl font-medium tracking-tight text-slate-300 leading-snug max-w-xl mx-auto lg:mx-0">
+                  <h1 className="font-heading text-[2.25rem] sm:text-[3rem] lg:text-[3.4rem] font-semibold tracking-[-0.035em] text-slate-50 leading-[1.05]">
+                    Six AI Agents.
+                    <br />
+                    <span className="font-medium text-eari-blue-light">One Mission.</span>
+                  </h1>
+
+                  <p className="mt-7 max-w-xl mx-auto lg:mx-0 font-heading text-lg sm:text-xl font-medium tracking-tight text-slate-300 leading-[1.45]">
                     Enterprise AI readiness assessment — orchestrated by an agentic platform built for governance-heavy teams.
                   </p>
-                </FadeUp>
 
-                <FadeUp delay={0.16}>
-                  <p className="mt-4 text-base sm:text-lg text-muted-foreground font-sans leading-relaxed max-w-xl mx-auto lg:mx-0">
-                    Six specialized AI agents work in concert to assess, discover, analyze, educate, report, and guide your organization&apos;s AI readiness — delivering outputs no single tool can match.
+                  <p className="mt-5 max-w-xl mx-auto lg:mx-0 text-[15px] sm:text-base text-slate-400 font-sans leading-relaxed">
+                    Six specialised agents — Discovery, Assessment, Analysis, Literacy, Reporting, and Guidance — work in concert to deliver outputs no single tool can match.
                   </p>
-                </FadeUp>
 
-                <FadeUp delay={0.2}>
-                  <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+                  <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
                     <Link href="/auth/register">
                       <Button
                         size="lg"
-                        className="group bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-12 px-8 text-base w-full sm:w-auto shadow-md shadow-black/25 border border-white/[0.06] transition-colors duration-200"
+                        className="group h-12 px-7 bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold text-[15px] tracking-[-0.005em] w-full sm:w-auto shadow-[0_8px_24px_-6px_rgba(37,99,235,0.45)] transition-all duration-200 hover:translate-y-[-1px] hover:shadow-[0_12px_28px_-6px_rgba(37,99,235,0.55)]"
                       >
                         <span className="flex items-center">
                           Start Free Assessment
-                          <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                          <ArrowRight className="ml-2 h-[18px] w-[18px] transition-transform duration-200 group-hover:translate-x-0.5" strokeWidth={2.2} />
                         </span>
                       </Button>
                     </Link>
                     <Link href="#agentic">
-                      <Button variant="outline" size="lg" className="border-white/[0.12] bg-navy-900/40 hover:bg-navy-800/80 text-slate-100 font-heading font-semibold h-12 px-8 text-base w-full sm:w-auto">
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="h-12 px-7 border-white/10 bg-transparent hover:bg-white/[0.04] text-slate-200 font-heading font-medium text-[15px] tracking-[-0.005em] w-full sm:w-auto transition-colors"
+                      >
                         Meet the Agents
-                        <Bot className="ml-2 h-5 w-5" />
                       </Button>
                     </Link>
                   </div>
                 </FadeUp>
               </div>
 
-              {/* Right — immersive dashboard preview */}
-              <FadeUp delay={0.22} className="flex justify-center lg:justify-end">
+              {/* Right — dashboard preview (calm, no decorative floating badges) */}
+              <FadeUp delay={0.12} className="flex justify-center lg:justify-end">
                 <div className="relative w-full max-w-lg">
-                  {/* Floating metric badges — static surface, no CSS float */}
-                  <div className="absolute -top-3 -left-3 z-20" aria-hidden="true">
-                    <div className="rounded-lg border border-white/[0.08] bg-navy-950/90 px-3 py-1.5 text-xs font-mono flex items-center gap-1.5 shadow-lg shadow-black/30">
-                      <span className="w-2 h-2 rounded-full bg-slate-400" />
-                      <span className="text-slate-400">Talent gap</span>
-                      <span className="text-slate-100 font-semibold tabular-nums">−24</span>
-                    </div>
-                  </div>
-                  <div className="absolute top-7 -right-4 z-20" aria-hidden="true">
-                    <div className="rounded-lg border border-white/[0.08] bg-navy-950/90 px-3 py-1.5 text-xs font-mono flex items-center gap-1.5 shadow-lg shadow-black/30">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500/90" />
-                      <span className="text-slate-400">Top pillar</span>
-                      <span className="text-slate-100 font-semibold tabular-nums">Sec 83</span>
-                    </div>
-                  </div>
-                  <div className="absolute -bottom-1 -left-1 z-20" aria-hidden="true">
-                    <div className="rounded-lg border border-white/[0.08] bg-navy-950/90 px-3 py-1.5 text-xs font-mono flex items-center gap-1.5 shadow-lg shadow-black/30">
-                      <span className="w-2 h-2 rounded-full bg-slate-500" />
-                      <span className="text-slate-400">Risk</span>
-                      <span className="text-slate-100 font-semibold">Medium</span>
-                    </div>
-                  </div>
-
-                  {/* Main preview card — border elevation instead of aurora glass */}
-                  <div className="rounded-2xl overflow-hidden relative border border-white/[0.09] bg-[rgba(13,17,23,0.92)] backdrop-blur-md shadow-[0_28px_56px_-18px_rgba(0,0,0,0.65)]">
-                    {/* Subtle window chrome */}
-                    <div className="flex items-center gap-2 px-4 py-2 bg-navy-900/40 border-b border-white/5">
-                      <span className="traffic-light traffic-light-red opacity-50" style={{ width: 8, height: 8 }} />
-                      <span className="traffic-light traffic-light-yellow opacity-50" style={{ width: 8, height: 8 }} />
-                      <span className="traffic-light traffic-light-green opacity-50" style={{ width: 8, height: 8 }} />
-                      <span className="ml-3 text-[10px] font-mono text-muted-foreground/60">e-ari-results.preview</span>
+                  {/* Main preview card — flat surface, no glassmorphism, single deep shadow */}
+                  <div className="rounded-xl overflow-hidden relative border border-white/[0.07] bg-[#0e131c] shadow-[0_30px_70px_-24px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.02)_inset]">
+                    {/* Window chrome — refined: status dot + module label + monospace path */}
+                    <div className="flex items-center gap-3 px-4 py-2.5 bg-[#0a0f17] border-b border-white/[0.05]">
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400/60 animate-ping" />
+                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                      </span>
+                      <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-slate-500">
+                        Assessment / results
+                      </span>
+                      <span className="ml-auto text-[10px] font-mono text-slate-600">v5.3</span>
                     </div>
 
                     <div className="p-6 relative z-10">
@@ -763,15 +725,13 @@ export default function Home() {
                         </div>
 
                         <div>
-                          <p className="font-heading font-bold text-foreground text-xl">E-ARI Score</p>
-                          <p className="text-sm text-muted-foreground font-sans mt-0.5">Chaser — 51-75 band</p>
-                          <div className="mt-2 flex items-center gap-2">
-                            <Badge className="bg-eari-blue/15 text-eari-blue-light border-eari-blue/30 text-xs font-mono">
-                              v5.3
-                            </Badge>
-                            <Badge className="bg-navy-800/90 text-slate-300 border-white/[0.08] text-xs font-mono">
-                              LIVE
-                            </Badge>
+                          <p className="font-heading font-bold text-slate-50 text-[19px] tracking-tight">E-ARI Score</p>
+                          <p className="text-[13px] text-slate-400 font-sans mt-1">Chaser &middot; 51&ndash;75 band</p>
+                          <div className="mt-3 inline-flex items-center gap-2 rounded-md border border-eari-blue/25 bg-eari-blue/10 px-2 py-1">
+                            <span className="h-1 w-1 rounded-full bg-eari-blue-light" />
+                            <span className="text-[10px] font-mono uppercase tracking-[0.16em] text-eari-blue-light/95">
+                              Deterministic v5.3
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -869,22 +829,22 @@ export default function Home() {
                         </div>
                       </div>
 
-                      {/* Pillar quick stats - condensed horizontal chips */}
-                      <div className="mt-4 flex flex-wrap gap-1.5">
+                      {/* Pillar quick stats — paired columns, hairline rows */}
+                      <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-2.5 border-t border-white/[0.05] pt-4">
                         {SAMPLE_SCORES.map((pillar, i) => (
                           <motion.div
                             key={pillar.name}
-                            className="flex items-center gap-1.5 rounded-md px-2 py-1 bg-navy-700/60 border border-white/5"
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.28, delay: 1 + i * 0.03 }}
+                            className="flex items-center gap-3"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.4, delay: 0.7 + i * 0.04 }}
                           >
-                            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: pillar.color }} />
-                            <span className="text-[10px] font-mono text-muted-foreground">{pillar.name.slice(0, 3)}</span>
-                            <div className="w-8 h-1 rounded-full bg-navy-900/60 overflow-hidden">
+                            <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: pillar.color }} />
+                            <span className="text-[11px] text-slate-400 font-sans flex-1 truncate">{pillar.name}</span>
+                            <div className="h-[3px] w-12 rounded-full bg-white/[0.04] overflow-hidden">
                               <div className="h-full rounded-full" style={{ backgroundColor: pillar.color, width: `${pillar.score}%` }} />
                             </div>
-                            <span className="text-[10px] font-mono text-foreground">{pillar.score}</span>
+                            <span className="text-[11px] font-mono text-slate-200 tabular-nums w-6 text-right">{pillar.score}</span>
                           </motion.div>
                         ))}
                       </div>
