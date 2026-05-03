@@ -602,292 +602,227 @@ export default function Home() {
 
       <main className="flex-1">
         {/* ─── 1. HERO SECTION ──────────────────────────────────────────── */}
-        <section id="hero-section" className="relative overflow-hidden pt-20 pb-24 sm:pt-28 sm:pb-32">
-          {/* Navy base + restrained depth (single cool accent wash) */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,#070d18_0%,#0d1117_45%,#0f172a_100%)]" />
-            <div
-              className="mesh-blob absolute -top-40 -right-24 w-[min(520px,90vw)] h-[min(520px,90vw)] rounded-full opacity-[0.07]"
-              style={{ background: 'radial-gradient(circle, #2563eb 0%, transparent 72%)' }}
-            />
-            <div
-              className="mesh-blob absolute bottom-[-12%] left-[-10%] w-[420px] h-[420px] rounded-full opacity-[0.05]"
-              style={{ background: 'radial-gradient(circle, #1e293b 0%, transparent 70%)', animationDelay: '-9s' }}
-            />
+        {/* ─── 1. HERO — Editorial / Regulatory Document ─────────────────── */}
+        <section
+          id="hero-section"
+          className="hero-editorial relative overflow-hidden pt-24 pb-20 sm:pt-32 sm:pb-28"
+        >
+          {/* Editorial nameplate strip — runs across the very top */}
+          <div className="relative z-10 mx-auto mb-14 max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-amber-500/15 pb-4">
+              <div className="flex items-center gap-4">
+                <span className="font-data text-[10px] font-medium uppercase tracking-[0.32em] text-[var(--amber)]">
+                  E&middot;A&middot;R&middot;I
+                </span>
+                <span className="hidden h-3 w-px bg-amber-500/30 sm:block" />
+                <span className="hidden font-data text-[10px] uppercase tracking-[0.22em] text-[var(--parchment-dim)]/70 sm:inline">
+                  The Compliance Autopilot
+                </span>
+              </div>
+              <div className="flex items-center gap-5 font-data text-[10px] uppercase tracking-[0.2em] text-[var(--parchment-dim)]/70">
+                <span>Issue v5.3</span>
+                <span aria-hidden>·</span>
+                <span>Filed under EU AI Act</span>
+                <span aria-hidden className="hidden md:inline">·</span>
+                <span className="hidden md:inline">Audit-grade · reproducible</span>
+              </div>
+            </div>
           </div>
-
-          {/* Static framing accents — no looping motion */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-            <div className="absolute top-[14%] left-[7%] h-px w-24 bg-gradient-to-r from-transparent via-white/[0.07] to-transparent" />
-            <div className="absolute bottom-[22%] right-[10%] h-px w-20 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-            <div className="absolute top-[52%] right-[18%] w-20 h-20 rounded-full border border-white/[0.04]" />
-          </div>
-
-          {/* Particle grid overlay */}
-          <ParticleGrid />
-
-          {/* Mouse follow spotlight */}
-          <MouseSpotlight />
 
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-              {/* Left — copy */}
-              <div className="text-center lg:text-left">
+            <div className="grid grid-cols-12 gap-8 lg:gap-14 items-start">
+              {/* Left — editorial copy */}
+              <div className="col-span-12 lg:col-span-7">
                 <FadeUp>
-                  <div className="mb-6 flex items-center gap-2 flex-wrap justify-center lg:justify-start">
-                    <Badge variant="outline" className="font-mono text-xs border-border/60 text-muted-foreground/80 bg-navy-800/50">
-                      Agentic AI Readiness Platform
-                    </Badge>
-                  </div>
+                  <p className="section-marker">
+                    <span>§ 01 &mdash; The dispatch</span>
+                  </p>
                 </FadeUp>
 
                 <FadeUp delay={0.08}>
-                  <h1 className="font-heading text-3xl sm:text-4xl lg:text-[2.65rem] font-semibold tracking-tight text-slate-100 leading-[1.12]">
-                    Six AI Agents.{' '}
-                    <span className="gradient-text-blue">
-                      <TypewriterText text="One Mission." delay={0.6} />
+                  <h1 className="mt-7 font-display text-[2.65rem] leading-[1.02] tracking-[-0.025em] text-[var(--parchment-strong)] sm:text-[3.4rem] lg:text-[4.4rem]">
+                    Audit-grade
+                    <br />
+                    AI&nbsp;compliance,{' '}
+                    <span className="editorial-underline italic font-light text-[var(--amber)]">
+                      shipped.
+                      <svg viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden>
+                        <path d="M2 9 Q 30 2, 60 7 T 120 7 T 198 6" />
+                      </svg>
                     </span>
                   </h1>
                 </FadeUp>
 
-                <FadeUp delay={0.12}>
-                  <p className="mt-5 font-heading text-xl sm:text-2xl font-medium tracking-tight text-slate-300 leading-snug max-w-xl mx-auto lg:mx-0">
-                    Enterprise AI readiness assessment — orchestrated by an agentic platform built for governance-heavy teams.
+                <FadeUp delay={0.14}>
+                  <p className="mt-8 max-w-xl font-display text-lg italic leading-[1.6] text-[var(--parchment)]/85 sm:text-xl">
+                    From a self-assessed score to a regulator-ready Annex&nbsp;IV file in
+                    ninety minutes &mdash; not ninety days. The platform built for European
+                    public-sector AI, where &ldquo;we&rsquo;ll figure it out later&rdquo;
+                    is no longer an answer.
                   </p>
                 </FadeUp>
 
-                <FadeUp delay={0.16}>
-                  <p className="mt-4 text-base sm:text-lg text-muted-foreground font-sans leading-relaxed max-w-xl mx-auto lg:mx-0">
-                    Six specialized AI agents work in concert to assess, discover, analyze, educate, report, and guide your organization&apos;s AI readiness — delivering outputs no single tool can match.
-                  </p>
-                </FadeUp>
-
+                {/* By-line */}
                 <FadeUp delay={0.2}>
-                  <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+                  <div className="mt-10 flex flex-wrap items-center gap-x-5 gap-y-2 font-data text-[11px] uppercase tracking-[0.16em] text-[var(--parchment-dim)]">
+                    <span className="text-[var(--amber)]">By-line</span>
+                    <span aria-hidden>—</span>
+                    <span>Article 11</span>
+                    <span aria-hidden>·</span>
+                    <span>FRIA</span>
+                    <span aria-hidden>·</span>
+                    <span>GDPR</span>
+                    <span aria-hidden>·</span>
+                    <span>NIS2</span>
+                    <span aria-hidden>·</span>
+                    <span>ISO 42001</span>
+                  </div>
+                </FadeUp>
+
+                {/* CTAs — editorial style: primary button + plain underlined link */}
+                <FadeUp delay={0.26}>
+                  <div className="mt-10 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
                     <Link href="/auth/register">
                       <Button
                         size="lg"
-                        className="group bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-12 px-8 text-base w-full sm:w-auto shadow-md shadow-black/25 border border-white/[0.06] transition-colors duration-200"
+                        className="group h-12 rounded-none border-0 bg-[var(--amber)] px-7 font-data text-[12px] font-semibold uppercase tracking-[0.2em] text-[#1a1812] hover:bg-[var(--amber)]/90"
                       >
-                        <span className="flex items-center">
-                          Start Free Assessment
-                          <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-200 group-hover:translate-x-0.5" />
-                        </span>
+                        Begin assessment
+                        <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" strokeWidth={2.4} />
                       </Button>
                     </Link>
-                    <Link href="#agentic">
-                      <Button variant="outline" size="lg" className="border-white/[0.12] bg-navy-900/40 hover:bg-navy-800/80 text-slate-100 font-heading font-semibold h-12 px-8 text-base w-full sm:w-auto">
-                        Meet the Agents
-                        <Bot className="ml-2 h-5 w-5" />
-                      </Button>
+                    <Link
+                      href="#agentic"
+                      className="group inline-flex items-center gap-2 font-display text-[1.05rem] italic text-[var(--parchment)] transition-colors hover:text-[var(--amber)]"
+                    >
+                      <span className="border-b border-[var(--parchment-dim)]/40 pb-0.5 transition-colors group-hover:border-[var(--amber)]">
+                        See an evidenced score
+                      </span>
+                      <ArrowRight className="h-4 w-4 opacity-70" strokeWidth={1.6} />
                     </Link>
+                  </div>
+                </FadeUp>
+
+                {/* Editorial stat strip */}
+                <FadeUp delay={0.32}>
+                  <div className="mt-14 grid grid-cols-3 gap-6 border-t border-amber-500/15 pt-8 max-w-xl">
+                    {[
+                      { val: '90', unit: 'min', label: 'to FRIA draft' },
+                      { val: '12', unit: '+', label: 'AI Act articles covered' },
+                      { val: 'v5.3', unit: '', label: 'scoring engine' },
+                    ].map((s) => (
+                      <div key={s.label} className="font-data">
+                        <p className="font-display-display text-[2.6rem] leading-none tracking-[-0.04em] text-[var(--parchment-strong)]">
+                          {s.val}
+                          <span className="text-[var(--amber)] text-[1.3rem] align-top ml-0.5">{s.unit}</span>
+                        </p>
+                        <p className="mt-2 text-[10px] uppercase tracking-[0.16em] text-[var(--parchment-dim)]/80">
+                          {s.label}
+                        </p>
+                      </div>
+                    ))}
                   </div>
                 </FadeUp>
               </div>
 
-              {/* Right — immersive dashboard preview */}
-              <FadeUp delay={0.22} className="flex justify-center lg:justify-end">
-                <div className="relative w-full max-w-lg">
-                  {/* Floating metric badges — static surface, no CSS float */}
-                  <div className="absolute -top-3 -left-3 z-20" aria-hidden="true">
-                    <div className="rounded-lg border border-white/[0.08] bg-navy-950/90 px-3 py-1.5 text-xs font-mono flex items-center gap-1.5 shadow-lg shadow-black/30">
-                      <span className="w-2 h-2 rounded-full bg-slate-400" />
-                      <span className="text-slate-400">Talent gap</span>
-                      <span className="text-slate-100 font-semibold tabular-nums">−24</span>
-                    </div>
-                  </div>
-                  <div className="absolute top-7 -right-4 z-20" aria-hidden="true">
-                    <div className="rounded-lg border border-white/[0.08] bg-navy-950/90 px-3 py-1.5 text-xs font-mono flex items-center gap-1.5 shadow-lg shadow-black/30">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500/90" />
-                      <span className="text-slate-400">Top pillar</span>
-                      <span className="text-slate-100 font-semibold tabular-nums">Sec 83</span>
-                    </div>
-                  </div>
-                  <div className="absolute -bottom-1 -left-1 z-20" aria-hidden="true">
-                    <div className="rounded-lg border border-white/[0.08] bg-navy-950/90 px-3 py-1.5 text-xs font-mono flex items-center gap-1.5 shadow-lg shadow-black/30">
-                      <span className="w-2 h-2 rounded-full bg-slate-500" />
-                      <span className="text-slate-400">Risk</span>
-                      <span className="text-slate-100 font-semibold">Medium</span>
-                    </div>
+              {/* Right — Document mock (Annex IV cover sheet) */}
+              <FadeUp delay={0.18} className="col-span-12 lg:col-span-5">
+                <div className="relative pl-2 pr-2 lg:pl-0 lg:pr-0">
+                  {/* Margin note (left of doc) — like a sidenote */}
+                  <div
+                    aria-hidden
+                    className="hidden xl:block absolute -left-32 top-12 w-28 font-display italic text-[13px] leading-snug text-[var(--parchment-dim)]/80"
+                  >
+                    <span className="block text-[var(--amber)] font-data not-italic text-[10px] tracking-[0.18em] uppercase mb-1">[S1]</span>
+                    Excerpt from a generated Annex IV technical file. Every section is
+                    grounded in your uploaded evidence.
                   </div>
 
-                  {/* Main preview card — border elevation instead of aurora glass */}
-                  <div className="rounded-2xl overflow-hidden relative border border-white/[0.09] bg-[rgba(13,17,23,0.92)] backdrop-blur-md shadow-[0_28px_56px_-18px_rgba(0,0,0,0.65)]">
-                    {/* Subtle window chrome */}
-                    <div className="flex items-center gap-2 px-4 py-2 bg-navy-900/40 border-b border-white/5">
-                      <span className="traffic-light traffic-light-red opacity-50" style={{ width: 8, height: 8 }} />
-                      <span className="traffic-light traffic-light-yellow opacity-50" style={{ width: 8, height: 8 }} />
-                      <span className="traffic-light traffic-light-green opacity-50" style={{ width: 8, height: 8 }} />
-                      <span className="ml-3 text-[10px] font-mono text-muted-foreground/60">e-ari-results.preview</span>
+                  <div
+                    className="doc-mock rotate-[1.4deg] p-7 sm:p-8"
+                    style={{
+                      transformOrigin: 'top right',
+                    }}
+                  >
+                    {/* Doc header */}
+                    <div className="flex items-start justify-between gap-4 border-b border-amber-900/30 pb-5">
+                      <div>
+                        <p className="font-data text-[9px] uppercase tracking-[0.24em] text-[#8a6a2e]">
+                          Confidential &middot; Annex IV
+                        </p>
+                        <p className="mt-2 font-display text-[1.45rem] leading-tight text-[#1a1812]">
+                          Technical&nbsp;Documentation
+                        </p>
+                        <p className="mt-1 font-display italic text-[0.95rem] text-[#5a5040]">
+                          AI System: Eligibility&nbsp;Recommender&nbsp;v2.1
+                        </p>
+                      </div>
+                      <div className="doc-stamp shrink-0 mt-1">
+                        FRIA · Drafted
+                      </div>
                     </div>
 
-                    <div className="p-6 relative z-10">
-                      {/* Top row: Large score ring + info */}
-                      <div className="flex items-center gap-6">
-                        {/* Large animated score ring with gradient glow */}
-                        <div className="relative flex-shrink-0">
-                          <svg width="120" height="120" viewBox="0 0 120 120" aria-label="Overall readiness score: 67%">
-                            <defs>
-                              <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#1d4ed8" />
-                                <stop offset="100%" stopColor="#0369a1" />
-                              </linearGradient>
-                            </defs>
-                            <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(48,57,74,0.3)" strokeWidth="7" />
-                            <motion.circle
-                              cx="60"
-                              cy="60"
-                              r="52"
-                              fill="none"
-                              stroke="url(#scoreGradient)"
-                              strokeWidth="7"
-                              strokeLinecap="round"
-                              strokeDasharray={327}
-                              initial={{ strokeDashoffset: 327 }}
-                              animate={{ strokeDashoffset: 327 - 327 * 0.67 }}
-                              transition={{ duration: 2, ease: 'easeOut', delay: 0.5 }}
-                              transform="rotate(-90 60 60)"
-                            />
-                            <motion.text
-                              x="60" y="54" textAnchor="middle" fill="#e6edf3" fontSize="30" fontWeight="700" fontFamily="var(--font-plus-jakarta)"
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ duration: 0.5, delay: 1.2 }}
-                            >
-                              67
-                            </motion.text>
-                            <text x="60" y="72" textAnchor="middle" fill="#8b949e" fontSize="11" fontFamily="var(--font-inter)">
-                              / 100
-                            </text>
-                          </svg>
-                        </div>
+                    {/* Doc body — sections */}
+                    <div className="mt-5 space-y-4">
+                      {[
+                        { num: '§ 1', title: 'System description', meta: 'Auto-generated · 4 sources' },
+                        { num: '§ 2', title: 'Risk management plan', meta: 'Pillar score · 78 / 100' },
+                        { num: '§ 3', title: 'Data governance', meta: '4 evidence clauses · 2 docs' },
+                        { num: '§ 4', title: 'Human oversight', meta: 'Citation: [S2] [S5]' },
+                        { num: '§ 5', title: 'Performance metrics', meta: 'Logged · monthly cadence' },
+                      ].map((row, i) => (
+                        <motion.div
+                          key={row.num}
+                          initial={{ opacity: 0, x: 6 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          viewport={{ once: true, margin: '-40px' }}
+                          transition={{ duration: 0.4, delay: 0.18 + i * 0.08, ease: 'easeOut' }}
+                          className="grid grid-cols-12 gap-3 items-baseline border-b border-dashed border-amber-900/20 pb-3"
+                        >
+                          <span className="col-span-2 font-data text-[10px] tracking-[0.2em] text-[#8a6a2e]">
+                            {row.num}
+                          </span>
+                          <span className="col-span-7 font-display text-[1.02rem] leading-snug text-[#1a1812]">
+                            {row.title}
+                          </span>
+                          <span className="col-span-3 text-right font-data text-[9px] uppercase tracking-[0.14em] text-[#7a6a4e]">
+                            {row.meta}
+                          </span>
+                        </motion.div>
+                      ))}
+                    </div>
 
-                        <div>
-                          <p className="font-heading font-bold text-foreground text-xl">E-ARI Score</p>
-                          <p className="text-sm text-muted-foreground font-sans mt-0.5">Chaser — 51-75 band</p>
-                          <div className="mt-2 flex items-center gap-2">
-                            <Badge className="bg-eari-blue/15 text-eari-blue-light border-eari-blue/30 text-xs font-mono">
-                              v5.3
-                            </Badge>
-                            <Badge className="bg-navy-800/90 text-slate-300 border-white/[0.08] text-xs font-mono">
-                              LIVE
-                            </Badge>
-                          </div>
-                        </div>
+                    {/* Doc footer / signature line */}
+                    <div className="mt-7 flex items-end justify-between border-t border-amber-900/30 pt-4">
+                      <div>
+                        <p className="font-display italic text-[#7a6a4e] text-[0.85rem]">
+                          Signed off by E&#8209;ARI scoring engine
+                        </p>
+                        <div className="mt-1 h-px w-32 bg-[#1a1812]/30" />
+                        <p className="mt-1.5 font-data text-[8px] uppercase tracking-[0.22em] text-[#8a6a2e]">
+                          v5.3 · deterministic · reproducible
+                        </p>
                       </div>
+                      <div className="text-right">
+                        <p className="font-data text-[9px] uppercase tracking-[0.22em] text-[#8a6a2e]">
+                          Page
+                        </p>
+                        <p className="font-display text-[1.6rem] leading-none text-[#1a1812]">
+                          01 / 09
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-                      {/* Mini radar chart — calm constellation style */}
-                      <div className="mt-6 flex justify-center">
-                        <div className="relative">
-                          <svg width="200" height="200" viewBox="0 0 200 200" aria-label="Pillar radar chart">
-                            <defs>
-                              <linearGradient id="radarFill" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="rgba(37,99,235,0.1)" />
-                                <stop offset="100%" stopColor="rgba(15,23,42,0.12)" />
-                              </linearGradient>
-                            </defs>
-                            {/* Octagonal grid rings — solid, faint */}
-                            {[0.25, 0.5, 0.75, 1].map((scale) => (
-                              <polygon
-                                key={scale}
-                                points={SAMPLE_SCORES.map((_, i) => {
-                                  const angle = (Math.PI * 2 * i) / SAMPLE_SCORES.length - Math.PI / 2
-                                  const r = 80 * scale
-                                  return `${100 + r * Math.cos(angle)},${100 + r * Math.sin(angle)}`
-                                }).join(' ')}
-                                fill="none"
-                                stroke="rgba(48,57,74,0.15)"
-                                strokeWidth="0.4"
-                              />
-                            ))}
-                            {/* Axis lines — minimal */}
-                            {SAMPLE_SCORES.map((_, i) => {
-                              const angle = (Math.PI * 2 * i) / SAMPLE_SCORES.length - Math.PI / 2
-                              return (
-                                <line
-                                  key={i}
-                                  x1="100" y1="100"
-                                  x2={100 + 80 * Math.cos(angle)}
-                                  y2={100 + 80 * Math.sin(angle)}
-                                  stroke="rgba(48,57,74,0.10)"
-                                  strokeWidth="0.4"
-                                />
-                              )
-                            })}
-                            {/* Data polygon — gentle fade-in */}
-                            <motion.polygon
-                              points={SAMPLE_SCORES.map((pillar, i) => {
-                                const angle = (Math.PI * 2 * i) / SAMPLE_SCORES.length - Math.PI / 2
-                                const r = (pillar.score / 100) * 80
-                                return `${100 + r * Math.cos(angle)},${100 + r * Math.sin(angle)}`
-                              }).join(' ')}
-                              fill="url(#radarFill)"
-                              stroke="url(#scoreGradient)"
-                              strokeWidth="1"
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ duration: 1.5, delay: 0.6, ease: 'easeOut' }}
-                            />
-                            {SAMPLE_SCORES.map((pillar, i) => {
-                              const angle = (Math.PI * 2 * i) / SAMPLE_SCORES.length - Math.PI / 2
-                              const r = (pillar.score / 100) * 80
-                              const cx = 100 + r * Math.cos(angle)
-                              const cy = 100 + r * Math.sin(angle)
-                              return (
-                                <motion.circle
-                                  key={i}
-                                  cx={cx}
-                                  cy={cy}
-                                  r="2"
-                                  fill={pillar.color}
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  transition={{ duration: 0.35, delay: 0.75 + i * 0.04, ease: 'easeOut' }}
-                                />
-                              )
-                            })}
-                            {/* Pillar labels — static */}
-                            {SAMPLE_SCORES.map((pillar, i) => {
-                              const angle = (Math.PI * 2 * i) / SAMPLE_SCORES.length - Math.PI / 2
-                              const labelR = 95
-                              return (
-                                <text
-                                  key={i}
-                                  x={100 + labelR * Math.cos(angle)}
-                                  y={100 + labelR * Math.sin(angle)}
-                                  textAnchor="middle"
-                                  dominantBaseline="middle"
-                                  fill="#8b949e"
-                                  fontSize="8"
-                                  fontFamily="var(--font-jetbrains)"
-                                >
-                                  {pillar.name.slice(0, 3).toUpperCase()}
-                                </text>
-                              )
-                            })}
-                          </svg>
-                        </div>
-                      </div>
-
-                      {/* Pillar quick stats - condensed horizontal chips */}
-                      <div className="mt-4 flex flex-wrap gap-1.5">
-                        {SAMPLE_SCORES.map((pillar, i) => (
-                          <motion.div
-                            key={pillar.name}
-                            className="flex items-center gap-1.5 rounded-md px-2 py-1 bg-navy-700/60 border border-white/5"
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.28, delay: 1 + i * 0.03 }}
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: pillar.color }} />
-                            <span className="text-[10px] font-mono text-muted-foreground">{pillar.name.slice(0, 3)}</span>
-                            <div className="w-8 h-1 rounded-full bg-navy-900/60 overflow-hidden">
-                              <div className="h-full rounded-full" style={{ backgroundColor: pillar.color, width: `${pillar.score}%` }} />
-                            </div>
-                            <span className="text-[10px] font-mono text-foreground">{pillar.score}</span>
-                          </motion.div>
-                        ))}
-                      </div>
+                  {/* Floating citation chip — anchors right side */}
+                  <div className="hidden md:block absolute -bottom-4 -left-3 z-10">
+                    <div className="rounded-sm border border-[var(--amber)]/40 bg-[var(--ink-paper)]/95 px-3 py-2 shadow-xl shadow-black/40 backdrop-blur">
+                      <p className="font-data text-[9px] uppercase tracking-[0.2em] text-[var(--amber)]">
+                        Evidence backed
+                      </p>
+                      <p className="mt-1 font-display text-[0.95rem] italic text-[var(--parchment)]">
+                        4 clauses &middot; 2 documents
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -895,6 +830,33 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* ─── 1b. REGULATION MARQUEE — endless scroll of frameworks covered ── */}
+        <section aria-label="Regulatory frameworks covered" className="regulation-marquee">
+          <div className="regulation-marquee__track" aria-hidden>
+            {Array.from({ length: 2 }).flatMap((_, dup) =>
+              [
+                'EU AI Act · Article 11',
+                'GDPR',
+                'NIS2',
+                'ISO/IEC 42001',
+                'NIST AI RMF',
+                'OECD AI Principles',
+                'EU AI Act · Annex IV',
+                'Article 27 · FRIA',
+                'EHDS',
+                'UK AI Bill (draft)',
+                'EU AI Act · Article 73',
+                'EU AI Act · GPAI',
+              ].map((label, i) => (
+                <span key={`${dup}-${i}`} className="regulation-marquee__item">
+                  {label}
+                </span>
+              )),
+            )}
+          </div>
+        </section>
+
 
         {/* ─── 2. METHODOLOGY SECTION ───────────────────────────────────── */}
         <ParallaxSection speed={0.05} className="py-20 sm:py-28 bg-navy-900" id="methodology">

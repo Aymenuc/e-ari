@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Inter, JetBrains_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, Inter, JetBrains_Mono, Fraunces, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/components/shared/auth-provider";
@@ -27,6 +27,24 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains",
   subsets: ["latin"],
   weight: ["400", "500"],
+  display: "swap",
+});
+
+// Editorial display serif — used on the landing for distinctive headlines.
+// Variable axes give us optical-size + softness without shipping multiple files.
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  display: "swap",
+  axes: ["SOFT", "WONK", "opsz"],
+});
+
+// Technical/data labels — section markers, regulation tags, citation chips.
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
   display: "swap",
 });
 
@@ -95,7 +113,7 @@ export default function RootLayout({
         </Script>
       </head>
       <body
-        className={`${plusJakartaSans.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground font-sans`}
+        className={`${plusJakartaSans.variable} ${inter.variable} ${jetbrainsMono.variable} ${fraunces.variable} ${plexMono.variable} antialiased bg-background text-foreground font-sans`}
       >
         <AuthProvider>
           <MotionConfig reducedMotion="user">
