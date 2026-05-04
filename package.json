@@ -15,7 +15,8 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
-    "db:seed": "npx tsx prisma/seed.ts"
+    "db:seed": "npx tsx prisma/seed.ts",
+    "handbook:pdf": "DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib /Library/Frameworks/Python.framework/Versions/3.11/bin/python3.11 scripts/build-handbook-pdf.py"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -83,6 +84,7 @@
     "react-resizable-panels": "^3.0.3",
     "react-syntax-highlighter": "^15.6.1",
     "recharts": "^2.15.4",
+    "remark-gfm": "^4.0.1",
     "resend": "^6.12.2",
     "sharp": "^0.34.3",
     "sonner": "^2.0.6",

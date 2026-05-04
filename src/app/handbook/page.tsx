@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Download, FileText, ArrowLeft } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Navigation } from '@/components/shared/navigation';
 import { Footer } from '@/components/shared/footer';
 import { Button } from '@/components/ui/button';
@@ -63,13 +64,12 @@ export default async function HandbookPage() {
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <Button
                 asChild
-                variant="outline"
                 size="sm"
-                className="border-eari-blue/30 hover:border-eari-blue/60 hover:bg-eari-blue/5"
+                className="bg-eari-blue text-white hover:bg-eari-blue-dark shadow-md shadow-eari-blue/20"
               >
-                <a href="/docs/e-ari-handbook.md" download="e-ari-handbook.md">
+                <a href="/docs/e-ari-handbook.pdf" download="E-ARI-Handbook-v1.0.pdf">
                   <Download className="mr-2 h-3.5 w-3.5" aria-hidden />
-                  Download (.md)
+                  Download PDF
                 </a>
               </Button>
               <Button
@@ -78,13 +78,13 @@ export default async function HandbookPage() {
                 size="sm"
                 className="border-border/50"
               >
-                <a href="/docs/e-ari-handbook.md" target="_blank" rel="noopener noreferrer">
+                <a href="/docs/e-ari-handbook.md" download="e-ari-handbook.md">
                   <FileText className="mr-2 h-3.5 w-3.5" aria-hidden />
-                  View raw
+                  Download Markdown
                 </a>
               </Button>
               <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">
-                v1.0 · May 2026
+                v1.0 · 21 pages · May 2026
               </span>
             </div>
           </div>
@@ -94,6 +94,7 @@ export default async function HandbookPage() {
         <article className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
           <div className="handbook-prose">
             <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
               components={{
                 h1: ({ children }) => (
                   <h1 className="font-heading text-3xl sm:text-4xl font-bold text-foreground mt-12 mb-4 tracking-tight first:mt-0">
