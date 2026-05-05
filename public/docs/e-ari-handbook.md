@@ -87,30 +87,14 @@ Three properties that we treat as non-negotiable:
 
 The platform is built as four cooperating layers. Each layer has its own data model, its own UI surfaces, and its own integration points — but they share a single source of truth.
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                                                                       │
-│   Layer 4 — Continuous Monitoring                                     │
-│   Pulse checks · Gap radar · Regulatory scanner · Email digests       │
-│                                                                       │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                       │
-│   Layer 3 — Compliance Autopilot                                      │
-│   AI System registry · Risk classifier · Evidence vault ·             │
-│   FRIA generator · Technical File generator · Submission Pack          │
-│                                                                       │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                       │
-│   Layer 2 — Six AI Agents                                             │
-│   Scoring · Insight · Discovery · Report · Literacy · Assistant       │
-│                                                                       │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                       │
-│   Layer 1 — The Assessment Engine                                     │
-│   8 pillars · 40 questions · weighted scoring · maturity bands        │
-│                                                                       │
-└─────────────────────────────────────────────────────────────────────┘
-```
+<!-- pdf:diagram-architecture -->
+
+| Layer | Name | Components |
+|---|---|---|
+| **04** | **Continuous Monitoring** | Pulse checks · Gap radar · Regulatory scanner · Email digests |
+| **03** | **Compliance Autopilot** | AI System registry · Risk classifier · Evidence vault · FRIA generator · Technical File generator · Submission Pack |
+| **02** | **Six AI Agents** | Scoring · Insight · Discovery · Report · Literacy · Assistant |
+| **01** | **Assessment Engine** | 8 pillars · 40 questions · weighted scoring · maturity bands |
 
 A baseline **Assessment** is the seed crystal. From there, every AI system you register gets bound to that baseline so its compliance profile inherits the organisational context (sector, size, governance maturity) automatically.
 
@@ -167,31 +151,17 @@ This record is the seed for everything else.
 
 When an assessment finishes, an orchestrator runs a six-agent pipeline. Each agent has a single job, and the outputs of earlier agents feed the inputs of later ones.
 
-```
-                     ┌──────────────┐
-                     │   SCORING    │ ← Deterministic, runs first
-                     └──────┬───────┘
-                            ↓
-              ┌─────────────┴──────────────┐
-              ↓                             ↓
-       ┌────────────┐               ┌──────────────┐
-       │  INSIGHT   │               │  DISCOVERY   │ ← Parallel
-       └─────┬──────┘               └──────┬───────┘
-             ↓                             ↓
-             └─────────────┬───────────────┘
-                           ↓
-                    ┌─────────────┐
-                    │   REPORT    │ ← Compiles the above
-                    └──────┬──────┘
-                           ↓
-                    ┌──────┴──────┐
-                    │  LITERACY   │ ← Adaptive learning layer
-                    └─────────────┘
+<!-- pdf:diagram-agents -->
 
-                    ┌─────────────┐
-                    │  ASSISTANT  │ ← On-demand chat, post-pipeline
-                    └─────────────┘
-```
+The pipeline executes in four sequential stages:
+
+| Stage | Agents | Mode | Role |
+|---|---|---|---|
+| **1** | Scoring | Sequential · runs first | Deterministic math — produces the numerical baseline |
+| **2** | Insight + Discovery | Parallel | Run simultaneously since their inputs don't overlap |
+| **3** | Report | Sequential · compiles | Combines outputs from stages 1–2 into the executive document |
+| **4** | Literacy | Sequential · adaptive | Personalised curriculum based on weakest pillars |
+| **—** | Assistant | On-demand | Interactive chat, available post-pipeline |
 
 ### 5.1 Scoring Agent
 
