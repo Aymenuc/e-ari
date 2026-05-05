@@ -20,7 +20,11 @@ export async function GET() {
     }
     const userId = session.user.id;
 
-    const [systems, criticalGaps, plans] = await Promise.all([
+    // ── All four queries in parallel ─────────────────────────────────────
+    // Previously the FRIA query ran sequentially after the other three,
+    // adding a full extra round-trip to every dashboard load even though
+    // it has no data dependencies on the others.
+    const [systems, criticalGaps, plans, frias] = await Promise.all([
       db.aISystem.findMany({
         where: { userId },
         select: {
@@ -57,6 +61,19 @@ export async function GET() {
           system: { select: { id: true, name: true } },
         },
         take: 12,
+      }),
+      db.fRIA.findMany({
+        where: {
+          system: { userId },
+          status: { not: "finalized" },
+          finalizedAt: null,
+        },
+        take: 8,
+        select: {
+          id: true,
+          systemId: true,
+          system: { select: { name: true } },
+        },
       }),
     ]);
 
@@ -101,19 +118,6 @@ export async function GET() {
       }
     }
 
-    const frias = await db.fRIA.findMany({
-      where: {
-        system: { userId },
-        status: { not: "finalized" },
-        finalizedAt: null,
-      },
-      take: 8,
-      select: {
-        id: true,
-        systemId: true,
-        system: { select: { name: true } },
-      },
-    });
     for (const f of frias) {
       items.push({
         id: `fria-${f.id}`,

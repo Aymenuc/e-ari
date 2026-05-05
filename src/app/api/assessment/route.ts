@@ -18,11 +18,27 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // ── Dashboard list — only fields the portal actually consumes ───────
+    // Previously this endpoint returned every assessment WITH its full
+    // `responses` array (40 rows per assessment), which made the portal
+    // dashboard load 200+ row joins for nothing. The dashboard only uses
+    // count, status, score, sector, and timestamps.
     const assessments = await db.assessment.findMany({
       where: { userId: session.user.id },
       orderBy: { createdAt: "desc" },
-      include: {
-        responses: true,
+      select: {
+        id: true,
+        userId: true,
+        status: true,
+        sector: true,
+        overallScore: true,
+        pillarScores: true,
+        scoringVersion: true,
+        methodologyVersion: true,
+        createdAt: true,
+        updatedAt: true,
+        completedAt: true,
+        isPulse: true,
       },
     });
 

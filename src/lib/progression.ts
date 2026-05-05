@@ -110,6 +110,10 @@ export async function getProgressionState(userId: string): Promise<ProgressionSt
         },
         orderBy: { createdAt: "asc" },
       }),
+      // EvidenceClause hot-path — capped at 2000 rows. The dashboard only
+      // needs to know which obligations are evidenced per system, which a
+      // sample this size easily covers. Previous take=8000 ran a join that
+      // scanned tens of thousands of rows on accounts with active vaults.
       db.evidenceClause.findMany({
         where: {
           evidence: {
@@ -123,7 +127,7 @@ export async function getProgressionState(userId: string): Promise<ProgressionSt
           aiActArticles: true,
           evidence: { select: { systemId: true, organizationLevel: true } },
         },
-        take: 8000,
+        take: 2000,
       }),
       db.evidence.count({
         where: {
