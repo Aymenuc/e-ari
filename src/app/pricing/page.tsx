@@ -415,13 +415,13 @@ export default function PricingPage() {
             </FadeUp>
             <FadeUp delay={0.05}>
               <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight">
-                AI Readiness,{' '}
-                <span className="text-eari-blue-light font-semibold">Unlocked Your Way</span>
+                Pricing built around{' '}
+                <span className="text-eari-blue-light font-medium italic">how you scale</span>
               </h1>
             </FadeUp>
             <FadeUp delay={0.1}>
               <p className="mt-4 text-lg text-muted-foreground font-sans max-w-2xl mx-auto leading-relaxed">
-                Start free with 3 assessments and 1 AI Insight summary. Upgrade for unlimited assessments and the full power of all 6 AI agents.
+                Start free with one full assessment and three monthly pulse checks. Upgrade for the full six-agent pipeline, the Compliance Autopilot, and unlimited use cases.
               </p>
             </FadeUp>
 

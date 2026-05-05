@@ -123,7 +123,7 @@ export function ProductSpotlightCarousel() {
             Explore the AI toolkit
           </h2>
           <p className="mt-3 font-sans text-base text-muted-foreground sm:text-lg">
-            Pulse, Literacy, Discovery, and Assistant—pick a module or let the carousel introduce each one.
+            Four modules that surface the platform between assessments — Pulse, Literacy, Discovery, and Assistant. Pick one or let the carousel introduce each.
           </p>
         </div>
 

@@ -22,9 +22,11 @@ export default function ContactPage() {
             <div className="absolute right-1/4 bottom-0 h-72 w-72 rounded-full bg-cyan-500/6 blur-3xl" />
           </div>
           <div className="relative mx-auto max-w-3xl px-4 sm:px-6 text-center">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-eari-blue/25 bg-eari-blue/10 px-3 py-1 text-xs font-mono text-eari-blue-light">
-              <span className="h-1.5 w-1.5 rounded-full bg-eari-blue opacity-90" />
-              We respond within 24 hours
+            <div className="mb-5 flex items-center justify-center gap-3">
+              <span className="h-px w-8 bg-eari-blue/60" aria-hidden />
+              <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                Contact
+              </span>
             </div>
             <h1 className="font-heading text-4xl font-bold tracking-tight text-foreground sm:text-5xl mb-4">
               Get in Touch

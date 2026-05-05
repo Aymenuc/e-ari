@@ -25,10 +25,23 @@ export const dynamic = 'force-static';
 async function loadHandbook(): Promise<string> {
   const filePath = path.join(process.cwd(), 'public', 'docs', 'e-ari-handbook.md');
   const raw = await fs.readFile(filePath, 'utf-8');
+  let body = raw;
+
   // Strip PDF-only diagram markers — the in-app view shows the equivalent
   // structured tables that follow each marker, while the PDF build script
   // swaps these comments for inline SVG flowcharts.
-  return raw.replace(/^[ \t]*<!--\s*pdf:[\w-]+\s*-->[ \t]*\r?\n/gm, '');
+  body = body.replace(/^[ \t]*<!--\s*pdf:[\w-]+\s*-->[ \t]*\r?\n/gm, '');
+
+  // Strip the leading H1 + bold subtitle + version line + horizontal rule —
+  // the page hero already renders the title, subtitle, and version, so the
+  // markdown body should pick up after that intro block to avoid showing
+  // the same title twice.
+  body = body.replace(
+    /^# [^\n]+\n+(\*\*[^\n]+\*\*\n+)?(\*[^\n]+\*\n+)?---\n+/,
+    '',
+  );
+
+  return body;
 }
 
 export default async function HandbookPage() {

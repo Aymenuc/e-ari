@@ -235,12 +235,12 @@ const AGENT_PROPERTIES = [
 /* ─── Agent orchestration flow steps ────────────────────────────────────── */
 
 const ORCHESTRATION_FLOW = [
-  { label: 'Assess', desc: 'Scoring Agent calculates' },
-  { label: 'Discover', desc: 'Discovery Agent interviews' },
-  { label: 'Analyze', desc: 'Insight Agent narrates' },
-  { label: 'Educate', desc: 'Literacy Agent curates' },
-  { label: 'Report', desc: 'Report Agent generates' },
-  { label: 'Guide', desc: 'Assistant Agent advises' },
+  { label: 'Scoring', desc: 'Deterministic calculation' },
+  { label: 'Discovery', desc: 'Stakeholder interviews' },
+  { label: 'Insight', desc: 'Narrative generation' },
+  { label: 'Literacy', desc: 'Adaptive learning' },
+  { label: 'Report', desc: 'Executive document' },
+  { label: 'Assistant', desc: 'Interactive guidance' },
 ]
 
 /** Single coordinate system for orbit lines + HTML nodes (SVG viewBox units). */
@@ -857,12 +857,15 @@ export default function Home() {
                         whileHover={{ x: 4 }}
                         transition={{ duration: 0.2 }}
                       >
+                        {/* Restraint pass: single muted icon, single accent
+                            for the score bar, single white type for the
+                            number. Color is no longer used to differentiate
+                            pillars (was rainbow); it is reserved for the
+                            score-bar fill so the eye scans relative
+                            performance, not which pillar is "blue" vs "pink". */}
                         <div className="flex items-center gap-4">
-                          <div
-                            className="flex h-8 w-8 items-center justify-center rounded-md flex-shrink-0 transition-colors duration-200"
-                            style={{ backgroundColor: `${pillar.color}15` }}
-                          >
-                            <Icon className="h-4 w-4" style={{ color: pillar.color }} />
+                          <div className="flex h-8 w-8 items-center justify-center rounded-md flex-shrink-0 border border-white/[0.06] bg-white/[0.03]">
+                            <Icon className="h-4 w-4 text-muted-foreground/70 group-hover:text-eari-blue-light transition-colors" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-baseline gap-2">
@@ -875,15 +878,14 @@ export default function Home() {
                             </div>
                             <div className="mt-1.5 h-1 rounded-full bg-white/[0.04] overflow-hidden">
                               <motion.div
-                                className="h-full rounded-full"
-                                style={{ backgroundColor: pillar.color }}
+                                className="h-full rounded-full bg-eari-blue/80"
                                 initial={{ width: 0 }}
                                 animate={{ width: `${SAMPLE_SCORES[i].score}%` }}
                                 transition={{ duration: 0.65, delay: 0.35 + i * 0.04, ease: 'easeOut' }}
                               />
                             </div>
                           </div>
-                          <span className="font-mono text-lg font-semibold tabular-nums" style={{ color: pillar.color }}>
+                          <span className="font-mono text-lg font-semibold tabular-nums text-foreground">
                             {SAMPLE_SCORES[i].score}
                           </span>
                         </div>

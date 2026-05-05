@@ -983,11 +983,14 @@ function LiteracyPageContent() {
           {/* ─── Hero Section ────────────────────────────────────────────── */}
           <FadeUp>
             <div className="text-center max-w-xl mx-auto mb-16">
-              <Badge variant="outline" className="mb-4 font-mono text-xs border-eari-blue/40 text-eari-blue-light">
-                E-ARI Literacy
-              </Badge>
+              <div className="mb-5 flex items-center justify-center gap-3">
+                <span className="h-px w-8 bg-eari-blue/60" aria-hidden />
+                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                  E-ARI Literacy
+                </span>
+              </div>
               <h1 className="font-heading text-4xl sm:text-5xl font-bold text-foreground tracking-tight">
-                <span className="text-eari-blue-light font-semibold">AI Literacy Hub</span>
+                AI Literacy <span className="text-eari-blue-light font-medium italic">Hub</span>
               </h1>
               <p className="mt-4 text-muted-foreground font-sans leading-relaxed text-lg">
                 Assess your AI knowledge, follow curated learning paths, and discover role-specific insights.
