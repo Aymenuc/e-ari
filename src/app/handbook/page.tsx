@@ -24,7 +24,11 @@ export const dynamic = 'force-static';
 
 async function loadHandbook(): Promise<string> {
   const filePath = path.join(process.cwd(), 'public', 'docs', 'e-ari-handbook.md');
-  return fs.readFile(filePath, 'utf-8');
+  const raw = await fs.readFile(filePath, 'utf-8');
+  // Strip PDF-only diagram markers — the in-app view shows the equivalent
+  // structured tables that follow each marker, while the PDF build script
+  // swaps these comments for inline SVG flowcharts.
+  return raw.replace(/^[ \t]*<!--\s*pdf:[\w-]+\s*-->[ \t]*\r?\n/gm, '');
 }
 
 export default async function HandbookPage() {
