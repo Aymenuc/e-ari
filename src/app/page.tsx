@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useRef, useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { motion, useTransform, useScroll, AnimatePresence, useReducedMotion } from 'framer-motion'
 import {
   Target,
@@ -416,6 +417,11 @@ const LANDING_FAQ = [
    ═══════════════════════════════════════════════════════════════════════════ */
 
 export default function Home() {
+  // Session-aware so we can hide the AgentPanel on the public landing —
+  // an Assistant launcher serves no purpose for unauthenticated visitors.
+  const { status: sessionStatus } = useSession()
+  const isAuthenticated = sessionStatus === 'authenticated'
+
   const [isAnnual, setIsAnnual] = useState(false)
   const [enterprisePriceLabel, setEnterprisePriceLabel] = useState('Custom')
 
@@ -1791,20 +1797,25 @@ export default function Home() {
 
       <Footer />
 
-      {/* AI Agent Assistant Panel */}
-      <AgentPanel
-        sector="technology"
-        pillarScores={SAMPLE_SCORES.map((s, i) => {
-          const pillar = PILLARS[i];
-          return {
-            pillarId: pillar.id,
-            score: s.score,
-            maturityLabel: s.score <= 25 ? 'Laggard' : s.score <= 50 ? 'Follower' : s.score <= 75 ? 'Chaser' : 'Pacesetter',
-          };
-        })}
-        overallScore={67}
-        orgContext="A technology company with growing AI initiatives and established data practices, focusing on digital transformation across business units."
-      />
+      {/* AI Agent Assistant Panel — only for authenticated visitors.
+          The unauthenticated landing has no assessment context for an
+          assistant to anchor against, so the floating launcher reads as
+          decorative chrome rather than a real surface. */}
+      {isAuthenticated && (
+        <AgentPanel
+          sector="technology"
+          pillarScores={SAMPLE_SCORES.map((s, i) => {
+            const pillar = PILLARS[i];
+            return {
+              pillarId: pillar.id,
+              score: s.score,
+              maturityLabel: s.score <= 25 ? 'Laggard' : s.score <= 50 ? 'Follower' : s.score <= 75 ? 'Chaser' : 'Pacesetter',
+            };
+          })}
+          overallScore={67}
+          orgContext="A technology company with growing AI initiatives and established data practices, focusing on digital transformation across business units."
+        />
+      )}
 
       {/* Back to top button */}
       <BackToTop />

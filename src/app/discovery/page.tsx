@@ -294,38 +294,88 @@ export default function DiscoveryPage() {
     return (
       <div className="min-h-screen flex flex-col bg-navy-900">
         <Navigation />
-        <main className="flex-1 flex items-center justify-center px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Card className="w-full max-w-md bg-navy-800 border-border">
-              <CardHeader className="text-center">
-                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-eari-blue/10">
-                  <Brain className="h-7 w-7 text-eari-blue-light" />
-                </div>
-                <CardTitle className="font-heading text-xl text-foreground">
-                  Sign In Required
-                </CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  You must be signed in to use the Discovery Agent. Create a free account or sign in to continue.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3">
-                <Link href="/auth/login" className="w-full">
-                  <Button className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-sans h-11">
-                    Sign In
+        <main className="flex-1">
+          {/* ── Marketing fallback (unauthenticated) ───────────────────── */}
+          <section className="relative overflow-hidden">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0"
+            >
+              <div className="absolute -top-32 right-1/4 h-96 w-96 rounded-full bg-eari-blue/8 blur-3xl" />
+              <div className="absolute -bottom-32 left-1/4 h-96 w-96 rounded-full bg-violet-500/6 blur-3xl" />
+            </div>
+            <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
+              <div className="mb-5 flex items-center gap-3">
+                <span className="h-px w-8 bg-eari-blue/60" aria-hidden />
+                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                  Discovery agent
+                </span>
+              </div>
+              <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground tracking-tight max-w-3xl">
+                Conversational interviews,{' '}
+                <span className="text-eari-blue-light font-medium italic">
+                  not another questionnaire
+                </span>
+              </h1>
+              <p className="mt-5 max-w-2xl font-sans text-lg text-muted-foreground leading-relaxed">
+                The Discovery Agent runs an adaptive interview that surfaces context a fixed
+                40-question Likert can&apos;t reach — your operating model, your constraints,
+                your blind spots. Every answer reshapes the next question, and the output
+                feeds your readiness baseline automatically.
+              </p>
+
+              <div className="mt-10 grid gap-6 sm:grid-cols-3">
+                {[
+                  {
+                    Icon: Sparkles,
+                    title: 'Adaptive follow-ups',
+                    body: 'Branches dynamically — no two interviews run the same path.',
+                  },
+                  {
+                    Icon: Target,
+                    title: 'Sector-aware prompts',
+                    body: 'Pulls from a curated catalogue of healthcare, finance, manufacturing, public-sector questions.',
+                  },
+                  {
+                    Icon: CheckCircle2,
+                    title: 'Feeds your baseline',
+                    body: 'Synthesised answers anchor every downstream agent — Insight, Discovery, Report.',
+                  },
+                ].map((feat) => (
+                  <div
+                    key={feat.title}
+                    className="rounded-xl border border-border/50 bg-navy-800/60 p-5"
+                  >
+                    <feat.Icon
+                      className="h-5 w-5 text-eari-blue-light/80 mb-3"
+                      aria-hidden
+                    />
+                    <p className="font-heading text-sm font-semibold text-foreground">
+                      {feat.title}
+                    </p>
+                    <p className="mt-1.5 font-sans text-xs text-muted-foreground leading-relaxed">
+                      {feat.body}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-12 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                <Link href="/auth/register">
+                  <Button className="bg-eari-blue text-white hover:bg-eari-blue-dark font-heading h-11 px-6 shadow-lg shadow-eari-blue/20">
+                    Start free assessment
+                    <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
                   </Button>
                 </Link>
-                <Link href="/auth/register" className="w-full">
-                  <Button variant="outline" className="w-full font-sans h-11 border-border">
-                    Create Account
-                  </Button>
+                <Link
+                  href="/auth/login"
+                  className="font-sans text-sm text-muted-foreground hover:text-eari-blue-light transition-colors"
+                >
+                  Already have an account? Sign in →
                 </Link>
-              </CardContent>
-            </Card>
-          </motion.div>
+              </div>
+            </div>
+          </section>
         </main>
         <Footer />
       </div>
