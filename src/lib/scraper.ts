@@ -213,11 +213,16 @@ async function tavilySearch(query: string, options: TavilySearchOptions = {}): P
   }
   const maxResults = options.maxResults ?? 8;
   try {
+    // Tavily migrated to Bearer-token auth. The legacy `api_key` body field
+    // returns 401/403 on newer keys, which previously fell through silently
+    // here and bubbled up as an empty fallback context — making the client
+    // see "context fetched" with no actual content. Send the key both ways
+    // for backwards compatibility.
     const body: Record<string, unknown> = {
-      api_key: apiKey,
       query,
       max_results: maxResults,
       search_depth: options.search_depth ?? "basic",
+      api_key: apiKey,
     };
     if (options.include_domains?.length) body.include_domains = options.include_domains;
     if (options.exclude_domains?.length) body.exclude_domains = options.exclude_domains;
@@ -226,12 +231,16 @@ async function tavilySearch(query: string, options: TavilySearchOptions = {}): P
 
     const res = await fetch("https://api.tavily.com/search", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(20000),
     });
     if (!res.ok) {
-      console.warn(`[scraper] Tavily search failed (${res.status}) for query: ${query.slice(0, 80)}`);
+      const errBody = await res.text().catch(() => '');
+      console.warn(`[scraper] Tavily search failed (${res.status}) for query "${query.slice(0, 80)}": ${errBody.slice(0, 200)}`);
       return [];
     }
     const data = await res.json();
@@ -248,12 +257,15 @@ async function tavilyExtract(urls: string[]): Promise<Array<{ url: string; raw_c
   try {
     const res = await fetch("https://api.tavily.com/extract", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
       body: JSON.stringify({
-        api_key: apiKey,
         urls: urls.slice(0, EXTRACT_URL_CAP),
         format: "text",
         extract_depth: "basic",
+        api_key: apiKey, // legacy compat
       }),
       signal: AbortSignal.timeout(35000),
     });

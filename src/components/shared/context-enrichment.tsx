@@ -307,6 +307,19 @@ export function ContextEnrichment({
       }
 
       const context: OrgContext = await res.json();
+      // The server returns HTTP 200 with confidence='none' when the
+      // public-source lookup yielded nothing useful. Surface that as an
+      // error state so users see why the form didn't help, instead of a
+      // misleading "Success" with empty content.
+      if (context.confidence === 'none') {
+        setOrgContext(context);
+        setErrorMsg(
+          context.orgSpecificContext ||
+          `We couldn't enrich "${orgName}" from public web sources. Try adding the website URL or extra context, or skip and proceed with self-reported answers.`
+        );
+        setStatus('error');
+        return;
+      }
       setOrgContext(context);
       setStatus('success');
     } catch (error) {
