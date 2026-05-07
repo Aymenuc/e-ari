@@ -166,6 +166,12 @@ export default function PortalPage() {
   const router = useRouter();
 
   const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [quota, setQuota] = useState<{
+    tier: string;
+    assessment: { used: number; limit: number | null };
+    pulse: { used: number; limit: number | null };
+    report: { used: number; limit: number | null };
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -217,6 +223,25 @@ export default function PortalPage() {
     }
 
     fetchAssessments();
+  }, [sessionStatus]);
+
+  // Monthly tier quota — drives the usage strip in the tier card.
+  useEffect(() => {
+    if (sessionStatus !== 'authenticated') return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/quota');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled) setQuota(data);
+      } catch {
+        /* optional */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [sessionStatus]);
 
   useEffect(() => {
@@ -765,30 +790,50 @@ export default function PortalPage() {
                   </Badge>
                 </div>
 
-                {userTier === 'free' && (
-                  <>
-                    <p className="text-sm text-muted-foreground font-sans">
-                      Get started with up to {freeTierLimit} assessments. Upgrade for unlimited access and advanced features.
+                {/* Monthly usage strip — driven by /api/quota for every tier.
+                    Replaces the previous hard-coded "3 lifetime" Free panel
+                    and the "unlimited" claim for Professional, both of which
+                    contradicted /pricing. */}
+                {quota && (
+                  <div className="space-y-3">
+                    {(['assessment', 'pulse', 'report'] as const).map((kind) => {
+                      const q = quota[kind];
+                      const label = kind === 'assessment' ? 'Assessments' : kind === 'pulse' ? 'Pulse checks' : 'Report downloads';
+                      const limit = q.limit;
+                      const used = q.used;
+                      const isUnlimited = limit === null;
+                      return (
+                        <div key={kind}>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs text-muted-foreground font-sans">{label} this month</span>
+                            <span className="text-xs text-foreground font-sans font-medium tabular-nums">
+                              {isUnlimited ? `${used} · unlimited` : `${used} / ${limit}`}
+                            </span>
+                          </div>
+                          {!isUnlimited && (
+                            <Progress
+                              value={Math.min((used / Math.max(1, limit ?? 1)) * 100, 100)}
+                              className="h-2"
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                    <p className="text-[11px] text-muted-foreground/80 font-sans pt-1">
+                      Resets at the start of each calendar month.
                     </p>
-
-                    <div>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-xs text-muted-foreground font-sans">Assessments Used</span>
-                        <span className="text-xs text-foreground font-sans font-medium">
-                          {totalAssessments} / {freeTierLimit}
-                        </span>
-                      </div>
-                      <Progress
-                        value={Math.min((totalAssessments / freeTierLimit) * 100, 100)}
-                        className="h-2"
-                      />
-                    </div>
-                  </>
+                  </div>
                 )}
 
                 {userTier === 'professional' && (
                   <p className="text-sm text-muted-foreground font-sans">
-                    Unlimited assessments with all 6 AI agents, full narrative insights, and PDF reports at €49/month.
+                    Five assessments and fifteen pulse checks per month, all six AI agents, narrative insights, and three reports included at €49/month.
+                  </p>
+                )}
+
+                {userTier === 'growth' && (
+                  <p className="text-sm text-muted-foreground font-sans">
+                    Twenty assessments and fifty pulse checks per month, unlimited reports, all sectors, full admin portal, and read-only API access at €149/month.
                   </p>
                 )}
 

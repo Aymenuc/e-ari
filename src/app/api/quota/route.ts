@@ -24,9 +24,10 @@ export async function GET() {
     });
     const tier = user?.tier ?? 'free';
 
-    const [assessment, pulse] = await Promise.all([
+    const [assessment, pulse, report] = await Promise.all([
       checkQuota(session.user.id, tier, 'assessment'),
       checkQuota(session.user.id, tier, 'pulse'),
+      checkQuota(session.user.id, tier, 'report'),
     ]);
 
     const serialise = (q: Awaited<ReturnType<typeof checkQuota>>) => ({
@@ -41,6 +42,7 @@ export async function GET() {
       tier,
       assessment: serialise(assessment),
       pulse: serialise(pulse),
+      report: serialise(report),
     });
   } catch (error) {
     console.error("Quota GET error:", error);

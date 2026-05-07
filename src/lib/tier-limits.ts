@@ -18,19 +18,21 @@
 import { db } from './db';
 import { normalizeTier, type Tier } from './tier';
 
-export type Quota = 'assessment' | 'pulse';
+export type Quota = 'assessment' | 'pulse' | 'report';
 
 interface TierQuota {
   assessment: number;
   pulse: number;
+  /** Downloadable .docx / .pdf report generations per month. */
+  report: number;
 }
 
 /** Monthly entitlements per tier — must match /pricing. */
 const TIER_QUOTAS: Record<Tier, TierQuota> = {
-  free:         { assessment: 1,  pulse: 3   },
-  professional: { assessment: 5,  pulse: 15  },
-  growth:       { assessment: 20, pulse: 50  },
-  enterprise:   { assessment: Infinity, pulse: Infinity },
+  free:         { assessment: 1,  pulse: 3,  report: 1        }, // pricing: "1 .docx report / month"
+  professional: { assessment: 5,  pulse: 15, report: 3        }, // pricing: "3 .docx reports included"
+  growth:       { assessment: 20, pulse: 50, report: Infinity }, // pricing: "Unlimited .docx reports"
+  enterprise:   { assessment: Infinity, pulse: Infinity, report: Infinity },
 };
 
 export function getMonthlyLimit(tier: string | null | undefined, quota: Quota): number {
@@ -69,6 +71,43 @@ async function countMonthlyPulses(userId: string): Promise<number> {
   });
 }
 
+/**
+ * Count report generations in the current calendar month. We piggy-back on
+ * the existing Notification table (type='report_generated') as an append-
+ * only audit log so we don't have to add a new table. The (userId,
+ * createdAt) index on Notification keeps this O(log n).
+ */
+async function countMonthlyReports(userId: string): Promise<number> {
+  return db.notification.count({
+    where: {
+      userId,
+      type: 'report_generated',
+      createdAt: { gte: startOfMonthUTC() },
+    },
+  });
+}
+
+/** Record a report generation event so the next quota check sees it. */
+export async function recordReportGenerated(userId: string, assessmentId: string): Promise<void> {
+  try {
+    await db.notification.create({
+      data: {
+        userId,
+        type: 'report_generated',
+        title: 'Report generated',
+        message: 'A .docx report was generated for one of your assessments.',
+        actionUrl: `/results/${assessmentId}`,
+        assessmentId,
+        // Always read so it doesn't clutter the bell — this is a quota receipt, not a user-visible notification.
+        read: true,
+      },
+    });
+  } catch (err) {
+    // Don't fail the report download if audit insert fails.
+    console.error('Failed to record report-generated audit:', err);
+  }
+}
+
 export interface QuotaStatus {
   allowed: boolean;
   used: number;
@@ -103,12 +142,14 @@ export async function checkQuota(
   }
   const used = quota === 'assessment'
     ? await countMonthlyAssessments(userId)
-    : await countMonthlyPulses(userId);
+    : quota === 'pulse'
+      ? await countMonthlyPulses(userId)
+      : await countMonthlyReports(userId);
   const remaining = Math.max(0, limit - used);
   const allowed = used < limit;
   const status: QuotaStatus = { allowed, used, limit, remaining, resetsAt };
   if (!allowed) {
-    const noun = quota === 'assessment' ? 'assessment' : 'pulse check';
+    const noun = quota === 'assessment' ? 'assessment' : quota === 'pulse' ? 'pulse check' : 'report download';
     const plural = limit === 1 ? noun : `${noun}s`;
     status.message = `Your tier includes ${limit} ${plural} per month. You have used ${used}/${limit} this month — quota resets ${resetsAt.toISOString().slice(0, 10)}.`;
   }

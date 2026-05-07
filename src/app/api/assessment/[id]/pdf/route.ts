@@ -7,6 +7,7 @@ import { generateAIInsights, generateTemplateInsightsSync } from "@/lib/ai-insig
 import { generateAssessmentReport, type AssessmentReportData } from "@/lib/report-generator";
 import { getSectorStats } from "@/lib/benchmark-engine";
 import { getSetting } from "@/lib/platform-settings";
+import { checkQuota, recordReportGenerated } from "@/lib/tier-limits";
 
 // GET /api/assessment/[id]/pdf — Generate professional .docx assessment report
 export async function GET(
@@ -37,21 +38,34 @@ export async function GET(
       return NextResponse.json({ error: "Assessment not yet completed" }, { status: 400 });
     }
 
-    // Check tier - PDF/DOCX is available for professional and enterprise tiers
-    if (assessment.user.tier === "free") {
+    // Tier quota gate — every tier has a monthly report allowance per /pricing.
+    // Free: 1 / month (was previously blocked entirely, contradicting the
+    // pricing page). Professional: 3 / month (was previously unlimited).
+    // Growth + Enterprise: unlimited.
+    const reportQuota = await checkQuota(session.user.id, assessment.user.tier, 'report');
+    if (!reportQuota.allowed) {
       return NextResponse.json(
-        { error: "PDF export requires Professional or Enterprise tier" },
-        { status: 403 }
+        {
+          error: reportQuota.message ?? "Monthly report quota exceeded.",
+          quota: {
+            used: reportQuota.used,
+            limit: reportQuota.limit,
+            remaining: reportQuota.remaining,
+            resetsAt: reportQuota.resetsAt.toISOString(),
+          },
+          upgradeRequired: true,
+        },
+        { status: 402 },
       );
     }
 
-    // Compute scores
+    // Compute scores — pass sector so X-Ray + sector weighting reach the PDF.
     const responseMap: ResponseMap = {};
     assessment.responses.forEach(r => {
       responseMap[r.questionId] = r.answer;
     });
 
-    const scoringResult = scoreAssessment(responseMap);
+    const scoringResult = scoreAssessment(responseMap, assessment.sector);
 
     // Use AI insights for any paid tier (Pro/Growth/Enterprise), template for free.
     // Growth was previously bucketed with free here — paid €149/mo, got Free's PDF.
@@ -157,6 +171,11 @@ export async function GET(
     }
 
     const docxBuffer = await generateAssessmentReport(reportData);
+
+    // Record the report generation against the monthly quota (audit-log
+    // pattern using the existing Notification table). Fire-and-forget —
+    // failure here doesn't block the download.
+    void recordReportGenerated(session.user.id, id);
 
     return new NextResponse(new Uint8Array(docxBuffer), {
       headers: {
