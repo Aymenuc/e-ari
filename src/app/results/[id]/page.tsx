@@ -98,6 +98,7 @@ import { AdvancedInsights } from '@/components/shared/advanced-insights'
 import { PILLARS, MATURITY_BANDS, type MaturityBand } from '@/lib/pillars'
 import { getSectorById } from '@/lib/sectors'
 import type { ScoringResult, PillarScoreResult, AdjustmentRecord } from '@/lib/assessment-engine'
+import type { XRayFinding, PatternSeverity } from '@/lib/scoring-patterns'
 import type { AIInsightResult } from '@/lib/ai-insights'
 import { assessCertification, getCertificationBadge } from '@/lib/certification'
 import { assessComplianceGaps, getComplianceSummary } from '@/lib/regulatory-mapping'
@@ -1180,6 +1181,11 @@ export default function ResultsPage() {
                           <span className="font-mono text-xs text-muted-foreground">
                             Scoring v{scoring.scoringVersion}
                           </span>
+                          {scoring.sectorWeighting && typeof scoring.baselineOverallScore === 'number' && Math.abs(scoring.overallScore - scoring.baselineOverallScore) >= 1 && (
+                            <Badge variant="outline" className="font-mono text-[10px] border-eari-blue/30 text-eari-blue-light/90" title={scoring.sectorWeighting.rationale}>
+                              {Math.round(scoring.baselineOverallScore)}% baseline → {Math.round(scoring.overallScore)}% {scoring.sectorWeighting.sector}-weighted
+                            </Badge>
+                          )}
                         </div>
                         <p className="mt-3 text-sm text-muted-foreground font-sans leading-relaxed max-w-lg">
                           {getMaturityBandDescription(scoring.maturityBand)}
@@ -2981,6 +2987,109 @@ export default function ResultsPage() {
 
           {/* Section separator */}
           <div className="section-gradient-separator" />
+
+          {/* ─── 6.5 X-RAY FINDINGS ──────────────────────────────────────── */}
+          {scoring.xRayFindings && scoring.xRayFindings.length > 0 && (
+            <section>
+              <FadeUp>
+                <div className="mb-6">
+                  <div className="mb-2 flex items-center gap-3">
+                    <span aria-hidden className="h-px w-6 bg-eari-blue/60" />
+                    <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                      Structural Patterns
+                    </span>
+                  </div>
+                  <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground">
+                    X-Ray Findings
+                  </h2>
+                  <p className="mt-2 max-w-3xl font-sans text-sm leading-relaxed text-muted-foreground/90">
+                    Detected from how your responses combine across pillars — not from any single answer. Each pattern below carries its own evidence, business impact, and a concrete next move. These findings are the grounding evidence the Insight, Discovery, and Report agents anchor your tailored narrative in.
+                  </p>
+                </div>
+              </FadeUp>
+
+              <div className="space-y-4">
+                {scoring.xRayFindings.map((finding: XRayFinding, i: number) => {
+                  const sevColor: Record<PatternSeverity, { border: string; bg: string; text: string; icon: string }> = {
+                    critical: { border: 'border-red-500/35', bg: 'bg-red-500/12', text: 'text-red-400', icon: 'text-red-400' },
+                    high:     { border: 'border-amber-500/35', bg: 'bg-amber-500/12', text: 'text-amber-400', icon: 'text-amber-400' },
+                    medium:   { border: 'border-eari-blue/35', bg: 'bg-eari-blue/12', text: 'text-eari-blue-light', icon: 'text-eari-blue-light' },
+                    low:      { border: 'border-slate-500/30', bg: 'bg-slate-500/10', text: 'text-slate-300', icon: 'text-slate-400' },
+                  }
+                  const c = sevColor[finding.severity]
+                  return (
+                    <FadeUp key={finding.id} delay={i * 0.05}>
+                      <Card className={`bg-navy-800 ${c.border} hover-lift`}>
+                        <CardContent className="p-5">
+                          <div className="flex items-start gap-3">
+                            <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${c.bg} flex-shrink-0 mt-0.5`}>
+                              <AlertTriangle className={`h-4 w-4 ${c.icon}`} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Badge variant="outline" className={`font-mono text-[10px] ${c.border} ${c.text}`}>
+                                  {finding.id}
+                                </Badge>
+                                <Badge variant="outline" className={`font-mono text-[10px] uppercase tracking-wider ${c.border} ${c.text}`}>
+                                  {finding.severity}
+                                </Badge>
+                                <span className="font-heading text-sm font-semibold text-foreground">
+                                  {finding.title}
+                                </span>
+                              </div>
+                              <p className="mt-2 font-sans text-sm text-foreground/90 leading-relaxed">
+                                {finding.headline}
+                              </p>
+
+                              <div className="mt-3 grid gap-2 font-sans text-[13px] leading-relaxed text-muted-foreground/95 sm:grid-cols-2">
+                                <div>
+                                  <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/70 mb-1">Business impact</div>
+                                  <p>{finding.businessImpact}</p>
+                                </div>
+                                <div>
+                                  <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/70 mb-1">Recommended move</div>
+                                  <p>{finding.recommendation}</p>
+                                </div>
+                              </div>
+
+                              <div className="mt-4 flex items-center gap-2 flex-wrap">
+                                <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/70">Evidence:</span>
+                                {finding.evidence.map(e => (
+                                  <Badge
+                                    key={e.questionId}
+                                    variant="outline"
+                                    className="font-mono text-[10px] border-border/60 text-muted-foreground"
+                                  >
+                                    {e.questionId} = {e.answer}/5
+                                  </Badge>
+                                ))}
+                              </div>
+
+                              {finding.pillarsInvolved.length > 0 && (
+                                <div className="mt-2 flex items-center gap-2 flex-wrap">
+                                  <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/70">Pillars:</span>
+                                  {finding.pillarsInvolved.map(pid => (
+                                    <span key={pid} className="font-mono text-[10px] text-muted-foreground/85 capitalize">
+                                      {PILLARS.find(p => p.id === pid)?.name ?? pid}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </FadeUp>
+                  )
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* Section separator */}
+          {scoring.xRayFindings && scoring.xRayFindings.length > 0 && (
+            <div className="section-gradient-separator" />
+          )}
 
           {/* ─── 7. INTERDEPENDENCY ADJUSTMENTS ──────────────────────────── */}
           <AnimatePresence>
