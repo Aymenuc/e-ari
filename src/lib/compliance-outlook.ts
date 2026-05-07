@@ -22,16 +22,19 @@ export async function getComplianceOutlookForAssessment(
   userId: string,
   assessmentId: string,
 ): Promise<ComplianceOutlook | null> {
-  const assessment = await db.assessment.findFirst({
-    where: { id: assessmentId, userId },
-    select: { id: true },
-  });
+  // Parallelise the ownership check and the systems lookup — they don't
+  // depend on each other and the second one is what feeds the heavy queries.
+  const [assessment, systems] = await Promise.all([
+    db.assessment.findFirst({
+      where: { id: assessmentId, userId },
+      select: { id: true },
+    }),
+    db.aISystem.findMany({
+      where: { assessmentId, userId },
+      select: { id: true, riskTier: true, classifiedAt: true },
+    }),
+  ]);
   if (!assessment) return null;
-
-  const systems = await db.aISystem.findMany({
-    where: { assessmentId, userId },
-    select: { id: true, riskTier: true, classifiedAt: true },
-  });
 
   const ids = systems.map((s) => s.id);
 
@@ -56,7 +59,9 @@ export async function getComplianceOutlookForAssessment(
               aiActArticles: true,
               evidence: { select: { systemId: true, organizationLevel: true } },
             },
-            take: 8000,
+            // Cap the page — the outlook only needs to know which obligations
+            // each system has at least one clause for. Was 8000.
+            take: 2000,
           }),
           db.evidence.count({
             where: {

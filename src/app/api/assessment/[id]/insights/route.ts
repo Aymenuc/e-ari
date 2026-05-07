@@ -55,7 +55,9 @@ export async function GET(
       responseMap[r.questionId] = r.answer;
     });
 
-    const scoringResult = scoreAssessment(responseMap);
+    // Sector-aware scoring — must pass sector so X-Ray findings + sector
+    // weighting reach the prompt and the cached output.
+    const scoringResult = scoreAssessment(responseMap, assessment.sector);
 
     // ─── Free tier: limited insight summary (1 template-based summary) ───
     if (userTier === 'free') {
@@ -95,6 +97,27 @@ export async function GET(
     }
 
     // ─── Professional/Enterprise: full LLM-generated insights ───
+    // Cache hit — return immediately if we already generated full insights
+    // for this assessment. Without this check the page calls into a 10–30 s
+    // LLM round-trip on every load, which is what makes the Insights
+    // section feel slow on the results page.
+    if (assessment.aiInsights) {
+      try {
+        const stored = JSON.parse(assessment.aiInsights);
+        // Only treat as a Pro cache hit if the stored payload is full
+        // (template insights from a Free → Pro upgrade have no executiveSummary).
+        if (stored && typeof stored === 'object' && stored.isAIGenerated === true) {
+          return NextResponse.json({
+            insights: stored,
+            scoringResult,
+            limited: false,
+          });
+        }
+      } catch {
+        // Cache corrupt — fall through to regenerate
+      }
+    }
+
     const insights = await generateAIInsights(scoringResult, {
       sector: assessment.user.sector || undefined,
       orgSize: assessment.user.orgSize || undefined,

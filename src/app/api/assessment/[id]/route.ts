@@ -30,7 +30,9 @@ export async function GET(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // If completed, include computed scores
+    // If completed, include computed scores. Pass sector so the engine
+    // applies sector weighting and X-Ray pattern detection — without this,
+    // results page X-Ray + sector-weighting sections render empty.
     let scoringResult: ReturnType<typeof scoreAssessment> | null = null;
     if (assessment.status === "completed" && assessment.responses.length > 0) {
       try {
@@ -38,7 +40,7 @@ export async function GET(
         assessment.responses.forEach(r => {
           responseMap[r.questionId] = r.answer;
         });
-        scoringResult = scoreAssessment(responseMap);
+        scoringResult = scoreAssessment(responseMap, assessment.sector);
       } catch {
         // Scoring may fail if incomplete, return assessment without scores
       }
@@ -116,7 +118,8 @@ export async function PUT(
       });
 
       try {
-        const scoringResult = scoreAssessment(responseMap);
+        // Sector-aware scoring — applies sector weighting + X-Ray detection
+        const scoringResult = scoreAssessment(responseMap, assessment.sector);
 
         await db.assessment.update({
           where: { id },
