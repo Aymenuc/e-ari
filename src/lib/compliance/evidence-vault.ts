@@ -5,7 +5,10 @@
 import { createHash, randomUUID } from "crypto";
 import { put } from "@vercel/blob";
 
-const MAX_BYTES = 20 * 1024 * 1024; // 20 MB
+/** Max accepted evidence file size — enforced at the route layer BEFORE
+ *  the buffer is allocated, and again here as a defence-in-depth check. */
+export const MAX_EVIDENCE_BYTES = 20 * 1024 * 1024; // 20 MB
+const MAX_BYTES = MAX_EVIDENCE_BYTES;
 
 const ALLOWED_PREFIXES = [
   "application/pdf",

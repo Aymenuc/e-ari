@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { sha256Hex, uploadEvidenceBlob } from "@/lib/compliance/evidence-vault";
+import { sha256Hex, uploadEvidenceBlob, MAX_EVIDENCE_BYTES } from "@/lib/compliance/evidence-vault";
 import { findComplianceSystem } from "@/lib/compliance/access";
 import { checkRateLimit, getRateLimitHeaders, resolveIdentifier } from "@/lib/rate-limit";
 import { EVIDENCE_UPLOAD_TYPE_HINT, isEvidenceUploadAllowed } from "@/lib/compliance/evidence-upload-policy";
@@ -64,6 +64,18 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
       return NextResponse.json({ error: "Missing file field" }, { status: 400 });
     }
 
+    // Size gate BEFORE allocating the buffer. The 20 MB cap was previously
+    // only enforced inside uploadEvidenceBlob() — meaning a 1 GB upload
+    // would still be fully read into memory by arrayBuffer() and OOM the
+    // serverless worker before the size check ran. file.size is read off
+    // the multipart header and doesn't require buffering the body.
+    if (file.size > MAX_EVIDENCE_BYTES) {
+      return NextResponse.json(
+        { error: `File too large. Max ${Math.round(MAX_EVIDENCE_BYTES / (1024 * 1024))} MB.` },
+        { status: 413 },
+      );
+    }
+
     const buf = Buffer.from(await file.arrayBuffer());
     const hash = sha256Hex(buf);
 
@@ -93,9 +105,10 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
       });
       storageKey = up.storageKey;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Upload failed";
+      // Don't reflect the underlying storage-driver message to the client —
+      // it can leak bucket names, endpoint URLs, signed-URL fragments, etc.
       console.error("blob upload:", err);
-      return NextResponse.json({ error: msg }, { status: 400 });
+      return NextResponse.json({ error: "Upload failed" }, { status: 400 });
     }
 
     const row = await db.evidence.create({
