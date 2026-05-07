@@ -26,9 +26,12 @@ function buildSecurityHeaders(): Record<string, string> {
     // own paths (e.g. /portal/abc123) to outbound links.
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     // Disable powerful browser APIs we never use. Each entry is "feature=()"
-    // meaning "no origin allowed".
+    // meaning "no origin allowed". Note: 'payment' is intentionally NOT
+    // restricted here — restricting it has caused regressions on some
+    // Vercel + NextAuth configurations and Stripe Checkout opens in a
+    // new tab anyway.
     'Permissions-Policy':
-      'camera=(), microphone=(), geolocation=(), payment=(self), usb=(), magnetometer=(), accelerometer=(), gyroscope=()',
+      'camera=(), microphone=(), geolocation=(), usb=(), magnetometer=(), accelerometer=(), gyroscope=()',
     // Old-school XSS filter — modern browsers ignore this, but adds nothing
     // negative either. Most CSP-conformant guides include it for legacy UAs.
     'X-XSS-Protection': '0',
@@ -53,10 +56,13 @@ export function middleware(_req: NextRequest) {
 }
 
 export const config = {
-  // Apply to all routes EXCEPT Next-internal asset paths and the favicons.
-  // Static assets don't benefit from these headers and adding them would
-  // bloat every CDN response unnecessarily.
+  // Apply to all routes EXCEPT:
+  //   - Next-internal asset paths and favicons (no benefit, bloats CDN responses)
+  //   - /api/auth/* (NextAuth's own session/CSRF endpoints — defence-in-depth
+  //     skip so we never risk perturbing how NextAuth sets its cookies)
+  //   - /api/webhooks/* (Stripe webhook — third-party caller, no UI to protect)
+  //   - /api/cron/* (server-to-server cron, ditto)
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|favicon.svg|robots.txt|sitemap.xml).*)',
+    '/((?!_next/static|_next/image|api/auth|api/webhooks|api/cron|favicon.ico|favicon.svg|robots.txt|sitemap.xml).*)',
   ],
 };
