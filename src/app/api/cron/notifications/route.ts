@@ -3,6 +3,7 @@ import { processQuarterlyReminders, processScoreChangeAlerts } from "@/lib/email
 import { db } from "@/lib/db";
 import { runPulse, savePulseRun } from "@/lib/pulse-engine";
 import { sendMonthlyPulseEmail } from "@/lib/email-service";
+import { requireCronAuth } from "@/lib/cron-auth";
 
 /**
  * POST /api/cron/notifications
@@ -20,13 +21,11 @@ import { sendMonthlyPulseEmail } from "@/lib/email-service";
  */
 export async function POST(req: NextRequest) {
   try {
-    // Verify cron secret
-    const authHeader = req.headers.get("authorization");
-    const cronSecret = process.env.CRON_SECRET;
-
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Fail-closed cron auth: refuses requests in production when
+    // CRON_SECRET is unset (was previously fail-open — anyone could
+    // trigger this endpoint if the env var was missing).
+    const auth = requireCronAuth(req.headers.get("authorization"));
+    if (!auth.authorized) return auth.response!;
 
     const [remindersSent, alertsSent] = await Promise.all([
       processQuarterlyReminders(),

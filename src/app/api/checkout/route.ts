@@ -39,7 +39,13 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Determine tier ────────────────────────────────────────────────────
-    const requestedTier = tier || 'professional'
+    // Allow-list check — caller is the browser, we never trust an arbitrary
+    // string into Stripe metadata. Anything unknown falls back to Pro.
+    const ALLOWED_REQUEST_TIERS = ['professional', 'growth', 'enterprise'] as const
+    type RequestTier = (typeof ALLOWED_REQUEST_TIERS)[number]
+    const requestedTier: RequestTier = ALLOWED_REQUEST_TIERS.includes(tier as RequestTier)
+      ? (tier as RequestTier)
+      : 'professional'
 
     // Enterprise tier → redirect to a contact form (no real Stripe checkout)
     if (requestedTier === 'enterprise') {
@@ -48,7 +54,8 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Resolve price ID based on tier + billing interval
+    // Resolve price ID based on tier + billing interval. Billing is also
+    // allow-list checked — anything other than 'annual' is monthly.
     const isAnnual = billing === 'annual'
     let priceId: string
     if (requestedTier === 'growth') {

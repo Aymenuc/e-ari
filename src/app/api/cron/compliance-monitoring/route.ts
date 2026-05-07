@@ -2,14 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { monitoringPlansDueWithinDays } from "@/lib/compliance/monitoring";
 import { sendComplianceAttestationDueEmail } from "@/lib/email-service";
+import { requireCronAuth } from "@/lib/cron-auth";
 
 async function handleCron(req: NextRequest) {
-  const authHeader = req.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // Fail-closed cron auth (was previously fail-open when CRON_SECRET unset).
+  const auth = requireCronAuth(req.headers.get("authorization"));
+  if (!auth.authorized) return auth.response!;
 
   const plans = await monitoringPlansDueWithinDays(30);
   let remindersSent = 0;

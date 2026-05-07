@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { db } from '@/lib/db'
+import { ALL_TIERS, type Tier } from '@/lib/tier'
 
 export async function GET(request: NextRequest) {
   const sessionId = request.nextUrl.searchParams.get('session_id')
@@ -24,11 +25,17 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = session.metadata?.userId
-    const tier = session.metadata?.tier
+    const rawTier = session.metadata?.tier
+
+    // Allow-list validation — never write a tier value the platform
+    // doesn't know about. Stripe metadata is set by us, but we still
+    // validate to prevent any deploy accident from writing garbage into
+    // the User.tier column (which gates billing + entitlements).
+    const tier = ALL_TIERS.includes(rawTier as Tier) ? (rawTier as Tier) : null
 
     if (userId && tier) {
       // Update the user's tier and Stripe customer ID in the database (idempotent — safe to call multiple times)
-      const updateData: { tier: string; stripeCustomerId?: string } = { tier }
+      const updateData: { tier: Tier; stripeCustomerId?: string } = { tier }
 
       // Save the Stripe customer ID if available
       if (session.customer) {
@@ -42,6 +49,8 @@ export async function GET(request: NextRequest) {
         data: updateData,
       })
       console.log(`[checkout-success] User ${userId} upgraded to ${tier}`)
+    } else if (userId && rawTier) {
+      console.warn(`[checkout-success] Refusing to write unknown tier "${rawTier}" for user ${userId}`)
     }
 
     // Redirect to portal with success indicator

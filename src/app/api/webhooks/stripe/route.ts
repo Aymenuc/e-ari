@@ -5,7 +5,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyWebhookSignature } from '@/lib/stripe'
 import { db } from '@/lib/db'
+import { ALL_TIERS, type Tier } from '@/lib/tier'
 import type Stripe from 'stripe'
+
+/**
+ * Validate a tier string against the allowlist. Stripe metadata is
+ * authored by us, but we still validate before writing to User.tier so a
+ * deploy mistake or future metadata-injection vector cannot escalate
+ * privilege.
+ */
+function safeTier(raw: unknown): Tier | null {
+  return typeof raw === 'string' && ALL_TIERS.includes(raw as Tier)
+    ? (raw as Tier)
+    : null
+}
 
 export async function POST(request: NextRequest) {
   // ── Read raw body for signature verification ───────────────────────────
@@ -32,7 +45,7 @@ export async function POST(request: NextRequest) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
         const userId = session.metadata?.userId
-        const tier = session.metadata?.tier
+        const tier = safeTier(session.metadata?.tier)
 
         if (userId && tier) {
           try {
@@ -54,7 +67,7 @@ export async function POST(request: NextRequest) {
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription
         const userId = subscription.metadata?.userId
-        const tier = subscription.metadata?.tier
+        const tier = safeTier(subscription.metadata?.tier)
 
         if (userId && tier) {
           try {
