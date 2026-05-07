@@ -2,6 +2,42 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
+// ─── Global security headers ─────────────────────────────────────────────────
+// Attached to every response that flows through the proxy. Defence-in-depth:
+// X-Frame-Options stops clickjacking, X-Content-Type-Options stops MIME
+// sniffing, Referrer-Policy stops referrer leakage cross-origin,
+// Permissions-Policy disables browser features we never use, HSTS forces
+// HTTPS for 6 months in production. NextAuth, Stripe webhooks and cron
+// callers don't need most of these (no UI to protect), so we skip them
+// for those paths to avoid perturbing third-party flows.
+const isProd = process.env.NODE_ENV === "production";
+const SECURITY_HEADERS: Record<string, string> = {
+  "X-Frame-Options": "DENY",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy":
+    "camera=(), microphone=(), geolocation=(), usb=(), magnetometer=(), accelerometer=(), gyroscope=()",
+  "X-XSS-Protection": "0",
+  ...(isProd ? { "Strict-Transport-Security": "max-age=15552000; includeSubDomains" } : {}),
+};
+
+function applySecurityHeaders(res: NextResponse, pathname: string): NextResponse {
+  // Skip header injection for NextAuth / webhooks / cron — these are
+  // third-party-managed flows where extra headers add zero value and risk
+  // breaking cookie / signature handling.
+  if (
+    pathname.startsWith("/api/auth/") ||
+    pathname.startsWith("/api/webhooks/") ||
+    pathname.startsWith("/api/cron/")
+  ) {
+    return res;
+  }
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) {
+    res.headers.set(k, v);
+  }
+  return res;
+}
+
 // Routes that require authentication
 const PROTECTED_ROUTES = [
   "/assessment",
@@ -52,7 +88,7 @@ export default async function proxy(request: NextRequest) {
     pathname.startsWith("/_next") ||
     pathname.includes(".") // static files
   ) {
-    return NextResponse.next();
+    return applySecurityHeaders(NextResponse.next(), pathname);
   }
 
   const token = await getToken({
@@ -67,22 +103,22 @@ export default async function proxy(request: NextRequest) {
   if (pathname.startsWith("/api/")) {
     // NextAuth routes handle their own auth
     if (pathname.startsWith("/api/auth/")) {
-      return NextResponse.next();
+      return applySecurityHeaders(NextResponse.next(), pathname);
     }
 
     // Stripe webhooks need raw body, skip JWT check
     if (pathname.startsWith("/api/webhooks/")) {
-      return NextResponse.next();
+      return applySecurityHeaders(NextResponse.next(), pathname);
     }
 
     // Cron routes use bearer token auth, skip JWT check
     if (pathname.startsWith("/api/cron/")) {
-      return NextResponse.next();
+      return applySecurityHeaders(NextResponse.next(), pathname);
     }
 
     // Public API routes
     if (pathname === "/api/benchmark/consent") {
-      return NextResponse.next();
+      return applySecurityHeaders(NextResponse.next(), pathname);
     }
 
     // Check admin API routes
@@ -91,13 +127,13 @@ export default async function proxy(request: NextRequest) {
     );
     if (isAdminApiRoute) {
       if (!isAuthenticated) {
-        return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+        return applySecurityHeaders(NextResponse.json({ error: "Authentication required" }, { status: 401 }), pathname);
       }
       const role = token.role as string;
       if (role !== "admin") {
-        return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+        return applySecurityHeaders(NextResponse.json({ error: "Admin access required" }, { status: 403 }), pathname);
       }
-      return NextResponse.next();
+      return applySecurityHeaders(NextResponse.next(), pathname);
     }
 
     // Check protected API routes
@@ -105,10 +141,10 @@ export default async function proxy(request: NextRequest) {
       (route) => pathname === route || pathname.startsWith(route + "/")
     );
     if (isProtectedApiRoute && !isAuthenticated) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+      return applySecurityHeaders(NextResponse.json({ error: "Authentication required" }, { status: 401 }), pathname);
     }
 
-    return NextResponse.next();
+    return applySecurityHeaders(NextResponse.next(), pathname);
   }
 
   // ─── Page Route Protection ───────────────────────────────────────────
@@ -132,12 +168,12 @@ export default async function proxy(request: NextRequest) {
   if (isProtectedRoute && !isAuthenticated) {
     const loginUrl = new URL("/auth/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(loginUrl);
+    return applySecurityHeaders(NextResponse.redirect(loginUrl), pathname);
   }
 
   // Redirect authenticated users away from auth pages
   if (isAuthRoute && isAuthenticated) {
-    return NextResponse.redirect(new URL("/portal", request.url));
+    return applySecurityHeaders(NextResponse.redirect(new URL("/portal", request.url)), pathname);
   }
 
   // Check admin access
@@ -145,15 +181,15 @@ export default async function proxy(request: NextRequest) {
     if (!isAuthenticated) {
       const loginUrl = new URL("/auth/login", request.url);
       loginUrl.searchParams.set("callbackUrl", pathname);
-      return NextResponse.redirect(loginUrl);
+      return applySecurityHeaders(NextResponse.redirect(loginUrl), pathname);
     }
     const role = token.role as string;
     if (role !== "admin") {
-      return NextResponse.redirect(new URL("/portal", request.url));
+      return applySecurityHeaders(NextResponse.redirect(new URL("/portal", request.url)), pathname);
     }
   }
 
-  return NextResponse.next();
+  return applySecurityHeaders(NextResponse.next(), pathname);
 }
 
 export const config = {
