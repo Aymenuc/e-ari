@@ -1,9 +1,11 @@
 // Gemini OpenAI-compatible endpoint
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
 
-// Flash — assistant chatbot, literacy learning paths
+// Flash — assistant chatbot, literacy learning paths.
+// Note: gemini-2.0-flash was retired by Google ("no longer available to new
+// users"). Default is now gemini-2.5-flash. Override via LLM_MODEL env var.
 export const LLM_API_URL = process.env.LLM_API_URL || GEMINI_BASE;
-export const LLM_MODEL = process.env.LLM_MODEL || 'gemini-2.0-flash';
+export const LLM_MODEL = process.env.LLM_MODEL || 'gemini-2.5-flash';
 
 // Pro — agentic tasks (roadmap, benchmark, discovery, insights, context enrichment)
 export const LLM_API_URL_PRO = process.env.LLM_API_URL_PRO || GEMINI_BASE;
