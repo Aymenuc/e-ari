@@ -136,14 +136,16 @@ Bands are deliberately broader than a percentile — they're meant to drive *beh
 
 A completed assessment produces a structured `Assessment` record:
 
-- **Overall score** (0–100, weighted)
-- **Per-pillar scores** with question-level breakdowns
+- **Overall score** (0–100, sector-weighted) and **baseline score** (unweighted) for transparency
+- **Per-pillar scores** with question-level breakdowns and applied interdependency adjustments
 - **Maturity band** with a plain-English interpretation
+- **X-Ray findings** — structural risk patterns detected from response *combinations* (see §9.4), each with severity, evidence trail, business impact, and a concrete next move
+- **Sector weighting application** — which pillars were emphasised for your sector and why
 - **Sector benchmark comparison** (your scores vs. curated industry averages)
 - **Strength / weakness matrix** — top three pillars and bottom three
 - **Initial regulatory mapping** — pillars that align with applicable regulations (GDPR, EU AI Act, ISO 42001, NIST AI RMF)
 
-This record is the seed for everything else.
+This record is the seed for everything else. Crucially, the X-Ray findings are what every downstream agent grounds its narrative in — so the report you receive is anchored in *your* specific structural patterns, not a generic write-up of your numbers.
 
 ---
 
@@ -165,14 +167,17 @@ The pipeline executes in four sequential stages:
 
 ### 5.1 Scoring Agent
 
-**Deterministic**, no LLM involvement, runs first. Computes:
+**Deterministic**, no LLM involvement, runs first. Executes a seven-step pipeline:
 
-- Per-pillar weighted average from the Likert responses
-- Overall score = Σ (pillar_score × pillar_weight)
-- Sector-adjusted percentile (using the curated benchmark library)
-- Confidence interval (function of question completion rate and response variance)
+1. **Validate** — every required question is answered
+2. **Normalize** — each pillar mapped to 0–100 from its Likert sum
+3. **Adjust** — six documented cross-pillar interdependency rules fire (§9.2)
+4. **Baseline composite** — unweighted overall preserved for transparency
+5. **Sector weighting** — pillar weights re-balanced for the organisation's sector and renormalised to 1.0 (§9.3)
+6. **Composite & classify** — final overall score, maturity band, critical-failure flags
+7. **X-Ray detection** — eight structural pattern detectors scan response combinations (§9.4)
 
-The scoring math is open and reproducible. It is the only deterministic step in the pipeline — every other agent grounds its outputs against this scoring result, which means LLM hallucinations cannot move your score.
+The scoring math is open and reproducible. It is the only deterministic step in the pipeline — every other agent grounds its outputs against this scoring result *and* its X-Ray findings, which means LLM hallucinations cannot move your score, and the narrative cannot drift away from your actual structural patterns.
 
 ### 5.2 Insight Agent
 
@@ -391,7 +396,7 @@ The progression is visualised in your portal as a single horizontal stepper — 
 
 ## 9. Methodology & scoring
 
-### 9.1 Scoring math
+### 9.1 Pillar normalisation
 
 For each pillar *p* with questions *q₁ ... q₅* answered on a 1–5 Likert scale:
 
@@ -401,15 +406,58 @@ pillar_score(p) = (Σ qᵢ - 5) / 20 × 100
 
 This normalises the raw 5–25 sum to a 0–100 scale.
 
-The overall score is the weighted average:
+### 9.2 Interdependency rules
 
-```
-overall_score = Σ (pillar_score(p) × weight(p))
-```
+Six documented rules fire on the normalised pillar scores. Each rule has a published rationale and is logged on the assessment record so any adjustment can be reproduced.
 
-with weights summing to 1.00. The result is rounded to the nearest integer for display but stored at full precision.
+| Rule | Trigger | Effect | Why |
+|---|---|---|---|
+| R1 | Governance < 30 | Technology × 0.70 | Mature tooling without governance is uncontrolled risk, not capability. |
+| R2 | Data < 30 | Strategy × 0.85 | Strategy without a data foundation is aspirational, not operational. |
+| R3 | Security < 30 | Technology × 0.85 | Deployable models without controls are a liability. |
+| R4 | Talent < 25 | Strategy × 0.90 | Ambition that exceeds internal capacity does not ship. |
+| R5 | Governance < 35 *and* Security < 35 | Process × 0.85 | Industrialised AI without controls compounds incidents at scale. |
+| R6 | Culture < 30 | Process × 0.92 | Change-resistant cultures cannot operationalise AI gains. |
 
-### 9.2 Confidence interval
+Rules apply in declared order. The original score, the adjusted score, and the rule that fired are all persisted on the assessment for audit replay.
+
+### 9.3 Sector weighting
+
+Default pillar weights live in the engine (15% Strategy, 15% Data, 12% Technology, 13% Talent, 15% Governance, 10% Culture, 10% Process, 10% Security). After interdependency adjustments, sector-specific multipliers are applied to those weights and the result is renormalised to sum to 1.00. This keeps the overall score on the 0–100 scale while reflecting what *actually matters* in each sector.
+
+| Sector | Pillars emphasised (×) | Pillars de-emphasised (×) |
+|---|---|---|
+| Healthcare | Governance ×1.35 · Security ×1.25 · Data ×1.20 | Technology ×0.90 · Culture ×0.90 |
+| Finance | Governance ×1.30 · Security ×1.25 · Data ×1.20 | Culture ×0.85 · Talent ×0.90 |
+| Manufacturing | Process ×1.30 · Data ×1.20 · Technology ×1.15 | Culture ×0.85 · Talent ×0.90 |
+| Retail | Data ×1.30 · Process ×1.20 · Technology ×1.10 | Governance ×0.90 · Talent ×0.95 |
+| Technology | Technology ×1.25 · Talent ×1.20 · Strategy ×1.10 | Governance ×0.90 · Security ×0.95 |
+| Government | Governance ×1.35 · Security ×1.25 · Data ×1.10 | Talent ×0.90 · Culture ×0.90 |
+| Energy | Security ×1.30 · Data ×1.20 · Process ×1.15 | Talent ×0.90 · Culture ×0.90 |
+| Education | Governance ×1.25 · Culture ×1.20 · Security ×1.10 | Process ×0.95 · Technology ×0.95 |
+
+The unweighted **baseline overall score** is preserved alongside the sector-weighted overall, so reports can show how sector context moved the number — and why.
+
+### 9.4 X-Ray engine — structural pattern detection
+
+A score is a number. A *pattern* is a story. Two organisations can both land at 47% — one because they're evenly mediocre, one because they have aggressive AI ambition with no data foundation. The interventions for those two are completely different.
+
+The X-Ray engine runs eight deterministic detectors over the response map and surfaces structural failure modes that emerge from how questions interact across pillars. Each finding carries severity (low / medium / high / critical), the question-level evidence that triggered it, the business impact in plain terms, and a single concrete recommended move.
+
+| ID | Pattern | Trigger | Why it matters |
+|---|---|---|---|
+| **P-01** | Shadow IT Risk | High technology adoption + low governance floor | The single fastest path to an EU AI Act non-compliance finding. |
+| **P-02** | The Ambition Gap | High strategy ambition + broken data/governance foundation | Flagship initiatives stall in pilot at months 9–12. |
+| **P-03** | Pilot Purgatory | High experimentation appetite + low MLOps maturity | 70–85% of pilots abandoned; cultural appetite collapses after the third failure. |
+| **P-04** | Compliance Cliff | Compliance + transparency + regulatory readiness all under threshold | EU AI Act applies in full from 2 August 2026. Cannot be retro-fitted in <90 days. |
+| **P-05** | Talent-Strategy Mismatch | High AI ambition + low internal talent supply | Roadmaps slip 9–14 months; partner spend hits 2.4× plan. |
+| **P-06** | Bias Blindspot | High deployment maturity + low fairness/transparency | A single bias incident takes 18–36 months of reputational repair. |
+| **P-07** | Executive Disconnect | Strong operational capability + low executive sponsorship | Capability without sponsorship fragments; AI engineers leave inside 18 months. |
+| **P-08** | Process-First Mismatch | High process maturity + weak data layer | Disciplined teams industrialise the wrong outputs at scale. |
+
+The X-Ray block is then prepended to every downstream agent's prompt. The Insight Agent must map every risk and every next-step it produces back to a finding ID. The Roadmap Agent must neutralise every CRITICAL finding in Phase 1 and every HIGH finding in Phase 2. The Discovery Agent must reflect the findings in its gap indicators. This is what makes the report feel tailored — the agents are grounded in your specific pattern set, not paraphrasing a number.
+
+### 9.5 Confidence interval
 
 A scoring result includes a confidence band derived from:
 
@@ -419,7 +467,7 @@ A scoring result includes a confidence band derived from:
 
 The band is shown in the UI as a range (e.g. *"68 ± 4"*) and is preserved in exports.
 
-### 9.3 Sector benchmarks
+### 9.6 Sector benchmarks
 
 Benchmarks are curated from public research (industry association reports, academic studies, regulator-published statistics). They are explicitly labelled in the UI:
 
@@ -427,7 +475,7 @@ Benchmarks are curated from public research (industry association reports, acade
 
 We never claim a benchmark is current — we cite the year of the underlying data.
 
-### 9.4 Why we don't use a single "trust score"
+### 9.7 Why we don't use a single "trust score"
 
 Some platforms compress everything into a single 0–100 "trustworthiness" number. We don't. A single number obscures the only useful signal: *which dimension is failing*. An organisation can be a Pacesetter on Strategy and a Laggard on Security simultaneously — that's actionable. Averaging it to "Chaser, 62" is not.
 

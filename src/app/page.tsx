@@ -202,9 +202,9 @@ const AGENT_PROPERTIES = [
     id: 'scoring',
     icon: Activity,
     name: 'Scoring Agent',
-    tagline: 'Deterministic Calculation Engine',
-    description: 'Executes the six-step scoring pipeline with full reproducibility. Versioned methodology, auditable weights, and no randomness — every score is verifiable.',
-    capability: 'Versioned scoring · Full audit trail · Zero randomness',
+    tagline: 'Deterministic + Pattern-Aware Engine',
+    description: 'Runs the seven-step pipeline: normalize, six cross-pillar adjustment rules, X-Ray detection of structural failure patterns, sector-specific re-weighting, composite, classify. Every score is reproducible and audit-replayable.',
+    capability: 'X-Ray patterns · Sector weighting · Six interdependency rules · Zero randomness',
     color: '#475569',
     status: 'active',
     href: '/assessment',
@@ -396,7 +396,7 @@ const ORG_ARCHETYPES = [
 const LANDING_FAQ = [
   {
     q: 'Does AI change my E-ARI scores?',
-    a: 'No. Scoring is deterministic and versioned. AI only adds narrative context on top of your calculated results — it never inflates, alters, or overrides the numbers.',
+    a: 'No. Scoring is deterministic and versioned. The engine applies six cross-pillar rules, runs eight X-Ray pattern detectors, and re-weights pillars by sector — all reproducible. The agents only add narrative grounded in those findings; they never inflate, alter, or override the numbers.',
   },
   {
     q: 'How long does an assessment take?',
@@ -720,7 +720,7 @@ export default function Home() {
                   The 8-Pillar Framework
                 </h2>
                 <p className="mt-4 text-[17px] text-slate-400 font-sans leading-relaxed">
-                  Eight critical dimensions, weighted by strategic importance, validated against industry benchmarks &mdash; one composite score.
+                  Eight critical dimensions, re-weighted for your sector, six cross-pillar adjustment rules, and an X-Ray engine that detects structural failure patterns from response combinations &mdash; not just an average.
                 </p>
               </div>
             </FadeUp>
