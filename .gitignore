@@ -25,3 +25,5 @@ Thumbs.db
 *.log
 npm-debug.log*
 .vercel
+press-kit/screens/*.png
+press-kit/brand-pack/handbook-reference.pdf

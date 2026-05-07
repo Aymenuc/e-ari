@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- E-ARI favicon — Threshold E (32×32 simplification of /logo.svg). -->
+  <rect width="32" height="32" rx="7" fill="#0a1024"/>
+  <rect x="8" y="8.5" width="16" height="3" rx="0.8" fill="#60a5fa"/>
+  <rect x="8" y="14.5" width="9" height="3" rx="0.8" fill="#3b82f6"/>
+  <rect x="8" y="20.5" width="16" height="3" rx="0.8" fill="#1e40af"/>
+</svg>
