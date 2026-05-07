@@ -102,6 +102,22 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Last-admin guard — refuse a role change that would leave the platform
+    // with zero admins. Without this check, the only admin could downgrade
+    // themselves (or the last remaining admin could be downgraded by another
+    // admin in a race) and lock the platform out of admin operations.
+    if (role && role !== "admin" && existingUser.role === "admin") {
+      const remainingAdmins = await db.user.count({
+        where: { role: "admin", id: { not: userId } },
+      });
+      if (remainingAdmins === 0) {
+        return NextResponse.json(
+          { error: "Cannot demote the last remaining admin. Promote another user first." },
+          { status: 400 },
+        );
+      }
+    }
+
     // Build update data
     const updateData: { tier?: string; role?: string } = {};
     if (tier) updateData.tier = tier;

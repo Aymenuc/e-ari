@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server";
 import { PILLARS } from "@/lib/pillars";
+import { verifyAdmin } from "@/lib/verify-admin";
 
 // GET /api/report-diagnostic — Test report generation without database dependency
-// This endpoint generates a minimal DOCX file to verify the docx package works correctly
+// ADMIN-ONLY. Previously this endpoint was wide open to the public internet,
+// which meant anyone could (a) generate an expensive DOCX on every call, and
+// (b) read full stack traces with internal paths from the error responses.
+// Both are acceptable when scoped to admins; neither is acceptable publicly.
 export async function GET() {
+  const adminCheck = await verifyAdmin();
+  if (!adminCheck.authorized) {
+    return NextResponse.json({ error: adminCheck.message }, { status: adminCheck.status });
+  }
+
   const diagTag = `[DIAG:${Date.now()}]`;
 
   try {
