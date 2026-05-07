@@ -151,12 +151,77 @@ function hostnameOf(url: string): string {
   }
 }
 
+/**
+ * Robust LLM-JSON parser. gemini-2.5-flash regularly emits one of:
+ *   • markdown-fenced JSON
+ *   • trailing commentary after the closing brace
+ *   • unescaped double-quotes inside string values
+ *   • truncation when max_tokens is hit
+ *
+ * We strip the fences, slice from the first '{' to the last '}', then
+ * escape stray quotes that appear inside string values. If that still
+ * fails we make one last attempt by closing any open braces. Anything
+ * that still won't parse throws — the caller catches and falls back.
+ */
 function parseLLMJson<T>(content: string): T {
-  let jsonStr = content.trim();
-  if (jsonStr.startsWith("```")) {
-    jsonStr = jsonStr.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
+  let s = content.trim();
+  // Strip ```json … ``` fences
+  if (s.startsWith("```")) {
+    s = s.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
   }
-  return JSON.parse(jsonStr) as T;
+  // Slice from first { to last } (drops any prologue/epilogue text)
+  const first = s.indexOf("{");
+  const last = s.lastIndexOf("}");
+  if (first >= 0 && last > first) s = s.slice(first, last + 1);
+
+  try {
+    return JSON.parse(s) as T;
+  } catch {
+    // Repair pass: walk the string, track whether we're inside a string
+    // value, and escape any unescaped " that isn't a structural quote.
+    let out = "";
+    let inStr = false;
+    let prev = "";
+    for (let i = 0; i < s.length; i++) {
+      const ch = s[i];
+      if (ch === '"' && prev !== "\\") {
+        if (!inStr) {
+          inStr = true;
+          out += ch;
+        } else {
+          // We're inside a string. Decide if this quote is the terminator
+          // (next non-space is , } ] : ) or a stray content quote.
+          let j = i + 1;
+          while (j < s.length && /\s/.test(s[j]!)) j++;
+          const next = s[j] ?? "";
+          if (next === "," || next === "}" || next === "]" || next === ":") {
+            inStr = false;
+            out += ch;
+          } else {
+            out += '\\"'; // escape stray quote
+          }
+        }
+      } else {
+        out += ch;
+      }
+      prev = ch;
+    }
+    try {
+      return JSON.parse(out) as T;
+    } catch {
+      // Last-ditch: close any open braces/brackets the model truncated.
+      const open = (out.match(/\{/g) || []).length;
+      const close = (out.match(/\}/g) || []).length;
+      const obrack = (out.match(/\[/g) || []).length;
+      const cbrack = (out.match(/\]/g) || []).length;
+      let patched = out;
+      // If we ended mid-string, terminate it
+      if (inStr) patched += '"';
+      patched += "]".repeat(Math.max(0, obrack - cbrack));
+      patched += "}".repeat(Math.max(0, open - close));
+      return JSON.parse(patched) as T;
+    }
+  }
 }
 
 function sanitizeText(text: string): string {
