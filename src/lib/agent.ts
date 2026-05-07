@@ -428,6 +428,9 @@ CRITICAL RULES:
 - severity must be "low", "medium", or "high" based on how much the gap threatens AI readiness
 - Include 3-6 gap indicators, 2-4 regulatory signals, and 2-4 tech stack insights minimum
 
+X-RAY FINDINGS GROUNDING:
+The user prompt may include an "X-RAY FINDINGS" block at the top — these are structural risk patterns the scoring engine detected from response combinations (e.g. P-01 Shadow IT Risk, P-04 Compliance Cliff). When findings are present, your gapIndicators MUST reflect them: a finding flagged P-04 should appear as a regulatorySignal, a finding flagged P-01 should appear as a high-severity gap on the governance pillar, and so on. Reference the finding ID (P-XX) in the indicator text where applicable. Do not invent gaps that contradict or duplicate the X-Ray output.
+
 ${GUARDRAILS}`;
 }
 
@@ -468,6 +471,13 @@ Your role:
 - Distinguish between foundational investments (must-do) and accelerating investments (differentiating).
 - Reference sector-specific tools, regulations, and practices throughout.
 - Always reference specific pillar names and scores in your recommendations.
+
+GROUNDING IN X-RAY FINDINGS:
+Where the user prompt includes an "X-RAY FINDINGS" block, those findings are structural risk patterns detected from how the organisation answered specific question combinations — not just from pillar averages. They are the highest-signal context in this report. At least 3 of your 4-6 recommendations MUST map to a specific X-Ray finding by ID (P-01, P-02, etc.) and explain how the recommendation neutralises the pattern. Recommendations not grounded in either an X-Ray finding or a specific question score are not acceptable.
+
+WHAT TAILORING LOOKS LIKE (don't be generic):
+- Bad: "Invest in data governance to support AI initiatives."
+- Better: "Address Pattern P-02 (Ambition Gap): your strategy_1=5/5 and data_3=1/5 means leadership is approving AI roadmaps the data layer cannot deliver. Within 6 weeks, ratify a one-page data ownership and lineage charter — without it, the next two flagship initiatives will stall in pilot."
 
 ${GUARDRAILS}`;
 }
@@ -547,6 +557,9 @@ MANDATORY RULES FOR KEY ACTIONS:
 - Every key action MUST name a SPECIFIC tool, practice, deliverable, or system — NOT "implement data governance" but "establish a data catalog with lineage tracking using [tool] across [specific systems from context]"
 - Every key action MUST reference the sector (e.g., "deploy clinical NLP pipeline for EHR unstructured data extraction" for healthcare, not "deploy NLP for document processing")
 - Ban phrases: "implement data governance", "build AI strategy", "improve data quality", "invest in talent" — always specify WHAT exactly
+
+X-RAY-ANCHORED PHASING:
+When the user prompt includes an "X-RAY FINDINGS" block, Phase 1 actions MUST neutralise every CRITICAL-severity finding before pursuing acceleration work. Phase 2 actions MUST neutralise every HIGH-severity finding. Reference each finding by ID (P-01, P-02, etc.) in the action text. A roadmap that does not address surfaced critical patterns in Phase 1 is invalid.
 
 OUTPUT FORMAT — JSON array of phases:
 \`\`\`json

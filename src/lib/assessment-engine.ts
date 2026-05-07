@@ -27,6 +27,8 @@ import {
   METHODOLOGY_VERSION,
   getPillarById,
 } from './pillars';
+import { detectXRayFindings, type XRayFinding } from './scoring-patterns';
+import { applySectorWeighting, type SectorWeightingApplication } from './sector-weights';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -62,12 +64,18 @@ export interface AdjustmentRecord {
 
 export interface ScoringResult {
   overallScore: number;
+  /** Overall score before sector weighting was applied (for transparency). */
+  baselineOverallScore?: number;
   maturityBand: MaturityBand;
   maturityLabel: string;
   maturityColor: string;
   pillarScores: PillarScoreResult[];
   adjustments: AdjustmentRecord[];
   criticalPillarFailures: string[];
+  /** Structural patterns detected from response combinations (X-Ray engine). */
+  xRayFindings?: XRayFinding[];
+  /** Sector-specific pillar weighting that was applied to compute overallScore. */
+  sectorWeighting?: SectorWeightingApplication;
   scoringVersion: string;
   methodologyVersion: string;
   timestamp: string;
@@ -99,22 +107,62 @@ interface InterdependencyRule {
 const INTERDEPENDENCY_RULES: InterdependencyRule[] = [
   {
     id: 'RULE_1',
-    description: 'Governance deficit penalizes Technology: If Governance < 30, Technology score is reduced by 30%',
+    description: 'Governance deficit penalises Technology: low governance turns mature tooling into uncontrolled risk.',
     condition: (ps) => (ps['governance'] ?? 0) < 30,
     adjustment: (ps) => {
       const techScore = ps['technology'] ?? 0;
       const newScore = Math.round(techScore * 0.7 * 100) / 100;
-      return { pillarId: 'technology', newScore, reason: `Governance score (${Math.round(ps['governance'] ?? 0)}) below 30: Technology capped at 70% (${techScore} → ${newScore})` };
+      return { pillarId: 'technology', newScore, reason: `Governance below 30 — Technology capped at 70% to reflect the unmanaged-risk discount (${techScore} → ${newScore}).` };
     },
   },
   {
     id: 'RULE_2',
-    description: 'Data deficit penalizes Strategy: If Data < 30, Strategy score is reduced by 15%',
+    description: 'Data deficit penalises Strategy: AI strategy without data infrastructure is aspirational, not operational.',
     condition: (ps) => (ps['data'] ?? 0) < 30,
     adjustment: (ps) => {
       const stratScore = ps['strategy'] ?? 0;
       const newScore = Math.round(stratScore * 0.85 * 100) / 100;
-      return { pillarId: 'strategy', newScore, reason: `Data score (${Math.round(ps['data'] ?? 0)}) below 30: Strategy capped at 85% (${stratScore} → ${newScore})` };
+      return { pillarId: 'strategy', newScore, reason: `Data below 30 — Strategy reduced 15% because the data foundation cannot deliver on the stated ambition (${stratScore} → ${newScore}).` };
+    },
+  },
+  {
+    id: 'RULE_3',
+    description: 'Security deficit penalises Technology: deployable models without controls are a liability, not an asset.',
+    condition: (ps) => (ps['security'] ?? 0) < 30,
+    adjustment: (ps) => {
+      const techScore = ps['technology'] ?? 0;
+      const newScore = Math.round(techScore * 0.85 * 100) / 100;
+      return { pillarId: 'technology', newScore, reason: `Security below 30 — Technology capped at 85% to reflect deployment-without-controls exposure (${techScore} → ${newScore}).` };
+    },
+  },
+  {
+    id: 'RULE_4',
+    description: 'Talent deficit penalises Strategy: ambition that exceeds internal capacity does not ship.',
+    condition: (ps) => (ps['talent'] ?? 0) < 25,
+    adjustment: (ps) => {
+      const stratScore = ps['strategy'] ?? 0;
+      const newScore = Math.round(stratScore * 0.90 * 100) / 100;
+      return { pillarId: 'strategy', newScore, reason: `Talent below 25 — Strategy reduced 10% to reflect execution capacity below stated ambition (${stratScore} → ${newScore}).` };
+    },
+  },
+  {
+    id: 'RULE_5',
+    description: 'Governance + Security combined deficit penalises Process: industrialised AI at scale without controls compounds incidents.',
+    condition: (ps) => (ps['governance'] ?? 0) < 35 && (ps['security'] ?? 0) < 35,
+    adjustment: (ps) => {
+      const procScore = ps['process'] ?? 0;
+      const newScore = Math.round(procScore * 0.85 * 100) / 100;
+      return { pillarId: 'process', newScore, reason: `Both governance and security below 35 — Process capped at 85% because scaling unmanaged AI accelerates harm (${procScore} → ${newScore}).` };
+    },
+  },
+  {
+    id: 'RULE_6',
+    description: 'Culture deficit penalises Process: change-resistant cultures cannot operationalise AI gains.',
+    condition: (ps) => (ps['culture'] ?? 0) < 30,
+    adjustment: (ps) => {
+      const procScore = ps['process'] ?? 0;
+      const newScore = Math.round(procScore * 0.92 * 100) / 100;
+      return { pillarId: 'process', newScore, reason: `Culture below 30 — Process reduced 8% to reflect adoption friction on the operating floor (${procScore} → ${newScore}).` };
     },
   },
 ];
@@ -268,24 +316,41 @@ export function identifyCriticalFailures(pillarResults: PillarScoreResult[]): st
 
 /**
  * Calculate overall score from pillar scores using weighted combination.
- * 
+ *
  * Formula: overallScore = Σ (pillarScore_i × weight_i)
  * where weights sum to 1.0.
+ *
+ * If a sector weighting application is supplied, the renormalised sector
+ * weights are used in place of base pillar weights. Otherwise base weights
+ * are used. Both branches keep the result on the 0–100 scale.
  */
-export function calculateOverallScore(pillarResults: PillarScoreResult[]): number {
-  const overall = pillarResults.reduce((sum, p) => sum + p.normalizedScore * p.weight, 0);
+export function calculateOverallScore(
+  pillarResults: PillarScoreResult[],
+  sectorWeighting?: SectorWeightingApplication,
+): number {
+  const weightLookup: Record<string, number> = {};
+  if (sectorWeighting) {
+    for (const p of sectorWeighting.pillars) weightLookup[p.pillarId] = p.finalWeight;
+  }
+  const overall = pillarResults.reduce((sum, p) => {
+    const w = sectorWeighting ? (weightLookup[p.pillarId] ?? p.weight) : p.weight;
+    return sum + p.normalizedScore * w;
+  }, 0);
   return Math.round(Math.max(0, Math.min(100, overall)) * 100) / 100;
 }
 
 // ─── Main Scoring Pipeline ──────────────────────────────────────────────────
 
 /**
- * Complete scoring pipeline: validate → calculate → adjust → score → classify.
- * 
- * This is the single entry point for scoring an assessment.
- * Deterministic: same responses always produce the same result.
+ * Complete scoring pipeline: validate → calculate → adjust → sector-weight →
+ * pattern-detect → classify.
+ *
+ * Deterministic: same responses + sector always produce the same result.
+ *
+ * @param responses Map of questionId → Likert 1–5 answer
+ * @param sector Optional sector identifier for sector-specific pillar weighting
  */
-export function scoreAssessment(responses: ResponseMap): ScoringResult {
+export function scoreAssessment(responses: ResponseMap, sector?: string): ScoringResult {
   // Step 1: Validate completeness
   const missing = validateCompleteness(responses);
   if (missing.length > 0) {
@@ -298,23 +363,33 @@ export function scoreAssessment(responses: ResponseMap): ScoringResult {
   // Step 3: Apply interdependency adjustments
   const { adjustedPillars, adjustments } = applyInterdependencyAdjustments(rawPillarScores);
 
-  // Step 4: Calculate overall weighted score
-  const overallScore = calculateOverallScore(adjustedPillars);
+  // Step 4: Compute baseline (un-sector-weighted) overall score for transparency
+  const baselineOverallScore = calculateOverallScore(adjustedPillars);
 
-  // Step 5: Classify overall maturity
+  // Step 5: Apply sector-specific pillar weighting (if sector supplied)
+  const sectorWeighting = sector ? applySectorWeighting(sector) : undefined;
+  const overallScore = calculateOverallScore(adjustedPillars, sectorWeighting);
+
+  // Step 6: Classify overall maturity
   const overallMaturity = getMaturityBand(overallScore);
 
-  // Step 6: Identify critical failures
+  // Step 7: Identify critical failures
   const criticalFailures = identifyCriticalFailures(adjustedPillars);
+
+  // Step 8: Run X-Ray pattern detection over the response map
+  const xRayFindings = detectXRayFindings(responses);
 
   return {
     overallScore,
+    baselineOverallScore,
     maturityBand: overallMaturity.band,
     maturityLabel: overallMaturity.label,
     maturityColor: overallMaturity.color,
     pillarScores: adjustedPillars,
     adjustments,
     criticalPillarFailures: criticalFailures,
+    xRayFindings,
+    sectorWeighting,
     scoringVersion: SCORING_VERSION,
     methodologyVersion: METHODOLOGY_VERSION,
     timestamp: new Date().toISOString(),

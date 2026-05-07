@@ -245,6 +245,20 @@ ${questionLines}`;
       ).join('\n')}`
     : '';
 
+  // ── X-Ray Findings (structural patterns from response combinations) ──
+  // These are the highest-signal context. The insight agent must reflect
+  // them in its strengths/gaps/risks rather than producing generic prose.
+  const xRayBlock = result.xRayFindings && result.xRayFindings.length > 0
+    ? `\n## X-RAY FINDINGS — STRUCTURAL PATTERNS DETECTED\n${result.xRayFindings.map(f =>
+        `- [${f.id} · ${f.severity.toUpperCase()}] ${f.title}\n  Headline: ${f.headline}\n  Evidence: ${f.evidence.map(e => `${e.questionId}=${e.answer}/5`).join(', ')}\n  Business impact: ${f.businessImpact}\n  Recommended move: ${f.recommendation}`
+      ).join('\n')}\n\nThese findings are the most important context in this report. Every \`risks\` and \`nextSteps\` item you produce should map back to one of these patterns where applicable. Do NOT invent risks that aren't grounded here.`
+    : '';
+
+  // ── Sector Weighting Application ──
+  const sectorWeightingBlock = result.sectorWeighting
+    ? `\n## SECTOR WEIGHTING APPLIED — ${result.sectorWeighting.sector}\nRationale: ${result.sectorWeighting.rationale}\nThis means in this organisation's sector, ${result.sectorWeighting.pillars.filter(p => p.multiplier >= 1.15).map(p => `${p.pillarId} (×${p.multiplier})`).join(', ') || 'no pillars'} count more toward the overall score, and ${result.sectorWeighting.pillars.filter(p => p.multiplier <= 0.9).map(p => `${p.pillarId} (×${p.multiplier})`).join(', ') || 'no pillars'} count less. Reflect this in your sector-aware narrative.${typeof result.baselineOverallScore === 'number' && Math.abs(result.overallScore - result.baselineOverallScore) >= 1 ? `\nBaseline (unweighted) overall: ${Math.round(result.baselineOverallScore)}% → Sector-weighted overall: ${Math.round(result.overallScore)}%.` : ''}`
+    : '';
+
   // ── Score Summary Table ──
   const scoreSummary = result.pillarScores.map(p =>
     `${p.pillarName}: ${Math.round(p.normalizedScore)}% (${p.maturityLabel})`
@@ -261,7 +275,7 @@ ${sectorSection}
 
 ## DETAILED QUESTION-BY-QUESTION RESULTS
 ${pillarDetails}
-${criticalFailures}${adjustments}
+${criticalFailures}${adjustments}${xRayBlock}${sectorWeightingBlock}
 
 ---
 
@@ -271,6 +285,7 @@ Based on the assessment data above, produce your analysis following the methodol
 - Name concrete consequences for every risk
 - Include specific actions with responsible parties and timelines for every next step
 - Interpret scores through the sector lens where applicable
+- Where X-Ray findings are surfaced, your risks and nextSteps must reflect them — these are the patterns that distinguish this organisation from a generic peer at the same score
 - Identify the top 2 strongest and weakest questions within each pillar for pillarDrilldown
 
 Respond with valid JSON only.`;

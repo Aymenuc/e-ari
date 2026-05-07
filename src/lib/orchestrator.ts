@@ -39,6 +39,7 @@ import {
   type ScoringResult,
   type ResponseMap,
 } from './assessment-engine';
+import { formatFindingsForPrompt } from './scoring-patterns';
 import {
   generateAIInsights,
   generateTemplateInsightsSync,
@@ -267,7 +268,9 @@ async function executeScoringAgent(ctx: PipelineContext): Promise<ScoringResult>
   const cached = getCachedResult<ScoringResult>(ctx.assessmentId, 'scoring');
   if (cached) return cached;
 
-  const result = scoreAssessment(ctx.responses);
+  // Sector-aware scoring — the engine applies sector-specific pillar weights
+  // and detects structural risk patterns (X-Ray findings) from response combos.
+  const result = scoreAssessment(ctx.responses, ctx.sector);
   setCachedResult(ctx.assessmentId, 'scoring', result);
   return result;
 }
@@ -325,11 +328,18 @@ async function executeDiscoveryAgent(ctx: PipelineContext): Promise<DiscoveryRes
       maturityLabel: p.maturityLabel,
     }));
 
+    // Prepend X-Ray findings to the discovery prompt so the agent grounds its
+    // landscape analysis in detected structural patterns, not just scores.
+    const xRayBlock = ctx.scoringResult.xRayFindings && ctx.scoringResult.xRayFindings.length > 0
+      ? `${formatFindingsForPrompt(ctx.scoringResult.xRayFindings)}\n\n`
+      : '';
+    const orgContextBlock = orgContext
+      ? JSON.stringify(orgContext)
+      : `Organization in ${ctx.sector} sector, size: ${ctx.orgSize || 'unknown'}`;
+
     const request: AgentRequest = {
       action: 'context_insight',
-      orgContext: orgContext
-        ? JSON.stringify(orgContext)
-        : `Organization in ${ctx.sector} sector, size: ${ctx.orgSize || 'unknown'}`,
+      orgContext: xRayBlock + orgContextBlock,
       pillarScores,
       sector: ctx.sector,
       orgSize: ctx.orgSize,
@@ -447,7 +457,18 @@ async function executeReportAgent(ctx: PipelineContext): Promise<{
     ? `\n\n${formatDiscoverySummary(ctx.discoveryResult)}`
     : '';
 
-  const combinedContext = insightContext + discoveryContext;
+  // X-Ray findings are the highest-signal context — surface them first so the
+  // report agent grounds its roadmap and recommendation in specific patterns.
+  const xRayContext = ctx.scoringResult?.xRayFindings && ctx.scoringResult.xRayFindings.length > 0
+    ? `\n\n${formatFindingsForPrompt(ctx.scoringResult.xRayFindings)}`
+    : '';
+
+  // Sector weighting context — explains why some pillars matter more here.
+  const sectorContext = ctx.scoringResult?.sectorWeighting
+    ? `\n\nSECTOR WEIGHTING APPLIED (${ctx.scoringResult.sectorWeighting.sector}): ${ctx.scoringResult.sectorWeighting.rationale}`
+    : '';
+
+  const combinedContext = xRayContext + sectorContext + insightContext + discoveryContext;
 
   // Run all three report sub-actions in parallel
   const [roadmap, benchmark, recommendation] = await Promise.all([
