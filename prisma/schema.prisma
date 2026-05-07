@@ -19,7 +19,7 @@ model User {
   organization     String?
   sector           String?  // Industry sector for benchmarking
   orgSize          String?  // "1-50", "51-200", "201-1000", "1001-5000", "5000+"
-  tier             String   @default("free") // "free" | "professional" | "enterprise"
+  tier             String   @default("free") // "free" | "professional" | "growth" | "enterprise"
   role             String   @default("user") // "user" | "admin"
   image            String?
   stripeCustomerId String?  // Stripe customer ID for billing portal

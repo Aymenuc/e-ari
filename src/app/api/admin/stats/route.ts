@@ -61,7 +61,7 @@ export async function GET() {
       }),
       // Users on paid tiers (for conversion funnel)
       db.user.count({
-        where: { tier: { in: ["professional", "enterprise"] } },
+        where: { tier: { in: ["professional", "growth", "enterprise"] } },
       }),
     ]);
 

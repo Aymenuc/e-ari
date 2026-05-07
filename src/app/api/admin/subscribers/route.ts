@@ -32,10 +32,11 @@ export async function GET(req: NextRequest) {
     if (authError) return authError;
 
     const url = new URL(req.url);
-    const planFilter = url.searchParams.get("plan"); // "professional" | "enterprise" | null (all paid)
+    const planFilter = url.searchParams.get("plan"); // "professional" | "growth" | "enterprise" | null (all paid)
 
     const where: { tier: { in: string[] } } = {
-      tier: { in: planFilter ? [planFilter] : ["professional", "enterprise"] },
+      // Growth was missing here — Growth subscribers were invisible to admin views.
+      tier: { in: planFilter ? [planFilter] : ["professional", "growth", "enterprise"] },
     };
 
     const subscribers = await db.user.findMany({

@@ -43,7 +43,8 @@ export async function POST(req: NextRequest) {
       // Find users who have completed assessments but no pulse this month
       const activeUsers = await db.user.findMany({
         where: {
-          tier: { in: ['professional', 'enterprise'] },
+          // Growth was missing — paid users on Growth weren't getting cron notifications.
+          tier: { in: ['professional', 'growth', 'enterprise'] },
           assessments: {
             some: { status: 'completed' },
           },

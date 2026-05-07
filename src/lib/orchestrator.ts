@@ -145,14 +145,18 @@ const PIPELINE_STAGES: { agents: AgentId[]; parallel: boolean }[] = [
   // Assistant is NOT auto-run — it's on-demand after pipeline completes
 ];
 
-/** Which tiers unlock which agents */
+/** Which tiers unlock which agents.
+ * Growth is a paid tier (€149/mo) — must unlock everything Professional
+ * unlocks, otherwise Growth users get fewer features than Pro despite
+ * paying 3× more.
+ */
 const TIER_ACCESS: Record<AgentId, string[]> = {
-  scoring: ['free', 'professional', 'enterprise'],
-  insight: ['free', 'professional', 'enterprise'],  // Free tier gets 1 insight summary (limited)
-  discovery: ['professional', 'enterprise'],
-  report: ['professional', 'enterprise'],
-  assistant: ['professional', 'enterprise'],
-  literacy: ['free', 'professional', 'enterprise'],
+  scoring: ['free', 'professional', 'growth', 'enterprise'],
+  insight: ['free', 'professional', 'growth', 'enterprise'],  // Free tier gets 1 insight summary (limited)
+  discovery: ['professional', 'growth', 'enterprise'],
+  report: ['professional', 'growth', 'enterprise'],
+  assistant: ['professional', 'growth', 'enterprise'],
+  literacy: ['free', 'professional', 'growth', 'enterprise'],
 };
 
 // ─── Caching Layer ──────────────────────────────────────────────────────────

@@ -53,10 +53,11 @@ export async function GET(
 
     const scoringResult = scoreAssessment(responseMap);
 
-    // Use AI insights for Professional/Enterprise users, template for fallback
+    // Use AI insights for any paid tier (Pro/Growth/Enterprise), template for free.
+    // Growth was previously bucketed with free here — paid €149/mo, got Free's PDF.
     let insights;
     const userTier = assessment.user.tier || 'free';
-    if (userTier === 'professional' || userTier === 'enterprise') {
+    if (userTier === 'professional' || userTier === 'growth' || userTier === 'enterprise') {
       try {
         insights = await generateAIInsights(scoringResult, {
           sector: assessment.user.sector || undefined,

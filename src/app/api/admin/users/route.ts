@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 
-const VALID_TIERS = ["free", "professional", "enterprise"];
+const VALID_TIERS = ["free", "professional", "growth", "enterprise"];
 const VALID_ROLES = ["user", "admin"];
 
 // GET /api/admin/users — List all users with assessment counts
