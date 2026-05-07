@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { deriveStoredPulseOverallMetrics, runPulse, savePulseRun } from "@/lib/pulse-engine";
 import { checkRateLimitFromRequest } from "@/lib/rate-limit";
+import { checkQuota } from "@/lib/tier-limits";
 
 // GET /api/pulse?month=2026-04 — Returns user's pulse history
 export async function GET(req: NextRequest) {
@@ -67,6 +68,28 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Tier quota gate — enforce monthly pulse-check limit per tier.
+    const userRecord = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { tier: true },
+    });
+    const quota = await checkQuota(session.user.id, userRecord?.tier, 'pulse');
+    if (!quota.allowed) {
+      return NextResponse.json(
+        {
+          error: quota.message ?? "Monthly pulse-check quota exceeded.",
+          quota: {
+            used: quota.used,
+            limit: quota.limit,
+            remaining: quota.remaining,
+            resetsAt: quota.resetsAt.toISOString(),
+          },
+          upgradeRequired: true,
+        },
+        { status: 402 },
+      );
     }
 
     const result = await runPulse(session.user.id);

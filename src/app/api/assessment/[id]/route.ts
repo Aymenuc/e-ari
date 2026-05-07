@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { scoreAssessment, type ResponseMap } from "@/lib/assessment-engine";
 import { executePipeline, clearCache } from "@/lib/orchestrator";
+import { checkQuota } from "@/lib/tier-limits";
 
 // GET /api/assessment/[id] — Get assessment with scores
 export async function GET(
@@ -108,6 +109,34 @@ export async function PUT(
 
     // If submitting, run scoring engine + auto-trigger orchestrator pipeline
     if (action === "submit") {
+      // ── Quota gate ───────────────────────────────────────────────────
+      // Enforce monthly assessment limit for the user's tier. Only counts
+      // already-completed assessments — submitting the same draft twice
+      // shouldn't double-bill, but completing a fresh draft against a
+      // saturated quota must be blocked here, not at the LLM layer.
+      if (assessment.status !== "completed" && assessment.isPulse !== true) {
+        const userRecord = await db.user.findUnique({
+          where: { id: session.user.id },
+          select: { tier: true },
+        });
+        const quota = await checkQuota(session.user.id, userRecord?.tier, 'assessment');
+        if (!quota.allowed) {
+          return NextResponse.json(
+            {
+              error: quota.message ?? "Monthly assessment quota exceeded.",
+              quota: {
+                used: quota.used,
+                limit: quota.limit,
+                remaining: quota.remaining,
+                resetsAt: quota.resetsAt.toISOString(),
+              },
+              upgradeRequired: true,
+            },
+            { status: 402 },
+          );
+        }
+      }
+
       const allResponses = await db.response.findMany({
         where: { assessmentId: id },
       });
