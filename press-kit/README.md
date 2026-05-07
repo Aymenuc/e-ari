@@ -41,12 +41,61 @@ To regenerate after a redesign:
 bash scripts/capture-press-kit.sh
 ```
 
+## Direct asset URLs (no zip needed)
+
+All screens are hosted on the live production site. Paste individual URLs straight into Sora, Veo, Runway Gen-4, Kling, or Pika — no zip upload required.
+
+```
+https://www.e-ari.com/press-kit/screens/01-home-hero.png
+https://www.e-ari.com/press-kit/screens/02-home-methodology-pillars.png
+https://www.e-ari.com/press-kit/screens/03-home-agentic-pipeline.png
+https://www.e-ari.com/press-kit/screens/04-home-scoring-pipeline.png
+https://www.e-ari.com/press-kit/screens/05-pricing-hero.png
+https://www.e-ari.com/press-kit/screens/06-pricing-tiers.png
+https://www.e-ari.com/press-kit/screens/07-discovery-marketing.png
+https://www.e-ari.com/press-kit/screens/08-literacy-hub.png
+https://www.e-ari.com/press-kit/screens/09-handbook-page.png
+https://www.e-ari.com/press-kit/screens/10-handbook-body.png
+https://www.e-ari.com/press-kit/screens/11-contact-page.png
+https://www.e-ari.com/press-kit/screens/12-auth-login.png
+https://www.e-ari.com/press-kit/screens/13-auth-register.png
+https://www.e-ari.com/press-kit/screens/14-privacy-page.png
+https://www.e-ari.com/press-kit/screens/15-terms-page.png
+https://www.e-ari.com/press-kit/logo.svg
+```
+
+**Per-agent workflow:**
+- **Runway Gen-4 / Kling / Pika** → "Image to Video" tab → paste URL or open URL in browser and drag image into the upload zone
+- **Sora** → "Create" → "Add image reference" → paste URL
+- **Veo 3 (Vertex AI)** → `gcs_uri` field → use URL directly, or download and upload as individual file
+- **Any agent with an API** → fetch the URL and pass as base64 in the `image_url` field
+
+---
+
 ## How to brief a video agent
 
 Paste this prompt verbatim into your agent of choice. Attach the press-kit folder.
 
 ```
-Produce a 60-second product video for E-ARI using the assets in /press-kit/.
+Produce a 60-second product video for E-ARI using the assets at https://www.e-ari.com/press-kit/.
+
+All screens are live public URLs — fetch them directly. Full list:
+https://www.e-ari.com/press-kit/screens/01-home-hero.png
+https://www.e-ari.com/press-kit/screens/02-home-methodology-pillars.png
+https://www.e-ari.com/press-kit/screens/03-home-agentic-pipeline.png
+https://www.e-ari.com/press-kit/screens/04-home-scoring-pipeline.png
+https://www.e-ari.com/press-kit/screens/05-pricing-hero.png
+https://www.e-ari.com/press-kit/screens/06-pricing-tiers.png
+https://www.e-ari.com/press-kit/screens/07-discovery-marketing.png
+https://www.e-ari.com/press-kit/screens/08-literacy-hub.png
+https://www.e-ari.com/press-kit/screens/09-handbook-page.png
+https://www.e-ari.com/press-kit/screens/10-handbook-body.png
+https://www.e-ari.com/press-kit/screens/11-contact-page.png
+https://www.e-ari.com/press-kit/screens/12-auth-login.png
+https://www.e-ari.com/press-kit/screens/13-auth-register.png
+https://www.e-ari.com/press-kit/screens/14-privacy-page.png
+https://www.e-ari.com/press-kit/screens/15-terms-page.png
+Logo SVG: https://www.e-ari.com/press-kit/logo.svg
 
 SPOKESPERSON
 35–45 years old, ungendered casting fine. Navy turtleneck or charcoal
