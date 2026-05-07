@@ -290,6 +290,7 @@ async function glmComplete(
   userPrompt: string,
   maxTokens: number = 1000,
   temperature: number = 0,
+  jsonMode: boolean = true,
 ): Promise<string | null> {
   const apiKey = LLM_API_KEY;
   if (!apiKey) {
@@ -297,18 +298,27 @@ async function glmComplete(
     return null;
   }
   try {
+    // Force strict JSON output from Gemini's OpenAI-compatible endpoint.
+    // Without this, gemini-2.5-flash regularly emits unescaped quotes
+    // inside string values and JSON.parse() fails at column ~276 on the
+    // first long string. response_format=json_object turns on Google's
+    // controlled-decoding so the result is guaranteed to round-trip.
+    const body: Record<string, unknown> = {
+      model: LLM_MODEL,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      max_tokens: maxTokens,
+      temperature,
+    };
+    if (jsonMode) {
+      body.response_format = { type: "json_object" };
+    }
     const res = await fetch(LLM_API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model: LLM_MODEL,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        max_tokens: maxTokens,
-        temperature,
-      }),
+      body: JSON.stringify(body),
       signal: AbortSignal.timeout(25000),
     });
     if (!res.ok) {
@@ -363,7 +373,8 @@ Allowed keys: ${keysList}, unknown
 Pick the single best fit. Reply with only the key, no explanation.`;
 
   try {
-    const out = await glmComplete(sys, user, 30, 0);
+    // sector classifier returns a plain word, not JSON
+    const out = await glmComplete(sys, user, 30, 0, false);
     const cleaned = (out || "").trim().toLowerCase().replace(/[^a-z]/g, "");
     if (SECTOR_KEYS.includes(cleaned)) return cleaned;
     return null;
@@ -772,6 +783,7 @@ export async function getSectorAITrends(sectorId: string): Promise<string> {
     `Sector: ${sectorName}\n\nSnippets:\n${snippets}\n\nParagraph only — no bullets or markdown.`,
     600,
     0,
+    false, // plain prose, not JSON
   );
 
   if (content) return sanitizeText(content.trim());
