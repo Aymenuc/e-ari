@@ -9,7 +9,7 @@
  * - LLM credentials via ./llm-config
  */
 
-import { LLM_API_URL, LLM_MODEL, LLM_API_KEY } from "./llm-config";
+import { LLM_API_URL, LLM_MODEL, LLM_API_KEY, LLM_API_URL_PRO, LLM_MODEL_PRO } from "./llm-config";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -356,20 +356,22 @@ async function glmComplete(
   maxTokens: number = 1000,
   temperature: number = 0,
   jsonMode: boolean = true,
+  usePro: boolean = false,
 ): Promise<string | null> {
   const apiKey = LLM_API_KEY;
   if (!apiKey) {
     console.warn("[scraper] LLM API key not set");
     return null;
   }
+  // For synthesis-grade JSON output, use Pro. gemini-2.5-flash regularly
+  // emits unescaped quotes inside string values; gemini-2.5-pro respects
+  // the JSON contract. The salvager handles flash too, but Pro avoids the
+  // failure path entirely.
+  const apiUrl = usePro ? LLM_API_URL_PRO : LLM_API_URL;
+  const model = usePro ? LLM_MODEL_PRO : LLM_MODEL;
   try {
-    // Force strict JSON output from Gemini's OpenAI-compatible endpoint.
-    // Without this, gemini-2.5-flash regularly emits unescaped quotes
-    // inside string values and JSON.parse() fails at column ~276 on the
-    // first long string. response_format=json_object turns on Google's
-    // controlled-decoding so the result is guaranteed to round-trip.
     const body: Record<string, unknown> = {
-      model: LLM_MODEL,
+      model,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
@@ -380,7 +382,7 @@ async function glmComplete(
     if (jsonMode) {
       body.response_format = { type: "json_object" };
     }
-    const res = await fetch(LLM_API_URL, {
+    const res = await fetch(apiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify(body),
@@ -746,6 +748,8 @@ RULES:
       synthesisPrompt,
       1400,
       0,
+      true,  // jsonMode
+      true,  // use Pro — synthesis output quality + JSON adherence both matter here
     );
 
     if (!content) throw new Error("Empty LLM response");
