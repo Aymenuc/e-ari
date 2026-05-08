@@ -19,6 +19,7 @@ import {
   DEEPSEEK_MODEL,
   DEEPSEEK_API_KEY,
 } from "./llm-config";
+import { getDefaultRegulations, getVocab, type EntityType } from "./entity-types";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -33,6 +34,10 @@ export interface OrgContext {
   orgName: string;
   websiteUrl?: string;
   sector?: string;
+  /** Entity type (commercial / public_sector / nonprofit / academic /
+   *  international_body / unknown) — drives narrative voice, regulatory
+   *  defaults, and which UI modules render. See src/lib/entity-types.ts. */
+  entityType?: EntityType;
   industryContext: string;
   orgSpecificContext: string;
   aiInitiatives: string[];
@@ -474,39 +479,75 @@ async function classifySector(
   // The classifier was systematically picking the wrong sector for orgs
   // whose name includes "university" or "school" but whose actual MANDATE
   // is in another domain (UNU-EGOV → e-government, not education;
-  // research arm of a hospital → healthcare, not education; corporate
-  // university at a bank → finance, not education). The new prompt makes
-  // that distinction explicit and gives one worked example so the model
-  // doesn't default to surface-token matching.
-  const sys = `Classify what SECTOR this organization SERVES (its mandate / what it works on day-to-day), NOT what kind of legal entity it is.
+  // research arm of a hospital → healthcare, not education). The new
+  // prompt makes that distinction explicit and gives one worked example.
+  //
+  // We also classify ENTITY TYPE in the same call (commercial vs. public-
+  // sector vs. NGO vs. academic vs. international body) so the rest of
+  // the platform can adapt voice, regulations, and module visibility
+  // without a second round-trip.
+  const sys = `Classify two things about the organization in ONE response:
+(1) SECTOR — what work / domain the org actually does (its mandate). NOT its legal entity type.
+(2) ENTITY_TYPE — what kind of organisation it is.
 
-Critical disambiguation:
-- A "university" or "research institute" or "school" in the name is NOT automatically "education". It is "education" only if the mandate is teaching/learning/EdTech.
-- If the snippet describes the org's mandate as digital governance, e-government, public-sector policy, or regulation, pick "government".
-- If the mandate is healthcare/medicine/biotech, pick "healthcare".
-- If the mandate is finance/banking/insurance, pick "finance".
+Critical disambiguation for SECTOR:
+- A "university", "research institute", or "school" in the name is NOT automatically "education". It is "education" only if the mandate is teaching/learning/EdTech.
+- If the mandate is digital governance, e-government, public-sector policy, or regulation, pick "government".
 - A research unit's sector = the sector it researches, not "education".
-- Worked example: "United Nations University Operating Unit on Policy-Driven Electronic Governance" → mandate is e-government → answer: government
+- Worked example: "United Nations University Operating Unit on Policy-Driven Electronic Governance" → SECTOR: government, ENTITY_TYPE: international_body.
 
-Reply with only the sector key. If genuinely unsure, reply 'unknown'.`;
-  const user = `Organization: ${orgName}${domain ? `\nDomain: ${domain}` : ""}${snippet ? `\n\nPublic snippet:\n${snippet}` : "\n\n(No public snippet available — classify from the org name only and reply 'unknown' if the name doesn't make the sector obvious.)"}
+ENTITY_TYPE keys:
+- commercial: for-profit company, startup, SaaS, corporation
+- public_sector: government agency, ministry, regulator, public body
+- nonprofit: NGO, foundation, charity, association
+- academic: university, research institute, school
+- international_body: UN body, OECD, World Bank, multilateral
+- unknown: cannot tell
 
-Allowed keys: ${keysList}, unknown
+Output format — exactly two lines, no prose:
+SECTOR: <key or unknown>
+ENTITY_TYPE: <key or unknown>`;
+  const user = `Organization: ${orgName}${domain ? `\nDomain: ${domain}` : ""}${snippet ? `\n\nPublic snippet:\n${snippet}` : "\n\n(No public snippet available — classify from the org name only.)"}
 
-Reply with only the key, no explanation.`;
+Allowed SECTOR keys: ${keysList}, unknown
+Allowed ENTITY_TYPE keys: commercial, public_sector, nonprofit, academic, international_body, unknown`;
 
   try {
-    // Sector classifier returns a plain word, not JSON. Use DeepSeek —
-    // it follows nuanced instructions like the disambiguation rules above
-    // more reliably than Flash, and the call is one word so cost is trivial.
-    const out = await glmComplete(sys, user, 30, 0, false, 'deepseek');
-    const cleaned = (out || "").trim().toLowerCase().replace(/[^a-z]/g, "");
-    if (SECTOR_KEYS.includes(cleaned)) return cleaned;
+    // Use DeepSeek — follows the two-line output contract more reliably
+    // than Flash, and one classification call is essentially free.
+    const out = await glmComplete(sys, user, 80, 0, false, 'deepseek');
+    if (!out) return null;
+    // Parse the two-line response — tolerant of extra whitespace / casing.
+    const lines = out.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    let sectorKey = '';
+    let entityKey = '';
+    for (const line of lines) {
+      const lower = line.toLowerCase();
+      if (lower.startsWith('sector:')) {
+        sectorKey = lower.replace('sector:', '').trim().replace(/[^a-z_]/g, '');
+      } else if (lower.startsWith('entity_type:')) {
+        entityKey = lower.replace('entity_type:', '').trim().replace(/[^a-z_]/g, '');
+      }
+    }
+    // Cache the entity-type pick on the orgName key so the synthesis path
+    // can read it without re-running the classifier.
+    if (entityKey) {
+      lastClassifiedEntityType.set(orgName.toLowerCase(), entityKey);
+    }
+    if (SECTOR_KEYS.includes(sectorKey)) return sectorKey;
     return null;
   } catch {
     return null;
   }
 }
+
+/**
+ * In-memory side-channel for the entity-type classification. classifySector
+ * needs to return a single string (sector) for backwards compatibility, so
+ * the entityType output is stashed here and read by scrapeOrganizationContext
+ * after the classifier returns. Keyed by lowercased org name.
+ */
+const lastClassifiedEntityType = new Map<string, string>();
 
 async function collectOrgResults(
   orgName: string,
@@ -755,7 +796,9 @@ export async function scrapeOrganizationContext(input: ScrapingInput): Promise<O
   const { orgName, websiteUrl, additionalContext } = input;
 
   // Auto-resolve `general` and missing sector via a quick LLM classification.
-  // If we can't classify confidently, sectorInfo stays null and sector queries are skipped.
+  // The classifier also detects entity type (commercial / public_sector /
+  // nonprofit / academic / international_body / unknown) in the same call
+  // and stashes it in lastClassifiedEntityType.
   let resolvedSectorKey = input.sector;
   if (!resolvedSectorKey || resolvedSectorKey === "general") {
     resolvedSectorKey = (await classifySector(orgName, websiteUrl)) ?? undefined;
@@ -764,6 +807,12 @@ export async function scrapeOrganizationContext(input: ScrapingInput): Promise<O
   const sectorName = sectorInfo?.name ?? resolvedSectorKey ?? "";
   const sector = resolvedSectorKey;
   const orgDomain = websiteUrl ? extractDomain(websiteUrl) : null;
+  // Pull the entity-type pick from the classifier's side-channel.
+  const entityKey = lastClassifiedEntityType.get(orgName.toLowerCase()) ?? 'unknown';
+  const entityType: EntityType = (
+    ['commercial','public_sector','nonprofit','academic','international_body','unknown']
+      .includes(entityKey) ? entityKey : 'unknown'
+  ) as EntityType;
 
   const [uniqueOrgResults, uniqueSectorResults] = await Promise.all([
     collectOrgResults(orgName, websiteUrl, additionalContext),
@@ -781,23 +830,30 @@ export async function scrapeOrganizationContext(input: ScrapingInput): Promise<O
     uniqueSectorResults,
   );
 
+  // Pull the entity-aware vocabulary so the synthesis prompt addresses the
+  // model with concrete nouns (peerNoun, scalingNoun, valueNoun) that fit
+  // the actual reader, instead of leaving the LLM to guess between
+  // "competitors / business units / ROI" and "peer agencies / programmes
+  // / mandate impact".
+  const vocab = getVocab(entityType);
+
   try {
-    const synthesisPrompt = `ORG: ${orgName}${sector ? ` | SECTOR: ${sectorName}` : ""}${additionalContext ? ` | CONTEXT: ${additionalContext}` : ""}
+    const synthesisPrompt = `ORG: ${orgName}${sector ? ` | SECTOR: ${sectorName}` : ""} | ENTITY_TYPE: ${entityType}${additionalContext ? ` | CONTEXT: ${additionalContext}` : ""}
 
 ${numberedBlock}
 
 Return ONLY valid JSON — raw JSON, no markdown fences.
 {
-  "industryContext": "2–4 plain sentences on AI trends in this sector ONLY. Each sentence MUST end with a citation like [S7] pointing at a SECTOR-SOURCE.",
-  "orgSpecificContext": "2–4 plain sentences about THIS organization ONLY if grounded in ORG-SOURCES. EVERY sentence MUST contain at least one citation [Sn] referencing ORG-SOURCES only.",
+  "industryContext": "2–4 plain sentences on AI trends in this sector. Each sentence MUST end with a citation like [S7] pointing at a SECTOR-SOURCE.",
+  "orgSpecificContext": "2–4 plain sentences about THIS specific ${vocab.noun} only if grounded in ORG-SOURCES. EVERY sentence MUST contain at least one citation [Sn] referencing ORG-SOURCES only. Use vocabulary appropriate to a ${vocab.noun} (e.g. ${vocab.scalingNoun}, ${vocab.valueNoun}) — do NOT impose commercial-company framing on a non-commercial org.",
   "aiInitiatives": ["short label [Sn]"],
   "techStackSignals": ["technology [Sn]"],
   "regulatoryConsiderations": ["plain regulation note [Sn]"],
-  "competitiveLandscape": "2–3 sentences on the org's positioning vs. peers in its field — cite ORG-SOURCES with [Sn]. For non-commercial orgs (UN bodies, NGOs, universities, government agencies) use 'peer organisations', 'sector landscape' or 'mandate scope' instead of competitor framing. If insufficient org evidence, say so honestly."
+  "competitiveLandscape": "2–3 sentences on positioning vs. ${vocab.peerNoun} — cite ORG-SOURCES with [Sn]. Use the framing '${vocab.peerNoun}' / 'mandate scope' / 'sector landscape', not 'competitors' unless the entity_type is commercial. If insufficient org evidence, say so honestly."
 }
 
 RULES:
-- The org may be a company, a UN body, a university, an NGO, a government agency, a research institute, or a non-profit. Do NOT assume it is a for-profit company. Read the snippets and write about the actual entity type you see in ORG-SOURCES.
+- The entity type is ${entityType}. Treat the org as a ${vocab.noun}; the reader is a ${vocab.topRole}. Do NOT inject commercial-company language (CEO, ROI, market share, business units) unless entity_type=commercial.
 - Temperature-equivalent discipline: do NOT invent facts. If ORG-SOURCES do not clearly identify the organization, say evidence is thin and cite what exists.
 - Each factual clause needs [Sn] from the numbered list above.
 - Do NOT merge facts from unrelated entities sharing the same name.
@@ -847,6 +903,7 @@ RULES:
       orgName,
       websiteUrl,
       sector,
+      entityType,
       industryContext:
         raw.industryContext ||
         "Sector AI context was thin in retrieved sources; proceed with assessment responses for benchmarking.",
@@ -856,10 +913,10 @@ RULES:
       regulatoryConsiderations:
         raw.regulatoryConsiderations.length > 0
           ? raw.regulatoryConsiderations.slice(0, 8)
-          : getDefaultRegulations(sector),
+          : getDefaultRegulations(sector, entityType),
       competitiveLandscape:
         raw.competitiveLandscape ||
-        "Insufficient grounded evidence to summarize competitive positioning from web sources alone.",
+        `Insufficient grounded evidence to summarise positioning vs. ${vocab.peerNoun} from web sources alone.`,
       scrapingSources: numberedUrls,
       scrapedAt: timestamp,
       confidence,
@@ -974,21 +1031,25 @@ export async function quickScrapeWebsite(url: string): Promise<QuickScrapeResult
 
 function buildFallbackContext(input: ScrapingInput, timestamp: string, reason: string): OrgContext {
   const sectorInfo = input.sector ? SECTOR_MAP[input.sector] : null;
+  // Without a successful classifier pass we don't know the entity type;
+  // 'unknown' triggers the neutral vocab + universal regulatory floor.
+  const fallbackEntityType: EntityType = 'unknown';
+  const vocab = getVocab(fallbackEntityType);
   const noneMsg = `We couldn't enrich "${input.orgName}" from public web sources (${reason}). Your assessment will rely on self-reported answers; use Compliance uploads for evidence-backed analysis where needed.`;
 
   return {
     orgName: input.orgName,
     websiteUrl: input.websiteUrl,
     sector: input.sector,
+    entityType: fallbackEntityType,
     industryContext: sectorInfo
       ? `Sector framing (${sectorInfo.name}): use assessment responses and any uploaded documents — automated sector headlines were not retrieved.`
       : "Industry AI context was not retrieved automatically.",
     orgSpecificContext: noneMsg,
     aiInitiatives: [],
     techStackSignals: [],
-    regulatoryConsiderations: getDefaultRegulations(input.sector),
-    competitiveLandscape:
-      "Competitive positioning was not inferred — insufficient automated web evidence.",
+    regulatoryConsiderations: getDefaultRegulations(input.sector, fallbackEntityType),
+    competitiveLandscape: `Positioning vs. ${vocab.peerNoun} was not inferred — insufficient automated web evidence.`,
     scrapingSources: [],
     scrapedAt: timestamp,
     confidence: "none",
@@ -1028,15 +1089,24 @@ async function buildHonestFallbackFromResults(
   const confidence: "low" | "none" =
     orgResults.length === 0 && sectorResults.length === 0 ? "none" : "low";
 
+  // We may have already detected an entity type during classification.
+  const cachedEntity = lastClassifiedEntityType.get(input.orgName.toLowerCase());
+  const fallbackEntityType: EntityType = (
+    cachedEntity && ['commercial','public_sector','nonprofit','academic','international_body','unknown'].includes(cachedEntity)
+      ? cachedEntity
+      : 'unknown'
+  ) as EntityType;
+
   return {
     orgName: input.orgName,
     websiteUrl: input.websiteUrl,
     sector: input.sector,
+    entityType: fallbackEntityType,
     industryContext,
     orgSpecificContext,
     aiInitiatives: signals.aiInitiatives,
     techStackSignals: signals.techStackSignals,
-    regulatoryConsiderations: getDefaultRegulations(input.sector),
+    regulatoryConsiderations: getDefaultRegulations(input.sector, fallbackEntityType),
     competitiveLandscape,
     scrapingSources: [...orgResults.map((r) => r.url), ...sectorResults.map((r) => r.url)],
     scrapedAt: timestamp,
@@ -1044,64 +1114,6 @@ async function buildHonestFallbackFromResults(
   };
 }
 
-function getDefaultRegulations(sector?: string): string[] {
-  const regulationMap: Record<string, string[]> = {
-    healthcare: [
-      "HIPAA (Health Insurance Portability and Accountability Act)",
-      "FDA AI/ML-based Software as a Medical Device (SaMD) guidance",
-      "HITECH Act",
-      "EU MDR (Medical Device Regulation) for AI-based medical devices",
-    ],
-    finance: [
-      "SR 11-7 (Federal Reserve Model Risk Management guidance)",
-      "Basel III/IV capital and risk management requirements",
-      "SOX (Sarbanes-Oxley Act) compliance",
-      "GDPR (General Data Protection Regulation) for EU operations",
-      "EU AI Act high-risk classification for credit scoring",
-    ],
-    manufacturing: [
-      "ISO 27001 information security management",
-      "NIST Cybersecurity Framework for OT/IT convergence",
-      "EU Machinery Regulation for AI-enabled equipment",
-      "Industry-specific safety standards (ISO 13849, IEC 62443)",
-    ],
-    retail: [
-      "GDPR and CCPA consumer data privacy regulations",
-      "PCI DSS (Payment Card Industry Data Security Standard)",
-      "EU AI Act for AI in consumer-facing applications",
-      "FTC guidelines on AI-driven consumer decisions",
-    ],
-    government: [
-      "FedRAMP for cloud service authorization",
-      "NIST AI Risk Management Framework (AI RMF)",
-      "OMB Memo M-24-10 on AI governance in federal agencies",
-      "CISA cybersecurity requirements",
-    ],
-    technology: [
-      "GDPR data protection and algorithmic transparency",
-      "EU AI Act obligations for AI system providers",
-      "CCPA/CPRA consumer privacy regulations",
-      "SOC 2 Type II compliance for SaaS platforms",
-    ],
-    energy: [
-      "NERC CIP (Critical Infrastructure Protection) standards",
-      "IEC 62351 cybersecurity for power systems",
-      "EU AI Act for critical infrastructure AI systems",
-      "NRC regulations for nuclear facility AI applications",
-    ],
-    education: [
-      "FERPA (Family Educational Rights and Privacy Act)",
-      "COPPA (Children's Online Privacy Protection Act)",
-      "GDPR for EU student data",
-      "ADA/Section 508 accessibility requirements for AI tools",
-    ],
-  };
-
-  return (
-    regulationMap[sector ?? ""] || [
-      "GDPR (General Data Protection Regulation) where applicable",
-      "EU AI Act risk classification requirements",
-      "Industry-specific data protection regulations",
-    ]
-  );
-}
+// getDefaultRegulations + getVocab are imported at the top of the file
+// from ./entity-types. The local commercial-only version was removed
+// because it produced FERPA/COPPA for international research bodies.

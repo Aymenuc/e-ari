@@ -150,6 +150,14 @@ export async function PUT(
         // Sector-aware scoring — applies sector weighting + X-Ray detection
         const scoringResult = scoreAssessment(responseMap, assessment.sector);
 
+        // Pull entityType off the orgContext (if context-enrichment ran)
+        // and persist it so the results page can render entity-aware UI
+        // without re-classifying. Default null means "unknown" downstream.
+        const orgCtx = orgContext as { entityType?: string } | undefined;
+        const entityType = orgCtx?.entityType && [
+          'commercial','public_sector','nonprofit','academic','international_body','unknown'
+        ].includes(orgCtx.entityType) ? orgCtx.entityType : null;
+
         await db.assessment.update({
           where: { id },
           data: {
@@ -158,6 +166,7 @@ export async function PUT(
             maturityBand: scoringResult.maturityBand,
             pillarScores: JSON.stringify(scoringResult.pillarScores),
             completedAt: new Date(),
+            ...(entityType ? { entityType } : {}),
           },
         });
 

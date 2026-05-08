@@ -88,6 +88,13 @@ model Assessment {
   isPulse              Boolean   @default(false)
   pulseMonth           String?
 
+  // Entity type (commercial / public_sector / nonprofit / academic /
+  // international_body / unknown) — drives narrative voice, regulatory
+  // defaults, and which UI modules render. Stored on Assessment, not User,
+  // because the same person could submit on behalf of different entities
+  // (consultant assessing multiple clients). See src/lib/entity-types.ts.
+  entityType    String?
+
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   responses     Response[]
   pipelineRuns  PipelineRun[]

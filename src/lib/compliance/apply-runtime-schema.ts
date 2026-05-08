@@ -180,6 +180,13 @@ export async function applyComplianceRuntimeMigrations(db: PrismaClient): Promis
     `);
   }
 
+  // Entity-type awareness — added 2026-05-08. Stored on Assessment so the
+  // results page can render entity-aware UI (gate C-suite brief, swap
+  // "business units" → "programmes" for non-commercial orgs, etc.).
+  await db.$executeRawUnsafe(`
+    ALTER TABLE "Assessment" ADD COLUMN IF NOT EXISTS "entityType" TEXT
+  `);
+
   await db.$executeRawUnsafe(`
     ALTER TABLE "Evidence" ADD COLUMN IF NOT EXISTS "userId" TEXT
   `);

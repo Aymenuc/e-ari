@@ -103,6 +103,7 @@ import type { AIInsightResult } from '@/lib/ai-insights'
 import { assessCertification, getCertificationBadge } from '@/lib/certification'
 import { assessComplianceGaps, getComplianceSummary } from '@/lib/regulatory-mapping'
 import { analyzeDrift, generateAlerts, getRecommendedSchedule } from '@/lib/monitoring-engine'
+import { getVocab, type EntityType } from '@/lib/entity-types'
 
 /* ─── Deterministic pseudo-random (avoids hydration mismatch) ─────────── */
 
@@ -640,6 +641,14 @@ export default function ResultsPage() {
   // features that Pro/Growth/Enterprise all get. Growth was excluded before.
   const isPro = userTier === 'professional' || userTier === 'growth' || userTier === 'enterprise'
   const isEnterprise = userTier === 'enterprise'
+
+  // Entity-type-aware vocab. Persisted on the Assessment row at submit
+  // time from the orgContext returned by ContextEnrichment. Defaults to
+  // 'unknown' which uses neutral language and hides commercial-only modules.
+  const entityType: EntityType = ((assessment as unknown as { entityType?: string })?.entityType ??
+    'unknown') as EntityType
+  const vocab = getVocab(entityType)
+  const isCommercialEntity = entityType === 'commercial'
 
   /* ─── Fetch assessment data ──────────────────────────────────────────── */
   const fetchAssessment = useCallback(async () => {
@@ -3269,8 +3278,14 @@ export default function ResultsPage() {
             </FadeUp>
           )}
 
-          {/* ─── ENTERPRISE: ROLE-SPECIFIC EXECUTIVE BRIEF ────────────────── */}
-          {isEnterprise && (
+          {/* ─── ENTERPRISE: ROLE-SPECIFIC EXECUTIVE BRIEF ─────────────────
+              Gated on commercial entities only. The C-suite framing
+              (CEO/CFO/CTO/CISO/CHRO/COO + ROI math) doesn't fit public-
+              sector bodies, NGOs, academic institutions, or UN agencies.
+              For those entity types the executive summary above already
+              speaks to their reader (Director / Director-General / VC /
+              Executive Director) using vocab.topRole. */}
+          {isEnterprise && isCommercialEntity && (
             <FadeUp>
               <Card className="bg-navy-800 border-amber-500/20 hover-lift">
                 <CardHeader>
@@ -3949,22 +3964,27 @@ export default function ResultsPage() {
             </FadeUp>
           )}
 
-          {/* ─── ENTERPRISE: TEAM / ORG COMPARISON ───────────────────────── */}
-          {isEnterprise && (
+          {/* ─── ENTERPRISE: MULTI-ENTITY / PROGRAMME COMPARISON ──────────
+              The vocab swap below ("business units or teams" → vocab.scalingNoun)
+              keeps this useful for public-sector directorates, academic
+              departments, multilateral programmes, and corporate BUs alike.
+              Hidden entirely for nonprofit and international_body where
+              showMultiOrgModule is false (single-team scope). */}
+          {isEnterprise && vocab.showMultiOrgModule && (
             <FadeUp>
               <Card className="bg-navy-800 border-amber-500/20 hover-lift">
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <UsersRound className="h-5 w-5 text-amber-400" />
                     <CardTitle className="font-heading text-lg text-foreground">
-                      Multi-Organization Comparison
+                      {isCommercialEntity ? 'Multi-Organization Comparison' : `Cross-${vocab.scalingNoun.split(' ')[0]} Comparison`}
                     </CardTitle>
                     <Badge variant="outline" className="ml-auto text-[10px] font-mono border-amber-500/30 text-amber-400">
                       Enterprise
                     </Badge>
                   </div>
                   <CardDescription className="font-sans text-sm">
-                    Compare readiness across your organization&apos;s business units or teams
+                    Compare readiness across your {vocab.scalingNoun}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
