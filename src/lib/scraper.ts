@@ -471,16 +471,35 @@ async function classifySector(
     /* ignore — classifier degrades gracefully without grounding */
   }
 
-  const sys = "Classify the organization into ONE sector key. Reply with only the key. If unsure, reply 'unknown'.";
-  const user = `Organization: ${orgName}${domain ? `\nDomain: ${domain}` : ""}${snippet ? `\n\nPublic snippet:\n${snippet}` : ""}
+  // The classifier was systematically picking the wrong sector for orgs
+  // whose name includes "university" or "school" but whose actual MANDATE
+  // is in another domain (UNU-EGOV → e-government, not education;
+  // research arm of a hospital → healthcare, not education; corporate
+  // university at a bank → finance, not education). The new prompt makes
+  // that distinction explicit and gives one worked example so the model
+  // doesn't default to surface-token matching.
+  const sys = `Classify what SECTOR this organization SERVES (its mandate / what it works on day-to-day), NOT what kind of legal entity it is.
+
+Critical disambiguation:
+- A "university" or "research institute" or "school" in the name is NOT automatically "education". It is "education" only if the mandate is teaching/learning/EdTech.
+- If the snippet describes the org's mandate as digital governance, e-government, public-sector policy, or regulation, pick "government".
+- If the mandate is healthcare/medicine/biotech, pick "healthcare".
+- If the mandate is finance/banking/insurance, pick "finance".
+- A research unit's sector = the sector it researches, not "education".
+- Worked example: "United Nations University Operating Unit on Policy-Driven Electronic Governance" → mandate is e-government → answer: government
+
+Reply with only the sector key. If genuinely unsure, reply 'unknown'.`;
+  const user = `Organization: ${orgName}${domain ? `\nDomain: ${domain}` : ""}${snippet ? `\n\nPublic snippet:\n${snippet}` : "\n\n(No public snippet available — classify from the org name only and reply 'unknown' if the name doesn't make the sector obvious.)"}
 
 Allowed keys: ${keysList}, unknown
 
-Pick the single best fit. Reply with only the key, no explanation.`;
+Reply with only the key, no explanation.`;
 
   try {
-    // sector classifier returns a plain word, not JSON
-    const out = await glmComplete(sys, user, 30, 0, false);
+    // Sector classifier returns a plain word, not JSON. Use DeepSeek —
+    // it follows nuanced instructions like the disambiguation rules above
+    // more reliably than Flash, and the call is one word so cost is trivial.
+    const out = await glmComplete(sys, user, 30, 0, false, 'deepseek');
     const cleaned = (out || "").trim().toLowerCase().replace(/[^a-z]/g, "");
     if (SECTOR_KEYS.includes(cleaned)) return cleaned;
     return null;
