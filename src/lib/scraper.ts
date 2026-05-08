@@ -9,7 +9,16 @@
  * - LLM credentials via ./llm-config
  */
 
-import { LLM_API_URL, LLM_MODEL, LLM_API_KEY, LLM_API_URL_PRO, LLM_MODEL_PRO } from "./llm-config";
+import {
+  LLM_API_URL,
+  LLM_MODEL,
+  LLM_API_KEY,
+  LLM_API_URL_PRO,
+  LLM_MODEL_PRO,
+  DEEPSEEK_API_URL,
+  DEEPSEEK_MODEL,
+  DEEPSEEK_API_KEY,
+} from "./llm-config";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -356,27 +365,37 @@ async function glmComplete(
   maxTokens: number = 1000,
   temperature: number = 0,
   jsonMode: boolean = true,
-  usePro: boolean = false,
+  backend: 'flash' | 'pro' | 'deepseek' = 'flash',
 ): Promise<string | null> {
-  const apiKey = LLM_API_KEY;
+  // Pick endpoint + key per backend.
+  // - flash: Gemini 2.5 Flash — cheap utility calls (classifier, verifier)
+  // - pro:   Gemini 2.5 Pro   — fallback only; burns thinking tokens
+  // - deepseek: DeepSeek V4   — synthesis backbone; no thinking-token gotcha,
+  //   cleaner JSON adherence, ~10× cheaper than Pro for our prompt sizes
+  let apiUrl: string;
+  let model: string;
+  let apiKey: string;
+  if (backend === 'deepseek') {
+    apiUrl = DEEPSEEK_API_URL;
+    model = DEEPSEEK_MODEL;
+    apiKey = DEEPSEEK_API_KEY;
+  } else if (backend === 'pro') {
+    apiUrl = LLM_API_URL_PRO;
+    model = LLM_MODEL_PRO;
+    apiKey = LLM_API_KEY;
+  } else {
+    apiUrl = LLM_API_URL;
+    model = LLM_MODEL;
+    apiKey = LLM_API_KEY;
+  }
   if (!apiKey) {
-    console.warn("[scraper] LLM API key not set");
+    console.warn(`[scraper] LLM API key not set for backend=${backend}`);
     return null;
   }
-  // For synthesis-grade JSON output, use Pro. gemini-2.5-flash regularly
-  // emits unescaped quotes inside string values; gemini-2.5-pro respects
-  // the JSON contract. The salvager handles flash too, but Pro avoids the
-  // failure path entirely.
-  const apiUrl = usePro ? LLM_API_URL_PRO : LLM_API_URL;
-  const model = usePro ? LLM_MODEL_PRO : LLM_MODEL;
-  // gemini-2.5-pro burns "thinking tokens" (silent reasoning) against the
-  // max_tokens budget before emitting any visible output. Empirically Pro
-  // can consume 3-7k tokens of thinking on a synthesis-style prompt before
-  // emitting one token of JSON. We give it a generous 8k thinking budget on
-  // top of the caller's requested completion budget — costs the same as
-  // not setting max_tokens at all on a successful call (Google bills only
-  // for actually-emitted tokens).
-  const effectiveMaxTokens = usePro ? Math.max(maxTokens + 8000, 10000) : maxTokens;
+  // Only Gemini Pro needs the thinking-budget headroom.
+  const effectiveMaxTokens = backend === 'pro'
+    ? Math.max(maxTokens + 8000, 10000)
+    : maxTokens;
   try {
     const body: Record<string, unknown> = {
       model,
@@ -770,8 +789,8 @@ RULES:
       synthesisPrompt,
       1400,
       0,
-      true,  // jsonMode
-      true,  // use Pro — synthesis output quality + JSON adherence both matter here
+      true,         // jsonMode
+      'deepseek',   // synthesis backbone — no thinking-token gotcha, ~10× cheaper than Gemini Pro
     );
 
     if (!content) throw new Error("Empty LLM response");

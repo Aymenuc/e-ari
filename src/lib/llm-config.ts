@@ -18,6 +18,15 @@ export const COMPLIANCE_TEMPERATURE = 0;
 // Key resolver — uses GEMINI_API_KEY, falls back to GLM_API_KEY for backwards compatibility
 export const LLM_API_KEY = process.env.GEMINI_API_KEY || process.env.GLM_API_KEY || '';
 
+// ─── DeepSeek (synthesis backend) ───────────────────────────────────────────
+// OpenAI-compatible endpoint. Used for the scraper synthesis call where Pro
+// kept burning thinking tokens against max_tokens. DeepSeek doesn't have
+// that gotcha, is ~10× cheaper than Gemini Pro, and respects JSON contracts.
+export const DEEPSEEK_API_URL =
+  process.env.DEEPSEEK_API_URL || 'https://api.deepseek.com/chat/completions';
+export const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat';
+export const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || '';
+
 /**
  * Retry an async operation with exponential backoff.
  * Retries on HTTP 429 (rate limit) and 5xx errors.
