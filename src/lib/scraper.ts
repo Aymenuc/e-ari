@@ -370,11 +370,13 @@ async function glmComplete(
   const apiUrl = usePro ? LLM_API_URL_PRO : LLM_API_URL;
   const model = usePro ? LLM_MODEL_PRO : LLM_MODEL;
   // gemini-2.5-pro burns "thinking tokens" (silent reasoning) against the
-  // max_tokens budget before emitting any visible output. With our usual
-  // 1000-1400 cap, the model thought itself out of room and returned an
-  // empty completion (finish_reason="length", completion_tokens=0). Add
-  // a thinking-budget headroom so callers don't have to know about this.
-  const effectiveMaxTokens = usePro ? Math.max(maxTokens + 4000, 5000) : maxTokens;
+  // max_tokens budget before emitting any visible output. Empirically Pro
+  // can consume 3-7k tokens of thinking on a synthesis-style prompt before
+  // emitting one token of JSON. We give it a generous 8k thinking budget on
+  // top of the caller's requested completion budget — costs the same as
+  // not setting max_tokens at all on a successful call (Google bills only
+  // for actually-emitted tokens).
+  const effectiveMaxTokens = usePro ? Math.max(maxTokens + 8000, 10000) : maxTokens;
   try {
     const body: Record<string, unknown> = {
       model,
@@ -430,23 +432,24 @@ async function classifySector(
   const domain = websiteUrl ? extractDomain(websiteUrl) : null;
   const keysList = SECTOR_KEYS.join(", ");
 
-  // Quick public lookup snippet for grounding (best-effort, may be empty)
+  // Quick public lookup snippet for grounding. We do this for every org —
+  // not just when a domain was provided — because without a snippet the
+  // classifier only sees the literal org name string and guesses wrong on
+  // ambiguous cases (e.g. "UNU egov" → "education" instead of "government"
+  // because the model latches onto the word "university").
   let snippet = "";
-  if (domain) {
-    try {
-      // Drop "company" — fails for UN bodies, NGOs, universities, gov agencies.
-      const r = await tavilySearch(`${orgName} overview`, {
-        maxResults: 2,
-        include_domains: [domain],
-        search_depth: "basic",
-      });
-      snippet = r
-        .slice(0, 2)
-        .map((x) => `${x.title}: ${(x.content || "").slice(0, 240)}`)
-        .join("\n");
-    } catch {
-      /* ignore */
-    }
+  try {
+    const r = await tavilySearch(`${orgName} overview`, {
+      maxResults: 2,
+      ...(domain ? { include_domains: [domain] } : {}),
+      search_depth: "basic",
+    });
+    snippet = r
+      .slice(0, 2)
+      .map((x) => `${x.title}: ${(x.content || "").slice(0, 320)}`)
+      .join("\n");
+  } catch {
+    /* ignore — classifier degrades gracefully without grounding */
   }
 
   const sys = "Classify the organization into ONE sector key. Reply with only the key. If unsure, reply 'unknown'.";
