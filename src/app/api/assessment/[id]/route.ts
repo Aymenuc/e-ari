@@ -152,11 +152,24 @@ export async function PUT(
 
         // Pull entityType off the orgContext (if context-enrichment ran)
         // and persist it so the results page can render entity-aware UI
-        // without re-classifying. Default null means "unknown" downstream.
-        const orgCtx = orgContext as { entityType?: string } | undefined;
+        // without re-classifying.
+        //
+        // We previously gated this on confidence === 'high' || 'medium',
+        // which meant a low-confidence enrichment (very common for smaller
+        // orgs whose Tavily results are thin) silently dropped the entity
+        // type — the Assessment row stayed entityType=null and the
+        // results page fell back to commercial defaults. The classifier
+        // is a SEPARATE question from synthesis confidence: even if Tavily
+        // results are thin, the entity type pick from the org name +
+        // single snippet is usually reliable. Persist it whenever the
+        // classifier returned a known key.
+        const orgCtx = orgContext as { entityType?: string; confidence?: 'high' | 'medium' | 'low' | 'none' } | undefined;
         const entityType = orgCtx?.entityType && [
           'commercial','public_sector','nonprofit','academic','international_body','unknown'
         ].includes(orgCtx.entityType) ? orgCtx.entityType : null;
+        // Diagnostic: confirm the entity type reaches persistence. Search
+        // "[assessment] entity_type" in Vercel logs to verify the wiring.
+        console.log(`[assessment] persisting submit id=${id} entity_type=${entityType ?? 'none'} confidence=${orgCtx?.confidence ?? 'none'}`);
 
         await db.assessment.update({
           where: { id },

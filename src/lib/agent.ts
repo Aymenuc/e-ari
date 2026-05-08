@@ -527,19 +527,29 @@ ${GUARDRAILS}`;
  * Builds the system prompt for roadmap action.
  * Enriched with methodology and sector references.
  */
-function buildRoadmapSystemPrompt(sector?: string): string {
+function buildRoadmapSystemPrompt(sector?: string, entityType?: string): string {
   const sectorRef = getSectorReferences(sector);
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { getVocab } = require('./entity-types') as typeof import('./entity-types');
+  const vocab = getVocab(entityType);
+  const isCommercial = entityType === 'commercial';
 
   return `You are an E-ARI Roadmap Architect. You generate phased AI adoption roadmaps where every action names a SPECIFIC tool, practice, or deliverable — not generic consultant-speak.
 
 E-ARI FRAMEWORK PILLARS:
 ${PILLAR_REFERENCE}
 
+ENTITY TYPE: ${entityType || 'unknown'}
+- The reader is a ${vocab.topRole}. Address the roadmap to them.
+- Use "${vocab.scalingNoun}" not "business units" unless commercial.
+- Use "${vocab.peerNoun}" not "industry peers" / "competitors" unless commercial.
+${isCommercial ? '' : '- Do NOT use ROI percentages, payback periods, or competitive-advantage framing — they do not fit this entity type.\n'}
+
 Maturity Bands:
 - Laggard (0-25%): Minimal or no AI readiness
 - Follower (26-50%): Early-stage readiness with some initiatives
 - Chaser (51-75%): Progressing readiness with active investment
-- Pacesetter (76-100%): Advanced readiness for competitive advantage
+- Pacesetter (76-100%): Advanced readiness${isCommercial ? ' for competitive advantage' : ' against the entity\'s mandate'}
 
 SECTOR CONTEXT (${sector || 'General'}):
 - Key systems in this sector: ${sectorRef.keySystems.join(', ')}
@@ -582,15 +592,26 @@ ${GUARDRAILS}`;
  * Builds the system prompt for discovery_interview action.
  * A conversational AI agent that interviews stakeholders to uncover qualitative nuances.
  */
-function buildDiscoveryInterviewSystemPrompt(): string {
+function buildDiscoveryInterviewSystemPrompt(entityType?: string): string {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { getVocab } = require('./entity-types') as typeof import('./entity-types');
+  const vocab = getVocab(entityType);
+  const isCommercial = entityType === 'commercial';
+
   return `You are an E-ARI Discovery Interview Agent. You conduct conversational interviews with organizational stakeholders to uncover qualitative insights about AI readiness that multiple-choice assessments cannot capture.
 
 E-ARI FRAMEWORK PILLARS:
 ${PILLAR_REFERENCE}
 
+ENTITY TYPE: ${entityType || 'unknown'}
+- The interviewee works at a ${vocab.noun}. Their leadership is a ${vocab.topRole}.
+- Ask about ${vocab.scalingNoun} (NOT "business units" unless commercial).
+- Frame value as "${vocab.valueNoun}" (NOT "ROI" unless commercial).
+${isCommercial ? '' : '- Do NOT ask about competitive advantage, market positioning, or revenue impact — they do not fit this entity type. Substitute mandate-delivery, beneficiary-impact, or programme-outcome questions.\n'}
+
 Your role:
-- Ask one probing question at a time about the organization's AI readiness.
-- Questions should explore: organizational culture toward AI, unreported or informal AI initiatives, grassroots AI usage, pain points with current AI efforts, aspirations and fears about AI adoption, and leadership alignment on AI strategy.
+- Ask one probing question at a time about the ${vocab.noun}'s AI readiness.
+- Questions should explore: organisational culture toward AI, unreported or informal AI initiatives, grassroots AI usage, pain points with current AI efforts, aspirations and fears about AI adoption, and leadership alignment on AI ${isCommercial ? 'strategy' : 'mandate'}.
 - Adapt your questions based on the interviewee's previous answers — follow up on interesting or surprising responses.
 - After 5-8 exchanges, provide a synthesis summary of key qualitative findings.
 - Map findings to specific E-ARI pillars where applicable.
@@ -1576,12 +1597,13 @@ export async function generateRoadmap(
   overallScore: number,
   pillarScores: Array<{ pillarId: string; score: number; maturityLabel: string }>,
   sector?: string,
-  orgContext?: string
+  orgContext?: string,
+  entityType?: string,
 ): Promise<RoadmapPhase[]> {
   const timestamp = new Date().toISOString();
 
   try {
-    const systemPrompt = buildRoadmapSystemPrompt(sector);
+    const systemPrompt = buildRoadmapSystemPrompt(sector, entityType);
     const userPrompt = buildRoadmapUserPrompt({
       action: 'roadmap',
       overallScore,

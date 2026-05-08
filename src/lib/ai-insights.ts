@@ -48,7 +48,12 @@ export interface AIInsightResult {
   generatedAt: string;
 }
 
-const PROMPT_VERSION = '2.0.0';
+// 3.0.0 — entity-type-aware prompts + entity-aware template fallbacks.
+// Bumped so any insights cached against earlier prompt versions are
+// invalidated and regenerated with the new entity-aware framing. The
+// insights API route checks prompt-version equality before serving the
+// cache; a mismatch falls through to fresh generation.
+export const PROMPT_VERSION = '3.0.0';
 
 // ─── Likert answer interpretation ──────────────────────────────────────────
 
@@ -102,6 +107,8 @@ const SYSTEM_PROMPT = `You are a senior AI readiness analyst producing a board-r
 - Every next step MUST include a specific action, responsible team/role type, and rough timeline (e.g., "within 90 days," "by end of quarter").
 - You MUST interpret scores in the context of the organization's sector where one is provided.
 - You MUST identify the top 2 strongest and weakest specific question topics within each pillar.
+- Executive summary sentence 1 MUST explicitly name the organization and entity context (e.g., "For <Organization>, a <entity type>, ...").
+- Avoid reusable advisory language. Tie statements to this specific assessment's question IDs, scores, and detected adjustment/X-Ray patterns.
 
 ## BANNED PHRASES — Do NOT use any of these:
 
@@ -144,7 +151,7 @@ Respond with valid JSON only — no markdown, no commentary outside the JSON. Us
     "...up to 5 items"
   ],
   "nextSteps": [
-    "Specific action with responsible party and timeline — e.g., 'Appoint an AI Governance Lead and charter a cross-functional AI board (CTO, CLO, business unit heads) within 60 days to establish accountability structures before scaling AI deployments.'",
+    "Specific action with responsible party and timeline in this compact format: 'Action ... | Owner: ... | Timeline: ... | Success metric: ...'.",
     "...up to 6 items"
   ],
   "pillarDrilldown": [
@@ -307,6 +314,109 @@ Based on the assessment data above, produce your analysis following the methodol
 - Identify the top 2 strongest and weakest questions within each pillar for pillarDrilldown
 
 Respond with valid JSON only.`;
+}
+
+// ─── Output quality guards (anti-generic) ───────────────────────────────────
+
+function hasGroundingSignal(text: string): boolean {
+  return /(Q\d|\d\/5|\d{1,3}%|strategy_|data_|technology_|talent_|governance_|culture_|process_|security_)/i.test(text);
+}
+
+function hasActionShape(text: string): boolean {
+  return /owner\s*:|timeline\s*:|success metric\s*:|within \d+ (day|days|week|weeks|month|months)|by end of/i.test(text);
+}
+
+function isGenericPhrase(text: string): boolean {
+  return /(unlock value|drive transformation|AI journey|requires focused investment|has potential for rapid improvement|is a key strength|needs attention|area of concern|critical for success)/i.test(text);
+}
+
+function clampList(list: unknown, max: number): string[] {
+  if (!Array.isArray(list)) return [];
+  return list
+    .map((v) => (typeof v === 'string' ? v.trim() : ''))
+    .filter(Boolean)
+    .slice(0, max);
+}
+
+function buildRepairContext(result: ScoringResult) {
+  const sorted = [...result.pillarScores].sort((a, b) => a.normalizedScore - b.normalizedScore);
+  const weakest = sorted[0];
+  const strongest = sorted[sorted.length - 1];
+  const weakestQ = [...weakest.questionDetails].sort((a, b) => a.answer - b.answer)[0];
+  const strongestQ = [...strongest.questionDetails].sort((a, b) => b.answer - a.answer)[0];
+  return { weakest, strongest, weakestQ, strongestQ };
+}
+
+function repairGenericLines(
+  lines: string[],
+  kind: 'strength' | 'gap' | 'risk' | 'opportunity' | 'nextStep',
+  result: ScoringResult
+): string[] {
+  const { weakest, strongest, weakestQ, strongestQ } = buildRepairContext(result);
+  const repaired = lines.map((line, idx) => {
+    const bad = isGenericPhrase(line) || !hasGroundingSignal(line);
+    if (!bad) return line;
+
+    if (kind === 'strength') {
+      return `${strongest.pillarName} is a concrete strength at ${Math.round(strongest.normalizedScore)}%, supported by ${strongestQ.questionId} (${strongestQ.answer}/5), which indicates this capability is already operational rather than aspirational.`;
+    }
+    if (kind === 'gap') {
+      return `${weakest.pillarName} is a priority gap at ${Math.round(weakest.normalizedScore)}%; the weakest signal is ${weakestQ.questionId} (${weakestQ.answer}/5), which should be addressed before scaling dependent AI initiatives.`;
+    }
+    if (kind === 'risk') {
+      return `If ${weakest.pillarName} remains at ${Math.round(weakest.normalizedScore)}% (notably ${weakestQ.questionId} at ${weakestQ.answer}/5), deployment quality and governance control will degrade, increasing operational and compliance exposure.`;
+    }
+    if (kind === 'opportunity') {
+      return `A near-term opportunity is to leverage ${strongest.pillarName} (${Math.round(strongest.normalizedScore)}%) to lift ${weakest.pillarName} through one targeted program tied to ${weakestQ.questionId}, improving cross-pillar execution capacity.`;
+    }
+    // nextStep
+    const timelines = ['within 30 days', 'within 60 days', 'within 90 days', 'within 120 days', 'within 180 days', 'within 2 quarters'];
+    const tl = timelines[idx] || 'within 90 days';
+    return `Stand up a remediation plan for ${weakest.pillarName} focused on ${weakestQ.questionId} (${weakestQ.answer}/5). | Owner: AI governance lead + pillar owner | Timeline: ${tl} | Success metric: lift ${weakest.pillarName} by +12 points at next assessment`;
+  });
+  return repaired;
+}
+
+function ensureActionableNextSteps(lines: string[], result: ScoringResult): string[] {
+  const fixed = repairGenericLines(lines, 'nextStep', result).map((line) => {
+    if (hasActionShape(line)) return line;
+    return `${line} | Owner: AI program office | Timeline: within 90 days | Success metric: measurable pillar-score improvement at next cycle`;
+  });
+  return fixed;
+}
+
+function enforceInsightSpecificity(
+  parsed: Record<string, unknown>,
+  result: ScoringResult,
+  orgContext?: { sector?: string; orgSize?: string; organization?: string; entityType?: string }
+): {
+  executiveSummary: string;
+  strengths: string[];
+  gaps: string[];
+  risks: string[];
+  opportunities: string[];
+  nextSteps: string[];
+} {
+  const organization = orgContext?.organization || 'this organization';
+  let executiveSummary = typeof parsed.executiveSummary === 'string' ? parsed.executiveSummary.trim() : '';
+
+  if (!executiveSummary) {
+    executiveSummary = `${organization} currently scores ${Math.round(result.overallScore)}% (${result.maturityLabel}). The strongest and weakest pillars define where to scale and where to stabilize first.`;
+  }
+  if (!new RegExp(organization.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(executiveSummary) && organization !== 'this organization') {
+    executiveSummary = `For ${organization}, ${executiveSummary}`;
+  }
+  if (!hasGroundingSignal(executiveSummary)) {
+    executiveSummary += ` Overall score is ${Math.round(result.overallScore)}% with ${result.pillarScores.length} pillar signals informing this analysis.`;
+  }
+
+  const strengths = repairGenericLines(clampList(parsed.strengths, 5), 'strength', result);
+  const gaps = repairGenericLines(clampList(parsed.gaps, 5), 'gap', result);
+  const risks = repairGenericLines(clampList(parsed.risks, 4), 'risk', result);
+  const opportunities = repairGenericLines(clampList(parsed.opportunities, 5), 'opportunity', result);
+  const nextSteps = ensureActionableNextSteps(clampList(parsed.nextSteps, 6), result);
+
+  return { executiveSummary, strengths, gaps, risks, opportunities, nextSteps };
 }
 
 // ─── Fallback Helpers ──────────────────────────────────────────────────────
@@ -539,13 +649,15 @@ export async function generateAIInsights(
       }));
     }
 
+    const hardened = enforceInsightSpecificity(parsed, result, orgContext);
+
     return {
-      executiveSummary: parsed.executiveSummary || '',
-      strengths: Array.isArray(parsed.strengths) ? parsed.strengths.slice(0, 5) : [],
-      gaps: Array.isArray(parsed.gaps) ? parsed.gaps.slice(0, 5) : [],
-      risks: Array.isArray(parsed.risks) ? parsed.risks.slice(0, 4) : [],
-      opportunities: Array.isArray(parsed.opportunities) ? parsed.opportunities.slice(0, 5) : [],
-      nextSteps: Array.isArray(parsed.nextSteps) ? parsed.nextSteps.slice(0, 6) : [],
+      executiveSummary: hardened.executiveSummary,
+      strengths: hardened.strengths,
+      gaps: hardened.gaps,
+      risks: hardened.risks,
+      opportunities: hardened.opportunities,
+      nextSteps: hardened.nextSteps,
       pillarDrilldown: llmDrilldown,
       isAIGenerated: true,
       modelUsed: 'GLM-5.1',

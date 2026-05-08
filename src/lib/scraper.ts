@@ -534,6 +534,12 @@ Allowed ENTITY_TYPE keys: commercial, public_sector, nonprofit, academic, intern
     if (entityKey) {
       lastClassifiedEntityType.set(orgName.toLowerCase(), entityKey);
     }
+    // Log the classifier's picks so production failures are diagnosable
+    // without re-instrumenting. Search "[scraper] classified" in Vercel
+    // logs to confirm the right sector + entity_type were detected.
+    console.log(
+      `[scraper] classified org="${orgName.slice(0, 60)}" → sector=${sectorKey || 'unknown'} entity_type=${entityKey || 'unknown'} (raw: ${out.slice(0, 200).replace(/\n/g, ' | ')})`,
+    );
     if (SECTOR_KEYS.includes(sectorKey)) return sectorKey;
     return null;
   } catch {
