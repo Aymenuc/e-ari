@@ -868,7 +868,8 @@ export async function getSectorAITrends(sectorId: string): Promise<string> {
 
 export async function quickScrapeWebsite(url: string): Promise<QuickScrapeResult> {
   const domain = extractDomain(url);
-  const searchResults = await tavilySearch(`${domain} company about technology`, {
+  // Was "{domain} company about technology" — failed for non-company sites.
+  const searchResults = await tavilySearch(`${domain} about`, {
     maxResults: 5,
     include_domains: domain ? [domain] : undefined,
   });
