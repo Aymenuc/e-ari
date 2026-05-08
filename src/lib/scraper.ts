@@ -369,6 +369,12 @@ async function glmComplete(
   // failure path entirely.
   const apiUrl = usePro ? LLM_API_URL_PRO : LLM_API_URL;
   const model = usePro ? LLM_MODEL_PRO : LLM_MODEL;
+  // gemini-2.5-pro burns "thinking tokens" (silent reasoning) against the
+  // max_tokens budget before emitting any visible output. With our usual
+  // 1000-1400 cap, the model thought itself out of room and returned an
+  // empty completion (finish_reason="length", completion_tokens=0). Add
+  // a thinking-budget headroom so callers don't have to know about this.
+  const effectiveMaxTokens = usePro ? Math.max(maxTokens + 4000, 5000) : maxTokens;
   try {
     const body: Record<string, unknown> = {
       model,
@@ -376,7 +382,7 @@ async function glmComplete(
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      max_tokens: maxTokens,
+      max_tokens: effectiveMaxTokens,
       temperature,
     };
     if (jsonMode) {
@@ -394,7 +400,17 @@ async function glmComplete(
       return null;
     }
     const data = await res.json();
-    return data.choices?.[0]?.message?.content ?? null;
+    const content = data.choices?.[0]?.message?.content ?? null;
+    if (!content) {
+      // Empty completion almost always means thinking tokens consumed the
+      // whole max_tokens budget. Log the diagnostics so future regressions
+      // are obvious without re-instrumenting the route.
+      console.warn(
+        `[scraper] Empty LLM completion: model=${model} finish_reason=${data.choices?.[0]?.finish_reason} ` +
+          `completion_tokens=${data.usage?.completion_tokens} total=${data.usage?.total_tokens}`,
+      );
+    }
+    return content;
   } catch (error) {
     console.warn("[scraper] LLM completion error:", error instanceof Error ? error.message : error);
     return null;
