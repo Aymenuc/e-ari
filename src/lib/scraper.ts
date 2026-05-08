@@ -418,7 +418,8 @@ async function classifySector(
   let snippet = "";
   if (domain) {
     try {
-      const r = await tavilySearch(`${orgName} company overview`, {
+      // Drop "company" — fails for UN bodies, NGOs, universities, gov agencies.
+      const r = await tavilySearch(`${orgName} overview`, {
         maxResults: 2,
         include_domains: [domain],
         search_depth: "basic",
@@ -466,7 +467,7 @@ async function collectOrgResults(
       ),
     );
     tasks.push(
-      tavilySearch(`${orgName} technology leadership company`, {
+      tavilySearch(`${orgName} technology leadership`, {
         maxResults: 4,
         include_domains: [domain],
       }),
@@ -474,7 +475,8 @@ async function collectOrgResults(
   }
 
   tasks.push(
-    tavilySearch(`${orgName} company profile funding`, {
+    // "company profile funding" excludes UN bodies, NGOs, universities, gov agencies.
+    tavilySearch(`${orgName} profile mission`, {
       maxResults: 5,
       include_domains: ["linkedin.com", "crunchbase.com"],
     }),
@@ -734,13 +736,14 @@ Return ONLY valid JSON — raw JSON, no markdown fences.
   "aiInitiatives": ["short label [Sn]"],
   "techStackSignals": ["technology [Sn]"],
   "regulatoryConsiderations": ["plain regulation note [Sn]"],
-  "competitiveLandscape": "2–3 sentences; cite ORG-SOURCES with [Sn]; if insufficient org evidence, say so honestly and cite what exists."
+  "competitiveLandscape": "2–3 sentences on the org's positioning vs. peers in its field — cite ORG-SOURCES with [Sn]. For non-commercial orgs (UN bodies, NGOs, universities, government agencies) use 'peer organisations', 'sector landscape' or 'mandate scope' instead of competitor framing. If insufficient org evidence, say so honestly."
 }
 
 RULES:
-- Temperature-equivalent discipline: do NOT invent facts. If ORG-SOURCES do not identify the organization clearly, say evidence is thin.
+- The org may be a company, a UN body, a university, an NGO, a government agency, a research institute, or a non-profit. Do NOT assume it is a for-profit company. Read the snippets and write about the actual entity type you see in ORG-SOURCES.
+- Temperature-equivalent discipline: do NOT invent facts. If ORG-SOURCES do not clearly identify the organization, say evidence is thin and cite what exists.
 - Each factual clause needs [Sn] from the numbered list above.
-- Do NOT merge facts from unrelated companies.
+- Do NOT merge facts from unrelated entities sharing the same name.
 - Strings plain English — no markdown headers, no bare URLs.`;
 
     const content = await glmComplete(
