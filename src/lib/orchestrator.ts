@@ -292,9 +292,13 @@ async function executeInsightAgent(ctx: PipelineContext): Promise<AIInsightResul
     throw new Error('Insight agent requires scoring result');
   }
 
+  // Thread entityType (lifted from orgContext) so the Insight agent's
+  // narrative addresses the right reader. Falls back to 'unknown' which
+  // produces neutral, non-corporate language.
   const result = await generateAIInsights(ctx.scoringResult, {
     sector: ctx.sector,
     orgSize: ctx.orgSize,
+    entityType: ctx.orgContext?.entityType,
   }, ctx.responses);
 
   setCachedResult(ctx.assessmentId, 'insight', result);

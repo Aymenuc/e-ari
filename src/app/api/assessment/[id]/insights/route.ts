@@ -76,10 +76,13 @@ export async function GET(
         }
       }
 
-      // Generate a template-based summary (no LLM cost)
+      // Generate a template-based summary (no LLM cost). Pass entityType
+      // so the template's recommendation strings (Phase 2) speak to the
+      // right reader — no "scale across business units" for a UN body.
       const templateInsights = generateTemplateInsightsSync(scoringResult, {
         sector: assessment.user.sector || undefined,
         orgSize: assessment.user.orgSize || undefined,
+        entityType: assessment.entityType || undefined,
       });
 
       // Store the limited insight
@@ -121,6 +124,9 @@ export async function GET(
     const insights = await generateAIInsights(scoringResult, {
       sector: assessment.user.sector || undefined,
       orgSize: assessment.user.orgSize || undefined,
+      // Drives entity-aware framing (peer noun, scaling noun, role) inside
+      // the prompt builder + template fallback. See src/lib/entity-types.ts.
+      entityType: assessment.entityType || undefined,
     }, responseMap);
 
     // Store insights on assessment

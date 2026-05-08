@@ -172,10 +172,26 @@ Respond with valid JSON only — no markdown, no commentary outside the JSON. Us
  */
 function buildInsightPrompt(
   result: ScoringResult,
-  orgContext?: { sector?: string; orgSize?: string; organization?: string },
+  orgContext?: { sector?: string; orgSize?: string; organization?: string; entityType?: string },
   responses?: ResponseMap
 ): string {
   const sector = orgContext?.sector ? getSectorById(orgContext.sector) : undefined;
+
+  // Entity-type-aware vocabulary so the LLM speaks to the right reader.
+  // Without this, every prompt asked the model to write "executive summary
+  // for a CEO with ROI in mind" — wrong for UN bodies, NGOs, universities,
+  // public agencies. See src/lib/entity-types.ts.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { getVocab } = require('./entity-types') as typeof import('./entity-types');
+  const vocab = getVocab(orgContext?.entityType);
+  const entityFraming = `
+## ENTITY TYPE: ${orgContext?.entityType ?? 'unknown'}
+The reader is a ${vocab.topRole}. The org is best described as a ${vocab.noun}.
+Use these terms in the narrative:
+- Peer comparisons: "${vocab.peerNoun}" (NOT "industry peers" / "competitors" unless entity_type is commercial)
+- Scaling: "${vocab.scalingNoun}" (NOT "business units" unless entity_type is commercial)
+- Value: "${vocab.valueNoun}" (NOT "ROI" / "competitive advantage" unless entity_type is commercial)
+${vocab.showRoiLanguage ? '' : 'Do NOT use ROI percentages, payback periods, or revenue-impact claims — they do not fit this entity type.\n'}${vocab.showCSuiteBrief ? '' : 'Do NOT address recommendations to a CEO/CFO/CTO/CISO/CHRO/COO. Address them to leadership appropriate for this entity type (e.g. Director, Director-General, Vice-Chancellor, Executive Director, Programme Officer).\n'}`;
 
   // ── Sector Context Section ──
   const sectorSection = sector
@@ -270,6 +286,8 @@ ${questionLines}`;
 Overall Score: ${Math.round(result.overallScore)}% (${result.maturityLabel})
 ${orgInfo}
 Pillar Summary: ${scoreSummary}
+
+${entityFraming}
 
 ${sectorSection}
 
@@ -437,7 +455,7 @@ function getQuestionTopicShort(pillarId: string, questionId: string, sectorId?: 
  */
 export async function generateAIInsights(
   result: ScoringResult,
-  orgContext?: { sector?: string; orgSize?: string; organization?: string },
+  orgContext?: { sector?: string; orgSize?: string; organization?: string; entityType?: string },
   responses?: ResponseMap
 ): Promise<AIInsightResult> {
   const timestamp = new Date().toISOString();
@@ -549,13 +567,21 @@ export async function generateAIInsights(
  */
 function generateFallbackInsights(
   result: ScoringResult,
-  orgContext?: { sector?: string; orgSize?: string; organization?: string },
+  orgContext?: { sector?: string; orgSize?: string; organization?: string; entityType?: string },
   timestamp?: string
 ): AIInsightResult {
   const sectorId = orgContext?.sector;
   const sector = sectorId ? getSectorById(sectorId) : undefined;
   const sectorName = sector?.shortName || '';
   const pillarDrilldown = buildPillarDrilldown(result, sectorId);
+
+  // Entity-type-aware vocabulary so template recommendations don't tell a
+  // UN body to "scale across business units" or benchmark against
+  // "industry peers". Falls back to neutral language for unknown entities.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { getVocab } = require('./entity-types') as typeof import('./entity-types');
+  const vocab = getVocab(orgContext?.entityType);
+  const isCommercial = orgContext?.entityType === 'commercial';
 
   const strengths: string[] = [];
   const gaps: string[] = [];
@@ -632,20 +658,20 @@ function generateFallbackInsights(
     nextSteps.push(`Develop a minimal viable AI governance framework covering model accountability, bias testing requirements, and incident escalation within 90 days${sectorName ? `; align with ${sectorName} regulatory requirements from the start` : ''}.`);
     nextSteps.push(`Launch AI literacy workshops for leadership and key business functions within 60 days to build the organizational understanding needed to support AI initiatives.`);
   } else if (result.overallScore <= 50) {
-    nextSteps.push(`Prioritize 2-3 high-value, low-complexity AI use cases for production deployment within 90 days — use these to demonstrate ROI and build organizational confidence before scaling.`);
+    nextSteps.push(`Prioritise 2-3 high-${vocab.valueNoun.split(' ')[0]}, low-complexity AI use cases for production deployment within 90 days — use these to demonstrate ${isCommercial ? 'ROI' : vocab.valueNoun} and build organisational confidence before scaling.`);
     nextSteps.push(`Establish formal data governance with assigned data owners, quality standards, and lineage tracking within 120 days — this is the prerequisite for reliable AI at scale.`);
     nextSteps.push(`Implement MLOps basics (model versioning, performance monitoring, automated retraining triggers) within 180 days to transition from experimental to production-grade AI.`);
-    nextSteps.push(`Create an AI center of excellence or community of practice within 90 days to propagate lessons learned and standardize best practices across teams.`);
+    nextSteps.push(`Create an AI centre of excellence or community of practice within 90 days to propagate lessons learned and standardise best practices across ${vocab.scalingNoun}.`);
   } else if (result.overallScore <= 75) {
-    nextSteps.push(`Scale proven AI use cases across business units within 6 months — establish shared infrastructure, reusable model components, and cross-team governance to accelerate deployment.`);
-    nextSteps.push(`Develop advanced talent acquisition and retention strategies within 90 days — create specialized career paths for AI roles and invest in upskilling programs for existing staff.`);
-    nextSteps.push(`Strengthen governance from compliance-focused to value-creating within 6 months — implement proactive bias monitoring, model explainability dashboards, and stakeholder transparency reporting.`);
-    nextSteps.push(`Establish AI performance benchmarking against industry peers and sector leaders within 90 days to identify remaining competitive gaps.`);
+    nextSteps.push(`Scale proven AI use cases across ${vocab.scalingNoun} within 6 months — establish shared infrastructure, reusable model components, and cross-${isCommercial ? 'team' : 'unit'} governance to accelerate deployment.`);
+    nextSteps.push(`Develop advanced talent acquisition and retention strategies within 90 days — create specialised career paths for AI roles and invest in upskilling programmes for existing staff.`);
+    nextSteps.push(`Strengthen governance from compliance-focused to ${isCommercial ? 'value-creating' : 'mission-advancing'} within 6 months — implement proactive bias monitoring, model explainability dashboards, and stakeholder transparency reporting.`);
+    nextSteps.push(`Establish AI performance benchmarking against ${vocab.peerNoun} within 90 days to identify remaining ${isCommercial ? 'competitive' : 'capability'} gaps.`);
   } else {
-    nextSteps.push(`Lead sector AI standards development and contribute to industry governance frameworks — position the organization as a trusted voice in ${sectorName || 'your sector'} AI policy.`);
+    nextSteps.push(`Lead sector AI standards development and contribute to ${isCommercial ? 'industry' : 'sector'} governance frameworks — position the ${vocab.noun} as a trusted voice in ${sectorName || 'your sector'} AI policy.`);
     nextSteps.push(`Explore frontier AI capabilities (autonomous systems, advanced generative AI, causal reasoning models) with dedicated R&D investment — evaluate within 6 months for strategic fit.`);
-    nextSteps.push(`Continuously monitor and adapt AI strategy to emerging regulations and technological shifts — establish quarterly AI strategy reviews with executive leadership.`);
-    nextSteps.push(`Mentor ecosystem partners and supply chain on AI readiness — extend your governance practices to create an AI-ready business network.`);
+    nextSteps.push(`Continuously monitor and adapt AI strategy to emerging regulations and technological shifts — establish quarterly AI strategy reviews with ${vocab.topRole}.`);
+    nextSteps.push(`Mentor ecosystem partners${isCommercial ? ' and supply chain' : ''} on AI readiness — extend your governance practices to create an AI-ready ${isCommercial ? 'business network' : 'partner network'}.`);
   }
 
   // Ensure we have at least some content
@@ -682,7 +708,7 @@ function generateFallbackInsights(
  */
 export function generateTemplateInsightsSync(
   result: ScoringResult,
-  orgContext?: { sector?: string; orgSize?: string; organization?: string }
+  orgContext?: { sector?: string; orgSize?: string; organization?: string; entityType?: string }
 ): AIInsightResult {
   return generateFallbackInsights(result, orgContext);
 }

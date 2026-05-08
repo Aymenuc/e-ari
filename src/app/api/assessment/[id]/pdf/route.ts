@@ -71,22 +71,30 @@ export async function GET(
     // Growth was previously bucketed with free here — paid €149/mo, got Free's PDF.
     let insights;
     const userTier = assessment.user.tier || 'free';
+    // entityType is persisted on Assessment and drives entity-aware framing
+    // in both the LLM prompt and the template fallback (peer noun, scaling
+    // noun, role addressed). Without this the PDF reads as corporate even
+    // for UN bodies / NGOs / public agencies.
+    const entityType = assessment.entityType || undefined;
     if (userTier === 'professional' || userTier === 'growth' || userTier === 'enterprise') {
       try {
         insights = await generateAIInsights(scoringResult, {
           sector: assessment.user.sector || undefined,
           orgSize: assessment.user.orgSize || undefined,
+          entityType,
         }, responseMap);
       } catch {
         insights = generateTemplateInsightsSync(scoringResult, {
           sector: assessment.user.sector || undefined,
           orgSize: assessment.user.orgSize || undefined,
+          entityType,
         });
       }
     } else {
       insights = generateTemplateInsightsSync(scoringResult, {
         sector: assessment.user.sector || undefined,
         orgSize: assessment.user.orgSize || undefined,
+        entityType,
       });
     }
 
