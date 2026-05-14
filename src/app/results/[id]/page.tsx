@@ -1762,10 +1762,19 @@ export default function ResultsPage() {
                 <CardContent className="p-6 pt-0">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-2 space-y-4">
+                      {/* The full Executive Summary prose lives in the
+                          "Strategic Insights" card further down the page.
+                          Duplicating it here was the loudest source of the
+                          "page feels repetitive / generic" complaint —
+                          the same paragraph rendered twice across two
+                          cards. Keep this Enterprise card as a tight
+                          structured snapshot (strongest/weakest pillar +
+                          headline score) and let Strategic Insights carry
+                          the prose. */}
                       <div>
-                        <h4 className="font-heading text-sm font-semibold text-foreground mb-2">Overall Assessment</h4>
+                        <h4 className="font-heading text-sm font-semibold text-foreground mb-2">Snapshot</h4>
                         <p className="text-sm text-muted-foreground font-sans leading-relaxed">
-                          {insights?.executiveSummary ?? `Your organization's overall AI readiness score is ${Math.round(scoring.overallScore)}%, classified as "${scoring.maturityLabel}". This assessment reveals ${scoring.pillarScores.filter(p => p.normalizedScore >= 50).length} pillars at or above the developing threshold and ${scoring.pillarScores.filter(p => p.normalizedScore < 50).length} pillars requiring focused attention.`}
+                          {Math.round(scoring.overallScore)}% overall ({scoring.maturityLabel}). {scoring.pillarScores.filter(p => p.normalizedScore >= 50).length} of {scoring.pillarScores.length} pillars at or above the developing threshold. Full narrative in Strategic Insights below.
                         </p>
                       </div>
                       <div className="grid grid-cols-2 gap-3">

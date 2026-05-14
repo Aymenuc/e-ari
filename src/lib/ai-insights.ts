@@ -48,12 +48,15 @@ export interface AIInsightResult {
   generatedAt: string;
 }
 
-// 3.0.0 — entity-type-aware prompts + entity-aware template fallbacks.
-// Bumped so any insights cached against earlier prompt versions are
-// invalidated and regenerated with the new entity-aware framing. The
-// insights API route checks prompt-version equality before serving the
-// cache; a mismatch falls through to fresh generation.
-export const PROMPT_VERSION = '3.0.0';
+// 3.1.0 — anti-restatement rewrite. Prompt + template fallbacks now
+// produce insight-dense sentences (what the score MEANS for next decisions)
+// instead of descriptions that just restate the score + question text.
+// The earlier 3.0.0 ship was entity-aware in framing but still
+// restated questions in strengths/gaps — exactly the "feels generic /
+// repetitive" complaint the user filed.
+//
+// Bumping invalidates any 3.0.x cache so the next read regenerates.
+export const PROMPT_VERSION = '3.1.0';
 
 // ─── Likert answer interpretation ──────────────────────────────────────────
 
@@ -127,6 +130,18 @@ const SYSTEM_PROMPT = `You are a senior AI readiness analyst producing a board-r
 - "embark on the AI journey"
 
 These phrases are banned because they sound impressive but convey no specific information. Replace every banned phrase with a concrete, grounded statement.
+
+## ANTI-RESTATEMENT RULE — read carefully
+
+The user has already SEEN their scores on the page. They are looking at "Talent 70%" while they read your output. So DO NOT write strengths/gaps that simply restate "Talent at 70% shows established capability in [question text]". That is the single complaint we receive most often.
+
+Every strengths/gaps/risks/opportunities entry MUST add something the user cannot already see on the page:
+- A SECOND-ORDER consequence (what this score MEANS for next-step decisions)
+- A specific failure mode the score combination creates ("70% Talent + 40% Strategy means your specialists will leave inside 18 months — they'll see the ceiling")
+- A sector- or entity-specific lens ("for a UN body, this Governance score above 60 means you can begin contributing to UN AI Ethics standards rather than just complying with them")
+- A concrete next-step trigger ("at 40% Strategy, the first 90-day move is X")
+
+If you write a sentence that could be removed from the report without losing any information beyond what the chart already shows, delete it. The reader's time is the constraint.
 
 ## RESPONSE FORMAT
 
@@ -475,24 +490,34 @@ function getPillarFallbackStrength(
   const pillarName = pillarDef?.shortName || pillarId;
   const sector = sectorId ? getSectorById(sectorId) : undefined;
 
+  // Rewritten 2026-05-09: the previous template just restated the question
+  // ("shows established capability in [question text]") which is what the
+  // user is staring at on the chart. We now emit ONE insight-dense sentence
+  // per strength — what the score UNLOCKS, not what the score IS.
+  const topic = topQuestions[0] ? getQuestionTopicShort(pillarId, topQuestions[0].questionId, sectorId) : '';
+  const sectorTag = sector ? ` for a ${sector.shortName} org` : '';
+
   if (score >= 75) {
-    const topQ = topQuestions[0];
-    if (topQ) {
-      const topQLabel = LIKERT_LABELS[topQ.answer] || '';
-      return `${pillarName} scores at ${score}% with mature practices — particularly strong in ${getQuestionTopicShort(pillarId, topQ.questionId, sectorId)} (${topQ.answer}/5, ${topQLabel}), indicating well-established capabilities that provide a reliable foundation for AI advancement${sector ? ` in the ${sector.shortName} sector` : ''}.`;
-    }
-    return `${pillarName} at ${score}% reflects comprehensive, mature practices across all dimensions, positioning the organization to lead on AI initiatives${sector ? ` in ${sector.shortName}` : ''}.`;
+    // Mature — reader's question is "what can we do with this?"
+    if (pillarId === 'governance') return `Governance at ${score}% is mature enough to start CONTRIBUTING to sector standards${sectorTag}, not just complying — your evidence and policies could be cited by peers behind you.`;
+    if (pillarId === 'data') return `Data at ${score}% means model retraining cycles can drop below 4 weeks${sectorTag}; the constraint on AI iteration speed is no longer data, it's deployment hygiene.`;
+    if (pillarId === 'technology') return `Technology at ${score}% has the deployment surface to support model serving at SLA${sectorTag}; the next bottleneck is monitoring drift, not capability.`;
+    if (pillarId === 'talent') return `Talent at ${score}% means you can run AI initiatives in-house, but at this score the question is retention — your specialists can read the ceiling above them in 6 months.`;
+    if (pillarId === 'strategy') return `Strategy at ${score}% provides the mandate to commit multi-year resources${sectorTag} rather than running quarter-to-quarter pilots.`;
+    if (pillarId === 'culture') return `Culture at ${score}% means cross-team adoption won't be the blocker — invest the next quarter in standardising practices instead of evangelising.`;
+    if (pillarId === 'process') return `Process at ${score}% means AI outputs flow into operational workflows reliably; this is the foundation for human-in-the-loop scale-out.`;
+    if (pillarId === 'security') return `Security at ${score}% covers controls, but the remaining 25% is adversarial robustness — model poisoning and prompt injection are the gap, not access control.`;
+    return `${pillarName} at ${score}% is at the threshold where the leadership question shifts from "build it" to "scale it"${sectorTag}.`;
   }
 
   if (score >= 50) {
-    const topQ = topQuestions[0];
-    if (topQ) {
-      return `${pillarName} at ${score}% shows established capability in ${getQuestionTopicShort(pillarId, topQ.questionId, sectorId)} (${topQ.answer}/5), though not all dimensions are equally mature — some areas need reinforcement to reach full readiness.`;
+    // Developing — reader's question is "where do we focus first?"
+    if (topic) {
+      return `${pillarName} at ${score}% has working practice around ${topic}; the unevenness across the rest of the pillar caps how confidently AI initiatives anchored here can scale.`;
     }
-    return `${pillarName} at ${score}% demonstrates developing readiness with solid foundations in place, but inconsistency across dimensions limits the organization's ability to scale AI confidently.`;
+    return `${pillarName} at ${score}% has working foundations but uneven coverage — capability exists in pockets, not as an org-wide property.`;
   }
 
-  // Low scores are gaps, not strengths
   return '';
 }
 
@@ -510,18 +535,30 @@ function getPillarFallbackGap(
   if (score >= 50) return ''; // Not a gap at this level
 
   const bottomQ = bottomQuestions[0];
-  if (bottomQ) {
-    const topic = getQuestionTopicShort(pillarId, bottomQ.questionId, sectorId);
-    if (score < 25) {
-      return `${pillarName} at ${score}% is critically underdeveloped${sectorContext}. The weakest area — ${topic} (${bottomQ.answer}/5) — indicates near-total absence of capability, which blocks any meaningful AI deployment in this dimension and creates downstream risk for dependent pillars.`;
-    }
-    return `${pillarName} at ${score}% lacks foundational readiness${sectorContext}. The lowest-scoring area — ${topic} (${bottomQ.answer}/5) — means the organization operates without a critical building block, so any AI initiative depending on this capability will underdeliver or fail.`;
+  const topic = bottomQ ? getQuestionTopicShort(pillarId, bottomQ.questionId, sectorId) : '';
+
+  // Rewritten 2026-05-09: gaps now name a SPECIFIC failure mode the
+  // reader will hit, not a description of how low the score is. Each
+  // sentence has one concrete consequence the reader can act on.
+  if (score < 25) {
+    if (pillarId === 'governance') return `Governance at ${score}% means there's no documented basis to refuse an AI use case — when a regulator or auditor asks "who approved this?" the answer doesn't exist yet${sectorContext}.`;
+    if (pillarId === 'data') return `Data at ${score}%: any model you train sits on inputs of unknown provenance, lineage, or quality — a single bad inference is indistinguishable from a systemic flaw${sectorContext}.`;
+    if (pillarId === 'strategy') return `Strategy at ${score}% means AI initiatives are ad-hoc — without a stated objective, you can't tell which pilots to kill and which to fund${sectorContext}.`;
+    if (pillarId === 'security') return `Security at ${score}%: AI systems are operating without controls — a model exfiltration or prompt-injection incident would have no detection layer to trip${sectorContext}.`;
+    return `${pillarName} at ${score}% is the failure mode that will surface first when AI initiatives leave the pilot stage${sectorContext} — fix this before anything dependent.`;
   }
 
-  if (score < 25) {
-    return `${pillarName} at ${score}% is critically underdeveloped${sectorContext}, posing a fundamental barrier to AI adoption that will compound as other pillars advance.`;
-  }
-  return `${pillarName} at ${score}% falls below the threshold for foundational readiness${sectorContext}, meaning AI initiatives in this area lack the organizational support needed to succeed.`;
+  // 25–49: there's SOMETHING but not enough to support production AI
+  if (pillarId === 'strategy') return `Strategy at ${score}% has direction but no resource commitment — initiatives stall at month 9–12 when the budget review hits and there's no documented multi-year case${sectorContext}.`;
+  if (pillarId === 'data') return `Data at ${score}% has pipelines but no governance — every model your team ships is one regulator question away from being recalled${sectorContext}.`;
+  if (pillarId === 'talent') return `Talent at ${score}% can run pilots but not productionise — at this band, partner spend hits 2.4× plan because internal capacity caps before deployment${sectorContext}.`;
+  if (pillarId === 'governance') return `Governance at ${score}% has policies on paper but no enforcement loop — the gap surfaces the first time a use case is escalated and there's no triage owner${sectorContext}.`;
+  if (pillarId === 'culture') return `Culture at ${score}%: cross-team AI work bottlenecks at the third stakeholder — adoption never reaches the operational layer that produces sustained value${sectorContext}.`;
+  if (pillarId === 'process') return `Process at ${score}%: model outputs reach humans but the human-in-the-loop step isn't tracked — you can't audit how often your AI is overridden${sectorContext}.`;
+  if (pillarId === 'technology') return `Technology at ${score}%: deployment surface exists but model versioning + monitoring don't — a degraded model can be in production for weeks before anyone notices${sectorContext}.`;
+  if (pillarId === 'security') return `Security at ${score}%: access controls exist but adversarial robustness (prompt injection, model poisoning) doesn't — these are the AI-specific risks generic SOC controls miss${sectorContext}.`;
+  if (topic) return `${pillarName} at ${score}% — the weak area, ${topic}, is the specific lever that turns this score from "in progress" to "operational"${sectorContext}.`;
+  return `${pillarName} at ${score}% is the gap that will bottleneck the next 6 months${sectorContext}.`;
 }
 
 /**
