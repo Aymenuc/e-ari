@@ -204,10 +204,53 @@ export const authOptions: NextAuthOptions = {
         token.tier = (user as unknown as Record<string, unknown>).tier as string || "free";
         token.role = (user as unknown as Record<string, unknown>).role as string || "user";
 
-        // For OAuth sign-ins, fetch tier/role from DB since OAuth user object may not have them
+        // For OAuth sign-ins, fetch tier/role from DB since OAuth user object may not have them.
+        // Wrapped in try/catch: a transient DB error here must NOT throw out
+        // of the jwt callback — doing so invalidates the whole session and
+        // logs the user out ("Sign In Required" even when logged in).
         if (account?.provider && account.provider !== "credentials") {
+          try {
+            const dbUser = await db.user.findUnique({
+              where: { email: user.email! },
+              select: { id: true, tier: true, role: true },
+            });
+            if (dbUser) {
+              token.id = dbUser.id;
+              token.tier = dbUser.tier;
+              token.role = dbUser.role;
+            }
+          } catch (err) {
+            console.error("[auth] jwt OAuth tier/role lookup failed (keeping token claims):", err);
+          }
+        }
+
+        // Auto-promote ADMIN_EMAIL to admin role
+        const adminEmail = process.env.ADMIN_EMAIL;
+        if (adminEmail && token.email === adminEmail && token.role !== "admin") {
+          try {
+            await db.user.update({
+              where: { email: adminEmail },
+              data: { role: "admin" },
+            });
+            token.role = "admin";
+          } catch (err) {
+            console.error("[auth] jwt admin auto-promote failed (keeping token claims):", err);
+          }
+        }
+      }
+
+      // Keep JWT claims aligned with DB changes made after login
+      // (e.g. admin tier updates), so the portal does not show stale tier.
+      //
+      // CRITICAL: this runs on EVERY session validation (every /api/auth/session
+      // call, every page load for an authenticated user). A throw here cascades
+      // into a null session and a spurious logout. The DB refresh is a
+      // best-effort enrichment — if it fails, fall back to the claims already
+      // in the token (set at login) rather than destroying the session.
+      if (!user && token.email) {
+        try {
           const dbUser = await db.user.findUnique({
-            where: { email: user.email! },
+            where: { email: token.email as string },
             select: { id: true, tier: true, role: true },
           });
           if (dbUser) {
@@ -215,30 +258,10 @@ export const authOptions: NextAuthOptions = {
             token.tier = dbUser.tier;
             token.role = dbUser.role;
           }
-        }
-
-        // Auto-promote ADMIN_EMAIL to admin role
-        const adminEmail = process.env.ADMIN_EMAIL;
-        if (adminEmail && token.email === adminEmail && token.role !== "admin") {
-          await db.user.update({
-            where: { email: adminEmail },
-            data: { role: "admin" },
-          });
-          token.role = "admin";
-        }
-      }
-
-      // Keep JWT claims aligned with DB changes made after login
-      // (e.g. admin tier updates), so the portal does not show stale tier.
-      if (!user && token.email) {
-        const dbUser = await db.user.findUnique({
-          where: { email: token.email as string },
-          select: { id: true, tier: true, role: true },
-        });
-        if (dbUser) {
-          token.id = dbUser.id;
-          token.tier = dbUser.tier;
-          token.role = dbUser.role;
+        } catch (err) {
+          // Transient DB failure — keep the existing token claims. The user
+          // stays logged in with the tier/role from their last good refresh.
+          console.error("[auth] jwt session-refresh DB lookup failed (keeping token claims):", err);
         }
       }
       return token;
