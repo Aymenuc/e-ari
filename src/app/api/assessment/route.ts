@@ -78,14 +78,18 @@ export async function POST(req: NextRequest) {
     }
     const { responses, sector } = validation.data;
 
-    // Create assessment
+    // Create assessment. The wizard's sector goes into the sector COLUMN —
+    // it previously went into aiInsights as {"sector":…}, a stash that got
+    // overwritten as soon as insights were generated. Result: every
+    // assessment scored as "general", sector weighting never fired, and
+    // benchmarks/narratives used a stale profile sector instead.
     const assessment = await db.assessment.create({
       data: {
         userId: session.user.id,
         status: "draft",
-        scoringVersion: "1.0.0",
-        methodologyVersion: "1.0.0",
-        aiInsights: sector ? JSON.stringify({ sector }) : null,
+        sector: sector || "general",
+        scoringVersion: "5.3",
+        methodologyVersion: "5.3",
       },
     });
 

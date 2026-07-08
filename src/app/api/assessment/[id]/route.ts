@@ -20,7 +20,7 @@ export async function GET(
     const { id } = await params;
     const assessment = await db.assessment.findUnique({
       where: { id },
-      include: { responses: true },
+      include: { responses: true, user: { select: { sector: true } } },
     });
 
     if (!assessment) {
@@ -30,6 +30,15 @@ export async function GET(
     if (assessment.userId !== session.user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
+
+    // Effective sector for scoring/display. Assessments completed before the
+    // sector-persistence fix are stuck with the column default "general" (the
+    // wizard's pick was stashed in aiInsights and overwritten) — fall back to
+    // the profile sector so their recomputed results aren't sector-blind.
+    const effectiveSector =
+      assessment.sector && assessment.sector !== "general"
+        ? assessment.sector
+        : assessment.user?.sector || assessment.sector;
 
     // If completed, include computed scores. Pass sector so the engine
     // applies sector weighting and X-Ray pattern detection — without this,
@@ -41,14 +50,16 @@ export async function GET(
         assessment.responses.forEach(r => {
           responseMap[r.questionId] = r.answer;
         });
-        scoringResult = scoreAssessment(responseMap, assessment.sector);
+        scoringResult = scoreAssessment(responseMap, effectiveSector);
       } catch {
         // Scoring may fail if incomplete, return assessment without scores
       }
     }
 
+    const { user: _user, ...assessmentRow } = assessment;
     return NextResponse.json({
-      ...assessment,
+      ...assessmentRow,
+      sector: effectiveSector,
       scoringResult,
     });
   } catch (error) {
@@ -70,7 +81,7 @@ export async function PUT(
 
     const { id } = await params;
     const body = await req.json();
-    const { responses, action, orgContext } = body; // action: "save" | "submit"
+    const { responses, action, orgContext, sector: bodySector } = body; // action: "save" | "submit"
 
     const assessment = await db.assessment.findUnique({
       where: { id },
@@ -83,6 +94,16 @@ export async function PUT(
     if (assessment.userId !== session.user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
+
+    // The wizard sends the selected sector on both save and submit; the
+    // handler used to drop it, so scoring always ran with the column
+    // default "general". Validate against the known enum and let it
+    // override the (possibly stale) column value.
+    const VALID_SECTORS = ['healthcare', 'finance', 'manufacturing', 'retail', 'government', 'technology', 'energy', 'education', 'general'];
+    const effectiveSector: string =
+      typeof bodySector === 'string' && VALID_SECTORS.includes(bodySector)
+        ? bodySector
+        : assessment.sector || 'general';
 
     // Update responses
     if (responses && typeof responses === "object") {
@@ -147,8 +168,9 @@ export async function PUT(
       });
 
       try {
-        // Sector-aware scoring — applies sector weighting + X-Ray detection
-        const scoringResult = scoreAssessment(responseMap, assessment.sector);
+        // Sector-aware scoring — applies sector weighting + X-Ray detection.
+        // Uses the wizard-selected sector, not the column default.
+        const scoringResult = scoreAssessment(responseMap, effectiveSector);
 
         // Pull entityType off the orgContext (if context-enrichment ran)
         // and persist it so the results page can render entity-aware UI
@@ -175,9 +197,14 @@ export async function PUT(
           where: { id },
           data: {
             status: "completed",
+            sector: effectiveSector,
             overallScore: scoringResult.overallScore,
             maturityBand: scoringResult.maturityBand,
             pillarScores: JSON.stringify(scoringResult.pillarScores),
+            // Stamp the versions that actually scored this assessment —
+            // rows previously said 1.0.0 while the engine ran 5.3.
+            scoringVersion: scoringResult.scoringVersion,
+            methodologyVersion: scoringResult.methodologyVersion,
             completedAt: new Date(),
             ...(entityType ? { entityType } : {}),
           },
@@ -198,7 +225,7 @@ export async function PUT(
           userId: session.user.id,
           tier,
           triggeredBy: 'auto',
-          sector: assessment.sector,
+          sector: effectiveSector,
           orgSize: user?.orgSize || undefined,
           organization: user?.organization || undefined,
           orgContext: orgContext || undefined,

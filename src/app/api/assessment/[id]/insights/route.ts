@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { scoreAssessment, type ResponseMap } from "@/lib/assessment-engine";
-import { generateAIInsights, generateTemplateInsightsSync } from "@/lib/ai-insights";
+import { generateAIInsights, generateTemplateInsightsSync, PROMPT_VERSION } from "@/lib/ai-insights";
 import { checkRateLimit, getRateLimitHeaders, resolveIdentifier } from "@/lib/rate-limit";
 
 // GET /api/assessment/[id]/insights — Get AI-generated insights
@@ -48,6 +48,13 @@ export async function GET(
     }
 
     const userTier = assessment.user.tier || 'free';
+    // Narrative sector: the sector chosen FOR THIS ASSESSMENT wins; the
+    // profile sector is only a fallback for pre-fix rows stuck on "general".
+    const narrativeSector =
+      assessment.sector && assessment.sector !== "general"
+        ? assessment.sector
+        : assessment.user.sector || undefined;
+
 
     // Compute scores
     const responseMap: ResponseMap = {};
@@ -65,12 +72,15 @@ export async function GET(
       if (assessment.aiInsights) {
         try {
           const stored = JSON.parse(assessment.aiInsights);
-          return NextResponse.json({
-            insights: stored,
-            scoringResult,
-            limited: true,
-            upgradeMessage: 'Upgrade to Professional for full AI narrative insights, cross-pillar analysis, and detailed risk identification.',
-          });
+          if (stored && typeof stored === 'object' && typeof stored.executiveSummary === 'string') {
+            return NextResponse.json({
+              insights: stored,
+              scoringResult,
+              limited: true,
+              fallback: stored.isAIGenerated !== true,
+              upgradeMessage: 'Upgrade to Professional for full AI narrative insights, cross-pillar analysis, and detailed risk identification.',
+            });
+          }
         } catch {
           // Fall through to generate
         }
@@ -80,7 +90,7 @@ export async function GET(
       // so the template's recommendation strings (Phase 2) speak to the
       // right reader — no "scale across business units" for a UN body.
       const templateInsights = generateTemplateInsightsSync(scoringResult, {
-        sector: assessment.user.sector || undefined,
+        sector: narrativeSector,
         orgSize: assessment.user.orgSize || undefined,
         entityType: assessment.entityType || undefined,
       });
@@ -95,6 +105,7 @@ export async function GET(
         insights: templateInsights,
         scoringResult,
         limited: true,
+        fallback: true,
         upgradeMessage: 'Upgrade to Professional for full AI narrative insights, cross-pillar analysis, and detailed risk identification.',
       });
     }
@@ -107,13 +118,21 @@ export async function GET(
     if (assessment.aiInsights) {
       try {
         const stored = JSON.parse(assessment.aiInsights);
-        // Only treat as a Pro cache hit if the stored payload is full
-        // (template insights from a Free → Pro upgrade have no executiveSummary).
-        if (stored && typeof stored === 'object' && stored.isAIGenerated === true) {
+        // Only treat as a Pro cache hit if:
+        // 1) payload is full AI output (not legacy/free seed), and
+        // 2) prompt version matches current prompt contract.
+        // This avoids serving stale/generic narratives forever after prompt improvements.
+        if (
+          stored &&
+          typeof stored === 'object' &&
+          stored.isAIGenerated === true &&
+          stored.promptVersion === PROMPT_VERSION
+        ) {
           return NextResponse.json({
             insights: stored,
             scoringResult,
             limited: false,
+            fallback: false,
           });
         }
       } catch {
@@ -122,8 +141,9 @@ export async function GET(
     }
 
     const insights = await generateAIInsights(scoringResult, {
-      sector: assessment.user.sector || undefined,
+      sector: narrativeSector,
       orgSize: assessment.user.orgSize || undefined,
+      organization: assessment.user.organization || undefined,
       // Drives entity-aware framing (peer noun, scaling noun, role) inside
       // the prompt builder + template fallback. See src/lib/entity-types.ts.
       entityType: assessment.entityType || undefined,
@@ -139,6 +159,7 @@ export async function GET(
       insights,
       scoringResult,
       limited: false,
+      fallback: insights.isAIGenerated !== true,
     });
   } catch (error) {
     console.error("Insights error:", error);

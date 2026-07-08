@@ -70,6 +70,11 @@ export async function GET(
     // Use AI insights for any paid tier (Pro/Growth/Enterprise), template for free.
     // Growth was previously bucketed with free here — paid €149/mo, got Free's PDF.
     let insights;
+    // Assessment-scoped sector wins over profile sector (see insights route).
+    const narrativeSector =
+      assessment.sector && assessment.sector !== "general"
+        ? assessment.sector
+        : assessment.user.sector || undefined;
     const userTier = assessment.user.tier || 'free';
     // entityType is persisted on Assessment and drives entity-aware framing
     // in both the LLM prompt and the template fallback (peer noun, scaling
@@ -79,20 +84,20 @@ export async function GET(
     if (userTier === 'professional' || userTier === 'growth' || userTier === 'enterprise') {
       try {
         insights = await generateAIInsights(scoringResult, {
-          sector: assessment.user.sector || undefined,
+          sector: narrativeSector,
           orgSize: assessment.user.orgSize || undefined,
           entityType,
         }, responseMap);
       } catch {
         insights = generateTemplateInsightsSync(scoringResult, {
-          sector: assessment.user.sector || undefined,
+          sector: narrativeSector,
           orgSize: assessment.user.orgSize || undefined,
           entityType,
         });
       }
     } else {
       insights = generateTemplateInsightsSync(scoringResult, {
-        sector: assessment.user.sector || undefined,
+        sector: narrativeSector,
         orgSize: assessment.user.orgSize || undefined,
         entityType,
       });
@@ -101,7 +106,7 @@ export async function GET(
     // Fetch benchmark data for sector comparison
     let benchmarkData: AssessmentReportData['benchmarkData'] | undefined;
     try {
-      const sector = assessment.user.sector || 'technology';
+      const sector = narrativeSector || 'technology';
       const stats = await getSectorStats(sector);
       if (stats) {
         benchmarkData = {
@@ -156,7 +161,7 @@ export async function GET(
       insights,
       userName: assessment.user.name || assessment.user.email,
       organization: assessment.user.organization || "Organization",
-      sector: assessment.user.sector || "technology",
+      sector: narrativeSector || "technology",
       completedAt: assessment.completedAt?.toISOString() || new Date().toISOString(),
       benchmarkData,
       previousScore,
