@@ -1071,6 +1071,26 @@ export default function ResultsPage() {
     }))
 
   // Roadmap timeline data (Enterprise)
+  const questionText = (pillarId: string, questionId: string): string | null => {
+    const def = PILLARS.find(d => d.id === pillarId)
+    const q = def?.questions.find(q => q.id === questionId)
+    if (!q) return null
+    return q.text.length > 96 ? `${q.text.slice(0, 93)}…` : q.text
+  }
+  const weakestItem = (p: PillarScoreResult, verb: string): string => {
+    const qd = [...(p.questionDetails ?? [])].sort((a, b) => a.answer - b.answer)[0]
+    const text = qd ? questionText(p.pillarId, qd.questionId) : null
+    return text
+      ? `${p.pillarName} — ${verb}: “${text}” (currently ${qd!.answer}/5)`
+      : `${p.pillarName} at ${Math.round(p.normalizedScore)}%`
+  }
+  const strongestItem = (p: PillarScoreResult): string => {
+    const qd = [...(p.questionDetails ?? [])].sort((a, b) => b.answer - a.answer)[0]
+    const text = qd ? questionText(p.pillarId, qd.questionId) : null
+    return text
+      ? `${p.pillarName} — extend the working practice behind “${text}” (${qd!.answer}/5) across ${vocab.scalingNoun}`
+      : `Scale ${p.pillarName} practices (${Math.round(p.normalizedScore)}%)`
+  }
   const roadmapPhases = [
     {
       label: '0-3 Months',
@@ -1081,7 +1101,7 @@ export default function ResultsPage() {
       items: scoring.pillarScores
         .filter(p => p.normalizedScore < 40)
         .slice(0, 2)
-        .map(p => `Address critical gaps in ${p.pillarName} (${Math.round(p.normalizedScore)}%)`),
+        .map(p => weakestItem(p, 'close the failing control')),
     },
     {
       label: '3-6 Months',
@@ -1092,7 +1112,7 @@ export default function ResultsPage() {
       items: scoring.pillarScores
         .filter(p => p.normalizedScore >= 40 && p.normalizedScore < 65)
         .slice(0, 3)
-        .map(p => `Strengthen ${p.pillarName} capabilities (${Math.round(p.normalizedScore)}%)`),
+        .map(p => weakestItem(p, 'lift the weakest practice')),
     },
     {
       label: '6-12 Months',
@@ -1103,7 +1123,7 @@ export default function ResultsPage() {
       items: scoring.pillarScores
         .filter(p => p.normalizedScore >= 65)
         .slice(0, 3)
-        .map(p => `Scale and optimize ${p.pillarName} practices (${Math.round(p.normalizedScore)}%)`),
+        .map(p => strongestItem(p)),
     },
   ]
 
@@ -3180,119 +3200,11 @@ export default function ResultsPage() {
             )}
           </AnimatePresence>
 
-          {/* ─── AI LITERACY SCORE INTEGRATION ──────────────────────── */}
-          {(isPro || userTier === 'free') && (
-            <FadeUp>
-              <Card className="bg-navy-800 border-eari-blue/20 hover-lift">
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <Brain className="h-5 w-5 text-eari-blue-light" />
-                    <CardTitle className="font-heading text-lg text-foreground">
-                      AI Literacy Assessment
-                    </CardTitle>
-                    <Badge variant="outline" className="ml-auto text-[10px] font-mono border-eari-blue/30 text-eari-blue-light">
-                      {isPro ? 'Professional' : 'Starter'}
-                    </Badge>
-                  </div>
-                  <CardDescription className="font-sans text-sm">
-                    Measure your team&apos;s understanding of AI capabilities and limitations
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {/* Derive literacy scores from relevant pillar scores */}
-                  {(() => {
-                    const literacyCategories = [
-                      { label: 'AI Fundamentals', pillarId: 'technology', color: '#3b82f6', description: 'Based on Technology & Infrastructure readiness' },
-                      { label: 'AI in Practice', pillarId: 'process', color: '#8b5cf6', description: 'Based on Process & Workflow maturity' },
-                      { label: 'AI Ethics & Governance', pillarId: 'governance', color: '#06b6d4', description: 'Based on Governance & Compliance posture' },
-                      { label: 'Data & Infrastructure', pillarId: 'data', color: '#14b8a6', description: 'Based on Data & Analytics readiness' },
-                      { label: 'AI Strategy & Leadership', pillarId: 'strategy', color: '#d4a853', description: 'Based on Strategy & Vision alignment' },
-                    ]
-                    const categoryScores = literacyCategories.map(cat => {
-                      const pillarScore = scoring.pillarScores.find(p => p.pillarId === cat.pillarId)
-                      return { ...cat, score: pillarScore ? Math.round(pillarScore.normalizedScore) : 0 }
-                    })
-                    const avgScore = Math.round(categoryScores.reduce((s, c) => s + c.score, 0) / categoryScores.length)
-                    const weakestCat = [...categoryScores].sort((a, b) => a.score - b.score)[0]
-                    return (
-                      <>
-                        <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 mb-6">
-                          {categoryScores.map((item) => (
-                            <div key={item.label} className="p-3 rounded-lg bg-navy-700/50 border border-border/20">
-                              <div className="flex items-center justify-between mb-2">
-                                <p className="font-heading text-[10px] font-semibold text-foreground truncate" title={item.label}>{item.label}</p>
-                                <span className="font-mono text-xs font-bold" style={{ color: item.color }}>{item.score}%</span>
-                              </div>
-                              <div className="h-1.5 rounded-full bg-navy-700 overflow-hidden">
-                                <motion.div
-                                  className="h-full rounded-full"
-                                  style={{ backgroundColor: item.color }}
-                                  initial={{ width: 0 }}
-                                  animate={{ width: `${item.score}%` }}
-                                  transition={{ duration: 1, ease: 'easeOut', delay: 0.5 }}
-                                />
-                              </div>
-                              <p className="text-[9px] text-muted-foreground/60 font-sans mt-1" title={item.description}>{item.pillarId}</p>
-                            </div>
-                          ))}
-                        </div>
-                        {/* Overall literacy summary */}
-                        <div className="p-4 rounded-lg bg-navy-700/30 border border-eari-blue/10 flex items-center gap-4 mb-4">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-eari-blue/15">
-                            <span className="font-heading text-lg font-semibold tabular-nums text-eari-blue-light">{avgScore}</span>
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-heading text-sm font-semibold text-foreground">Overall AI Literacy Score: {avgScore}%</p>
-                            <p className="text-xs text-muted-foreground font-sans">
-                              Weakest area: <span style={{ color: weakestCat.color }}>{weakestCat.label}</span> at {weakestCat.score}% — targeted training recommended.
-                            {weakestCat.score < 50 && ' This gap may be contributing to lower readiness scores across related pillars.'}
-                            </p>
-                          </div>
-                        </div>
-                      </>
-                    )
-                  })()}
-                  {(() => {
-                    // Build literacy URL with weak pillar context for targeted training
-                    const literacyCategories = [
-                      { label: 'AI Fundamentals', pillarId: 'technology', quizId: 'fundamentals', color: '#3b82f6' },
-                      { label: 'AI in Practice', pillarId: 'process', quizId: 'practice', color: '#8b5cf6' },
-                      { label: 'AI Ethics & Governance', pillarId: 'governance', quizId: 'ethics', color: '#06b6d4' },
-                      { label: 'Data & Infrastructure', pillarId: 'data', quizId: 'data', color: '#14b8a6' },
-                      { label: 'AI Strategy & Leadership', pillarId: 'strategy', quizId: 'strategy', color: '#d4a853' },
-                    ]
-                    const catScores = literacyCategories.map(cat => {
-                      const ps = scoring.pillarScores.find(p => p.pillarId === cat.pillarId)
-                      return { ...cat, score: ps ? Math.round(ps.normalizedScore) : 0 }
-                    })
-                    const weakPillars = catScores
-                      .filter(c => c.score < 60)
-                      .sort((a, b) => a.score - b.score)
-                      .map(c => c.quizId)
-                    const weakestQuiz = [...catScores].sort((a, b) => a.score - b.score)[0]
-                    const focusParam = weakPillars.length > 0 ? `&focus=${weakPillars.join(',')}` : `&focus=${weakestQuiz.quizId}`
-                    const literacyUrl = `/literacy?from=results&weak=${weakestQuiz.quizId}${focusParam}`
-                    return (
-                      <div className="flex items-center gap-3">
-                        <Link href={literacyUrl}>
-                          <Button variant="outline" className="border-eari-blue/30 text-eari-blue-light hover:bg-eari-blue/10 font-heading text-sm">
-                            <Brain className="mr-2 h-4 w-4" />
-                            Take AI Literacy Quiz
-                          </Button>
-                        </Link>
-                        <Link href="/literacy/roles">
-                          <Button variant="ghost" className="text-muted-foreground hover:text-foreground font-heading text-sm">
-                            <UsersRound className="mr-2 h-4 w-4" />
-                            Role-Based Insights
-                          </Button>
-                        </Link>
-                      </div>
-                    )
-                  })()}
-                </CardContent>
-              </Card>
-            </FadeUp>
-          )}
+          {/* AI Literacy Assessment section removed 2026-05-09: it derived
+              pseudo-"literacy" scores from the same pillar numbers shown above
+              under different labels — pure duplication that made the page feel
+              generic, and it collided with the real Article 4 literacy module
+              at /portal/literacy-compliance. */}
 
           {/* ─── ENTERPRISE: ROLE-SPECIFIC EXECUTIVE BRIEF ─────────────────
               Gated on commercial entities only. The C-suite framing
@@ -3328,12 +3240,12 @@ export default function ResultsPage() {
                     const secScore = scoring.pillarScores.find(p => p.pillarId === 'security')?.normalizedScore ?? 0
                     const procScore = scoring.pillarScores.find(p => p.pillarId === 'process')?.normalizedScore ?? 0
                     const roleInsights = [
-                      { role: 'CEO', insight: strategyScore < 50 ? `Strategic alignment at ${Math.round(strategyScore)}% — invest in governance framework before scaling technology for estimated ${govScore < 50 ? '2.4x' : '3.8x'} ROI within 18 months` : `Strategy at ${Math.round(strategyScore)}% — strong foundation. Scale investment in 2-3 high-impact use cases to accelerate competitive advantage`, color: '#d4a853', score: strategyScore },
-                      { role: 'CTO', insight: techScore < 60 ? `Technology at ${Math.round(techScore)}% — MLOps maturity gaps in model monitoring and drift detection. Prioritize feature store and canary deployments` : `Technology at ${Math.round(techScore)}% — solid platform. Focus on expanding workload coverage and automating retraining pipelines`, color: '#3b82f6', score: techScore },
-                      { role: 'CFO', insight: `AI budget alignment: ${govScore < 50 ? 'governance' : 'technology'} and ${talentScore < 50 ? 'talent' : 'data'} are ${govScore < 50 || talentScore < 50 ? 'underweighted vs. benchmarks' : 'well-allocated'}. Rebalancing could increase ROI by 40-60%`, color: '#22c55e', score: Math.round((strategyScore + govScore + talentScore) / 3) },
-                      { role: 'CISO', insight: secScore < 60 ? `Security at ${Math.round(secScore)}% — AI attack surface is high. Adversarial testing and model access controls needed before expanding deployments` : `Security at ${Math.round(secScore)}% — adequate controls. Maintain vigilance with ongoing AI-specific security assessments`, color: '#ef4444', score: secScore },
-                      { role: 'CHRO', insight: talentScore < 50 ? `Talent at ${Math.round(talentScore)}% — AI literacy gaps are the single largest readiness barrier. Launch enterprise-wide training targeting 70% proficiency` : `Talent at ${Math.round(talentScore)}% — develop AI career paths and retention strategies to maintain competitive advantage`, color: '#ec4899', score: talentScore },
-                      { role: 'COO', insight: procScore < 50 ? `Process at ${Math.round(procScore)}% — limited AI process integration. Systematic audit could identify ${Math.round(100 - procScore)}% more automation opportunities` : `Process at ${Math.round(procScore)}% — expand human-in-the-loop controls and standardize KPIs for AI-powered operations`, color: '#14b8a6', score: procScore },
+                      { role: 'CEO', insight: strategyScore < 50 ? `Strategy at ${Math.round(strategyScore)}% is the binding constraint: without a documented multi-year case, initiatives compete quarter to quarter and stall at budget reviews. First move: charter the AI investment case before adding pilots.` : `Strategy at ${Math.round(strategyScore)}% gives you the mandate. The leadership question is sequencing — commit to the 2-3 use cases whose evidence trail you can defend to the board.`, color: '#d4a853', score: strategyScore },
+                      { role: 'CTO', insight: techScore < 60 ? `Technology at ${Math.round(techScore)}% — model versioning, monitoring, and drift detection are the gaps that surface in production first. Put them in place before widening the deployment surface.` : `Technology at ${Math.round(techScore)}% — the platform holds. Next bottleneck is operational: automate retraining triggers and expand monitored workload coverage.`, color: '#3b82f6', score: techScore },
+                      { role: 'CFO', insight: `The weakest funded capability is ${[{n:'strategy',s:strategyScore},{n:'governance',s:govScore},{n:'talent',s:talentScore}].sort((a,b)=>a.s-b.s)[0].n} at ${Math.round([strategyScore,govScore,talentScore].sort((a,b)=>a-b)[0])}%. Spend on new use cases is outpacing the controls that keep them auditable — rebalance toward the constraint before the next funding cycle.`, color: '#22c55e', score: Math.round((strategyScore + govScore + talentScore) / 3) },
+                      { role: 'CISO', insight: secScore < 60 ? `Security at ${Math.round(secScore)}% — AI-specific controls (model access, prompt-injection defence, adversarial testing) trail the deployment surface. Close that gap before expansion; generic SOC controls don't cover it.` : `Security at ${Math.round(secScore)}% — controls are adequate today. The residual exposure is adversarial robustness; schedule AI-specific red-teaming rather than relying on standard assessments.`, color: '#ef4444', score: secScore },
+                      { role: 'CHRO', insight: talentScore < 50 ? `Talent at ${Math.round(talentScore)}% — internal capacity caps delivery before budget does. Formalise AI roles and mandatory literacy training; Article 4 of the AI Act already makes staff literacy a legal duty, not a perk.` : `Talent at ${Math.round(talentScore)}% — you can deliver in-house. The risk shifts to retention: specialists at this maturity read the ceiling above them within months, so career paths matter more than hiring.`, color: '#ec4899', score: talentScore },
+                      { role: 'COO', insight: procScore < 50 ? `Process at ${Math.round(procScore)}% — AI outputs aren't wired into operational workflows with tracked human oversight, so adoption stalls at the pilot boundary. Pick one workflow and instrument the human-in-the-loop step end to end.` : `Process at ${Math.round(procScore)}% — operations absorb AI outputs reliably. Standardise oversight KPIs so you can prove, not just assert, how often humans override the models.`, color: '#14b8a6', score: procScore },
                     ]
                     return (
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">

@@ -449,6 +449,34 @@ export default function Home() {
       <Navigation />
 
       <main className="flex-1">
+        {/* ─── 0. EU AI ACT DEADLINE STRIP ─────────────────────────────────
+            Factual regulatory countdown — the strongest conversion element
+            this product can honestly run. Hides itself once the date passes. */}
+        {(() => {
+          const deadline = new Date('2026-08-02T00:00:00Z')
+          const daysLeft = Math.ceil((deadline.getTime() - Date.now()) / 86_400_000)
+          if (daysLeft <= 0) return (
+            <div className="border-b border-eari-blue/20 bg-eari-blue/[0.06] px-4 py-2.5 text-center">
+              <p className="font-sans text-[13px] text-slate-300">
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-eari-blue-light mr-3">EU AI Act</span>
+                High-risk obligations are now in full application. <Link href="/assessment" className="text-eari-blue-light hover:underline font-medium">Check your exposure →</Link>
+              </p>
+            </div>
+          )
+          return (
+            <div className="border-b border-eari-blue/20 bg-eari-blue/[0.06] px-4 py-2.5 text-center">
+              <p className="font-sans text-[13px] text-slate-300">
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-eari-blue-light mr-3">EU AI Act</span>
+                Full high-risk obligations apply on <span className="text-slate-100 font-medium">2 August 2026</span>
+                <span className="mx-2 text-slate-500">·</span>
+                <span className="font-mono tabular-nums text-eari-blue-light font-semibold">{daysLeft} days</span> to be audit-ready
+                <span className="mx-2 text-slate-500">·</span>
+                penalties up to €35M / 7% of turnover
+                <Link href="/assessment" className="ml-3 text-eari-blue-light hover:underline font-medium">Start free assessment →</Link>
+              </p>
+            </div>
+          )
+        })()}
         {/* ─── 1. HERO SECTION ──────────────────────────────────────────── */}
         <section id="hero-section" className="relative overflow-hidden pt-20 pb-24 sm:pt-28 sm:pb-32">
           {/* Quiet navy base — one calm radial accent, no animation, no particles */}
