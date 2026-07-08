@@ -151,12 +151,12 @@ const PIPELINE_STAGES: { agents: AgentId[]; parallel: boolean }[] = [
  * paying 3× more.
  */
 const TIER_ACCESS: Record<AgentId, string[]> = {
-  scoring: ['free', 'professional', 'growth', 'enterprise'],
-  insight: ['free', 'professional', 'growth', 'enterprise'],  // Free tier gets 1 insight summary (limited)
-  discovery: ['professional', 'growth', 'enterprise'],
-  report: ['professional', 'growth', 'enterprise'],
-  assistant: ['professional', 'growth', 'enterprise'],
-  literacy: ['free', 'professional', 'growth', 'enterprise'],
+  scoring: ['free', 'professional', 'growth', 'autopilot', 'enterprise'],
+  insight: ['free', 'professional', 'growth', 'autopilot', 'enterprise'],  // Free tier gets 1 insight summary (limited)
+  discovery: ['professional', 'growth', 'autopilot', 'enterprise'],
+  report: ['professional', 'growth', 'autopilot', 'enterprise'],
+  assistant: ['professional', 'growth', 'autopilot', 'enterprise'],
+  literacy: ['free', 'professional', 'growth', 'autopilot', 'enterprise'],
 };
 
 // ─── Caching Layer ──────────────────────────────────────────────────────────

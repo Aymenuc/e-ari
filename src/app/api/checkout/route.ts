@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     // ── Determine tier ────────────────────────────────────────────────────
     // Allow-list check — caller is the browser, we never trust an arbitrary
     // string into Stripe metadata. Anything unknown falls back to Pro.
-    const ALLOWED_REQUEST_TIERS = ['professional', 'growth', 'enterprise'] as const
+    const ALLOWED_REQUEST_TIERS = ['professional', 'growth', 'autopilot', 'enterprise'] as const
     type RequestTier = (typeof ALLOWED_REQUEST_TIERS)[number]
     const requestedTier: RequestTier = ALLOWED_REQUEST_TIERS.includes(tier as RequestTier)
       ? (tier as RequestTier)
@@ -51,6 +51,14 @@ export async function POST(request: NextRequest) {
     if (requestedTier === 'enterprise') {
       return NextResponse.json({
         url: '/pricing?contact=sales',
+      })
+    }
+
+    // Autopilot (€15K ACV, annual-only) is sales-assist — no self-serve
+    // checkout until the Stripe price is provisioned.
+    if (requestedTier === 'autopilot') {
+      return NextResponse.json({
+        url: '/pricing?contact=sales&plan=autopilot',
       })
     }
 

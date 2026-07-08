@@ -187,6 +187,74 @@ export async function applyComplianceRuntimeMigrations(db: PrismaClient): Promis
     ALTER TABLE "Assessment" ADD COLUMN IF NOT EXISTS "entityType" TEXT
   `);
 
+  // ── Autopilot expansion (2026-05-09) — see docs/AUTOPILOT-EXPANSION-PLAN.md ──
+  await db.$executeRawUnsafe(`
+    ALTER TABLE "AISystem" ADD COLUMN IF NOT EXISTS "vendorId" TEXT
+  `);
+  await db.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "TeamMember" (
+      "id" TEXT NOT NULL, "userId" TEXT NOT NULL, "name" TEXT NOT NULL,
+      "email" TEXT NOT NULL, "role" TEXT, "department" TEXT,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "TeamMember_pkey" PRIMARY KEY ("id")
+    )
+  `);
+  await db.$executeRawUnsafe(`
+    CREATE UNIQUE INDEX IF NOT EXISTS "TeamMember_userId_email_key" ON "TeamMember"("userId","email")
+  `);
+  await db.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "TrainingAssignment" (
+      "id" TEXT NOT NULL, "userId" TEXT NOT NULL, "memberId" TEXT NOT NULL,
+      "moduleId" TEXT NOT NULL, "dueAt" TIMESTAMP(3), "sentAt" TIMESTAMP(3),
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "TrainingAssignment_pkey" PRIMARY KEY ("id")
+    )
+  `);
+  await db.$executeRawUnsafe(`
+    CREATE UNIQUE INDEX IF NOT EXISTS "TrainingAssignment_memberId_moduleId_key" ON "TrainingAssignment"("memberId","moduleId")
+  `);
+  await db.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "TrainingCompletion" (
+      "id" TEXT NOT NULL, "memberId" TEXT NOT NULL, "moduleId" TEXT NOT NULL,
+      "completedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "quizScore" DOUBLE PRECISION, "attestationHash" TEXT NOT NULL,
+      CONSTRAINT "TrainingCompletion_pkey" PRIMARY KEY ("id")
+    )
+  `);
+  await db.$executeRawUnsafe(`
+    CREATE UNIQUE INDEX IF NOT EXISTS "TrainingCompletion_memberId_moduleId_key" ON "TrainingCompletion"("memberId","moduleId")
+  `);
+  await db.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "Vendor" (
+      "id" TEXT NOT NULL, "userId" TEXT NOT NULL, "name" TEXT NOT NULL,
+      "websiteUrl" TEXT, "category" TEXT, "contactEmail" TEXT,
+      "dpaStatus" TEXT NOT NULL DEFAULT 'unknown',
+      "riskScore" DOUBLE PRECISION, "riskTier" TEXT, "riskSummary" TEXT,
+      "questionnaireStatus" TEXT NOT NULL DEFAULT 'not_sent',
+      "questionnaireJson" TEXT, "questionnaireVersion" TEXT,
+      "reviewedAt" TIMESTAMP(3), "nextReviewAt" TIMESTAMP(3),
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "Vendor_pkey" PRIMARY KEY ("id")
+    )
+  `);
+  await db.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS "Vendor_userId_idx" ON "Vendor"("userId")
+  `);
+  await db.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "DiscoveredTool" (
+      "id" TEXT NOT NULL, "userId" TEXT NOT NULL, "catalogId" TEXT,
+      "rawName" TEXT NOT NULL, "source" TEXT NOT NULL,
+      "userCount" INTEGER, "lastSeenAt" TIMESTAMP(3),
+      "status" TEXT NOT NULL DEFAULT 'undeclared', "aiSystemId" TEXT,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "DiscoveredTool_pkey" PRIMARY KEY ("id")
+    )
+  `);
+  await db.$executeRawUnsafe(`
+    CREATE UNIQUE INDEX IF NOT EXISTS "DiscoveredTool_userId_rawName_source_key" ON "DiscoveredTool"("userId","rawName","source")
+  `);
+
   await db.$executeRawUnsafe(`
     ALTER TABLE "Evidence" ADD COLUMN IF NOT EXISTS "userId" TEXT
   `);

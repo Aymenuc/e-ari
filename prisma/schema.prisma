@@ -12,20 +12,20 @@ datasource db {
 }
 
 model User {
-  id               String   @id @default(cuid())
-  email            String   @unique
+  id               String    @id @default(cuid())
+  email            String    @unique
   name             String?
   passwordHash     String?
   organization     String?
-  sector           String?  // Industry sector for benchmarking
-  orgSize          String?  // "1-50", "51-200", "201-1000", "1001-5000", "5000+"
-  tier             String   @default("free") // "free" | "professional" | "growth" | "enterprise"
-  role             String   @default("user") // "user" | "admin"
+  sector           String? // Industry sector for benchmarking
+  orgSize          String? // "1-50", "51-200", "201-1000", "1001-5000", "5000+"
+  tier             String    @default("free") // "free" | "professional" | "growth" | "enterprise"
+  role             String    @default("user") // "user" | "admin"
   image            String?
-  stripeCustomerId String?  // Stripe customer ID for billing portal
+  stripeCustomerId String? // Stripe customer ID for billing portal
   emailVerified    DateTime?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   assessments       Assessment[]
   accounts          Account[]
@@ -69,23 +69,23 @@ model Session {
 }
 
 model Assessment {
-  id                String   @id @default(cuid())
-  userId            String
-  sector            String   @default("general") // Industry sector: "healthcare" | "finance" | "manufacturing" | "retail" | "government" | "technology" | "energy" | "education" | "general"
-  status            String   @default("draft") // "draft" | "completed" | "archived"
-  scoringVersion    String   @default("1.0.0")
-  methodologyVersion String  @default("1.0.0")
-  overallScore      Float?
-  maturityBand      String?  // "laggard" | "follower" | "chaser" | "pacesetter"
-  pillarScores      String?  // JSON string of pillar scores
-  aiInsights        String?  // JSON string of AI-generated insights
-  completedAt       DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                 String    @id @default(cuid())
+  userId             String
+  sector             String    @default("general") // Industry sector: "healthcare" | "finance" | "manufacturing" | "retail" | "government" | "technology" | "energy" | "education" | "general"
+  status             String    @default("draft") // "draft" | "completed" | "archived"
+  scoringVersion     String    @default("1.0.0")
+  methodologyVersion String    @default("1.0.0")
+  overallScore       Float?
+  maturityBand       String? // "laggard" | "follower" | "chaser" | "pacesetter"
+  pillarScores       String? // JSON string of pillar scores
+  aiInsights         String? // JSON string of AI-generated insights
+  completedAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
-  previousAssessmentId  String?
-  benchmarkConsented    Boolean   @default(false)
-  isPulse              Boolean   @default(false)
+  previousAssessmentId String?
+  benchmarkConsented   Boolean @default(false)
+  isPulse              Boolean @default(false)
   pulseMonth           String?
 
   // Entity type (commercial / public_sector / nonprofit / academic /
@@ -93,20 +93,20 @@ model Assessment {
   // defaults, and which UI modules render. Stored on Assessment, not User,
   // because the same person could submit on behalf of different entities
   // (consultant assessing multiple clients). See src/lib/entity-types.ts.
-  entityType    String?
+  entityType String?
 
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  responses     Response[]
-  pipelineRuns  PipelineRun[]
-  aiSystems     AISystem[]
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  responses    Response[]
+  pipelineRuns PipelineRun[]
+  aiSystems    AISystem[]
 }
 
 model Response {
   id           String   @id @default(cuid())
   assessmentId String
-  pillarId     String   // e.g. "strategy", "data", etc.
-  questionId   String   // e.g. "strategy_1"
-  answer       Int      // Likert 1-5 or numeric value
+  pillarId     String // e.g. "strategy", "data", etc.
+  questionId   String // e.g. "strategy_1"
+  answer       Int // Likert 1-5 or numeric value
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -127,25 +127,25 @@ model VerificationToken {
 
 model PlatformSetting {
   key       String   @id
-  value     String   // JSON-encoded value
+  value     String // JSON-encoded value
   updatedAt DateTime @updatedAt
 }
 
 // ─── Orchestrator Pipeline Models ────────────────────────────────────────────
 
 model PipelineRun {
-  id            String   @id @default(cuid())
-  assessmentId  String
-  userId        String
-  status        String   @default("pending") // "pending" | "running" | "completed" | "failed" | "partial"
-  triggeredBy   String   @default("auto")    // "auto" (on submit) | "manual" | "retry"
-  startedAt     DateTime?
-  completedAt   DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String    @id @default(cuid())
+  assessmentId String
+  userId       String
+  status       String    @default("pending") // "pending" | "running" | "completed" | "failed" | "partial"
+  triggeredBy  String    @default("auto") // "auto" (on submit) | "manual" | "retry"
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  assessment Assessment     @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessment Assessment      @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   stages     PipelineStage[]
 
   @@index([assessmentId])
@@ -153,17 +153,17 @@ model PipelineRun {
 }
 
 model PipelineStage {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   pipelineRunId String
-  agent         String   // "scoring" | "insight" | "discovery" | "report" | "assistant" | "literacy"
-  status        String   @default("pending") // "pending" | "running" | "completed" | "failed" | "skipped"
-  input         String?  // JSON string of agent input context
-  output        String?  // JSON string of agent output/result
-  error         String?  // Error message if failed
-  durationMs    Int?     // Execution time in milliseconds
+  agent         String // "scoring" | "insight" | "discovery" | "report" | "assistant" | "literacy"
+  status        String    @default("pending") // "pending" | "running" | "completed" | "failed" | "skipped"
+  input         String? // JSON string of agent input context
+  output        String? // JSON string of agent output/result
+  error         String? // Error message if failed
+  durationMs    Int? // Execution time in milliseconds
   startedAt     DateTime?
   completedAt   DateTime?
-  createdAt     DateTime @default(now())
+  createdAt     DateTime  @default(now())
 
   pipelineRun PipelineRun @relation(fields: [pipelineRunId], references: [id], onDelete: Cascade)
 
@@ -175,14 +175,14 @@ model PipelineStage {
 
 model BenchmarkSnapshot {
   id             String   @id @default(cuid())
-  sector         String   // "healthcare" | "finance" | etc.
-  pillarId       String   // "strategy" | "data" | etc.
-  avgScore       Float    // Average normalized score for this sector+pillar
+  sector         String // "healthcare" | "finance" | etc.
+  pillarId       String // "strategy" | "data" | etc.
+  avgScore       Float // Average normalized score for this sector+pillar
   medianScore    Float
-  p25Score       Float    // 25th percentile
-  p75Score       Float    // 75th percentile
-  p90Score       Float    // 90th percentile
-  sampleSize     Int      // Number of contributing organizations
+  p25Score       Float // 25th percentile
+  p75Score       Float // 75th percentile
+  p90Score       Float // 90th percentile
+  sampleSize     Int // Number of contributing organizations
   scoringVersion String   @default("5.2")
   computedAt     DateTime @default(now())
 
@@ -207,13 +207,13 @@ model BenchmarkConsent {
 model PulseRun {
   id           String   @id @default(cuid())
   userId       String
-  assessmentId String   // The latest assessment this pulse is based on
+  assessmentId String // The latest assessment this pulse is based on
   overallScore Float
-  pillarScores String  // JSON string of pillar scores
-  scoreChanges String  // JSON: { pillarId: { previous: number, current: number, delta: number } }
-  topRisks     String  // JSON array of top 3 risk descriptions
-  topQuickWins String  // JSON array of top 3 quick win descriptions
-  month        String  // "2026-04" format
+  pillarScores String // JSON string of pillar scores
+  scoreChanges String // JSON: { pillarId: { previous: number, current: number, delta: number } }
+  topRisks     String // JSON array of top 3 risk descriptions
+  topQuickWins String // JSON array of top 3 quick win descriptions
+  month        String // "2026-04" format
   status       String   @default("completed") // "pending" | "completed" | "failed"
   createdAt    DateTime @default(now())
 
@@ -228,9 +228,9 @@ model PulseRun {
 model Integration {
   id         String    @id @default(cuid())
   userId     String
-  provider   String    // "slack" | "teams" | "jira" | "asana" | "google_workspace" | "microsoft_365"
+  provider   String // "slack" | "teams" | "jira" | "asana" | "google_workspace" | "microsoft_365"
   status     String    @default("pending") // "pending" | "active" | "disconnected" | "error"
-  config     String    // JSON: provider-specific config (webhook URLs, channel IDs, etc.)
+  config     String // JSON: provider-specific config (webhook URLs, channel IDs, etc.)
   lastSyncAt DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -246,12 +246,12 @@ model Integration {
 model Notification {
   id           String   @id @default(cuid())
   userId       String
-  type         String   // "pulse_ready" | "quarterly_reminder" | "benchmark_update" | "weekly_digest" | "integration_alert"
+  type         String // "pulse_ready" | "quarterly_reminder" | "benchmark_update" | "weekly_digest" | "integration_alert"
   title        String
   message      String
   read         Boolean  @default(false)
-  actionUrl    String?  // e.g. "/results/abc123" or "/pulse"
-  assessmentId String?  // Optional link to related assessment
+  actionUrl    String? // e.g. "/results/abc123" or "/pulse"
+  assessmentId String? // Optional link to related assessment
   createdAt    DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -263,36 +263,36 @@ model Notification {
 // ─── Social Media Automation ────────────────────────────────────────────────
 
 model SocialAccount {
-  id            String    @id @default(cuid())
-  provider      String    // "linkedin", "twitter", "facebook"
-  accountName   String    // Display name
-  accountHandle String?   // @handle
-  accessToken   String?   // Encrypted OAuth token
-  refreshToken  String?
+  id             String    @id @default(cuid())
+  provider       String // "linkedin", "twitter", "facebook"
+  accountName    String // Display name
+  accountHandle  String? // @handle
+  accessToken    String? // Encrypted OAuth token
+  refreshToken   String?
   tokenExpiresAt DateTime?
-  avatarUrl     String?
-  isActive      Boolean   @default(true)
-  lastSyncAt    DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  avatarUrl      String?
+  isActive       Boolean   @default(true)
+  lastSyncAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 model SocialPost {
-  id              String    @id @default(cuid())
-  content         String    // Post text
-  platform        String    // "linkedin", "twitter", "facebook", "all"
-  mediaUrls       String?   // JSON array of image URLs
-  status          String    @default("draft") // draft, scheduled, publishing, published, failed
-  scheduledAt     DateTime?
-  publishedAt     DateTime?
-  failedReason    String?
-  category        String?   // "benchmark", "compliance", "certification", "promotion", "custom"
-  autoGenerated   Boolean   @default(false)
+  id                String    @id @default(cuid())
+  content           String // Post text
+  platform          String // "linkedin", "twitter", "facebook", "all"
+  mediaUrls         String? // JSON array of image URLs
+  status            String    @default("draft") // draft, scheduled, publishing, published, failed
+  scheduledAt       DateTime?
+  publishedAt       DateTime?
+  failedReason      String?
+  category          String? // "benchmark", "compliance", "certification", "promotion", "custom"
+  autoGenerated     Boolean   @default(false)
   engagementMetrics String? // JSON: { likes, shares, comments, clicks, impressions }
-  sourceData      String?   // JSON: reference data used to generate the post
-  createdBy       String?   // Admin user who created it
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  sourceData        String? // JSON: reference data used to generate the post
+  createdBy         String? // Admin user who created it
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 }
 
 // ─── Contact Inbox ───────────────────────────────────────────────────────────
@@ -330,18 +330,18 @@ model ContactReply {
 // ─── Refund Requests ────────────────────────────────────────────────────────
 
 model RefundRequest {
-  id          String    @id @default(cuid())
-  userId      String
-  user        User      @relation(fields: [userId], references: [id])
-  amount      Float
-  reason      String    // "duplicate", "not_as_described", "accidental", "other"
-  details     String?
-  status      String    @default("pending") // pending, approved, rejected, refunded
-  chargeId    String?
-  refundId    String?
-  refundedAt  DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  amount     Float
+  reason     String // "duplicate", "not_as_described", "accidental", "other"
+  details    String?
+  status     String    @default("pending") // pending, approved, rejected, refunded
+  chargeId   String?
+  refundId   String?
+  refundedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@index([userId])
   @@index([status])
@@ -352,62 +352,63 @@ model RefundRequest {
 // Prisma model ObligationGap avoids name clash with ComplianceGap interface in regulatory-mapping.ts
 
 model AISystem {
-  id                  String    @id @default(cuid())
-  userId              String
-  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  assessmentId        String?
-  assessment          Assessment? @relation(fields: [assessmentId], references: [id], onDelete: SetNull)
+  id           String      @id @default(cuid())
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessmentId String?
+  assessment   Assessment? @relation(fields: [assessmentId], references: [id], onDelete: SetNull)
 
   name                String
-  description         String    @db.Text
-  purpose             String    @db.Text
+  description         String  @db.Text
+  purpose             String  @db.Text
   deployerRole        String // provider | deployer | importer | distributor
   sector              String
-  populationsAffected String?   @db.Text
+  populationsAffected String? @db.Text
 
-  riskTier            String? // prohibited | high | limited | minimal
-  riskRationale       String?   @db.Text
-  classifiedAt        DateTime?
+  riskTier      String? // prohibited | high | limited | minimal
+  riskRationale String?   @db.Text
+  classifiedAt  DateTime?
+  vendorId      String? // links registry entry to third-party Vendor (TPRM module)
 
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  evidence            Evidence[]
-  fria                FRIA?
-  technicalFile       TechnicalFile?
-  monitoring          MonitoringPlan?
-  obligationGaps      ObligationGap[]
+  evidence       Evidence[]
+  fria           FRIA?
+  technicalFile  TechnicalFile?
+  monitoring     MonitoringPlan?
+  obligationGaps ObligationGap[]
 
   @@index([userId])
   @@index([assessmentId])
 }
 
 model Evidence {
-  id               String   @id @default(cuid())
-  systemId         String?
-  system           AISystem? @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  id       String    @id @default(cuid())
+  systemId String?
+  system   AISystem? @relation(fields: [systemId], references: [id], onDelete: Cascade)
 
-  userId           String
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   organizationLevel Boolean @default(false)
 
-  filename         String
-  mimeType         String
-  storageKey       String
-  sizeBytes        Int
-  sha256           String
+  filename   String
+  mimeType   String
+  storageKey String
+  sizeBytes  Int
+  sha256     String
 
-  artifactType     String? // contract | policy | model_card | dpia | etc.
-  classifiedAt     DateTime?
+  artifactType String? // contract | policy | model_card | dpia | etc.
+  classifiedAt DateTime?
 
-  extractedText    String?  @db.Text
-  extractionStatus String   @default("pending") // pending | processing | extracted | failed
+  extractedText    String? @db.Text
+  extractionStatus String  @default("pending") // pending | processing | extracted | failed
   extractionError  String?
 
-  createdAt        DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  clauses          EvidenceClause[]
+  clauses EvidenceClause[]
 
   @@index([systemId])
   @@index([userId])
@@ -415,94 +416,94 @@ model Evidence {
 }
 
 model EvidenceClause {
-  id           String   @id @default(cuid())
-  evidenceId   String
-  evidence     Evidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  evidenceId String
+  evidence   Evidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
 
-  clauseType   String
-  textExcerpt  String   @db.Text
-  pageNumber   Int?
-  confidence   Float
+  clauseType  String
+  textExcerpt String @db.Text
+  pageNumber  Int?
+  confidence  Float
 
   aiActArticles String[]
   pillarIds     String[]
   frameworks    String[]
 
-  createdAt    DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([evidenceId])
 }
 
 model FRIA {
-  id               String   @id @default(cuid())
-  systemId         String   @unique
-  system           AISystem @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  id       String   @id @default(cuid())
+  systemId String   @unique
+  system   AISystem @relation(fields: [systemId], references: [id], onDelete: Cascade)
 
-  status           String   @default("draft") // draft | review | finalized
-  affectedGroups   Json
-  rightsAtRisk     Json
-  mitigations      Json
-  residualRisk     String?  @db.Text
-  oversightDesign  String?  @db.Text
+  status          String  @default("draft") // draft | review | finalized
+  affectedGroups  Json
+  rightsAtRisk    Json
+  mitigations     Json
+  residualRisk    String? @db.Text
+  oversightDesign String? @db.Text
 
-  generatedPdfKey  String?
-  finalizedAt      DateTime?
+  generatedPdfKey String?
+  finalizedAt     DateTime?
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model TechnicalFile {
-  id                   String   @id @default(cuid())
-  systemId             String   @unique
-  system               AISystem @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  id       String   @id @default(cuid())
+  systemId String   @unique
+  system   AISystem @relation(fields: [systemId], references: [id], onDelete: Cascade)
 
-  systemDescription    Json?
-  designSpecs          Json?
-  dataGovernance       Json?
-  monitoringPlan       Json?
-  riskManagement       Json?
-  performanceMetrics   Json?
-  instructionsForUse   Json?
-  euDeclaration        Json?
+  systemDescription  Json?
+  designSpecs        Json?
+  dataGovernance     Json?
+  monitoringPlan     Json?
+  riskManagement     Json?
+  performanceMetrics Json?
+  instructionsForUse Json?
+  euDeclaration      Json?
 
-  status               String   @default("draft")
-  generatedPdfKey      String?
-  generatedJsonKey     String?
+  status           String  @default("draft")
+  generatedPdfKey  String?
+  generatedJsonKey String?
 
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model MonitoringPlan {
-  id                  String    @id @default(cuid())
-  systemId            String    @unique
-  system              AISystem  @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  id       String   @id @default(cuid())
+  systemId String   @unique
+  system   AISystem @relation(fields: [systemId], references: [id], onDelete: Cascade)
 
-  conformityRoute     String // internal_control | notified_body
-  nextAttestationAt   DateTime?
-  triggers            Json
-  incidents           Json
+  conformityRoute   String // internal_control | notified_body
+  nextAttestationAt DateTime?
+  triggers          Json
+  incidents         Json
 
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ObligationGap {
-  id                       String   @id @default(cuid())
-  systemId                 String
-  system                   AISystem @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  id       String   @id @default(cuid())
+  systemId String
+  system   AISystem @relation(fields: [systemId], references: [id], onDelete: Cascade)
 
-  obligationCode           String
-  obligationLabel          String
-  severity                 String // critical | major | minor
-  recommendedArtifactType  String
-  draftDocumentText        String?  @db.Text
-  ownerRoleHint            String?
-  status                   String   @default("open") // open | in_progress | closed | wont_do
+  obligationCode          String
+  obligationLabel         String
+  severity                String // critical | major | minor
+  recommendedArtifactType String
+  draftDocumentText       String? @db.Text
+  ownerRoleHint           String?
+  status                  String  @default("open") // open | in_progress | closed | wont_do
 
-  createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([systemId])
 }
@@ -521,4 +522,86 @@ model ComplianceLog {
 
   @@index([createdAt])
   @@index([operation])
+}
+
+// ─── Autopilot Expansion (see docs/AUTOPILOT-EXPANSION-PLAN.md) ──────────────
+// Members interact only via HMAC magic links — no auth accounts.
+// Plain userId columns (no FK relation) keep runtime migrations simple.
+
+model TeamMember {
+  id          String               @id @default(cuid())
+  userId      String // account owner (the E-ARI customer)
+  name        String
+  email       String
+  role        String?
+  department  String?
+  createdAt   DateTime             @default(now())
+  completions TrainingCompletion[]
+
+  @@unique([userId, email])
+  @@index([userId])
+}
+
+model TrainingAssignment {
+  id        String    @id @default(cuid())
+  userId    String
+  memberId  String
+  moduleId  String
+  dueAt     DateTime?
+  sentAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@unique([memberId, moduleId])
+  @@index([userId])
+}
+
+model TrainingCompletion {
+  id              String     @id @default(cuid())
+  memberId        String
+  moduleId        String
+  completedAt     DateTime   @default(now())
+  quizScore       Float?
+  attestationHash String // sha256(memberId|moduleId|completedAt|moduleVersion) — tamper-evident
+  member          TeamMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([memberId, moduleId])
+  @@index([memberId])
+}
+
+model Vendor {
+  id                   String    @id @default(cuid())
+  userId               String
+  name                 String
+  websiteUrl           String?
+  category             String?
+  contactEmail         String?
+  dpaStatus            String    @default("unknown") // signed | pending | none | unknown
+  riskScore            Float?
+  riskTier             String? // low | medium | high | critical
+  riskSummary          String?   @db.Text
+  questionnaireStatus  String    @default("not_sent") // not_sent | sent | completed | expired
+  questionnaireJson    String?   @db.Text
+  questionnaireVersion String?
+  reviewedAt           DateTime?
+  nextReviewAt         DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model DiscoveredTool {
+  id         String    @id @default(cuid())
+  userId     String
+  catalogId  String? // matches ai-tool-catalog entry id; null = unmatched
+  rawName    String
+  source     String // gworkspace | okta | entra | expense | manual
+  userCount  Int?
+  lastSeenAt DateTime?
+  status     String    @default("undeclared") // undeclared | registered | ignored
+  aiSystemId String?
+  createdAt  DateTime  @default(now())
+
+  @@unique([userId, rawName, source])
+  @@index([userId])
 }

@@ -579,6 +579,43 @@ export default function PricingPage() {
           </div>
         </section>
 
+        {/* --- Autopilot: mid-market continuous compliance (sales-assist) --- */}
+        <section className="pb-16 sm:pb-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="relative overflow-hidden rounded-2xl border border-cyan-500/25 bg-navy-800 p-8 sm:p-10">
+              <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(600px 200px at 20% 0%, rgba(34,211,238,0.08), transparent)' }} />
+              <div className="relative flex flex-col lg:flex-row lg:items-center gap-8">
+                <div className="flex-1">
+                  <div className="mb-3 flex items-center gap-3">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-cyan-400">Autopilot</span>
+                    <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">Annual · Sales-assist</span>
+                  </div>
+                  <h3 className="font-heading text-2xl sm:text-3xl font-semibold tracking-[-0.02em] text-slate-50">
+                    Continuous AI compliance for the mid-market
+                  </h3>
+                  <p className="mt-3 font-sans text-[15px] leading-relaxed text-muted-foreground max-w-2xl">
+                    Everything in Growth, plus the full compliance suite: unlimited Shadow AI Discovery scans,
+                    unlimited vendor risk questionnaires, unlimited team members with org-wide Article 4
+                    evidence reporting, the live Controls dashboard, and EU data residency.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1.5 font-sans text-[13px] text-slate-300">
+                    {['Shadow AI Discovery — unlimited scans', 'Third-party AI vendor risk (TPRM)', 'Article 4 literacy compliance, org-wide', 'Continuous controls + weekly digest', 'EU data residency'].map((f) => (
+                      <span key={f} className="flex items-center gap-2"><span className="h-1 w-1 rounded-full bg-cyan-400" aria-hidden />{f}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="lg:text-right shrink-0">
+                  <p className="font-heading text-4xl font-bold text-slate-50 tabular-nums">€1,250<span className="font-sans text-base font-normal text-muted-foreground">/mo</span></p>
+                  <p className="font-sans text-xs text-muted-foreground mt-1">billed annually (€15,000/yr)</p>
+                  <Button asChild className="mt-4 bg-cyan-500 hover:bg-cyan-400 text-navy-900 font-heading font-semibold h-11 px-6">
+                    <Link href="/contact?subject=Autopilot">Talk to us</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* --- Feature Comparison Table --- */}
         <section className="pb-16 sm:pb-20">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">

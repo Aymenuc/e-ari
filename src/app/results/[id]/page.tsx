@@ -114,7 +114,7 @@ function seededRandom(seed: number) {
 
 /* ─── Tier Types ──────────────────────────────────────────────────────── */
 
-type UserTier = 'free' | 'professional' | 'growth' | 'enterprise'
+type UserTier = 'free' | 'professional' | 'growth' | 'autopilot' | 'enterprise'
 
 const TIER_CONFIG: Record<UserTier, { label: string; color: string; bgColor: string; borderColor: string; icon: React.ElementType }> = {
   free: {
@@ -136,6 +136,13 @@ const TIER_CONFIG: Record<UserTier, { label: string; color: string; bgColor: str
     color: 'text-violet-400',
     bgColor: 'bg-violet-500/15',
     borderColor: 'border-violet-500/30',
+    icon: Award,
+  },
+  autopilot: {
+    label: 'Autopilot',
+    color: 'text-cyan-400',
+    bgColor: 'bg-cyan-500/15',
+    borderColor: 'border-cyan-500/30',
     icon: Award,
   },
   enterprise: {
@@ -635,11 +642,11 @@ export default function ResultsPage() {
   // Tier is read ONLY from the server-side session JWT, never client-switchable.
   // This prevents UI/feature bypass; all paid features are enforced server-side too.
   const sessionTier = (session?.user as Record<string, unknown> | undefined)?.tier as string | undefined
-  const userTier: UserTier = (sessionTier === 'professional' || sessionTier === 'growth' || sessionTier === 'enterprise') ? sessionTier : 'free'
+  const userTier: UserTier = (sessionTier === 'professional' || sessionTier === 'growth' || sessionTier === 'autopilot' || sessionTier === 'enterprise') ? sessionTier : 'free'
 
   // "isPro" here is the legacy variable name for "any paid tier" — it gates
   // features that Pro/Growth/Enterprise all get. Growth was excluded before.
-  const isPro = userTier === 'professional' || userTier === 'growth' || userTier === 'enterprise'
+  const isPro = userTier === 'professional' || userTier === 'growth' || userTier === 'autopilot' || userTier === 'enterprise'
   const isEnterprise = userTier === 'enterprise'
 
   // Entity-type-aware vocab. Persisted on the Assessment row at submit

@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       const activeUsers = await db.user.findMany({
         where: {
           // Growth was missing — paid users on Growth weren't getting cron notifications.
-          tier: { in: ['professional', 'growth', 'enterprise'] },
+          tier: { in: ['professional', 'growth', 'autopilot', 'enterprise'] },
           assessments: {
             some: { status: 'completed' },
           },

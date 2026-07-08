@@ -98,6 +98,10 @@ function tierLabel(tier: string): string {
   switch (tier) {
     case 'professional':
       return 'Professional';
+    case 'growth':
+      return 'Growth';
+    case 'autopilot':
+      return 'Autopilot';
     case 'enterprise':
       return 'Enterprise';
     default:
@@ -109,6 +113,10 @@ function tierBadgeClasses(tier: string): string {
   switch (tier) {
     case 'professional':
       return 'bg-eari-blue/20 text-eari-blue-light border-eari-blue/30';
+    case 'growth':
+      return 'bg-violet-500/20 text-violet-400 border-violet-500/30';
+    case 'autopilot':
+      return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
     case 'enterprise':
       return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
     default:
@@ -474,9 +482,13 @@ export default function PortalPage() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
+                { href: '/portal/discovery', icon: Search, label: 'Shadow AI Discovery', sub: 'Find undeclared AI tools' },
+                { href: '/portal/controls', icon: Activity, label: 'Controls', sub: 'Live obligation status' },
+                { href: '/portal/vendors', icon: Plug, label: 'Vendor Risk', sub: 'Third-party AI TPRM' },
+                { href: '/portal/literacy-compliance', icon: GraduationCap, label: 'Article 4 Training', sub: 'Literacy compliance' },
                 { href: '/pulse', icon: Activity, label: 'AI Pulse', sub: 'Monthly monitoring' },
                 { href: '/literacy', icon: GraduationCap, label: 'AI Literacy', sub: 'Training & quizzes' },
-                { href: '/discovery', icon: Search, label: 'Discovery', sub: 'AI profile builder' },
+                { href: '/discovery', icon: Search, label: 'Discovery Agent', sub: 'AI profile builder' },
                 { href: '/integrations', icon: Plug, label: 'Integrations', sub: 'Connect & extend' },
               ].map((item) => {
                 const Icon = item.icon;

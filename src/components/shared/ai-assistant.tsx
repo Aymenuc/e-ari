@@ -28,12 +28,12 @@ const WELCOME_MESSAGE: Message = {
 
 interface AIAssistantProps {
   /** The user's current tier. Free-tier users see a locked state. */
-  userTier?: 'free' | 'professional' | 'growth' | 'enterprise'
+  userTier?: 'free' | 'professional' | 'growth' | 'autopilot' | 'enterprise'
 }
 
 export function AIAssistant({ userTier = 'free' }: AIAssistantProps) {
   // Any paid tier (Professional, Growth, Enterprise) unlocks the assistant.
-  const isPro = userTier === 'professional' || userTier === 'growth' || userTier === 'enterprise'
+  const isPro = userTier === 'professional' || userTier === 'growth' || userTier === 'autopilot' || userTier === 'enterprise'
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE])
   const [input, setInput] = useState('')

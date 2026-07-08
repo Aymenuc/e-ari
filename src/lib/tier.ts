@@ -13,14 +13,14 @@
  * Treat these as the authoritative gates. Don't compare tier strings inline.
  */
 
-export type Tier = 'free' | 'professional' | 'growth' | 'enterprise';
+export type Tier = 'free' | 'professional' | 'growth' | 'autopilot' | 'enterprise';
 
-export const ALL_TIERS: readonly Tier[] = ['free', 'professional', 'growth', 'enterprise'] as const;
-export const PAID_TIERS: readonly Tier[] = ['professional', 'growth', 'enterprise'] as const;
+export const ALL_TIERS: readonly Tier[] = ['free', 'professional', 'growth', 'autopilot', 'enterprise'] as const;
+export const PAID_TIERS: readonly Tier[] = ['professional', 'growth', 'autopilot', 'enterprise'] as const;
 
 /** Normalise an unknown tier value to a known tier (defaults to free). */
 export function normalizeTier(t: string | null | undefined): Tier {
-  if (t === 'professional' || t === 'growth' || t === 'enterprise') return t;
+  if (t === 'professional' || t === 'growth' || t === 'autopilot' || t === 'enterprise') return t;
   return 'free';
 }
 
@@ -32,7 +32,14 @@ export function isPaidTier(t: string | null | undefined): boolean {
 /** Is this Growth or Enterprise? (gates higher-end features like all-sectors, full API) */
 export function isGrowthOrAbove(t: string | null | undefined): boolean {
   const tier = normalizeTier(t);
-  return tier === 'growth' || tier === 'enterprise';
+  return tier === 'growth' || tier === 'autopilot' || tier === 'enterprise';
+}
+
+/** Is this Autopilot or Enterprise? Gates the continuous-compliance suite
+ *  (unlimited discovery scans, vendors, members, org-wide Article 4 reports). */
+export function isAutopilotOrAbove(t: string | null | undefined): boolean {
+  const tier = normalizeTier(t);
+  return tier === 'autopilot' || tier === 'enterprise';
 }
 
 /** Is this Enterprise specifically? (gates SSO/SAML, unlimited everything, custom branding) */

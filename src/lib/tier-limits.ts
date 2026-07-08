@@ -32,8 +32,58 @@ const TIER_QUOTAS: Record<Tier, TierQuota> = {
   free:         { assessment: 1,  pulse: 3,  report: 1        }, // pricing: "1 .docx report / month"
   professional: { assessment: 5,  pulse: 15, report: 3        }, // pricing: "3 .docx reports included"
   growth:       { assessment: 20, pulse: 50, report: Infinity }, // pricing: "Unlimited .docx reports"
+  autopilot:    { assessment: Infinity, pulse: Infinity, report: Infinity }, // €15K ACV continuous-compliance tier
   enterprise:   { assessment: Infinity, pulse: Infinity, report: Infinity },
 };
+
+// ─── Absolute resource caps (not monthly — total count) ─────────────────────
+// Autopilot expansion: team members (Article 4 roster), third-party vendors,
+// and monthly discovery scans. See docs/AUTOPILOT-EXPANSION-PLAN.md.
+
+export type ResourceKind = 'member' | 'vendor';
+
+const RESOURCE_CAPS: Record<Tier, Record<ResourceKind, number>> = {
+  free:         { member: 1,        vendor: 0 },
+  professional: { member: 5,        vendor: 2 },
+  growth:       { member: 25,       vendor: 5 },
+  autopilot:    { member: Infinity, vendor: Infinity },
+  enterprise:   { member: Infinity, vendor: Infinity },
+};
+
+export function getResourceCap(tier: string | null | undefined, kind: ResourceKind): number {
+  return RESOURCE_CAPS[normalizeTier(tier)][kind];
+}
+
+/** Monthly discovery-scan allowance (CSV imports on /portal/discovery). */
+const DISCOVERY_SCANS: Record<Tier, number> = {
+  free: 0, professional: 0, growth: 1, autopilot: Infinity, enterprise: Infinity,
+};
+
+export function getDiscoveryScanLimit(tier: string | null | undefined): number {
+  return DISCOVERY_SCANS[normalizeTier(tier)];
+}
+
+/** Count discovery scans this calendar month (audit rows in Notification, same pattern as reports). */
+export async function countMonthlyDiscoveryScans(userId: string): Promise<number> {
+  return db.notification.count({
+    where: { userId, type: 'discovery_scan', createdAt: { gte: startOfMonthUTC() } },
+  });
+}
+
+/** Record a discovery scan against the monthly allowance (fire-and-forget safe). */
+export async function recordDiscoveryScan(userId: string, source: string): Promise<void> {
+  try {
+    await db.notification.create({
+      data: {
+        userId, type: 'discovery_scan', title: 'Discovery scan',
+        message: `Shadow AI discovery scan (${source}) completed.`,
+        actionUrl: '/portal/discovery', read: true,
+      },
+    });
+  } catch (err) {
+    console.error('Failed to record discovery-scan audit:', err);
+  }
+}
 
 export function getMonthlyLimit(tier: string | null | undefined, quota: Quota): number {
   return TIER_QUOTAS[normalizeTier(tier)][quota];

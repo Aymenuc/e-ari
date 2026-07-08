@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
 
     const where: { tier: { in: string[] } } = {
       // Growth was missing here — Growth subscribers were invisible to admin views.
-      tier: { in: planFilter ? [planFilter] : ["professional", "growth", "enterprise"] },
+      tier: { in: planFilter ? [planFilter] : ["professional", "growth", "autopilot", "enterprise"] },
     };
 
     const subscribers = await db.user.findMany({
