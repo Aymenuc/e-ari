@@ -34,6 +34,7 @@ import {
 import { Navigation } from '@/components/shared/navigation';
 import { Footer } from '@/components/shared/footer';
 import { ProgressionBanner } from '@/components/shared/progression-banner';
+import { OnboardingChecklist } from '@/components/shared/onboarding-checklist';
 import {
   ComplianceInboxCard,
   type PortalInboxItem,
@@ -371,6 +372,7 @@ export default function PortalPage() {
           </section>
 
           <section id="inbox" className="mb-8 space-y-6 scroll-mt-24">
+            <OnboardingChecklist />
             {progressionState ? (
               <ProgressionBanner state={progressionState} />
             ) : null}
