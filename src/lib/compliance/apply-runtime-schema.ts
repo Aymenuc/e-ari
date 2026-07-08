@@ -255,6 +255,24 @@ export async function applyComplianceRuntimeMigrations(db: PrismaClient): Promis
     CREATE UNIQUE INDEX IF NOT EXISTS "DiscoveredTool_userId_rawName_source_key" ON "DiscoveredTool"("userId","rawName","source")
   `);
 
+  // ── Public API v1 (2026-05-09) ──
+  await db.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "ApiKey" (
+      "id" TEXT NOT NULL, "userId" TEXT NOT NULL, "name" TEXT NOT NULL,
+      "keyHash" TEXT NOT NULL, "prefix" TEXT NOT NULL,
+      "scope" TEXT NOT NULL DEFAULT 'read',
+      "lastUsedAt" TIMESTAMP(3), "revokedAt" TIMESTAMP(3),
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT "ApiKey_pkey" PRIMARY KEY ("id")
+    )
+  `);
+  await db.$executeRawUnsafe(`
+    CREATE UNIQUE INDEX IF NOT EXISTS "ApiKey_keyHash_key" ON "ApiKey"("keyHash")
+  `);
+  await db.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS "ApiKey_userId_idx" ON "ApiKey"("userId")
+  `);
+
   await db.$executeRawUnsafe(`
     ALTER TABLE "Evidence" ADD COLUMN IF NOT EXISTS "userId" TEXT
   `);

@@ -605,3 +605,17 @@ model DiscoveredTool {
   @@unique([userId, rawName, source])
   @@index([userId])
 }
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  userId     String
+  name       String
+  keyHash    String    @unique // sha256 of the full secret — secret itself is never stored
+  prefix     String // first 12 chars, for display ("eari_live_ab…")
+  scope      String    @default("read") // read | write
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+}
