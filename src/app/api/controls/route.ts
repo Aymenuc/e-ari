@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { resolveWorkspace, canWrite } from "@/lib/workspace";
 import { deriveControls } from "@/lib/controls-derive";
 
 /**
@@ -12,7 +13,8 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const result = await deriveControls(session.user.id);
+    const ws = await resolveWorkspace(session.user.id);
+    const result = await deriveControls(ws.ownerId);
     return NextResponse.json(result);
   } catch (e) {
     console.error("controls GET:", e);

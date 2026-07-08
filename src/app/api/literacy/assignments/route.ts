@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { resolveWorkspace, canWrite } from "@/lib/workspace";
 import { db } from "@/lib/db";
 import { signMemberToken } from "@/lib/member-tokens";
 import { getTrainingModule } from "@/lib/training-modules";
@@ -17,6 +18,8 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const ws = await resolveWorkspace(session.user.id);
+    if (!canWrite(ws.role)) return NextResponse.json({ error: "Your seat is view-only in this workspace." }, { status: 403 });
 
     const identifier = resolveIdentifier(session.user.id, req);
     const rate = checkRateLimit("default", identifier);
@@ -32,11 +35,11 @@ export async function POST(req: NextRequest) {
     if (validModules.length === 0) return NextResponse.json({ error: "No valid module IDs" }, { status: 400 });
 
     const members = await db.teamMember.findMany({
-      where: { id: { in: memberIds.slice(0, 500) }, userId: session.user.id },
+      where: { id: { in: memberIds.slice(0, 500) }, userId: ws.ownerId },
     });
     if (members.length === 0) return NextResponse.json({ error: "No matching members" }, { status: 404 });
 
-    const owner = await db.user.findUnique({ where: { id: session.user.id }, select: { organization: true, name: true } });
+    const owner = await db.user.findUnique({ where: { id: ws.ownerId }, select: { organization: true, name: true } });
     const orgName = owner?.organization || owner?.name || "your organisation";
     const base = getBaseUrl().replace(/\/+$/, "");
 
@@ -46,7 +49,7 @@ export async function POST(req: NextRequest) {
       for (const moduleId of validModules) {
         await db.trainingAssignment.upsert({
           where: { memberId_moduleId: { memberId: member.id, moduleId } },
-          create: { userId: session.user.id, memberId: member.id, moduleId, sentAt: new Date() },
+          create: { userId: ws.ownerId, memberId: member.id, moduleId, sentAt: new Date() },
           update: { sentAt: new Date() },
         });
         assigned++;

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { resolveWorkspace, canWrite } from "@/lib/workspace";
 import { db } from "@/lib/db";
 import { checkRateLimit, getRateLimitHeaders, resolveIdentifier } from "@/lib/rate-limit";
 import { z } from "zod";
@@ -17,6 +18,7 @@ export async function GET() {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const ws = await resolveWorkspace(session.user.id);
 
     // ── Dashboard list — only fields the portal actually consumes ───────
     // Previously this endpoint returned every assessment WITH its full
@@ -24,7 +26,7 @@ export async function GET() {
     // dashboard load 200+ row joins for nothing. The dashboard only uses
     // count, status, score, sector, and timestamps.
     const assessments = await db.assessment.findMany({
-      where: { userId: session.user.id },
+      where: { userId: ws.ownerId },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -56,6 +58,8 @@ export async function POST(req: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const ws = await resolveWorkspace(session.user.id);
+    if (!canWrite(ws.role)) return NextResponse.json({ error: "Your seat is view-only in this workspace." }, { status: 403 });
 
     // Rate limit assessment creation (expensive: DB + agent triggers)
     const identifier = resolveIdentifier(session.user.id, req);
@@ -85,7 +89,7 @@ export async function POST(req: NextRequest) {
     // benchmarks/narratives used a stale profile sector instead.
     const assessment = await db.assessment.create({
       data: {
-        userId: session.user.id,
+        userId: ws.ownerId,
         status: "draft",
         sector: sector || "general",
         scoringVersion: "5.3",

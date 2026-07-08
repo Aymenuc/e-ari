@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { resolveWorkspace, canWrite } from "@/lib/workspace";
 import { db } from "@/lib/db";
 import { isGrowthOrAbove } from "@/lib/tier";
 import { TRAINING_MODULES, MODULE_CONTENT_VERSION, getTrainingModule } from "@/lib/training-modules";
@@ -15,8 +16,9 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const ws = await resolveWorkspace(session.user.id);
     const user = await db.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: ws.ownerId },
       select: { tier: true, organization: true, name: true },
     });
     if (!isGrowthOrAbove(user?.tier)) {
@@ -24,11 +26,11 @@ export async function GET() {
     }
 
     const members = await db.teamMember.findMany({
-      where: { userId: session.user.id },
+      where: { userId: ws.ownerId },
       orderBy: { name: "asc" },
       include: { completions: true },
     });
-    const assignments = await db.trainingAssignment.findMany({ where: { userId: session.user.id } });
+    const assignments = await db.trainingAssignment.findMany({ where: { userId: ws.ownerId } });
 
     const docx = await import("docx");
     const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, HeadingLevel, BorderStyle, AlignmentType } = docx;

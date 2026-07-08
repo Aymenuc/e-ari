@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { resolveWorkspace, canWrite } from "@/lib/workspace";
 import { db } from "@/lib/db";
 import { scoreAssessment, type ResponseMap } from "@/lib/assessment-engine";
 import { executePipeline, clearCache } from "@/lib/orchestrator";
@@ -16,6 +17,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const ws = await resolveWorkspace(session.user.id);
 
     const { id } = await params;
     const assessment = await db.assessment.findUnique({
@@ -27,7 +29,7 @@ export async function GET(
       return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
     }
 
-    if (assessment.userId !== session.user.id) {
+    if (assessment.userId !== ws.ownerId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -78,6 +80,8 @@ export async function PUT(
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const ws = await resolveWorkspace(session.user.id);
+    if (!canWrite(ws.role)) return NextResponse.json({ error: "Your seat is view-only in this workspace." }, { status: 403 });
 
     const { id } = await params;
     const body = await req.json();
@@ -91,7 +95,7 @@ export async function PUT(
       return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
     }
 
-    if (assessment.userId !== session.user.id) {
+    if (assessment.userId !== ws.ownerId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -137,10 +141,10 @@ export async function PUT(
       // saturated quota must be blocked here, not at the LLM layer.
       if (assessment.status !== "completed" && assessment.isPulse !== true) {
         const userRecord = await db.user.findUnique({
-          where: { id: session.user.id },
+          where: { id: ws.ownerId },
           select: { tier: true },
         });
-        const quota = await checkQuota(session.user.id, userRecord?.tier, 'assessment');
+        const quota = await checkQuota(ws.ownerId, userRecord?.tier, 'assessment');
         if (!quota.allowed) {
           return NextResponse.json(
             {
@@ -214,7 +218,7 @@ export async function PUT(
         // This fires off Insight, Discovery, Report, and Literacy agents
         // We don't await this — the user gets their scores immediately,
         // and the pipeline runs asynchronously. The results page polls for status.
-        const user = await db.user.findUnique({ where: { id: session.user.id } });
+        const user = await db.user.findUnique({ where: { id: ws.ownerId } });
         const tier = user?.tier || 'free';
 
         // Clear any stale cache
@@ -222,7 +226,7 @@ export async function PUT(
 
         executePipeline({
           assessmentId: id,
-          userId: session.user.id,
+          userId: ws.ownerId,
           tier,
           triggeredBy: 'auto',
           sector: effectiveSector,

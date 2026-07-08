@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { resolveWorkspace, canWrite } from "@/lib/workspace";
 import { db } from "@/lib/db";
 import { sha256Hex, uploadEvidenceBlob, MAX_EVIDENCE_BYTES } from "@/lib/compliance/evidence-vault";
 import { EVIDENCE_UPLOAD_TYPE_HINT, isEvidenceUploadAllowed } from "@/lib/compliance/evidence-upload-policy";
@@ -17,11 +18,12 @@ import { checkRateLimit, getRateLimitHeaders, resolveIdentifier } from "@/lib/ra
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const ws = await resolveWorkspace(session.user.id);
   const { id } = await ctx.params;
-  const vendor = await db.vendor.findFirst({ where: { id, userId: session.user.id } });
+  const vendor = await db.vendor.findFirst({ where: { id, userId: ws.ownerId } });
   if (!vendor) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const evidence = await db.evidence.findMany({
-    where: { vendorId: id, userId: session.user.id },
+    where: { vendorId: id, userId: ws.ownerId },
     orderBy: { createdAt: "desc" },
     select: { id: true, filename: true, mimeType: true, sizeBytes: true, artifactType: true, extractionStatus: true, createdAt: true },
   });
@@ -32,13 +34,15 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const ws = await resolveWorkspace(session.user.id);
+    if (!canWrite(ws.role)) return NextResponse.json({ error: "Your seat is view-only in this workspace." }, { status: 403 });
     const identifier = resolveIdentifier(session.user.id, req);
     const rate = checkRateLimit("compliance_upload", identifier);
     if (!rate.allowed) {
       return NextResponse.json({ error: "Upload rate limit exceeded.", retryAfter: rate.retryAfter }, { status: 429, headers: getRateLimitHeaders("compliance_upload", rate) });
     }
     const { id } = await ctx.params;
-    const vendor = await db.vendor.findFirst({ where: { id, userId: session.user.id } });
+    const vendor = await db.vendor.findFirst({ where: { id, userId: ws.ownerId } });
     if (!vendor) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     const form = await req.formData();
@@ -64,7 +68,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     let storageKey: string;
     try {
       const up = await uploadEvidenceBlob({
-        userId: session.user.id, systemId: null,
+        userId: ws.ownerId, systemId: null,
         filename: file.name, mimeType, buffer: buf,
       });
       storageKey = up.storageKey;
@@ -75,7 +79,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
     const row = await db.evidence.create({
       data: {
-        userId: session.user.id, systemId: null, vendorId: id,
+        userId: ws.ownerId, systemId: null, vendorId: id,
         organizationLevel: false,
         filename: file.name, mimeType, storageKey,
         sizeBytes: buf.length, sha256: sha256Hex(buf),

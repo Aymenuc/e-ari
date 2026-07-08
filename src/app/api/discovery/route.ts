@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { resolveWorkspace, canWrite } from "@/lib/workspace";
 import { db } from "@/lib/db";
 import { parseCsvObjects } from "@/lib/csv-parse";
 import { matchCatalog, getCatalogEntry } from "@/lib/ai-tool-catalog";
@@ -35,7 +36,8 @@ const SOURCE_ALIASES: Record<string, Record<string, string[]>> = {
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const tools = await db.discoveredTool.findMany({ where: { userId: session.user.id }, orderBy: { createdAt: "desc" } });
+    const ws = await resolveWorkspace(session.user.id);
+  const tools = await db.discoveredTool.findMany({ where: { userId: ws.ownerId }, orderBy: { createdAt: "desc" } });
   const enriched = tools.map((t) => ({ ...t, catalog: t.catalogId ? getCatalogEntry(t.catalogId) ?? null : null }));
   const stats = {
     total: tools.length,
@@ -50,14 +52,16 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const user = await db.user.findUnique({ where: { id: session.user.id }, select: { tier: true } });
+    const ws = await resolveWorkspace(session.user.id);
+    if (!canWrite(ws.role)) return NextResponse.json({ error: "Your seat is view-only in this workspace." }, { status: 403 });
+    const user = await db.user.findUnique({ where: { id: ws.ownerId }, select: { tier: true } });
 
     const limit = getDiscoveryScanLimit(user?.tier);
     if (limit === 0) {
       return NextResponse.json({ error: "Shadow AI Discovery requires the Growth tier (1 scan/month) or Autopilot (unlimited).", upgradeRequired: true }, { status: 402 });
     }
     if (Number.isFinite(limit)) {
-      const used = await countMonthlyDiscoveryScans(session.user.id);
+      const used = await countMonthlyDiscoveryScans(ws.ownerId);
       if (used >= limit) {
         return NextResponse.json({ error: `Your tier includes ${limit} discovery scan${limit === 1 ? "" : "s"} per month. Upgrade to Autopilot for unlimited scans.`, upgradeRequired: true }, { status: 402 });
       }
@@ -97,16 +101,16 @@ export async function POST(req: NextRequest) {
         matched++;
       }
       await db.discoveredTool.upsert({
-        where: { userId_rawName_source: { userId: session.user.id, rawName: rawName.slice(0, 200), source } },
+        where: { userId_rawName_source: { userId: ws.ownerId, rawName: rawName.slice(0, 200), source } },
         create: {
-          userId: session.user.id, rawName: rawName.slice(0, 200), source,
+          userId: ws.ownerId, rawName: rawName.slice(0, 200), source,
           catalogId: entry?.id ?? null, userCount: info.users, lastSeenAt: now,
         },
         update: { catalogId: entry?.id ?? null, userCount: info.users, lastSeenAt: now },
       });
     }
 
-    void recordDiscoveryScan(session.user.id, source);
+    void recordDiscoveryScan(ws.ownerId, source);
     return NextResponse.json({ scanned: agg.size, matched, unmatchedAi }, { status: 201 });
   } catch (e) {
     console.error("discovery POST:", e);
@@ -119,8 +123,10 @@ export async function PATCH(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const ws = await resolveWorkspace(session.user.id);
+    if (!canWrite(ws.role)) return NextResponse.json({ error: "Your seat is view-only in this workspace." }, { status: 403 });
     const body = await req.json();
-    const tool = await db.discoveredTool.findFirst({ where: { id: String(body.id || ""), userId: session.user.id } });
+    const tool = await db.discoveredTool.findFirst({ where: { id: String(body.id || ""), userId: ws.ownerId } });
     if (!tool) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     if (body.action === "ignore") {
@@ -133,16 +139,16 @@ export async function PATCH(req: NextRequest) {
     }
     if (body.action === "register") {
       const entry = tool.catalogId ? getCatalogEntry(tool.catalogId) : undefined;
-      const owner = await db.user.findUnique({ where: { id: session.user.id }, select: { sector: true } });
+      const owner = await db.user.findUnique({ where: { id: ws.ownerId }, select: { sector: true } });
       // Auto-create/link vendor for matched catalog entries (dedup by name).
       // Ignores the tier vendor cap on purpose — a vendor auto-created from
       // discovery is bookkeeping, not a new questionnaire seat.
       let vendorId: string | null = null;
       if (entry) {
-        const existing = await db.vendor.findFirst({ where: { userId: session.user.id, name: entry.vendor } });
+        const existing = await db.vendor.findFirst({ where: { userId: ws.ownerId, name: entry.vendor } });
         const vendor = existing ?? await db.vendor.create({
           data: {
-            userId: session.user.id, name: entry.vendor, category: entry.category,
+            userId: ws.ownerId, name: entry.vendor, category: entry.category,
             websiteUrl: entry.domains[0] ? `https://${entry.domains[0]}` : null,
           },
         });
@@ -150,7 +156,7 @@ export async function PATCH(req: NextRequest) {
       }
       const system = await db.aISystem.create({
         data: {
-          userId: session.user.id,
+          userId: ws.ownerId,
           name: entry?.name ?? tool.rawName,
           description: entry ? `${entry.category} by ${entry.vendor}. ${entry.note || ""}`.trim() : `Discovered via ${tool.source} import.`,
           purpose: entry?.category ?? "General AI tool discovered in use",

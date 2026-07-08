@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { resolveWorkspace, canWrite } from "@/lib/workspace";
 import { db } from "@/lib/db";
 import { getResourceCap } from "@/lib/tier-limits";
 import { signMemberToken } from "@/lib/member-tokens";
@@ -11,9 +12,10 @@ import { getBaseUrl } from "@/lib/site-url";
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const vendors = await db.vendor.findMany({ where: { userId: session.user.id }, orderBy: { createdAt: "desc" } });
+    const ws = await resolveWorkspace(session.user.id);
+  const vendors = await db.vendor.findMany({ where: { userId: ws.ownerId }, orderBy: { createdAt: "desc" } });
   const systems = await db.aISystem.findMany({
-    where: { userId: session.user.id, vendorId: { not: null } },
+    where: { userId: ws.ownerId, vendorId: { not: null } },
     select: { id: true, name: true, vendorId: true },
   });
   return NextResponse.json({ vendors, systems });
@@ -24,9 +26,11 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const user = await db.user.findUnique({ where: { id: session.user.id }, select: { tier: true } });
+    const ws = await resolveWorkspace(session.user.id);
+    if (!canWrite(ws.role)) return NextResponse.json({ error: "Your seat is view-only in this workspace." }, { status: 403 });
+    const user = await db.user.findUnique({ where: { id: ws.ownerId }, select: { tier: true } });
     const cap = getResourceCap(user?.tier, "vendor");
-    const current = await db.vendor.count({ where: { userId: session.user.id } });
+    const current = await db.vendor.count({ where: { userId: ws.ownerId } });
     if (Number.isFinite(cap) && current >= cap) {
       return NextResponse.json(
         { error: cap === 0 ? "Vendor risk management requires Professional or above." : `Your tier allows ${cap} vendors. Upgrade to Autopilot for unlimited.`, upgradeRequired: true },
@@ -37,7 +41,7 @@ export async function POST(req: NextRequest) {
     if (!body.name || typeof body.name !== "string") return NextResponse.json({ error: "name required" }, { status: 400 });
     const vendor = await db.vendor.create({
       data: {
-        userId: session.user.id,
+        userId: ws.ownerId,
         name: String(body.name).slice(0, 200),
         websiteUrl: body.websiteUrl ? String(body.websiteUrl).slice(0, 300) : null,
         category: body.category ? String(body.category).slice(0, 120) : null,
@@ -56,14 +60,16 @@ export async function PATCH(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const ws = await resolveWorkspace(session.user.id);
+    if (!canWrite(ws.role)) return NextResponse.json({ error: "Your seat is view-only in this workspace." }, { status: 403 });
     const body = await req.json();
-    const vendor = await db.vendor.findFirst({ where: { id: String(body.id || ""), userId: session.user.id } });
+    const vendor = await db.vendor.findFirst({ where: { id: String(body.id || ""), userId: ws.ownerId } });
     if (!vendor) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     if (body.action === "send_questionnaire") {
       const email = body.contactEmail ? String(body.contactEmail) : vendor.contactEmail;
       if (!email) return NextResponse.json({ error: "Vendor contact email required" }, { status: 400 });
-      const owner = await db.user.findUnique({ where: { id: session.user.id }, select: { organization: true, name: true } });
+      const owner = await db.user.findUnique({ where: { id: ws.ownerId }, select: { organization: true, name: true } });
       const orgName = owner?.organization || owner?.name || "one of your customers";
       const token = signMemberToken(vendor.id, "vendor_questionnaire");
       const link = `${getBaseUrl().replace(/\/+$/, "")}/vendor-response/${token}`;
@@ -94,9 +100,11 @@ export async function PATCH(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const ws = await resolveWorkspace(session.user.id);
+    if (!canWrite(ws.role)) return NextResponse.json({ error: "Your seat is view-only in this workspace." }, { status: 403 });
   const id = req.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
-  const vendor = await db.vendor.findFirst({ where: { id, userId: session.user.id } });
+  const vendor = await db.vendor.findFirst({ where: { id, userId: ws.ownerId } });
   if (!vendor) return NextResponse.json({ error: "Not found" }, { status: 404 });
   await db.aISystem.updateMany({ where: { vendorId: id }, data: { vendorId: null } });
   await db.vendor.delete({ where: { id } });

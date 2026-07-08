@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { resolveWorkspace } from "@/lib/workspace";
 
 export function isComplianceAdmin(role: string | undefined): boolean {
   return role === "admin";
@@ -11,9 +12,12 @@ export async function findComplianceSystem(
   sessionRole: string | undefined,
 ) {
   const admin = isComplianceAdmin(sessionRole);
-  return db.aISystem.findFirst({
-    where: admin ? { id: systemId } : { id: systemId, userId: sessionUserId },
-  });
+  if (admin) return db.aISystem.findFirst({ where: { id: systemId } });
+  // Team seats: a session acting inside a shared workspace accesses the
+  // OWNER's systems. resolveWorkspace returns the caller's own id when no
+  // active membership exists, so solo accounts behave exactly as before.
+  const ws = await resolveWorkspace(sessionUserId);
+  return db.aISystem.findFirst({ where: { id: systemId, userId: ws.ownerId } });
 }
 
 /** Same as findComplianceSystem with evidence/gap counts for overview API. */
@@ -23,11 +27,16 @@ export async function findComplianceSystemDetail(
   sessionRole: string | undefined,
 ) {
   const admin = isComplianceAdmin(sessionRole);
+  if (admin) {
+    return db.aISystem.findFirst({
+      where: { id: systemId },
+      include: { _count: { select: { evidence: true, obligationGaps: true } } },
+    });
+  }
+  const ws = await resolveWorkspace(sessionUserId);
   return db.aISystem.findFirst({
-    where: admin ? { id: systemId } : { id: systemId, userId: sessionUserId },
-    include: {
-      _count: { select: { evidence: true, obligationGaps: true } },
-    },
+    where: { id: systemId, userId: ws.ownerId },
+    include: { _count: { select: { evidence: true, obligationGaps: true } } },
   });
 }
 

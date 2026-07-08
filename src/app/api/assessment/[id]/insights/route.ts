@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { resolveWorkspace, canWrite } from "@/lib/workspace";
 import { db } from "@/lib/db";
 import { scoreAssessment, type ResponseMap } from "@/lib/assessment-engine";
 import { generateAIInsights, generateTemplateInsightsSync, PROMPT_VERSION } from "@/lib/ai-insights";
@@ -18,6 +19,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const ws = await resolveWorkspace(session.user.id);
 
     // Rate limit insights (LLM-powered, expensive)
     const identifier = resolveIdentifier(session.user.id, req);
@@ -39,7 +41,7 @@ export async function GET(
       return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
     }
 
-    if (assessment.userId !== session.user.id) {
+    if (assessment.userId !== ws.ownerId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

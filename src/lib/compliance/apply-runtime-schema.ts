@@ -278,6 +278,25 @@ export async function applyComplianceRuntimeMigrations(db: PrismaClient): Promis
     ALTER TABLE "Evidence" ADD COLUMN IF NOT EXISTS "vendorId" TEXT
   `);
 
+  // Team seats (workspaces) — 2026-05-09
+  await db.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "OrgMembership" (
+      "id" TEXT NOT NULL, "ownerId" TEXT NOT NULL, "memberUserId" TEXT,
+      "invitedEmail" TEXT NOT NULL,
+      "role" TEXT NOT NULL DEFAULT 'member',
+      "status" TEXT NOT NULL DEFAULT 'invited',
+      "invitedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "acceptedAt" TIMESTAMP(3),
+      CONSTRAINT "OrgMembership_pkey" PRIMARY KEY ("id")
+    )
+  `);
+  await db.$executeRawUnsafe(`
+    CREATE UNIQUE INDEX IF NOT EXISTS "OrgMembership_ownerId_invitedEmail_key" ON "OrgMembership"("ownerId","invitedEmail")
+  `);
+  await db.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS "OrgMembership_memberUserId_idx" ON "OrgMembership"("memberUserId")
+  `);
+
   await db.$executeRawUnsafe(`
     ALTER TABLE "Evidence" ADD COLUMN IF NOT EXISTS "userId" TEXT
   `);

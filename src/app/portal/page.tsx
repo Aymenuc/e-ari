@@ -486,6 +486,7 @@ export default function PortalPage() {
                 { href: '/portal/controls', icon: Activity, label: 'Controls', sub: 'Live obligation status' },
                 { href: '/portal/vendors', icon: Plug, label: 'Vendor Risk', sub: 'Third-party AI TPRM' },
                 { href: '/portal/literacy-compliance', icon: GraduationCap, label: 'Article 4 Training', sub: 'Literacy compliance' },
+                { href: '/portal/team', icon: Users, label: 'Team', sub: 'Shared workspace seats' },
                 { href: '/pulse', icon: Activity, label: 'AI Pulse', sub: 'Monthly monitoring' },
                 { href: '/literacy', icon: GraduationCap, label: 'AI Literacy', sub: 'Training & quizzes' },
                 { href: '/discovery', icon: Search, label: 'Discovery Agent', sub: 'AI profile builder' },

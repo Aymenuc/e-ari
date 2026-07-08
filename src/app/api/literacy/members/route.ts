@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { resolveWorkspace, canWrite } from "@/lib/workspace";
 import { db } from "@/lib/db";
 import { getResourceCap } from "@/lib/tier-limits";
 import { parseCsvObjects } from "@/lib/csv-parse";
@@ -17,13 +18,14 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const ws = await resolveWorkspace(session.user.id);
   const members = await db.teamMember.findMany({
-    where: { userId: session.user.id },
+    where: { userId: ws.ownerId },
     orderBy: { createdAt: "asc" },
     include: { completions: { select: { moduleId: true, completedAt: true, quizScore: true } } },
   });
   const assignments = await db.trainingAssignment.findMany({
-    where: { userId: session.user.id },
+    where: { userId: ws.ownerId },
     select: { memberId: true, moduleId: true, sentAt: true },
   });
   return NextResponse.json({ members, assignments });
@@ -34,9 +36,11 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const user = await db.user.findUnique({ where: { id: session.user.id }, select: { tier: true } });
+    const ws = await resolveWorkspace(session.user.id);
+    if (!canWrite(ws.role)) return NextResponse.json({ error: "Your seat is view-only in this workspace." }, { status: 403 });
+    const user = await db.user.findUnique({ where: { id: ws.ownerId }, select: { tier: true } });
     const cap = getResourceCap(user?.tier, "member");
-    const current = await db.teamMember.count({ where: { userId: session.user.id } });
+    const current = await db.teamMember.count({ where: { userId: ws.ownerId } });
 
     const body = await req.json();
     type Row = { name: string; email: string; role?: string; department?: string };
@@ -63,9 +67,9 @@ export async function POST(req: NextRequest) {
     let created = 0;
     for (const r of rows) {
       await db.teamMember.upsert({
-        where: { userId_email: { userId: session.user.id, email: r.email.toLowerCase() } },
+        where: { userId_email: { userId: ws.ownerId, email: r.email.toLowerCase() } },
         create: {
-          userId: session.user.id, name: r.name.slice(0, 200), email: r.email.toLowerCase().slice(0, 254),
+          userId: ws.ownerId, name: r.name.slice(0, 200), email: r.email.toLowerCase().slice(0, 254),
           role: r.role?.slice(0, 120) || null, department: r.department?.slice(0, 120) || null,
         },
         update: { name: r.name.slice(0, 200), role: r.role?.slice(0, 120) || null, department: r.department?.slice(0, 120) || null },
@@ -83,9 +87,11 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const ws = await resolveWorkspace(session.user.id);
+    if (!canWrite(ws.role)) return NextResponse.json({ error: "Your seat is view-only in this workspace." }, { status: 403 });
   const id = req.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
-  const member = await db.teamMember.findFirst({ where: { id, userId: session.user.id } });
+  const member = await db.teamMember.findFirst({ where: { id, userId: ws.ownerId } });
   if (!member) return NextResponse.json({ error: "Not found" }, { status: 404 });
   await db.trainingAssignment.deleteMany({ where: { memberId: id } });
   await db.teamMember.delete({ where: { id } });

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { resolveWorkspace, canWrite } from "@/lib/workspace";
 import { db } from "@/lib/db";
 
 interface PortalInboxItem {
@@ -18,7 +19,8 @@ export async function GET() {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const userId = session.user.id;
+    const ws = await resolveWorkspace(session.user.id);
+    const userId = ws.ownerId;
 
     // ── All four queries in parallel ─────────────────────────────────────
     // Previously the FRIA query ran sequentially after the other three,

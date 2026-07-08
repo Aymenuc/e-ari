@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { resolveWorkspace, canWrite } from "@/lib/workspace";
 import { db } from "@/lib/db";
 import { scoreAssessment, type ResponseMap } from "@/lib/assessment-engine";
 import { generateAIInsights, generateTemplateInsightsSync } from "@/lib/ai-insights";
@@ -19,6 +20,7 @@ export async function GET(
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const ws = await resolveWorkspace(session.user.id);
 
     const { id } = await params;
     const assessment = await db.assessment.findUnique({
@@ -30,7 +32,7 @@ export async function GET(
       return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
     }
 
-    if (assessment.userId !== session.user.id) {
+    if (assessment.userId !== ws.ownerId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -42,7 +44,7 @@ export async function GET(
     // Free: 1 / month (was previously blocked entirely, contradicting the
     // pricing page). Professional: 3 / month (was previously unlimited).
     // Growth + Enterprise: unlimited.
-    const reportQuota = await checkQuota(session.user.id, assessment.user.tier, 'report');
+    const reportQuota = await checkQuota(ws.ownerId, assessment.user.tier, 'report');
     if (!reportQuota.allowed) {
       return NextResponse.json(
         {
@@ -188,7 +190,7 @@ export async function GET(
     // Record the report generation against the monthly quota (audit-log
     // pattern using the existing Notification table). Fire-and-forget —
     // failure here doesn't block the download.
-    void recordReportGenerated(session.user.id, id);
+    void recordReportGenerated(ws.ownerId, id);
 
     return new NextResponse(new Uint8Array(docxBuffer), {
       headers: {

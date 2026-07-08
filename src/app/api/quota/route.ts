@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { resolveWorkspace, canWrite } from "@/lib/workspace";
 import { db } from "@/lib/db";
 import { checkQuota, getResourceCap, getDiscoveryScanLimit, countMonthlyDiscoveryScans } from "@/lib/tier-limits";
 
@@ -17,20 +18,21 @@ export async function GET() {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const ws = await resolveWorkspace(session.user.id);
 
     const user = await db.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: ws.ownerId },
       select: { tier: true },
     });
     const tier = user?.tier ?? 'free';
 
     const [assessment, pulse, report, memberCount, vendorCount, discoveryUsed] = await Promise.all([
-      checkQuota(session.user.id, tier, 'assessment'),
-      checkQuota(session.user.id, tier, 'pulse'),
-      checkQuota(session.user.id, tier, 'report'),
-      db.teamMember.count({ where: { userId: session.user.id } }),
-      db.vendor.count({ where: { userId: session.user.id } }),
-      countMonthlyDiscoveryScans(session.user.id),
+      checkQuota(ws.ownerId, tier, 'assessment'),
+      checkQuota(ws.ownerId, tier, 'pulse'),
+      checkQuota(ws.ownerId, tier, 'report'),
+      db.teamMember.count({ where: { userId: ws.ownerId } }),
+      db.vendor.count({ where: { userId: ws.ownerId } }),
+      countMonthlyDiscoveryScans(ws.ownerId),
     ]);
     const memberCap = getResourceCap(tier, 'member');
     const vendorCap = getResourceCap(tier, 'vendor');

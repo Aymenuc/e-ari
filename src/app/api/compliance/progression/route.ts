@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { resolveWorkspace, canWrite } from "@/lib/workspace";
 import { getProgressionState } from "@/lib/progression";
 
 /** Serializable progression payload for client pages (`use client`). */
@@ -21,7 +22,8 @@ export async function GET() {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const state = await getProgressionState(session.user.id);
+    const ws = await resolveWorkspace(session.user.id);
+    const state = await getProgressionState(ws.ownerId);
     return NextResponse.json(progressionStateToJson(state));
   } catch (e) {
     console.error("compliance/progression:", e);

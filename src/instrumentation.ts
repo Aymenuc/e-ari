@@ -22,7 +22,7 @@
 // Bump this whenever a new migration is added to `apply-runtime-schema.ts`
 // or to the inline migrations below. Format: YYYY-MM-DD-N where N counts
 // migrations within the same day.
-const SCHEMA_VERSION = "2026-05-09-3";
+const SCHEMA_VERSION = "2026-05-09-4";
 
 // Module-scope guard: once a container has run instrumentation, never re-run.
 let migrationsApplied = false;

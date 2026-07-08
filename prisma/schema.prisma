@@ -620,3 +620,18 @@ model ApiKey {
 
   @@index([userId])
 }
+
+model OrgMembership {
+  id           String    @id @default(cuid())
+  ownerId      String // workspace owner's User.id
+  memberUserId String? // set once the invite is accepted
+  invitedEmail String
+  role         String    @default("member") // admin | member | viewer
+  status       String    @default("invited") // invited | active | revoked
+  invitedAt    DateTime  @default(now())
+  acceptedAt   DateTime?
+
+  @@unique([ownerId, invitedEmail])
+  @@index([memberUserId])
+  @@index([ownerId])
+}
