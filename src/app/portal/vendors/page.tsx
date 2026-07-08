@@ -10,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { ShieldAlert, Loader2, Send, Trash2, Building2 } from 'lucide-react';
+import { ShieldAlert, Loader2, Send, Trash2, Building2, FileUp } from 'lucide-react';
+import { useRef } from 'react';
 
 interface Vendor {
   id: string; name: string; websiteUrl: string | null; category: string | null;
@@ -33,6 +34,20 @@ export default function VendorsPage() {
   const [name, setName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [busy, setBusy] = useState(false);
+  const uploadTarget = useRef<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const uploadEvidence = async (file: File) => {
+    const vendorId = uploadTarget.current;
+    if (!vendorId) return;
+    setBusy(true);
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch(`/api/vendors/${vendorId}/evidence`, { method: 'POST', body: fd });
+    setBusy(false);
+    if (res.ok) toast({ title: 'Evidence uploaded', description: 'Clause extraction runs in the background — mapped clauses become reusable across obligations.' });
+    else toast({ title: 'Upload failed', description: (await res.json()).error, variant: 'destructive' });
+  };
 
   const load = useCallback(async () => {
     const res = await fetch('/api/vendors');
@@ -123,6 +138,9 @@ export default function VendorsPage() {
                         <Button size="sm" variant="outline" disabled={busy} onClick={() => sendQuestionnaire(v)} className="border-eari-blue/30 text-eari-blue-light hover:bg-eari-blue/10 font-sans text-xs">
                           <Send className="h-3.5 w-3.5 mr-1.5" />{v.questionnaireStatus === 'completed' ? 'Re-send questionnaire' : 'Send questionnaire'}
                         </Button>
+                        <Button size="sm" variant="outline" disabled={busy} onClick={() => { uploadTarget.current = v.id; fileRef.current?.click(); }} className="border-border text-muted-foreground hover:text-foreground font-sans text-xs">
+                          <FileUp className="h-3.5 w-3.5 mr-1.5" />Upload DPA / evidence
+                        </Button>
                         <button onClick={() => remove(v.id)} className="text-muted-foreground hover:text-red-400"><Trash2 className="h-4 w-4" /></button>
                       </div>
                     </div>
@@ -134,6 +152,7 @@ export default function VendorsPage() {
           </div>
         )}
       </main>
+      <input ref={fileRef} type="file" accept=".pdf,.docx,.txt,.md" hidden onChange={(e) => e.target.files?.[0] && uploadEvidence(e.target.files[0])} />
       <Footer />
     </div>
   );

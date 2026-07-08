@@ -330,6 +330,28 @@ A single `.zip` export, ready to hand to a Notified Body, an auditor, or your ow
 
 ---
 
+### 6.8 Shadow AI Discovery
+
+Most organisations underestimate their AI footprint by 3–10×. Discovery closes that gap without any integration work: export your app-usage list from Google Workspace, Okta, or Microsoft Entra (or a merchant list from your expense tool), upload the CSV, and E-ARI matches it against a curated catalog of AI tools — each entry annotated with vendor, category, whether the tool trains on customer data by default, and its EU AI Act relevance.
+
+Matched tools appear as *undeclared* until you register them. One click promotes a discovered tool into the AI System registry (§6.1) with the vendor auto-created in the vendor-risk module — from there the standard pipeline applies: risk classification, obligations, evidence.
+
+### 6.9 Third-Party AI Vendor Risk
+
+Every third-party AI product is someone else's model and someone else's data terms. The vendor-risk module sends each vendor a versioned ~10-minute questionnaire (data handling, security, AI-specific, legal) through a signed link — no account needed on their side. Scoring is deterministic: every answer carries points, unanswered questions count as worst-case, and critical flags (no DPA, trains on customer data, no deletion path) force a critical rating regardless of the numeric score. Vendor documents (DPAs, SOC 2 reports, subprocessor lists) upload into the evidence vault and run through the same clause-extraction pipeline as system evidence.
+
+### 6.10 Article 4 AI Literacy Compliance
+
+Article 4 of the AI Act — in force since 2 February 2025 — requires staff to have sufficient AI literacy for their role. E-ARI ships a versioned curriculum (AI fundamentals, EU AI Act essentials, data protection, responsible use), assigned to team members via personal magic links that expire after 30 days. Completions record the quiz score and a SHA-256 attestation hash binding member, module, timestamp, and content version. The whole roster exports as a regulator-ready evidence report; overdue members are nudged automatically each week.
+
+### 6.11 Continuous Controls
+
+The controls view answers the question an auditor actually asks: *which obligations are you meeting right now?* Every obligation applicable across your registered systems gets a live state — **passing** (supported by at least one extracted evidence clause), **failing** (an open critical/high gap), or **pending** (applicable but not yet evidenced) — plus warnings for attestations due within 30 days. States are derived from the evidence vault and gap radar, never self-declared. A weekly digest emails you only when something needs action.
+
+### 6.12 Public API
+
+Growth and above get read access; Enterprise gets write. Endpoints under `/api/v1/` expose assessments, the AI registry, vendor-risk results, and derived control states, authenticated with revocable scoped keys. See `/developers` for the reference.
+
 ## 7. Layer 4 — Continuous Monitoring
 
 Compliance is not a project. It's a process that runs forever.

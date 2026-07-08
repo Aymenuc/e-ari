@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { checkQuota } from "@/lib/tier-limits";
+import { checkQuota, getResourceCap, getDiscoveryScanLimit, countMonthlyDiscoveryScans } from "@/lib/tier-limits";
 
 /**
  * GET /api/quota — current month's usage for the signed-in user.
@@ -24,11 +24,17 @@ export async function GET() {
     });
     const tier = user?.tier ?? 'free';
 
-    const [assessment, pulse, report] = await Promise.all([
+    const [assessment, pulse, report, memberCount, vendorCount, discoveryUsed] = await Promise.all([
       checkQuota(session.user.id, tier, 'assessment'),
       checkQuota(session.user.id, tier, 'pulse'),
       checkQuota(session.user.id, tier, 'report'),
+      db.teamMember.count({ where: { userId: session.user.id } }),
+      db.vendor.count({ where: { userId: session.user.id } }),
+      countMonthlyDiscoveryScans(session.user.id),
     ]);
+    const memberCap = getResourceCap(tier, 'member');
+    const vendorCap = getResourceCap(tier, 'vendor');
+    const discoveryLimit = getDiscoveryScanLimit(tier);
 
     const serialise = (q: Awaited<ReturnType<typeof checkQuota>>) => ({
       used: q.used,
@@ -43,6 +49,11 @@ export async function GET() {
       assessment: serialise(assessment),
       pulse: serialise(pulse),
       report: serialise(report),
+      // Absolute caps (not monthly): Article 4 roster + vendor registry.
+      member: { used: memberCount, limit: Number.isFinite(memberCap) ? memberCap : null },
+      vendor: { used: vendorCount, limit: Number.isFinite(vendorCap) ? vendorCap : null },
+      // Monthly discovery scans.
+      discovery: { used: discoveryUsed, limit: Number.isFinite(discoveryLimit) ? discoveryLimit : null },
     });
   } catch (error) {
     console.error("Quota GET error:", error);

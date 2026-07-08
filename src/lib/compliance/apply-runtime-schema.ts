@@ -273,6 +273,11 @@ export async function applyComplianceRuntimeMigrations(db: PrismaClient): Promis
     CREATE INDEX IF NOT EXISTS "ApiKey_userId_idx" ON "ApiKey"("userId")
   `);
 
+  // Vendor-scoped evidence (TPRM) — 2026-05-09
+  await db.$executeRawUnsafe(`
+    ALTER TABLE "Evidence" ADD COLUMN IF NOT EXISTS "vendorId" TEXT
+  `);
+
   await db.$executeRawUnsafe(`
     ALTER TABLE "Evidence" ADD COLUMN IF NOT EXISTS "userId" TEXT
   `);

@@ -1549,6 +1549,50 @@ export default function Home() {
           <div className="h-px bg-gradient-to-r from-transparent via-eari-blue/20 to-transparent" />
         </div>
 
+        {/* ─── 4B. CONTINUOUS COMPLIANCE SUITE ─────────────────────────── */}
+        <ParallaxSection speed={0.04} className="py-20 sm:py-28 bg-navy-900" id="compliance-suite">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <FadeUp>
+              <div className="text-center max-w-2xl mx-auto mb-14">
+                <div className="mb-5 flex items-center justify-center gap-3">
+                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                    Beyond the score
+                  </span>
+                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                </div>
+                <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
+                  From readiness score to <span className="text-eari-blue-light italic">continuous compliance</span>
+                </h2>
+                <p className="mt-4 text-[17px] text-slate-400 font-sans leading-relaxed">
+                  The assessment tells you where you stand. These four modules keep you defensible — every week, not once a year.
+                </p>
+              </div>
+            </FadeUp>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {[
+                { title: 'Shadow AI Discovery', desc: 'Import an SSO or expense export and surface every AI tool in use — including the ones nobody declared. One click registers them for risk classification.', tag: 'FIND' },
+                { title: 'AI Vendor Risk', desc: 'Send vendors a 10-minute AI risk questionnaire. Deterministic scoring, critical flags for training-on-your-data and missing DPAs, evidence uploads per vendor.', tag: 'ASSESS' },
+                { title: 'Article 4 Literacy', desc: 'Assign staff training via magic links — no accounts needed. Completions carry tamper-evident hashes and export as a regulator-ready evidence report.', tag: 'TRAIN' },
+                { title: 'Continuous Controls', desc: 'Every applicable EU AI Act obligation with a live state: passing, failing, or awaiting evidence — derived from your evidence vault, never self-declared.', tag: 'PROVE' },
+              ].map((m, i) => (
+                <FadeUp key={m.title} delay={i * 0.06}>
+                  <div className="h-full rounded-xl border border-border/60 bg-navy-800 p-6 hover:border-eari-blue/40 transition-colors">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/80">{m.tag}</span>
+                    <h3 className="mt-2 font-heading text-base font-semibold text-slate-100">{m.title}</h3>
+                    <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground">{m.desc}</p>
+                  </div>
+                </FadeUp>
+              ))}
+            </div>
+            <FadeUp delay={0.2}>
+              <p className="mt-10 text-center font-sans text-sm text-muted-foreground">
+                Included with the <Link href="/pricing" className="text-eari-blue-light hover:underline">Autopilot plan</Link> — plus a read/write API for your GRC stack (<Link href="/developers" className="text-eari-blue-light hover:underline">API reference</Link>).
+              </p>
+            </FadeUp>
+          </div>
+        </ParallaxSection>
+
         {/* ─── 5. PRICING SECTION ───────────────────────────────────────── */}
         <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-900 relative overflow-hidden" id="pricing">
           {/* Subtle grid background */}

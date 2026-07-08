@@ -386,6 +386,7 @@ model AISystem {
 model Evidence {
   id       String    @id @default(cuid())
   systemId String?
+  vendorId String? // vendor-scoped evidence (TPRM) — DPAs, SOC2 reports, subprocessor lists
   system   AISystem? @relation(fields: [systemId], references: [id], onDelete: Cascade)
 
   userId String
