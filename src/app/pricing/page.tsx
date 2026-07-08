@@ -596,10 +596,10 @@ export default function PricingPage() {
                   <p className="mt-3 font-sans text-[15px] leading-relaxed text-muted-foreground max-w-2xl">
                     Everything in Growth, plus the full compliance suite: unlimited Shadow AI Discovery scans,
                     unlimited vendor risk questionnaires, unlimited team members with org-wide Article 4
-                    evidence reporting, the live Controls dashboard, and EU data residency.
+                    evidence reporting, the live Controls dashboard, and EU data residency available on request.
                   </p>
                   <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1.5 font-sans text-[13px] text-slate-300">
-                    {['Shadow AI Discovery — unlimited scans', 'Third-party AI vendor risk (TPRM)', 'Article 4 literacy compliance, org-wide', 'Continuous controls + weekly digest', 'EU data residency'].map((f) => (
+                    {['Shadow AI Discovery — unlimited scans', 'Third-party AI vendor risk (TPRM)', 'Article 4 literacy compliance, org-wide', 'Continuous controls + weekly digest', 'EU data residency on request'].map((f) => (
                       <span key={f} className="flex items-center gap-2"><span className="h-1 w-1 rounded-full bg-cyan-400" aria-hidden />{f}</span>
                     ))}
                   </div>
