@@ -58,6 +58,7 @@ export const ENDPOINT_LIMITS: Record<string, RateLimitConfig> = {
   assessment: { limit: 5, windowMs: FIFTEEN_MINUTES_MS },
   insights: { limit: 10, windowMs: FIFTEEN_MINUTES_MS },
   agent: { limit: 15, windowMs: FIFTEEN_MINUTES_MS },
+  scrape: { limit: 20, windowMs: FIFTEEN_MINUTES_MS },
   assistant: { limit: 20, windowMs: FIFTEEN_MINUTES_MS },
   literacy: { limit: 10, windowMs: FIFTEEN_MINUTES_MS },
   compliance_upload: { limit: 20, windowMs: ONE_HOUR_MS },
@@ -140,7 +141,7 @@ startCleanup();
  * @returns A `RateLimitResult` indicating whether the request is allowed and
  *   associated metadata.
  */
-export function checkRateLimit(
+function checkRateLimitMemory(
   endpointType: string,
   identifier: string,
 ): RateLimitResult {
@@ -190,6 +191,63 @@ export function checkRateLimit(
 }
 
 // ---------------------------------------------------------------------------
+// Durable (Postgres-backed) rate limiting
+// ---------------------------------------------------------------------------
+//
+// The in-memory store above resets on every cold start and is per-container,
+// which on serverless means the limits were decorative under real load. The
+// durable path uses a fixed-window counter in Postgres (atomic INSERT … ON
+// CONFLICT increment), shared across all containers. The in-memory sliding
+// window remains as a fail-open fallback when the DB is unreachable —
+// availability beats strictness for a rate limiter.
+
+async function checkDurable(
+  bucketPrefix: string,
+  limit: number,
+  windowMs: number,
+): Promise<RateLimitResult | null> {
+  try {
+    const { db } = await import("./db");
+    const now = Date.now();
+    const windowIdx = Math.floor(now / windowMs);
+    const key = `${bucketPrefix}:${windowIdx}`;
+    const windowEndsAt = new Date((windowIdx + 1) * windowMs);
+    const rows = await db.$queryRaw<Array<{ count: number }>>`
+      INSERT INTO "RateLimitBucket" ("key", "count", "windowEndsAt")
+      VALUES (${key}, 1, ${windowEndsAt})
+      ON CONFLICT ("key") DO UPDATE SET "count" = "RateLimitBucket"."count" + 1
+      RETURNING "count"
+    `;
+    const count = Number(rows[0]?.count ?? 1);
+    const resetAt = (windowIdx + 1) * windowMs;
+    if (count > limit) {
+      return {
+        allowed: false,
+        retryAfter: Math.max(1, Math.ceil((resetAt - now) / 1000)),
+        resetAt,
+      };
+    }
+    return { allowed: true, remaining: Math.max(0, limit - count), resetAt };
+  } catch (err) {
+    console.error("[rate-limit] durable check failed — falling back to in-memory:", err);
+    return null;
+  }
+}
+
+/**
+ * Check a request against the endpoint's rate limit. Durable Postgres
+ * counter first; in-memory sliding window as fallback when the DB errors.
+ */
+export async function checkRateLimit(
+  endpointType: string,
+  identifier: string,
+): Promise<RateLimitResult> {
+  const config = ENDPOINT_LIMITS[endpointType] ?? ENDPOINT_LIMITS.default;
+  const durable = await checkDurable(`${identifier}:${endpointType}`, config.limit, config.windowMs);
+  return durable ?? checkRateLimitMemory(endpointType, identifier);
+}
+
+// ---------------------------------------------------------------------------
 // Headers helper
 // ---------------------------------------------------------------------------
 
@@ -230,33 +288,35 @@ export function getRateLimitHeaders(
  * Returns a 429 NextResponse if rate-limited, or null if allowed.
  * The limit/windowSeconds params override the ENDPOINT_LIMITS config.
  */
-export function checkRateLimitFromRequest(
+export async function checkRateLimitFromRequest(
   request: Request,
   endpointType: string,
   limit: number,
   windowSeconds: number,
-): NextResponse | null {
+): Promise<NextResponse | null> {
   const identifier = resolveIdentifier(null, request);
-  const now = Date.now();
   const windowMs = windowSeconds * 1000;
-  const windowStart = now - windowMs;
-  const key = `${identifier}:${endpointType}`;
-
-  const existing = requestStore.get(key) ?? [];
-  const withinWindow = existing.filter((ts) => ts > windowStart);
-
-  if (withinWindow.length >= limit) {
-    const resetAt = withinWindow[0] + windowMs;
-    const retryAfter = Math.ceil((resetAt - now) / 1000);
-    requestStore.set(key, withinWindow);
+  let result = await checkDurable(`${identifier}:${endpointType}`, limit, windowMs);
+  if (!result) {
+    // In-memory fallback with the caller's custom window.
+    const now = Date.now();
+    const key = `${identifier}:${endpointType}`;
+    const withinWindow = (requestStore.get(key) ?? []).filter((ts) => ts > now - windowMs);
+    if (withinWindow.length >= limit) {
+      const resetAt = withinWindow[0] + windowMs;
+      result = { allowed: false, retryAfter: Math.max(1, Math.ceil((resetAt - now) / 1000)), resetAt };
+    } else {
+      withinWindow.push(now);
+      requestStore.set(key, withinWindow);
+      result = { allowed: true, remaining: limit - withinWindow.length, resetAt: withinWindow[0] + windowMs };
+    }
+  }
+  if (!result.allowed) {
     return NextResponse.json(
-      { error: 'Too many requests. Please try again later.', retryAfter: retryAfter > 0 ? retryAfter : 1 },
-      { status: 429, headers: { 'Retry-After': String(retryAfter > 0 ? retryAfter : 1) } }
+      { error: 'Too many requests. Please try again later.', retryAfter: result.retryAfter },
+      { status: 429, headers: { 'Retry-After': String(result.retryAfter) } }
     );
   }
-
-  withinWindow.push(now);
-  requestStore.set(key, withinWindow);
   return null;
 }
 

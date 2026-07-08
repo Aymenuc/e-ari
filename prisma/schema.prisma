@@ -635,3 +635,9 @@ model OrgMembership {
   @@index([memberUserId])
   @@index([ownerId])
 }
+
+model RateLimitBucket {
+  key          String   @id // identifier:endpoint:windowIndex
+  count        Int      @default(0)
+  windowEndsAt DateTime
+}

@@ -23,7 +23,7 @@ export async function GET(
 
     // Rate limit insights (LLM-powered, expensive)
     const identifier = resolveIdentifier(session.user.id, req);
-    const rateResult = checkRateLimit("insights", identifier);
+    const rateResult = await checkRateLimit("insights", identifier);
     if (!rateResult.allowed) {
       return NextResponse.json(
         { error: "Rate limit exceeded. Please wait before requesting insights again.", retryAfter: rateResult.retryAfter },

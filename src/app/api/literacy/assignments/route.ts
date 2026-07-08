@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     if (!canWrite(ws.role)) return NextResponse.json({ error: "Your seat is view-only in this workspace." }, { status: 403 });
 
     const identifier = resolveIdentifier(session.user.id, req);
-    const rate = checkRateLimit("default", identifier);
+    const rate = await checkRateLimit("default", identifier);
     if (!rate.allowed) {
       return NextResponse.json({ error: "Rate limit exceeded.", retryAfter: rate.retryAfter }, { status: 429, headers: getRateLimitHeaders("default", rate) });
     }

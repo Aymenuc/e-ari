@@ -12,7 +12,7 @@ import { getBaseUrl } from "@/lib/site-url";
 export async function POST(req: NextRequest) {
   try {
     // Rate limit registration (5 per minute)
-    const rateLimitError = checkRateLimitFromRequest(req, 'register', 5, 60);
+    const rateLimitError = await checkRateLimitFromRequest(req, 'register', 5, 60);
     if (rateLimitError) return rateLimitError;
 
     const body = await req.json();

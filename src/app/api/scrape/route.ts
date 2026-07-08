@@ -31,13 +31,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // ─── Tier enforcement: Context enrichment requires Professional or Enterprise ───
-    // Scraping uses web search + LLM synthesis; enforce server-side tier gating.
-    const user = await db.user.findUnique({ where: { id: session.user.id }, select: { tier: true } });
+    // Paid-only feature: Professional / Growth / Enterprise.
+    // Use DB tier (not JWT) to avoid stale-session entitlements.
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { tier: true },
+    });
     const userTier = user?.tier || 'free';
     if (userTier === 'free') {
       return NextResponse.json(
-        { error: 'Context enrichment requires Professional or Enterprise tier. Upgrade to unlock AI-powered organizational analysis.', tierRequired: 'professional' },
+        {
+          error: 'Context enrichment requires a paid plan (Professional, Growth, or Enterprise).',
+          tierRequired: 'professional',
+          currentTier: userTier,
+        },
         { status: 403 }
       );
     }
@@ -46,11 +53,11 @@ export async function POST(request: NextRequest) {
     // synthesis call, all of which cost real money per request. Was
     // previously unrate-limited; a single Pro user could DoS our LLM budget.
     const identifier = resolveIdentifier(session.user.id, request);
-    const rateResult = checkRateLimit('agent', identifier);
+    const rateResult = await checkRateLimit('scrape', identifier);
     if (!rateResult.allowed) {
       return NextResponse.json(
         { error: 'Rate limit exceeded. Please wait before requesting another scrape.', retryAfter: rateResult.retryAfter },
-        { status: 429, headers: getRateLimitHeaders('agent', rateResult) }
+        { status: 429, headers: getRateLimitHeaders('scrape', rateResult) }
       );
     }
 

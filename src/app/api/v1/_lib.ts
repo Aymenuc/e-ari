@@ -15,7 +15,7 @@ export async function guardV1(
   if (!auth.ok) {
     return { auth, fail: NextResponse.json({ error: auth.error }, { status: auth.status ?? 401 }) };
   }
-  const rate = checkRateLimit("default", `apikey:${auth.keyId}`);
+  const rate = await checkRateLimit("default", `apikey:${auth.keyId}`);
   if (!rate.allowed) {
     return {
       auth,

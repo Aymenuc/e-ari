@@ -37,7 +37,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     const ws = await resolveWorkspace(session.user.id);
     if (!canWrite(ws.role)) return NextResponse.json({ error: "Your seat is view-only in this workspace." }, { status: 403 });
     const identifier = resolveIdentifier(session.user.id, req);
-    const rate = checkRateLimit("compliance_upload", identifier);
+    const rate = await checkRateLimit("compliance_upload", identifier);
     if (!rate.allowed) {
       return NextResponse.json({ error: "Upload rate limit exceeded.", retryAfter: rate.retryAfter }, { status: 429, headers: getRateLimitHeaders("compliance_upload", rate) });
     }

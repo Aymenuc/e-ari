@@ -22,13 +22,29 @@
 // Bump this whenever a new migration is added to `apply-runtime-schema.ts`
 // or to the inline migrations below. Format: YYYY-MM-DD-N where N counts
 // migrations within the same day.
-const SCHEMA_VERSION = "2026-05-09-4";
+const SCHEMA_VERSION = "2026-05-09-5";
 
 // Module-scope guard: once a container has run instrumentation, never re-run.
 let migrationsApplied = false;
 
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
+
+  // ── Sentry (server) — no-op until SENTRY_DSN is set ────────────────────
+  if (process.env.SENTRY_DSN) {
+    try {
+      const Sentry = await import("@sentry/nextjs");
+      Sentry.init({
+        dsn: process.env.SENTRY_DSN,
+        environment: process.env.VERCEL_ENV || process.env.NODE_ENV,
+        tracesSampleRate: 0.05,
+        sendDefaultPii: false, // compliance product — never attach PII by default
+      });
+      console.log("[instrumentation] Sentry initialised");
+    } catch (err) {
+      console.error("[instrumentation] Sentry init failed:", err);
+    }
+  }
 
   // ── NEXTAUTH_URL auto-detection ────────────────────────────────────────
   const nextAuthUrl = process.env.NEXTAUTH_URL;
@@ -125,4 +141,16 @@ export async function register() {
   } catch (err) {
     console.error("[instrumentation] Schema migration error:", err);
   }
+}
+
+/**
+ * Next.js server-error hook — forwards unhandled request errors to Sentry.
+ * No-op without SENTRY_DSN.
+ */
+export async function onRequestError(
+  ...args: Parameters<(typeof import("@sentry/nextjs"))["captureRequestError"]>
+) {
+  if (!process.env.SENTRY_DSN) return;
+  const Sentry = await import("@sentry/nextjs");
+  return Sentry.captureRequestError(...args);
 }

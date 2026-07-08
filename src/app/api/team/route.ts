@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const rate = checkRateLimit("default", resolveIdentifier(session.user.id, req));
+    const rate = await checkRateLimit("default", resolveIdentifier(session.user.id, req));
     if (!rate.allowed) return NextResponse.json({ error: "Rate limit exceeded." }, { status: 429, headers: getRateLimitHeaders("default", rate) });
 
     const ws = await resolveWorkspace(session.user.id);

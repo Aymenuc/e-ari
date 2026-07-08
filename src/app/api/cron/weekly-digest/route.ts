@@ -143,6 +143,13 @@ export async function POST(req: NextRequest) {
     console.error("[weekly-digest] training reminders failed:", e);
   }
 
+  // ── Housekeeping: purge expired rate-limit buckets ────────────────────
+  try {
+    await db.$executeRawUnsafe(`DELETE FROM "RateLimitBucket" WHERE "windowEndsAt" < NOW() - INTERVAL '1 hour'`);
+  } catch (e) {
+    console.error("[weekly-digest] rate-limit bucket cleanup failed:", e);
+  }
+
   return NextResponse.json({ digestsSent, remindersSent });
 }
 

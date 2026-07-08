@@ -11,8 +11,8 @@ import { checkRateLimit, resolveIdentifier, getRateLimitHeaders } from "@/lib/ra
  * POST → { moduleId, answers: number[] } → grade, record completion on pass
  */
 
-function rateLimited(req: NextRequest) {
-  const rate = checkRateLimit("default", resolveIdentifier(null, req));
+async function rateLimited(req: NextRequest) {
+  const rate = await checkRateLimit("default", resolveIdentifier(null, req));
   if (!rate.allowed) {
     return NextResponse.json({ error: "Too many requests." }, { status: 429, headers: getRateLimitHeaders("default", rate) });
   }
@@ -20,7 +20,7 @@ function rateLimited(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest, ctx: { params: Promise<{ token: string }> }) {
-  const limited = rateLimited(req);
+  const limited = await rateLimited(req);
   if (limited) return limited;
   const { token } = await ctx.params;
   const payload = verifyMemberToken(token, "training");
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ token: stri
 }
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ token: string }> }) {
-  const limited = rateLimited(req);
+  const limited = await rateLimited(req);
   if (limited) return limited;
   const { token } = await ctx.params;
   const payload = verifyMemberToken(token, "training");

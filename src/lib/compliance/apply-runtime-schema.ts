@@ -297,6 +297,19 @@ export async function applyComplianceRuntimeMigrations(db: PrismaClient): Promis
     CREATE INDEX IF NOT EXISTS "OrgMembership_memberUserId_idx" ON "OrgMembership"("memberUserId")
   `);
 
+  // Durable rate limiting — 2026-05-09
+  await db.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "RateLimitBucket" (
+      "key" TEXT NOT NULL,
+      "count" INTEGER NOT NULL DEFAULT 0,
+      "windowEndsAt" TIMESTAMP(3) NOT NULL,
+      CONSTRAINT "RateLimitBucket_pkey" PRIMARY KEY ("key")
+    )
+  `);
+  await db.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS "RateLimitBucket_windowEndsAt_idx" ON "RateLimitBucket"("windowEndsAt")
+  `);
+
   await db.$executeRawUnsafe(`
     ALTER TABLE "Evidence" ADD COLUMN IF NOT EXISTS "userId" TEXT
   `);

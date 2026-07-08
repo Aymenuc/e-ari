@@ -6,14 +6,14 @@ import { checkRateLimit, resolveIdentifier, getRateLimitHeaders } from "@/lib/ra
 
 /** PUBLIC tokenized vendor questionnaire. GET → questions; POST → answers. */
 
-function rateLimited(req: NextRequest) {
-  const rate = checkRateLimit("default", resolveIdentifier(null, req));
+async function rateLimited(req: NextRequest) {
+  const rate = await checkRateLimit("default", resolveIdentifier(null, req));
   if (!rate.allowed) return NextResponse.json({ error: "Too many requests." }, { status: 429, headers: getRateLimitHeaders("default", rate) });
   return null;
 }
 
 export async function GET(req: NextRequest, ctx: { params: Promise<{ token: string }> }) {
-  const limited = rateLimited(req);
+  const limited = await rateLimited(req);
   if (limited) return limited;
   const { token } = await ctx.params;
   const payload = verifyMemberToken(token, "vendor_questionnaire");
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ token: stri
 }
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ token: string }> }) {
-  const limited = rateLimited(req);
+  const limited = await rateLimited(req);
   if (limited) return limited;
   const { token } = await ctx.params;
   const payload = verifyMemberToken(token, "vendor_questionnaire");

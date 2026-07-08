@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     // Rate limit pulse runs (5 per 15 minutes)
-    const rateLimitError = checkRateLimitFromRequest(req, 'pulse', 5, 900);
+    const rateLimitError = await checkRateLimitFromRequest(req, 'pulse', 5, 900);
     if (rateLimitError) return rateLimitError;
 
     const session = await getServerSession(authOptions);

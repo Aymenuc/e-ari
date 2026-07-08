@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   // to the DB and sends email. Without a limit, anyone could fill the
   // contact table with junk or use it as a spam relay against support.
   const identifier = resolveIdentifier(null, req);
-  const rateResult = checkRateLimit('default', identifier);
+  const rateResult = await checkRateLimit('default', identifier);
   if (!rateResult.allowed) {
     return NextResponse.json(
       { error: 'Too many requests. Please try again later.', retryAfter: rateResult.retryAfter },

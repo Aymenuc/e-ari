@@ -231,7 +231,7 @@ export async function POST(req: NextRequest) {
 
     // Rate limit assistant calls
     const identifier = resolveIdentifier(session.user.id, req);
-    const rateResult = checkRateLimit("assistant", identifier);
+    const rateResult = await checkRateLimit("assistant", identifier);
     if (!rateResult.allowed) {
       return NextResponse.json(
         { error: 'Rate limit exceeded. Please wait before sending another message.', retryAfter: rateResult.retryAfter },

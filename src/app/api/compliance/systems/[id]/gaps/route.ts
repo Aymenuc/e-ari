@@ -37,7 +37,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const identifier = resolveIdentifier(session.user.id, req);
-    const rateResult = checkRateLimit("compliance_generate", identifier);
+    const rateResult = await checkRateLimit("compliance_generate", identifier);
     if (!rateResult.allowed) {
       return NextResponse.json(
         { error: "Generation rate limit exceeded.", retryAfter: rateResult.retryAfter },

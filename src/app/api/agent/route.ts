@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     // Rate limit agent calls (LLM-powered, expensive)
     const identifier = resolveIdentifier(session.user.id, request);
-    const rateResult = checkRateLimit("agent", identifier);
+    const rateResult = await checkRateLimit("agent", identifier);
     if (!rateResult.allowed) {
       return NextResponse.json(
         { error: 'Rate limit exceeded. Please wait before making another agent request.', retryAfter: rateResult.retryAfter },

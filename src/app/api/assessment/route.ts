@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     // Rate limit assessment creation (expensive: DB + agent triggers)
     const identifier = resolveIdentifier(session.user.id, req);
-    const rateResult = checkRateLimit("assessment", identifier);
+    const rateResult = await checkRateLimit("assessment", identifier);
     if (!rateResult.allowed) {
       return NextResponse.json(
         { error: "Rate limit exceeded. Please wait before creating another assessment.", retryAfter: rateResult.retryAfter },

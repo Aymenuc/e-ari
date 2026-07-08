@@ -15,7 +15,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const identifier = resolveIdentifier(session.user.id, req);
-    const rateResult = checkRateLimit("compliance_classify", identifier);
+    const rateResult = await checkRateLimit("compliance_classify", identifier);
     if (!rateResult.allowed) {
       return NextResponse.json(
         { error: "Classification rate limit exceeded.", retryAfter: rateResult.retryAfter },

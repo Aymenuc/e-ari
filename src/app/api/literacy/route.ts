@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 
     // Rate limit literacy (LLM-powered learning paths)
     const identifier = resolveIdentifier(session.user.id, req);
-    const rateResult = checkRateLimit("literacy", identifier);
+    const rateResult = await checkRateLimit("literacy", identifier);
     if (!rateResult.allowed) {
       return NextResponse.json(
         { error: 'Rate limit exceeded. Please wait before generating another learning path.', retryAfter: rateResult.retryAfter },
