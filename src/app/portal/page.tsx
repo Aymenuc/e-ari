@@ -34,7 +34,7 @@ import {
 import { Navigation } from '@/components/shared/navigation';
 import { Footer } from '@/components/shared/footer';
 import { ProgressionBanner } from '@/components/shared/progression-banner';
-import { OnboardingChecklist } from '@/components/shared/onboarding-checklist';
+import { JourneyGuide } from '@/components/shared/journey-guide';
 import {
   ComplianceInboxCard,
   type PortalInboxItem,
@@ -372,7 +372,7 @@ export default function PortalPage() {
           </section>
 
           <section id="inbox" className="mb-8 space-y-6 scroll-mt-24">
-            <OnboardingChecklist />
+            <JourneyGuide />
             {progressionState ? (
               <ProgressionBanner state={progressionState} />
             ) : null}
@@ -472,52 +472,10 @@ export default function PortalPage() {
             </Card>
           </section>
 
-          {/* ── Quick Access ────────────────────────────────────────────────────── */}
-          <section className="mb-8">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="h-px w-8 bg-eari-blue/60" aria-hidden />
-                <h2 className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
-                  Quick access
-                </h2>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[
-                { href: '/portal/discovery', icon: Search, label: 'Shadow AI Discovery', sub: 'Find undeclared AI tools' },
-                { href: '/portal/controls', icon: Activity, label: 'Controls', sub: 'Live obligation status' },
-                { href: '/portal/vendors', icon: Plug, label: 'Vendor Risk', sub: 'Third-party AI TPRM' },
-                { href: '/portal/literacy-compliance', icon: GraduationCap, label: 'Article 4 Training', sub: 'Literacy compliance' },
-                { href: '/portal/team', icon: Users, label: 'Team', sub: 'Shared workspace seats' },
-                { href: '/pulse', icon: Activity, label: 'AI Pulse', sub: 'Monthly monitoring' },
-                { href: '/literacy', icon: GraduationCap, label: 'AI Literacy', sub: 'Training & quizzes' },
-                { href: '/discovery', icon: Search, label: 'Discovery Agent', sub: 'AI profile builder' },
-                { href: '/integrations', icon: Plug, label: 'Integrations', sub: 'Connect & extend' },
-              ].map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link key={item.href} href={item.href} className="group">
-                    <Card className="h-full border-border/50 bg-navy-800/70 transition-all duration-200 hover:border-eari-blue/30 hover:bg-navy-800">
-                      <CardContent className="flex flex-col gap-3 p-4 sm:p-5">
-                        <Icon
-                          className="h-5 w-5 text-muted-foreground/70 transition-colors group-hover:text-eari-blue-light"
-                          aria-hidden
-                        />
-                        <div>
-                          <p className="font-heading text-sm font-semibold text-foreground">
-                            {item.label}
-                          </p>
-                          <p className="mt-0.5 font-sans text-[11px] text-muted-foreground">
-                            {item.sub}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                );
-              })}
-            </div>
-          </section>
+          {/* Quick Access grid removed 2026-05-09 — superseded by the
+              JourneyGuide spine above (one primary action + tools row),
+              which stages module discovery instead of presenting eight
+              equal tiles to a first-time user. */}
 
           {/* ── Assessment History ─────────────────────────────────────────── */}
           <section className="mb-8">
