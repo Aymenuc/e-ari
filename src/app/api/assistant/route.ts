@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getSetting } from '@/lib/platform-settings';
 import { db } from '@/lib/db';
 import { getPipelineContext } from '@/lib/orchestrator';
 import type { PipelineContext } from '@/lib/orchestrator';
@@ -217,6 +218,15 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // ── Platform kill-switch: admins can disable the assistant globally ──
+    const assistantEnabled = await getSetting('enable_ai_assistant');
+    if (assistantEnabled === false) {
+      return NextResponse.json(
+        { error: 'The AI assistant is temporarily disabled by the administrator.' },
+        { status: 503 },
+      );
     }
 
     // ── Tier Check: Assistant requires Professional or Enterprise ──

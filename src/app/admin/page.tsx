@@ -854,24 +854,9 @@ function SettingsTab() {
         </CardHeader>
         <CardContent className="divide-y divide-border/50">
           <SettingRow
-            settingKey="require_2fa"
-            label="Two-Factor Authentication"
-            description="Require 2FA for admin accounts"
-          />
-          <SettingRow
             settingKey="rate_limiting"
             label="Rate Limiting"
-            description="Limit API requests per user to 100/min"
-          />
-          <SettingRow
-            settingKey="audit_logging"
-            label="Audit Logging"
-            description="Log all admin actions for compliance"
-          />
-          <SettingRow
-            settingKey="ip_whitelisting"
-            label="IP Whitelisting"
-            description="Restrict admin access to known IPs"
+            description="Enforce per-user / per-IP request limits across all API routes. Turn off only to diagnose limiter issues."
           />
         </CardContent>
       </Card>

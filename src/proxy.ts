@@ -80,6 +80,25 @@ const ADMIN_API_ROUTES = [
   "/api/admin",
 ];
 
+
+// ─── Maintenance-mode check (cached per edge isolate) ─────────────────────
+let _maintCache: { value: boolean; at: number } | null = null;
+const MAINT_TTL_MS = 30_000;
+async function isMaintenanceOn(request: NextRequest): Promise<boolean> {
+  const now = Date.now();
+  if (_maintCache && now - _maintCache.at < MAINT_TTL_MS) return _maintCache.value;
+  try {
+    const res = await fetch(new URL("/api/maintenance-status", request.url), {
+      headers: { "x-internal": "proxy" },
+    });
+    const json = (await res.json()) as { maintenance?: boolean };
+    _maintCache = { value: json.maintenance === true, at: now };
+    return _maintCache.value;
+  } catch {
+    return false; // fail open
+  }
+}
+
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -97,6 +116,28 @@ export default async function proxy(request: NextRequest) {
   });
 
   const isAuthenticated = !!token;
+  const role = (token?.role as string | undefined) ?? null;
+
+  // ─── Maintenance mode ─────────────────────────────────────────────────
+  // Admin toggle at /admin. Non-admins get the maintenance page; admins,
+  // the maintenance page itself, the status endpoint, and auth routes pass
+  // through so an admin can still sign in and flip it back off. Checked via
+  // a tiny public endpoint with an in-isolate cache so we hit the DB at most
+  // once per 30 s per edge isolate rather than on every request.
+  if (
+    !pathname.startsWith("/api/") &&
+    pathname !== "/maintenance" &&
+    !pathname.startsWith("/auth/") &&
+    role !== "admin"
+  ) {
+    if (await isMaintenanceOn(request)) {
+      return applySecurityHeaders(
+        NextResponse.rewrite(new URL("/maintenance", request.url)),
+        pathname,
+      );
+    }
+  }
+
 
   // ─── API Route Protection ────────────────────────────────────────────
 

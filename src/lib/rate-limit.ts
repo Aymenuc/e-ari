@@ -238,10 +238,31 @@ async function checkDurable(
  * Check a request against the endpoint's rate limit. Durable Postgres
  * counter first; in-memory sliding window as fallback when the DB errors.
  */
+
+// Admin rate_limiting toggle, cached per isolate (default ON if unreadable).
+let _rlCache: { on: boolean; at: number } | null = null;
+async function rateLimitingEnabled(): Promise<boolean> {
+  const now = Date.now();
+  if (_rlCache && now - _rlCache.at < 30_000) return _rlCache.on;
+  try {
+    const { getSetting } = await import("./platform-settings");
+    const on = (await getSetting("rate_limiting")) !== false;
+    _rlCache = { on, at: now };
+    return on;
+  } catch {
+    return true; // fail closed — keep limiting if the setting can't be read
+  }
+}
+
 export async function checkRateLimit(
   endpointType: string,
   identifier: string,
 ): Promise<RateLimitResult> {
+  // Admin kill-switch: when rate_limiting is turned off, allow everything.
+  // Cached 30 s per isolate so this doesn't add a query per request.
+  if (!(await rateLimitingEnabled())) {
+    return { allowed: true, remaining: Number.MAX_SAFE_INTEGER, resetAt: Date.now() + 60_000 };
+  }
   const config = ENDPOINT_LIMITS[endpointType] ?? ENDPOINT_LIMITS.default;
   const durable = await checkDurable(`${identifier}:${endpointType}`, config.limit, config.windowMs);
   return durable ?? checkRateLimitMemory(endpointType, identifier);
