@@ -43,12 +43,14 @@ export function applicableObligationsForTier(
   if (t === "limited") {
     return AI_ACT_OBLIGATIONS.filter(
       (o) =>
+        o.code === "AI_ACT_ART_4" || // AI literacy applies at every tier
         /^AI_ACT_ART_5/.test(o.code) ||
         o.hintArticles.some((h) => /Art\.5[0-3]|Annex III/i.test(h)),
     );
   }
   return AI_ACT_OBLIGATIONS.filter(
     (o) =>
+      o.code === "AI_ACT_ART_4" || // AI literacy applies at every tier
       o.code === "AI_ACT_ART_50" ||
       o.code === "AI_ACT_ART_52" ||
       o.code === "AI_ACT_ART_53",

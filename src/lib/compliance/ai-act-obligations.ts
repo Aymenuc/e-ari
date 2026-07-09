@@ -14,6 +14,14 @@ export interface AiActObligation {
 
 export const AI_ACT_OBLIGATIONS: AiActObligation[] = [
   {
+    code: "AI_ACT_ART_4",
+    label: "AI literacy of staff and operators (applies to ALL AI systems)",
+    severity: "major",
+    recommendedArtifactType: "training_record",
+    ownerRoleHint: "CHRO",
+    hintArticles: ["Art.4"],
+  },
+  {
     code: "AI_ACT_ART_9",
     label: "Risk management system throughout the lifecycle",
     severity: "critical",
@@ -71,7 +79,7 @@ export const AI_ACT_OBLIGATIONS: AiActObligation[] = [
   },
   {
     code: "AI_ACT_ART_16",
-    label: "Obligations of high-risk AI system operators (deployer core duties)",
+    label: "Obligations of providers of high-risk AI systems",
     severity: "critical",
     recommendedArtifactType: "policy",
     ownerRoleHint: "AI owner",
@@ -87,7 +95,7 @@ export const AI_ACT_OBLIGATIONS: AiActObligation[] = [
   },
   {
     code: "AI_ACT_ART_18",
-    label: "Documentation for high-risk AI (operator-facing)",
+    label: "Documentation keeping (provider retention, 10 years)",
     severity: "major",
     recommendedArtifactType: "technical_doc",
     ownerRoleHint: "Compliance",
@@ -95,7 +103,7 @@ export const AI_ACT_OBLIGATIONS: AiActObligation[] = [
   },
   {
     code: "AI_ACT_ART_19",
-    label: "Automatically generated logs (deployer)",
+    label: "Automatically generated logs (provider retention)",
     severity: "major",
     recommendedArtifactType: "policy",
     ownerRoleHint: "CISO",

@@ -13,6 +13,7 @@ import {
   STRIPE_PRICE_PRO_YEARLY,
   STRIPE_PRICE_GROWTH,
   STRIPE_PRICE_GROWTH_YEARLY,
+  STRIPE_PRICE_AUTOPILOT_YEARLY,
   isStripeSecretConfigured,
 } from '@/lib/stripe'
 
@@ -54,9 +55,9 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Autopilot (€15K ACV, annual-only) is sales-assist — no self-serve
-    // checkout until the Stripe price is provisioned.
-    if (requestedTier === 'autopilot') {
+    // Autopilot (€15K ACV, annual-only): self-serve checkout when the
+    // Stripe price is provisioned, contact-sales otherwise.
+    if (requestedTier === 'autopilot' && STRIPE_PRICE_AUTOPILOT_YEARLY.includes('placeholder')) {
       return NextResponse.json({
         url: '/pricing?contact=sales&plan=autopilot',
       })
@@ -66,7 +67,9 @@ export async function POST(request: NextRequest) {
     // allow-list checked — anything other than 'annual' is monthly.
     const isAnnual = billing === 'annual'
     let priceId: string
-    if (requestedTier === 'growth') {
+    if (requestedTier === 'autopilot') {
+      priceId = STRIPE_PRICE_AUTOPILOT_YEARLY // annual-only
+    } else if (requestedTier === 'growth') {
       priceId = isAnnual ? STRIPE_PRICE_GROWTH_YEARLY : STRIPE_PRICE_GROWTH
     } else {
       priceId = isAnnual ? STRIPE_PRICE_PRO_YEARLY : STRIPE_PRICE_PRO

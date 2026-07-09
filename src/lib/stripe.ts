@@ -48,6 +48,14 @@ export const STRIPE_PRICE_GROWTH_YEARLY =
     process.env.STRIPE_GROWTH_YEARLY_PRICE_ID,
   ) || 'price_growth_yearly_placeholder'
 
+// Autopilot is annual-only (€15,000/yr). Until this env var is set, the
+// checkout route falls back to the contact-sales flow — creating the price
+// in the Stripe dashboard + setting STRIPE_PRICE_AUTOPILOT_YEARLY makes
+// self-serve Autopilot checkout live with no code change.
+export const STRIPE_PRICE_AUTOPILOT_YEARLY =
+  firstEnv(process.env.STRIPE_PRICE_AUTOPILOT_YEARLY) ||
+  'price_autopilot_yearly_placeholder'
+
 /** True when STRIPE_SECRET_KEY is set and not a dev placeholder. */
 export function isStripeSecretConfigured(): boolean {
   const key = process.env.STRIPE_SECRET_KEY?.trim() || ''

@@ -71,6 +71,42 @@ export const authOptions: NextAuthOptions = {
       },
     }),
 
+    // ── Enterprise SSO (generic OIDC) ──────────────────────────────────────
+    // Works with any OIDC-compliant IdP — Okta, Microsoft Entra ID, Google
+    // Workspace, OneLogin, JumpCloud, Keycloak. SAML-only IdPs can front
+    // this with an OIDC bridge. Configure per deployment:
+    //   SSO_ISSUER        e.g. https://your-org.okta.com
+    //   SSO_CLIENT_ID / SSO_CLIENT_SECRET
+    //   NEXT_PUBLIC_SSO_PROVIDER_NAME (login-button label, optional)
+    // Redirect URI to register at the IdP: {origin}/api/auth/callback/enterprise-sso
+    ...(process.env.SSO_ISSUER && process.env.SSO_CLIENT_ID && process.env.SSO_CLIENT_SECRET
+      ? [
+          {
+            id: "enterprise-sso",
+            name: process.env.NEXT_PUBLIC_SSO_PROVIDER_NAME || "Enterprise SSO",
+            type: "oauth" as const,
+            wellKnown: `${process.env.SSO_ISSUER.replace(/\/+$/, "")}/.well-known/openid-configuration`,
+            authorization: { params: { scope: "openid email profile" } },
+            idToken: true,
+            checks: ["pkce", "state"] as ("pkce" | "state")[],
+            clientId: process.env.SSO_CLIENT_ID,
+            clientSecret: process.env.SSO_CLIENT_SECRET,
+            profile(profile: { sub: string; name?: string; preferred_username?: string; email?: string; picture?: string }) {
+              return {
+                id: profile.sub,
+                name: profile.name ?? profile.preferred_username ?? profile.email,
+                email: profile.email ?? "",
+                image: profile.picture ?? null,
+                // Real tier/role come from the DB in the jwt callback —
+                // these satisfy the augmented User type for first sign-in.
+                tier: "free",
+                role: "user",
+              };
+            },
+          },
+        ]
+      : []),
+
     // ── Google OAuth ────────────────────────────────────────────────────────
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
       ? [

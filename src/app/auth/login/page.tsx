@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Navigation } from "@/components/shared/navigation";
 import { Footer } from "@/components/shared/footer";
+import { AuthBrandLockup } from "@/components/shared/auth-brand-lockup";
 
 // ─── Inner component (uses useSearchParams) ──────────────────────────────────
 
@@ -54,9 +55,9 @@ function LoginForm() {
     <Card className="w-full max-w-md bg-navy-800 border-border">
       <CardHeader className="text-center">
         <div className="flex justify-center mb-4">
-          <img src="/logo.svg" alt="E-ARI" className="h-12 w-12 rounded-xl" />
+          <AuthBrandLockup />
         </div>
-        <CardTitle className="font-heading text-xl">Sign In to E-ARI</CardTitle>
+        <CardTitle className="font-heading text-xl">Sign in</CardTitle>
         <CardDescription className="text-muted-foreground font-sans">
           Access your assessments and readiness reports
         </CardDescription>
@@ -130,6 +131,17 @@ function LoginForm() {
           </svg>
           Continue with Google
         </Button>
+        {process.env.NEXT_PUBLIC_SSO_PROVIDER_NAME && (
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full mt-2 bg-navy-700 border-eari-blue/30 hover:bg-navy-600 font-sans flex items-center gap-2 text-eari-blue-light"
+            onClick={() => signIn("enterprise-sso", { callbackUrl })}
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Continue with {process.env.NEXT_PUBLIC_SSO_PROVIDER_NAME}
+          </Button>
+        )}
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground font-sans">
             Don&apos;t have an account?{" "}
