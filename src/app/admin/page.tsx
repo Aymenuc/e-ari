@@ -215,118 +215,24 @@ interface ComplianceLogRow {
   errorClass: string | null;
 }
 
-// ─── Agent Status Data ──────────────────────────────────────────────────
+// ─── Agent metadata (static: icon / name / colour) ───────────────────────
+// Live health (success rate, latency, run counts) comes from
+// /api/admin/agent-health, computed from the PipelineStage table.
 
-const AGENT_STATUS = [
-  {
-    id: "scoring",
-    name: "Scoring Agent",
-    icon: Activity,
-    status: "operational",
-    uptime: "99.9%",
-    uptimeNum: 99.9,
-    version: "4.2",
-    description: "Deterministic scoring pipeline — validates, normalizes, adjusts, and classifies",
-    color: "#10b981",
-    avgLatency: 42,
-    p99Latency: 128,
-    errorRate: 0.1,
-    cpu: 23,
-    memory: 41,
-    requests24h: 1847,
-    lastIncident: null as string | null,
-  },
-  {
-    id: "insight",
-    name: "Insight Agent",
-    icon: Brain,
-    status: "operational",
-    uptime: "99.7%",
-    uptimeNum: 99.7,
-    version: "4.2",
-    description: "AI-powered strategic narrative generation from assessment scores",
-    color: "#8b5cf6",
-    avgLatency: 380,
-    p99Latency: 1200,
-    errorRate: 0.3,
-    cpu: 45,
-    memory: 62,
-    requests24h: 1203,
-    lastIncident: null as string | null,
-  },
-  {
-    id: "discovery",
-    name: "Discovery Agent",
-    icon: Search,
-    status: "operational",
-    uptime: "99.5%",
-    uptimeNum: 99.5,
-    version: "4.2",
-    description: "Conversational stakeholder interview for qualitative insights",
-    color: "#3b82f6",
-    avgLatency: 210,
-    p99Latency: 890,
-    errorRate: 0.5,
-    cpu: 31,
-    memory: 38,
-    requests24h: 856,
-    lastIncident: null as string | null,
-  },
-  {
-    id: "report",
-    name: "Report Agent",
-    icon: FileOutput,
-    status: "degraded",
-    uptime: "98.2%",
-    uptimeNum: 98.2,
-    version: "4.2",
-    description: "HTML report generation (PDF conversion pending server-side renderer)",
-    color: "#f59e0b",
-    avgLatency: 1250,
-    p99Latency: 3800,
-    errorRate: 1.8,
-    cpu: 67,
-    memory: 78,
-    requests24h: 634,
-    lastIncident: "2h ago",
-  },
-  {
-    id: "assistant",
-    name: "Assistant Agent",
-    icon: MessageSquare,
-    status: "operational",
-    uptime: "99.6%",
-    uptimeNum: 99.6,
-    version: "4.2",
-    description: "Context-aware AI companion with assessment memory",
-    color: "#ec4899",
-    avgLatency: 290,
-    p99Latency: 980,
-    errorRate: 0.4,
-    cpu: 38,
-    memory: 55,
-    requests24h: 2104,
-    lastIncident: null as string | null,
-  },
-  {
-    id: "literacy",
-    name: "Literacy Agent",
-    icon: GraduationCap,
-    status: "partial",
-    uptime: "96.8%",
-    uptimeNum: 96.8,
-    version: "4.2",
-    description: "AI literacy quiz + role insights (role data is currently hardcoded)",
-    color: "#06b6d4",
-    avgLatency: 180,
-    p99Latency: 620,
-    errorRate: 3.2,
-    cpu: 52,
-    memory: 45,
-    requests24h: 423,
-    lastIncident: "45m ago",
-  },
+const AGENT_META: { id: string; name: string; icon: typeof Activity; color: string; description: string }[] = [
+  { id: "scoring",   name: "Scoring Agent",   icon: Activity,       color: "#10b981", description: "Deterministic scoring — validate, normalize, adjust, X-Ray, sector-weight, classify" },
+  { id: "insight",   name: "Insight Agent",   icon: Brain,          color: "#8b5cf6", description: "AI narrative generation grounded in scores + X-Ray findings" },
+  { id: "discovery", name: "Discovery Agent", icon: Search,         color: "#3b82f6", description: "Org context enrichment from public web sources" },
+  { id: "report",    name: "Report Agent",    icon: FileOutput,     color: "#f59e0b", description: "Board-ready .docx report compilation" },
+  { id: "assistant", name: "Assistant Agent", icon: MessageSquare,  color: "#ec4899", description: "Context-aware compliance assistant" },
+  { id: "literacy",  name: "Literacy Agent",  icon: GraduationCap,  color: "#06b6d4", description: "Adaptive AI literacy learning paths" },
 ];
+
+interface AgentHealth {
+  id: string; runs24h: number; completed: number; failed: number; running: number;
+  successRate: number | null; avgLatencyMs: number | null; p95LatencyMs: number | null;
+  lastFailureMinsAgo: number | null; status: string;
+}
 
 // ─── Animation Variants ─────────────────────────────────────────────────
 
@@ -892,6 +798,14 @@ function SettingsTab() {
 // ─── Main Component ─────────────────────────────────────────────────────
 
 export default function AdminPage() {
+  const [agentHealth, setAgentHealth] = useState<AgentHealth[] | null>(null);
+  useEffect(() => {
+    fetch('/api/admin/agent-health')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.agents) setAgentHealth(d.agents); })
+      .catch(() => {});
+  }, []);
+
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -1849,30 +1763,39 @@ export default function AdminPage() {
                       Agent Fleet Health
                     </CardTitle>
                     <Badge variant="outline" className="font-mono text-[10px] border-border text-muted-foreground">
-                      {AGENT_STATUS.filter(a => a.status === "operational").length}/{AGENT_STATUS.length} Healthy
+                      {agentHealth ? agentHealth.filter(a => a.status === "operational" || a.status === "idle").length : AGENT_META.length}/{AGENT_META.length} Healthy
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                    {AGENT_STATUS.map((agent) => {
-                      const AgentIcon = agent.icon;
+                    {AGENT_META.map((meta) => {
+                      const AgentIcon = meta.icon;
+                      const h = agentHealth?.find(a => a.id === meta.id);
+                      const dot = !h || h.status === "idle" ? "#64748b"
+                        : h.status === "operational" ? "#10b981"
+                        : h.status === "degraded" ? "#f59e0b" : "#ef4444";
+                      const detail = !agentHealth ? "…"
+                        : !h || h.runs24h === 0 ? "no runs 24h"
+                        : h.successRate !== null ? `${h.successRate}% ok · ${h.runs24h} run${h.runs24h === 1 ? "" : "s"}`
+                        : `${h.running} running`;
                       return (
-                        <div key={agent.id} className="flex items-center gap-2.5 p-2.5 rounded-lg bg-navy-800/40 border border-border/20">
+                        <div key={meta.id} className="flex items-center gap-2.5 p-2.5 rounded-lg bg-navy-800/40 border border-border/20" title={h && h.avgLatencyMs != null ? `avg ${h.avgLatencyMs}ms · p95 ${h.p95LatencyMs}ms${h.lastFailureMinsAgo != null ? ` · last fail ${h.lastFailureMinsAgo}m ago` : ""}` : meta.description}>
                           <div className="relative">
-                            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full" style={{ backgroundColor: agent.status === "operational" ? "#10b981" : agent.status === "degraded" ? "#f59e0b" : "#06b6d4" }} />
-                            <div className="flex h-7 w-7 items-center justify-center rounded-md" style={{ backgroundColor: `${agent.color}15` }}>
-                              <AgentIcon className="h-3.5 w-3.5" style={{ color: agent.color }} />
+                            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full" style={{ backgroundColor: dot }} />
+                            <div className="flex h-7 w-7 items-center justify-center rounded-md" style={{ backgroundColor: `${meta.color}15` }}>
+                              <AgentIcon className="h-3.5 w-3.5" style={{ color: meta.color }} />
                             </div>
                           </div>
                           <div className="min-w-0">
-                            <p className="font-heading text-[11px] font-medium text-foreground truncate">{agent.name.replace(' Agent', '')}</p>
-                            <p className="font-mono text-[9px] text-muted-foreground">{agent.uptime}</p>
+                            <p className="font-heading text-[11px] font-medium text-foreground truncate">{meta.name.replace(' Agent', '')}</p>
+                            <p className="font-mono text-[9px] text-muted-foreground truncate">{detail}</p>
                           </div>
                         </div>
                       );
                     })}
                   </div>
+                  <p className="font-mono text-[9px] text-muted-foreground/70 mt-3">Live · derived from pipeline runs, last 24h</p>
                 </CardContent>
               </Card>
 
@@ -2731,180 +2654,75 @@ export default function AdminPage() {
                 </Badge>
               </div>
 
-              {/* ─── Fleet Overview Bar ────────────────────────────────────── */}
+              {/* ─── Fleet Overview (live, 24h) ────────────────────────────── */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <Card className="bg-card/60 border-border/40">
                   <CardContent className="p-3 text-center">
                     <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">Operational</p>
-                    <p className="font-heading text-2xl font-bold text-emerald-400">{AGENT_STATUS.filter(a => a.status === "operational").length}<span className="text-sm text-muted-foreground">/{AGENT_STATUS.length}</span></p>
+                    <p className="font-heading text-2xl font-bold text-emerald-400">{agentHealth ? agentHealth.filter(a => a.status === "operational").length : "…"}<span className="text-sm text-muted-foreground">/{AGENT_META.length}</span></p>
                   </CardContent>
                 </Card>
                 <Card className="bg-card/60 border-border/40">
                   <CardContent className="p-3 text-center">
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">Degraded</p>
-                    <p className="font-heading text-2xl font-bold text-amber-400">{AGENT_STATUS.filter(a => a.status === "degraded" || a.status === "partial").length}</p>
+                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">Degraded / Unhealthy</p>
+                    <p className="font-heading text-2xl font-bold text-amber-400">{agentHealth ? agentHealth.filter(a => a.status === "degraded" || a.status === "unhealthy").length : "…"}</p>
                   </CardContent>
                 </Card>
                 <Card className="bg-card/60 border-border/40">
                   <CardContent className="p-3 text-center">
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">Avg Response</p>
-                    <p className="font-heading text-2xl font-bold text-eari-blue-light">{Math.round(AGENT_STATUS.reduce((s, a) => s + a.avgLatency, 0) / AGENT_STATUS.length)}<span className="text-sm text-muted-foreground">ms</span></p>
+                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">Runs (24h)</p>
+                    <p className="font-heading text-2xl font-bold text-cyan-400">{agentHealth ? agentHealth.reduce((s, a) => s + a.runs24h, 0) : "…"}</p>
                   </CardContent>
                 </Card>
                 <Card className="bg-card/60 border-border/40">
                   <CardContent className="p-3 text-center">
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">24h Requests</p>
-                    <p className="font-heading text-2xl font-bold text-cyan-400">{(AGENT_STATUS.reduce((s, a) => s + a.requests24h, 0) / 1000).toFixed(1)}<span className="text-sm text-muted-foreground">k</span></p>
+                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">Failures (24h)</p>
+                    <p className="font-heading text-2xl font-bold text-red-400">{agentHealth ? agentHealth.reduce((s, a) => s + a.failed, 0) : "…"}</p>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* ─── Agent Detail Cards ─────────────────────────────────────── */}
+              {/* ─── Agent Detail Cards (live) ──────────────────────────────── */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {AGENT_STATUS.map((agent, i) => {
-                  const AgentIcon = agent.icon;
-                  // Generate sparkline data from agent id
-                  const sparkPoints = Array.from({ length: 24 }, (_, j) => {
-                    const base = agent.requests24h / 24;
-                    const variance = base * 0.4 * Math.sin((i * 7 + j * 3.7) * 0.5);
-                    return base + variance;
-                  });
-                  const sparkMin = Math.min(...sparkPoints);
-                  const sparkMax = Math.max(...sparkPoints);
-                  const sparkRange = sparkMax - sparkMin || 1;
-                  const sparkWidth = 120;
-                  const sparkHeight = 28;
-                  const sparkPath = sparkPoints.map((v, j) => `${j === 0 ? 'M' : 'L'}${(j / (sparkPoints.length - 1)) * sparkWidth},${sparkHeight - ((v - sparkMin) / sparkRange) * sparkHeight}`).join(' ');
-
+                {AGENT_META.map((meta) => {
+                  const AgentIcon = meta.icon;
+                  const h = agentHealth?.find(a => a.id === meta.id);
+                  const statusColor = !h || h.status === "idle" ? "#64748b"
+                    : h.status === "operational" ? "#10b981"
+                    : h.status === "degraded" ? "#f59e0b" : "#ef4444";
+                  const statusLabel = !agentHealth ? "loading" : !h || h.runs24h === 0 ? "no runs (24h)" : h.status;
                   return (
-                    <motion.div
-                      key={agent.id}
-                      initial={{ opacity: 0, y: 16 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: i * 0.05 }}
-                    >
-                      <Card className="bg-card/80 border-border/60 hover:border-border transition-all duration-300 hover-lift">
-                        <CardContent className="p-4">
-                          <div className="flex items-start gap-4">
-                            {/* Icon with heartbeat pulse ring */}
-                            <div className="relative flex-shrink-0">
-                              <div
-                                className="absolute -inset-1.5 rounded-xl opacity-30 animate-pulse"
-                                style={{ backgroundColor: agent.color, animationDuration: agent.status === 'operational' ? '2s' : '1s' }}
-                              />
-                              <div
-                                className="relative flex h-11 w-11 items-center justify-center rounded-lg"
-                                style={{ backgroundColor: `${agent.color}15` }}
-                              >
-                                <AgentIcon className="h-5 w-5" style={{ color: agent.color }} />
-                              </div>
-                            </div>
-
-                            {/* Agent info */}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between mb-1">
-                                <div className="flex items-center gap-2">
-                                  <CardTitle className="font-heading text-sm text-foreground">{agent.name}</CardTitle>
-                                  <span className="font-mono text-[10px] text-muted-foreground">v{agent.version}</span>
-                                </div>
-                                {agentStatusBadge(agent.status)}
-                              </div>
-                              <p className="text-[11px] text-muted-foreground font-sans leading-relaxed mb-3">{agent.description}</p>
-
-                              {/* Metrics grid */}
-                              <div className="grid grid-cols-3 gap-2 mb-3">
-                                <div className="p-1.5 rounded bg-navy-800/50 text-center">
-                                  <p className="text-[9px] font-mono text-muted-foreground">Avg Latency</p>
-                                  <p className="font-heading text-xs font-semibold" style={{ color: agent.avgLatency < 300 ? '#10b981' : agent.avgLatency < 800 ? '#f59e0b' : '#ef4444' }}>{agent.avgLatency}ms</p>
-                                </div>
-                                <div className="p-1.5 rounded bg-navy-800/50 text-center">
-                                  <p className="text-[9px] font-mono text-muted-foreground">P99</p>
-                                  <p className="font-heading text-xs font-semibold" style={{ color: agent.p99Latency < 1000 ? '#10b981' : agent.p99Latency < 2500 ? '#f59e0b' : '#ef4444' }}>{agent.p99Latency >= 1000 ? `${(agent.p99Latency / 1000).toFixed(1)}s` : `${agent.p99Latency}ms`}</p>
-                                </div>
-                                <div className="p-1.5 rounded bg-navy-800/50 text-center">
-                                  <p className="text-[9px] font-mono text-muted-foreground">Error Rate</p>
-                                  <p className="font-heading text-xs font-semibold" style={{ color: agent.errorRate < 1 ? '#10b981' : agent.errorRate < 2 ? '#f59e0b' : '#ef4444' }}>{agent.errorRate}%</p>
-                                </div>
-                              </div>
-
-                              {/* CPU & Memory bars */}
-                              <div className="grid grid-cols-2 gap-3 mb-3">
-                                <div>
-                                  <div className="flex justify-between mb-0.5">
-                                    <span className="text-[9px] font-mono text-muted-foreground">CPU</span>
-                                    <span className="text-[9px] font-mono" style={{ color: agent.cpu < 50 ? '#10b981' : agent.cpu < 70 ? '#f59e0b' : '#ef4444' }}>{agent.cpu}%</span>
-                                  </div>
-                                  <div className="h-1.5 rounded-full bg-navy-700 overflow-hidden">
-                                    <div className="h-full rounded-full transition-all" style={{ width: `${agent.cpu}%`, backgroundColor: agent.cpu < 50 ? '#10b981' : agent.cpu < 70 ? '#f59e0b' : '#ef4444' }} />
-                                  </div>
-                                </div>
-                                <div>
-                                  <div className="flex justify-between mb-0.5">
-                                    <span className="text-[9px] font-mono text-muted-foreground">Memory</span>
-                                    <span className="text-[9px] font-mono" style={{ color: agent.memory < 60 ? '#10b981' : agent.memory < 80 ? '#f59e0b' : '#ef4444' }}>{agent.memory}%</span>
-                                  </div>
-                                  <div className="h-1.5 rounded-full bg-navy-700 overflow-hidden">
-                                    <div className="h-full rounded-full transition-all" style={{ width: `${agent.memory}%`, backgroundColor: agent.memory < 60 ? '#10b981' : agent.memory < 80 ? '#f59e0b' : '#ef4444' }} />
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Traffic sparkline + footer */}
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <svg width={sparkWidth} height={sparkHeight} className="opacity-60">
-                                    <path d={sparkPath} fill="none" stroke={agent.color} strokeWidth="1.5" />
-                                  </svg>
-                                  <span className="text-[9px] font-mono text-muted-foreground">{agent.requests24h}/24h</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {agent.lastIncident && (
-                                    <span className="text-[9px] font-mono text-red-400/70">Incident: {agent.lastIncident}</span>
-                                  )}
-                                  <div className="flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: agent.status === "operational" ? "#10b981" : agent.status === "degraded" ? "#f59e0b" : agent.status === "partial" ? "#06b6d4" : "#ef4444" }} />
-                                    <span className="font-mono text-[10px] text-muted-foreground">{agent.uptime}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
+                    <Card key={meta.id} className="bg-card/60 border-border/40">
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-lg shrink-0" style={{ backgroundColor: `${meta.color}15` }}>
+                            <AgentIcon className="h-4.5 w-4.5" style={{ color: meta.color }} />
                           </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <p className="font-heading text-sm font-semibold text-foreground">{meta.name}</p>
+                              <span className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-wider" style={{ color: statusColor }}>
+                                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: statusColor }} />{statusLabel}
+                              </span>
+                            </div>
+                            <p className="font-sans text-[11px] text-muted-foreground mt-0.5">{meta.description}</p>
+                            <div className="grid grid-cols-4 gap-2 mt-3">
+                              <div><p className="font-mono text-[9px] text-muted-foreground uppercase">Success</p><p className="font-heading text-sm font-bold text-foreground tabular-nums">{h && h.successRate != null ? `${h.successRate}%` : "—"}</p></div>
+                              <div><p className="font-mono text-[9px] text-muted-foreground uppercase">Runs</p><p className="font-heading text-sm font-bold text-foreground tabular-nums">{h ? h.runs24h : "—"}</p></div>
+                              <div><p className="font-mono text-[9px] text-muted-foreground uppercase">Avg</p><p className="font-heading text-sm font-bold text-foreground tabular-nums">{h && h.avgLatencyMs != null ? `${h.avgLatencyMs}ms` : "—"}</p></div>
+                              <div><p className="font-mono text-[9px] text-muted-foreground uppercase">p95</p><p className="font-heading text-sm font-bold text-foreground tabular-nums">{h && h.p95LatencyMs != null ? `${h.p95LatencyMs}ms` : "—"}</p></div>
+                            </div>
+                            {h && h.failed > 0 && (
+                              <p className="font-mono text-[10px] text-red-400/80 mt-2">{h.failed} failure{h.failed === 1 ? "" : "s"} in 24h{h.lastFailureMinsAgo != null ? ` · last ${h.lastFailureMinsAgo}m ago` : ""}</p>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   );
                 })}
               </div>
-
-              {/* System info card */}
-              <Card className="bg-card/80 border-border/60">
-                <CardHeader>
-                  <CardTitle className="font-heading text-sm text-foreground flex items-center gap-2">
-                    <Activity className="h-4 w-4 text-emerald" />
-                    System Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div>
-                      <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">Scoring Engine</p>
-                      <p className="font-heading text-sm font-semibold text-foreground">Deterministic v5.3</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">LLM Provider</p>
-                      <p className="font-heading text-sm font-semibold text-foreground">z-ai-web-dev-sdk</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">Payment</p>
-                      <p className="font-heading text-sm font-semibold text-foreground">Stripe (Test Mode)</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">Database</p>
-                      <p className="font-heading text-sm font-semibold text-foreground">SQLite / Prisma</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <p className="font-mono text-[10px] text-muted-foreground/70">Metrics derived from PipelineStage rows over the last 24h · refresh to update.</p>
             </motion.div>
           )}
 
