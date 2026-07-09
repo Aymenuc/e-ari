@@ -75,7 +75,7 @@ const MAX_SNIPPET_CHARS = 1500;
 const MAX_EXTRACT_CHARS = 3500;
 const MAX_ORG_PROMPT_SNIPPETS = 10;
 const MAX_SECTOR_PROMPT_SNIPPETS = 6;
-const EXTRACT_URL_CAP = 3;
+const EXTRACT_URL_CAP = 2;
 
 // ─── Sector mapping ─────────────────────────────────────────────────────────
 
@@ -315,7 +315,7 @@ async function tavilySearch(query: string, options: TavilySearchOptions = {}): P
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(20000),
+      signal: AbortSignal.timeout(10000),
     });
     if (!res.ok) {
       const errBody = await res.text().catch(() => '');
@@ -346,7 +346,7 @@ async function tavilyExtract(urls: string[]): Promise<Array<{ url: string; raw_c
         extract_depth: "basic",
         api_key: apiKey, // legacy compat
       }),
-      signal: AbortSignal.timeout(35000),
+      signal: AbortSignal.timeout(12000),
     });
     if (!res.ok) {
       console.warn("[scraper] Tavily extract failed:", res.status);
@@ -554,6 +554,27 @@ Allowed ENTITY_TYPE keys: commercial, public_sector, nonprofit, academic, intern
  * after the classifier returns. Keyed by lowercased org name.
  */
 const lastClassifiedEntityType = new Map<string, string>();
+
+/**
+ * Entity-type-only classification for the common path where the wizard
+ * already provided the sector (which skips classifySector entirely — a bug
+ * that left entityType permanently 'unknown' for most real assessments).
+ * No Tavily grounding: name + domain, ~10 output tokens, runs in parallel
+ * with result collection so it adds zero wall-clock time.
+ */
+async function classifyEntityOnly(orgName: string, domain: string | null): Promise<void> {
+  try {
+    const out = await glmComplete(
+      "Classify the organization's ENTITY TYPE. Keys: commercial, public_sector, nonprofit, academic, international_body, unknown. A name containing 'university'/'institute' is NOT automatically academic if the mandate is governmental or multilateral (e.g. a UN university unit → international_body). Reply with ONLY the key.",
+      `Organization: ${orgName}${domain ? `\nDomain: ${domain}` : ""}`,
+      15, 0, false, 'deepseek',
+    );
+    const key = (out || "").trim().toLowerCase().replace(/[^a-z_]/g, "");
+    if (["commercial","public_sector","nonprofit","academic","international_body","unknown"].includes(key)) {
+      lastClassifiedEntityType.set(orgName.toLowerCase(), key);
+    }
+  } catch { /* best-effort */ }
+}
 
 async function collectOrgResults(
   orgName: string,
@@ -801,31 +822,51 @@ export async function scrapeOrganizationContext(input: ScrapingInput): Promise<O
   const timestamp = new Date().toISOString();
   const { orgName, websiteUrl, additionalContext } = input;
 
-  // Auto-resolve `general` and missing sector via a quick LLM classification.
-  // The classifier also detects entity type (commercial / public_sector /
-  // nonprofit / academic / international_body / unknown) in the same call
-  // and stashes it in lastClassifiedEntityType.
+  // ── Latency plan ─────────────────────────────────────────────────────
+  // Org-result collection never depends on the sector, so it starts FIRST
+  // and runs concurrently with classification. When the wizard already
+  // provided the sector we still fire a lightweight entity-only classify
+  // in parallel (previously skipped entirely — entityType stayed 'unknown'
+  // on the common path). Extract only runs when collected content is thin.
+  const t0 = Date.now();
+  const orgDomain = websiteUrl ? extractDomain(websiteUrl) : null;
+  const orgP = collectOrgResults(orgName, websiteUrl, additionalContext);
+
   let resolvedSectorKey = input.sector;
+  let entityP: Promise<void> | null = null;
   if (!resolvedSectorKey || resolvedSectorKey === "general") {
+    // Full classifier (sector + entity) — overlaps with org collection.
     resolvedSectorKey = (await classifySector(orgName, websiteUrl)) ?? undefined;
+  } else {
+    entityP = classifyEntityOnly(orgName, orgDomain);
   }
+  const tClassify = Date.now();
+
   const sectorInfo = resolvedSectorKey ? SECTOR_MAP[resolvedSectorKey] : null;
   const sectorName = sectorInfo?.name ?? resolvedSectorKey ?? "";
   const sector = resolvedSectorKey;
-  const orgDomain = websiteUrl ? extractDomain(websiteUrl) : null;
-  // Pull the entity-type pick from the classifier's side-channel.
+
+  const [uniqueOrgResults, uniqueSectorResults] = await Promise.all([
+    orgP,
+    collectSectorResults(sectorInfo),
+  ]);
+  const tCollect = Date.now();
+
+  // Extract full page text only when snippets are too thin to synthesise
+  // from — extract is the slowest network hop and usually unnecessary when
+  // Tavily snippets are already substantial.
+  const collectedChars = uniqueOrgResults.reduce((n, r) => n + (r.content?.length ?? 0), 0);
+  if (uniqueOrgResults.length > 0 && collectedChars < 2400) {
+    await enrichWithExtract(uniqueOrgResults, orgDomain);
+  }
+  const tExtract = Date.now();
+
+  if (entityP) await entityP; // ensure the side-channel is populated
   const entityKey = lastClassifiedEntityType.get(orgName.toLowerCase()) ?? 'unknown';
   const entityType: EntityType = (
     ['commercial','public_sector','nonprofit','academic','international_body','unknown']
       .includes(entityKey) ? entityKey : 'unknown'
   ) as EntityType;
-
-  const [uniqueOrgResults, uniqueSectorResults] = await Promise.all([
-    collectOrgResults(orgName, websiteUrl, additionalContext),
-    collectSectorResults(sectorInfo),
-  ]);
-
-  await enrichWithExtract(uniqueOrgResults, orgDomain);
 
   if (uniqueOrgResults.length === 0 && uniqueSectorResults.length === 0) {
     return buildFallbackContext(input, timestamp, "No web search results returned");
@@ -863,7 +904,7 @@ RULES:
 - Temperature-equivalent discipline: do NOT invent facts. If ORG-SOURCES do not clearly identify the organization, say evidence is thin and cite what exists.
 - Each factual clause needs [Sn] from the numbered list above.
 - Do NOT merge facts from unrelated entities sharing the same name.
-- Strings plain English — no markdown headers, no bare URLs.`;
+- Strings plain English — no markdown headers, no bare URLs.\n- FINAL-PASS DISCIPLINE: there is no downstream verification. Delete any sentence you cannot support with a citation from the numbered sources; an empty string beats an ungrounded claim.`;
 
     const content = await glmComplete(
       "You are an AI readiness analyst. Ground every claim in numbered sources. JSON only.",
@@ -876,12 +917,11 @@ RULES:
 
     if (!content) throw new Error("Empty LLM response");
 
-    let raw = parseLLMJson<ParsedBlock>(content);
-    raw = await verifyGroundedJson({
-      orgName,
-      numberedSnippets: numberedBlock.slice(0, 28000),
-      parsed: sanitizeContext(raw) as ParsedBlock,
-    });
+    // Single-pass discipline: the synthesis prompt now carries the verifier
+    // rules itself (see RULES below) — the separate verifyGroundedJson LLM
+    // round-trip doubled latency for marginal gain and was removed from the
+    // hot path. sanitizeContext still strips markdown/URL artifacts.
+    const raw = sanitizeContext(parseLLMJson<ParsedBlock>(content)) as ParsedBlock;
 
     const orgSnippetCount = uniqueOrgResults.length;
     const initiativeCount = raw.aiInitiatives.length;
@@ -905,6 +945,9 @@ RULES:
       sectorSnippetCount: uniqueSectorResults.length,
     });
 
+    console.log(
+      `[scraper] timings org="${orgName.slice(0, 40)}" classify=${tClassify - t0}ms collect=${tCollect - tClassify}ms extract=${tExtract - tCollect}ms synth=${Date.now() - tExtract}ms total=${Date.now() - t0}ms entity=${entityType}`,
+    );
     return {
       orgName,
       websiteUrl,
