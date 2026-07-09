@@ -67,7 +67,7 @@ export default function ContactPage() {
               <div className="rounded-xl border border-border/40 bg-navy-800/40 p-5">
                 <p className="font-heading font-semibold text-sm text-foreground mb-2">Enterprise clients</p>
                 <p className="font-sans text-xs text-muted-foreground leading-relaxed">
-                  For Fortune 500 and government accounts, mention your organization size and use case. We offer dedicated onboarding, custom sector benchmarks, and SLA-backed support.
+                  For enterprise and public-sector enquiries, mention your organization size and use case. We offer dedicated onboarding, custom sector benchmarks, and SLA-backed support.
                 </p>
               </div>
             </div>

@@ -156,7 +156,7 @@ const JOB_LISTINGS: JobListing[] = [
       'Background in healthcare, finance, or government AI regulation preferred',
     ],
     benefits: [
-      'Shape the governance layer of an AI product used by Fortune 500 companies',
+      'Shape the governance layer of an AI product built for enterprise and public-sector compliance teams',
       'Cross-functional role working with engineering, AI, and methodology teams',
       'Sponsored certifications (ISO 42001 Lead Auditor, IAPP AI Governance)',
       'Flexible working with London office access',
@@ -195,7 +195,7 @@ const JOB_LISTINGS: JobListing[] = [
     type: 'Full-time',
     salary: '$130K – $170K + OTE $250K+',
     posted: '4 days ago',
-    description: 'Drive enterprise adoption of E-ARI across Fortune 500 companies and government agencies. You will manage the full sales cycle from initial outreach through procurement, security review, and contract negotiation. Our product sells itself to the right buyer — you need to find them, articulate the value of evidence-based AI readiness assessment, and navigate complex enterprise purchasing processes.',
+    description: 'Drive enterprise adoption of E-ARI across mid-market and enterprise compliance teams. You will manage the full sales cycle from initial outreach through procurement, security review, and contract negotiation. Our product sells itself to the right buyer — you need to find them, articulate the value of evidence-based AI readiness assessment, and navigate complex enterprise purchasing processes.',
     requirements: [
       '5+ years of enterprise SaaS sales experience with deal sizes $50K+ ARR',
       'Proven track record selling to C-suite and transformation leaders at large organizations',
@@ -228,7 +228,7 @@ const JOB_LISTINGS: JobListing[] = [
       'Background in psychometrics, survey methodology, or assessment design preferred',
     ],
     benefits: [
-      'Direct influence on the core scoring methodology used by Fortune 500 companies',
+      'Direct influence on the core scoring methodology at the heart of the product',
       'Present methodology research at academic and industry conferences',
       'Access to unique enterprise AI readiness datasets for research publications',
       'Flexible remote work with quarterly team gatherings',
@@ -278,7 +278,7 @@ const JOB_LISTINGS: JobListing[] = [
     ],
     benefits: [
       'High-impact role — your work directly determines client success and company revenue',
-      'Work with C-suite leaders at Fortune 500 companies and government agencies',
+      'Work with compliance leaders — DPOs, internal auditors, and AI programme leads',
       'Clear career path to VP Customer Success or Chief Customer Officer',
       'London office with hybrid flexibility and competitive equity package',
     ],

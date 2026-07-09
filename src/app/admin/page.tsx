@@ -490,6 +490,13 @@ function SettingsTab() {
     enterprise_price_label: 'Custom',
   });
   const [loadError, setLoadError] = useState(false);
+  const [integrations, setIntegrations] = useState<{ name: string; ok: boolean; detail: string }[] | null>(null);
+  useEffect(() => {
+    fetch('/api/admin/integration-status')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.integrations) setIntegrations(d.integrations); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch('/api/admin/settings')
@@ -774,20 +781,16 @@ function SettingsTab() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[
-              { name: 'Stripe', status: 'Connected', color: 'emerald' },
-              { name: 'PostgreSQL', status: 'Connected', color: 'emerald' },
-              { name: 'Resend Email', status: 'Connected', color: 'emerald' },
-              { name: 'Gemini AI', status: 'Active', color: 'amber' },
-            ].map(({ name, status: s, color }) => (
+            {(integrations ?? []).map(({ name, ok, detail }) => (
               <div key={name} className="flex items-center justify-between rounded-lg border border-border/50 bg-navy-700/30 px-3 py-2.5">
                 <div className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${color === 'emerald' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                  <span className={`w-2 h-2 rounded-full ${ok ? 'bg-emerald-400' : 'bg-red-400'}`} />
                   <span className="font-sans text-sm text-foreground">{name}</span>
                 </div>
-                <Badge className={`text-[10px] ${color === 'emerald' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25' : 'bg-amber-500/15 text-amber-400 border-amber-500/25'}`}>{s}</Badge>
+                <Badge className={`text-[10px] ${ok ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25' : 'bg-red-500/15 text-red-400 border-red-500/25'}`}>{detail}</Badge>
               </div>
             ))}
+            {!integrations && <p className="font-sans text-xs text-muted-foreground col-span-2">Checking integrations…</p>}
           </div>
         </CardContent>
       </Card>

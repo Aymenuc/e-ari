@@ -73,7 +73,7 @@ const ROLES: RoleDefinition[] = [
     description: 'High-level view of AI readiness across the organization. Focus on strategic alignment, competitive positioning, and investment ROI to drive board-level decisions.',
     metrics: [
       { label: 'AI Readiness Score', value: '62%', trend: 'up', description: 'Overall organizational readiness across 8 pillars' },
-      { label: 'Investment ROI', value: '2.4x', trend: 'up', description: 'Projected return on AI investment over 24 months' },
+      { label: 'Governance Maturity', value: '—', trend: 'neutral', description: 'Complete an assessment to populate' },
       { label: 'Competitive Position', value: 'Chaser', trend: 'up', description: 'Position relative to industry peers' },
       { label: 'Risk Exposure', value: 'Moderate', trend: 'down', description: 'Aggregate risk from governance and security gaps' },
     ],
@@ -129,19 +129,19 @@ const ROLES: RoleDefinition[] = [
     description: 'Financial perspective on AI investments, cost optimization opportunities, ROI modeling, and budget allocation recommendations for sustainable AI adoption.',
     metrics: [
       { label: 'AI Budget Utilization', value: '78%', trend: 'up', description: 'Current budget utilization against planned AI spend' },
-      { label: 'Projected 24-Month ROI', value: '2.4x', trend: 'up', description: 'Projected return based on current investment trajectory' },
-      { label: 'Cost per AI Use Case', value: '$340K', trend: 'down', description: 'Average total cost per deployed AI use case' },
-      { label: 'Technical Debt Cost', value: '$1.2M', trend: 'down', description: 'Estimated annual cost of technical debt remediation' },
+      { label: 'Overall Readiness', value: '—', trend: 'neutral', description: 'Complete an assessment to populate' },
+      { label: 'Data Foundation', value: '—', trend: 'neutral', description: 'Complete an assessment to populate' },
+      { label: 'Governance', value: '—', trend: 'neutral', description: 'Complete an assessment to populate' },
     ],
     focusAreas: [
-      { title: 'ROI Optimization', description: 'Current AI investments show positive ROI but are concentrated in low-complexity use cases. Rebalancing toward high-impact, moderate-complexity use cases could increase aggregate ROI from 2.4x to 3.8x within 18 months.', priority: 'high', color: '#f59e0b' },
-      { title: 'Cost of Inaction', description: 'Delayed investment in data governance and MLOps infrastructure is accumulating technical debt at an estimated $1.2M annually. Each quarter of delay increases remediation costs by approximately 15%.', priority: 'critical', color: '#ef4444' },
+      { title: 'Sequence spend behind the constraint', description: 'AI investment returns are gated by your weakest funded pillar. Direct the next budget cycle to whichever of Strategy, Data, or Governance scores lowest before scaling use cases that depend on it.', priority: 'high', color: '#f59e0b' },
+      { title: 'Cost of inaction', description: 'The EU AI Act applies in full from 2 August 2026. Governance and documentation gaps cannot be retrofitted in under a quarter — the cost of delay is measured in audit exposure, not just remediation effort.', priority: 'critical', color: '#ef4444' },
       { title: 'Budget Allocation', description: 'Current budget allocation overweights technology acquisition (45%) and underweights talent development (12%) and governance (8%). Industry benchmarks suggest 30% technology, 25% talent, 15% governance for optimal outcomes.', priority: 'medium', color: '#3b82f6' },
     ],
     keyInsight: 'AI investments are generating positive returns but budget allocation misalignment and technical debt accumulation are constraining value. Rebalancing toward governance and talent would unlock significantly higher ROI.',
     recommendations: [
       'Rebalance AI budget allocation: 30% technology, 25% talent, 15% governance, 30% operations',
-      'Invest $400K in data governance infrastructure to eliminate $1.2M annual technical debt',
+      'Prioritise data-governance investment — it is the prerequisite that unlocks reliable value from every downstream AI use case',
       'Implement AI project ROI tracking with quarterly board reporting',
       'Establish dedicated AI budget line item with 3-year commitment to prevent investment volatility',
       'Commission TCO analysis for cloud vs. hybrid AI infrastructure options',
@@ -249,7 +249,7 @@ function deriveRoleMetrics(role: RoleDefinition, data: { overallScore: number; m
     case 'ceo':
       return [
         { label: 'AI Readiness Score', value: `${Math.round(data.overallScore)}%`, trend: data.overallScore >= 50 ? 'up' : 'down', description: 'Overall organizational readiness across 8 pillars' },
-        { label: 'Investment ROI', value: data.overallScore >= 60 ? '3.2x' : data.overallScore >= 40 ? '2.4x' : '1.6x', trend: data.overallScore >= 50 ? 'up' : 'down', description: 'Projected return on AI investment over 24 months' },
+        { label: 'Governance Maturity', value: `${getScore('governance') ?? 0}%`, trend: (getScore('governance') ?? 0) >= 50 ? 'up' : 'down', description: 'Policy, accountability, and oversight readiness' },
         { label: 'Competitive Position', value: maturityLabel, trend: data.overallScore >= 50 ? 'up' : 'down', description: 'Position relative to industry peers' },
         { label: 'Risk Exposure', value: data.overallScore >= 60 ? 'Low' : data.overallScore >= 40 ? 'Moderate' : 'High', trend: data.overallScore >= 50 ? 'up' : 'down', description: 'Aggregate risk from governance and security gaps' },
       ];
@@ -260,16 +260,16 @@ function deriveRoleMetrics(role: RoleDefinition, data: { overallScore: number; m
         { label: 'Technology Score', value: `${techScore}%`, trend: techScore >= 50 ? 'up' : 'down', description: 'Maturity of AI/ML platforms and tooling' },
         { label: 'MLOps Maturity', value: techScore >= 70 ? 'Level 3' : techScore >= 50 ? 'Level 2' : 'Level 1', trend: techScore >= 50 ? 'neutral' : 'down', description: 'Automated training and monitoring maturity' },
         { label: 'Data Readiness', value: `${dataScore}%`, trend: dataScore >= 50 ? 'up' : 'down', description: 'Data infrastructure and pipeline maturity' },
-        { label: 'Platform Coverage', value: `${Math.round(data.overallScore * 0.7)}%`, trend: data.overallScore >= 50 ? 'up' : 'down', description: 'Percentage of AI workloads on standardized platform' },
+        { label: 'Security Posture', value: `${getScore('security') ?? 0}%`, trend: (getScore('security') ?? 0) >= 50 ? 'up' : 'down', description: 'AI-specific security control maturity' },
       ];
     }
     case 'cfo': {
       const stratScore = getScore('strategy') ?? 50;
       return [
-        { label: 'AI Budget Utilization', value: `${Math.round(data.overallScore * 1.1)}%`, trend: data.overallScore >= 50 ? 'up' : 'down', description: 'Current budget utilization against planned AI spend' },
-        { label: 'Projected ROI', value: data.overallScore >= 60 ? '3.2x' : data.overallScore >= 40 ? '2.4x' : '1.6x', trend: data.overallScore >= 50 ? 'up' : 'down', description: 'Projected return over 24 months' },
+        { label: 'Overall Readiness', value: `${Math.round(data.overallScore)}%`, trend: data.overallScore >= 50 ? 'up' : 'down', description: 'Board-level readiness across all pillars' },
+        { label: 'Data Foundation', value: `${getScore('data') ?? 0}%`, trend: (getScore('data') ?? 0) >= 50 ? 'up' : 'down', description: 'Data readiness — the prerequisite for AI value' },
         { label: 'Strategy Score', value: `${stratScore}%`, trend: stratScore >= 50 ? 'up' : 'down', description: 'Strategic alignment maturity' },
-        { label: 'Cost Efficiency', value: data.overallScore >= 60 ? 'High' : data.overallScore >= 40 ? 'Moderate' : 'Low', trend: data.overallScore >= 50 ? 'up' : 'down', description: 'AI cost optimization effectiveness' },
+        { label: 'Governance', value: `${getScore('governance') ?? 0}%`, trend: (getScore('governance') ?? 0) >= 50 ? 'up' : 'down', description: 'Compliance and accountability maturity' },
       ];
     }
     case 'ciso': {
@@ -283,22 +283,22 @@ function deriveRoleMetrics(role: RoleDefinition, data: { overallScore: number; m
       ];
     }
     case 'chro': {
-      const peopleScore = getScore('people') ?? 44;
-      const ethicsScore = getScore('ethics') ?? 50;
+      const talentScore = getScore('talent') ?? 0;
+      const cultureScore = getScore('culture') ?? 0;
       return [
-        { label: 'Talent Score', value: `${peopleScore}%`, trend: peopleScore >= 50 ? 'up' : 'down', description: 'AI workforce readiness and skills availability' },
-        { label: 'AI Literacy Rate', value: `${Math.round(peopleScore * 0.73)}%`, trend: peopleScore >= 50 ? 'up' : 'down', description: 'Estimated workforce AI understanding' },
-        { label: 'Culture Readiness', value: ethicsScore >= 60 ? 'Strong' : ethicsScore >= 40 ? 'Moderate' : 'Weak', trend: ethicsScore >= 50 ? 'up' : 'down', description: 'Organizational culture readiness for AI' },
+        { label: 'Talent Score', value: `${talentScore}%`, trend: talentScore >= 50 ? 'up' : 'down', description: 'AI workforce readiness and skills availability' },
+        { label: 'Culture Score', value: `${getScore('culture') ?? 0}%`, trend: (getScore('culture') ?? 0) >= 50 ? 'up' : 'down', description: 'Change-management and adoption readiness' },
+        { label: 'Culture Readiness', value: cultureScore >= 60 ? 'Strong' : cultureScore >= 40 ? 'Moderate' : 'Weak', trend: cultureScore >= 50 ? 'up' : 'down', description: 'Organizational culture readiness for AI' },
         { label: 'Change Readiness', value: data.overallScore >= 60 ? 'High' : data.overallScore >= 40 ? 'Moderate' : 'Low', trend: data.overallScore >= 50 ? 'up' : 'down', description: 'Organizational readiness for AI-driven change' },
       ];
     }
     case 'coo': {
-      const opsScore = getScore('operations') ?? 55;
+      const opsScore = getScore('process') ?? 55;
       const techScore2 = getScore('technology') ?? 50;
       return [
         { label: 'Process Score', value: `${opsScore}%`, trend: opsScore >= 50 ? 'up' : 'down', description: 'AI process integration and automation maturity' },
-        { label: 'Automation Potential', value: `${Math.round(opsScore * 0.7)}%`, trend: opsScore >= 50 ? 'up' : 'down', description: 'Percentage of processes suitable for AI automation' },
-        { label: 'Operational Efficiency', value: `+${Math.round(data.overallScore * 0.2)}%`, trend: data.overallScore >= 50 ? 'up' : 'down', description: 'Efficiency gain from current AI deployments' },
+        { label: 'Technology', value: `${getScore('technology') ?? 0}%`, trend: (getScore('technology') ?? 0) >= 50 ? 'up' : 'down', description: 'Platform and tooling maturity supporting operations' },
+        { label: 'Overall Readiness', value: `${Math.round(data.overallScore)}%`, trend: data.overallScore >= 50 ? 'up' : 'down', description: 'Operational AI readiness across all pillars' },
         { label: 'KPI Coverage', value: techScore2 >= 60 ? 'Complete' : techScore2 >= 40 ? 'Partial' : 'Minimal', trend: techScore2 >= 50 ? 'up' : 'down', description: 'AI process performance measurement coverage' },
       ];
     }
