@@ -56,8 +56,8 @@ export const CERTIFICATION_LEVELS: Certification[] = [
       process: 70,
       security: 70,
     },
-    icon: '💎',
-    color: '#a855f7',
+    icon: '◆',
+    color: '#e2e8f0',
     requirements: [
       'Overall E-ARI score of 85 or above',
       'Every pillar scores at least 70',
@@ -80,8 +80,8 @@ export const CERTIFICATION_LEVELS: Certification[] = [
       process: 55,
       security: 55,
     },
-    icon: '🥇',
-    color: '#eab308',
+    icon: '◆',
+    color: '#d4a853',
     requirements: [
       'Overall E-ARI score of 75 or above',
       'Every pillar scores at least 55',
@@ -104,7 +104,7 @@ export const CERTIFICATION_LEVELS: Certification[] = [
       process: 40,
       security: 40,
     },
-    icon: '🥈',
+    icon: '◆',
     color: '#94a3b8',
     requirements: [
       'Overall E-ARI score of 60 or above',
@@ -127,8 +127,8 @@ export const CERTIFICATION_LEVELS: Certification[] = [
       process: 25,
       security: 25,
     },
-    icon: '🥉',
-    color: '#cd7f32',
+    icon: '◆',
+    color: '#c08a4e',
     requirements: [
       'Overall E-ARI score of 45 or above',
       'Every pillar scores at least 25',
@@ -150,7 +150,7 @@ export const CERTIFICATION_LEVELS: Certification[] = [
       process: 0,
       security: 0,
     },
-    icon: '📋',
+    icon: '○',
     color: '#64748b',
     requirements: [
       'Achieve an overall E-ARI score of at least 45',
@@ -293,66 +293,58 @@ export function getCertificationBadge(
   const lighterColor = lightenColor(color, 40);
   const darkerColor = darkenColor(color, 20);
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  // Watch-face tick ring — echoes the methodology radar aesthetic.
+  const ticks = Array.from({ length: 60 }, (_, i) => {
+    const a = (i * 6 - 90) * (Math.PI / 180);
+    const major = i % 5 === 0;
+    const r1 = major ? 86 : 90;
+    const r2 = 94;
+    const x1 = 100 + r1 * Math.cos(a);
+    const y1 = 100 + r1 * Math.sin(a);
+    const x2 = 100 + r2 * Math.cos(a);
+    const y2 = 100 + r2 * Math.sin(a);
+    return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${color}" stroke-opacity="${major ? 0.7 : 0.28}" stroke-width="${major ? 1.4 : 0.8}" />`;
+  }).join('\n  ');
+
+  const barMid = color;
+  const barDark = darkenColor(color, 30);
+  const barLight = lightenColor(color, 25);
+  const fontStack = `'Plus Jakarta Sans','Inter','Helvetica Neue',Arial,sans-serif`;
+  const isNone = level === 'none';
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="E-ARI certification seal: ${label}">
   <defs>
-    <linearGradient id="certGrad-${level}" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="${lighterColor}" />
-      <stop offset="50%" stop-color="${color}" />
-      <stop offset="100%" stop-color="${darkerColor}" />
-    </linearGradient>
-    <linearGradient id="certInnerGrad-${level}" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.15" />
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.05" />
-    </linearGradient>
-    <filter id="certShadow-${level}" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.2"/>
-    </filter>
     <path id="topArc-${level}" d="M 30,100 A 70,70 0 0,1 170,100" fill="none" />
-    <path id="bottomArc-${level}" d="M 170,100 A 70,70 0 0,1 30,100" fill="none" />
+    <path id="bottomArc-${level}" d="M 26,100 A 74,74 0 0,0 174,100" fill="none" />
   </defs>
 
-  <!-- Outer ring -->
-  <circle cx="100" cy="100" r="95" fill="none" stroke="url(#certGrad-${level})" stroke-width="4" filter="url(#certShadow-${level})" />
+  <!-- Dark seal disc — sits naturally on the platform's navy surfaces -->
+  <circle cx="100" cy="100" r="97" fill="#0a1024" />
+  <circle cx="100" cy="100" r="97" fill="none" stroke="${color}" stroke-opacity="0.45" stroke-width="1.5"${isNone ? ' stroke-dasharray="3 4"' : ''} />
 
-  <!-- Main circle fill -->
-  <circle cx="100" cy="100" r="88" fill="url(#certGrad-${level})" />
-  <circle cx="100" cy="100" r="88" fill="url(#certInnerGrad-${level})" />
+  <!-- Tick ring -->
+  ${ticks}
 
-  <!-- Inner decorative ring -->
-  <circle cx="100" cy="100" r="78" fill="none" stroke="#ffffff" stroke-width="0.75" stroke-opacity="0.35" />
+  <!-- Inner boundary -->
+  <circle cx="100" cy="100" r="80" fill="#0f1729" />
+  <circle cx="100" cy="100" r="80" fill="none" stroke="${color}" stroke-opacity="0.3" stroke-width="1" />
 
-  <!-- Inner fill -->
-  <circle cx="100" cy="100" r="77" fill="#ffffff" fill-opacity="0.92" />
-
-  <!-- Top arc text: E-ARI CERTIFIED -->
-  <text fill="${color}" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="700" letter-spacing="2.5">
+  <!-- Arc lettering -->
+  <text fill="${color}" font-family="${fontStack}" font-size="10" font-weight="600" letter-spacing="3.2">
     <textPath href="#topArc-${level}" startOffset="50%" text-anchor="middle">E-ARI CERTIFIED</textPath>
   </text>
-
-  <!-- Bottom arc text: AI READY -->
-  <text fill="${color}" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="9.5" font-weight="700" letter-spacing="3">
-    <textPath href="#bottomArc-${level}" startOffset="50%" text-anchor="middle">AI READY</textPath>
+  <text fill="${color}" fill-opacity="0.85" font-family="${fontStack}" font-size="8.5" font-weight="500" letter-spacing="3.4">
+    <textPath href="#bottomArc-${level}" startOffset="50%" text-anchor="middle">AI READINESS · ${new Date().getFullYear()}</textPath>
   </text>
 
-  <!-- Small decorative diamonds -->
-  <polygon points="100,26 102,30 100,34 98,30" fill="${color}" fill-opacity="0.6" />
-  <polygon points="100,166 102,170 100,174 98,170" fill="${color}" fill-opacity="0.6" />
-  <polygon points="26,100 30,98 34,100 30,102" fill="${color}" fill-opacity="0.6" />
-  <polygon points="166,100 170,98 174,100 170,102" fill="${color}" fill-opacity="0.6" />
+  <!-- Threshold-E brand mark, tinted to the certification level -->
+  <rect x="81" y="66" width="38" height="7" rx="2" fill="${barLight}"${isNone ? ' fill-opacity="0.4"' : ''} />
+  <rect x="81" y="78" width="22" height="7" rx="2" fill="${barMid}"${isNone ? ' fill-opacity="0.4"' : ''} />
+  <rect x="81" y="90" width="38" height="7" rx="2" fill="${barDark}"${isNone ? ' fill-opacity="0.4"' : ''} />
 
-  <!-- Level icon -->
-  <text x="100" y="78" text-anchor="middle" font-size="26" dominant-baseline="central">${cert.icon}</text>
-
-  <!-- Level label -->
-  <text x="100" y="108" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="800" fill="${color}" letter-spacing="1">${label.toUpperCase()}</text>
-
-  <!-- Subtle score bar background -->
-  <rect x="60" y="122" width="80" height="4" rx="2" fill="#e2e8f0" />
-  <!-- Score bar fill (full for certified, partial for none) -->
-  <rect x="60" y="122" width="${level !== 'none' ? 80 : 30}" height="4" rx="2" fill="url(#certGrad-${level})" />
-
-  <!-- Year stamp -->
-  <text x="100" y="142" text-anchor="middle" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="7" fill="#94a3b8" letter-spacing="1.5">${new Date().getFullYear()}</text>
+  <!-- Level -->
+  <text x="100" y="124" text-anchor="middle" font-family="${fontStack}" font-size="16" font-weight="700" letter-spacing="4" fill="#f1f5f9">${label.toUpperCase()}</text>
+  <text x="100" y="138" text-anchor="middle" font-family="${fontStack}" font-size="6" font-weight="500" letter-spacing="2.2" fill="#94a3b8">SCORING V5.3</text>
 </svg>`;
 
   return { svg, label, color };

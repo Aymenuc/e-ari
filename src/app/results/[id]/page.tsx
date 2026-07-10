@@ -2201,7 +2201,7 @@ export default function ResultsPage() {
                                     <span className="font-heading text-xs font-semibold text-foreground">{alert.title}</span>
                                   </div>
                                   <p className="text-[10px] text-muted-foreground font-sans leading-snug">{alert.description}</p>
-                                  <p className="text-[9px] text-eari-blue-light/70 font-sans mt-1">💡 {alert.recommendation}</p>
+                                  <p className="text-[9px] text-eari-blue-light/70 font-sans mt-1">→ {alert.recommendation}</p>
                                 </div>
                               ))}
                             </div>
