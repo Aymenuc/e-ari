@@ -6,16 +6,25 @@ import { Resend } from 'resend';
 import crypto from 'crypto';
 import { verificationEmailHtml } from '@/lib/email-templates';
 import { getBaseUrl } from '@/lib/site-url';
+import { checkRateLimitFromRequest } from '@/lib/rate-limit';
 
 const BASE_URL = getBaseUrl();
 
+// Generic response for the unauthenticated path — never confirms whether an
+// account exists (same anti-enumeration posture as forgot-password).
+const GENERIC_OK = { message: 'If an account exists for that address, a verification email has been sent.' };
+
 export async function POST(req: NextRequest) {
   try {
+    const rateLimitError = await checkRateLimitFromRequest(req, 'send-verification', 3, 60);
+    if (rateLimitError) return rateLimitError;
+
     // Can be called by logged-in user (resend) or right after registration (no session yet)
     const session = await getServerSession(authOptions);
     const body = await req.json().catch(() => ({}));
     const emailInput: string | undefined = body.email;
 
+    const authed = !!session?.user?.id;
     let userEmail: string;
     let userName: string;
 
@@ -28,8 +37,9 @@ export async function POST(req: NextRequest) {
     } else if (emailInput) {
       const normalizedEmail = emailInput.trim().toLowerCase();
       const u = await db.user.findUnique({ where: { email: normalizedEmail } });
-      if (!u) return NextResponse.json({ error: 'User not found' }, { status: 404 });
-      if (u.emailVerified) return NextResponse.json({ message: 'Already verified' });
+      // Anti-enumeration: unauthenticated callers get the same 200 whether
+      // the account is missing or already verified.
+      if (!u || u.emailVerified) return NextResponse.json(GENERIC_OK);
       userEmail = u.email.trim().toLowerCase();
       userName = u.name || u.email.split('@')[0];
     } else {
@@ -58,14 +68,18 @@ export async function POST(req: NextRequest) {
       });
       if (result.error) {
         console.error('[send-verification] resend error:', result.error);
+        // A 502 here would confirm the account exists (this branch only runs
+        // for existing, unverified users) — mask it for anonymous callers.
+        if (!authed) return NextResponse.json(GENERIC_OK);
         return NextResponse.json({ error: 'Failed to send verification email' }, { status: 502 });
       }
     } else {
       console.warn('[verify-email] RESEND not configured. Verification link:', verifyUrl);
+      if (!authed) return NextResponse.json(GENERIC_OK);
       return NextResponse.json({ error: 'Email delivery is not configured' }, { status: 503 });
     }
 
-    return NextResponse.json({ sent: true });
+    return NextResponse.json(authed ? { sent: true } : GENERIC_OK);
   } catch (err) {
     console.error('[send-verification] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
