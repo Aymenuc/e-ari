@@ -50,6 +50,8 @@ describe('report docx', () => {
     const has = (s: string) => expect(xml.includes(s), `missing: ${s}`).toBe(true);
     has('Structural Findings');
     has('Sector Weighting');
+    has('Highest-Leverage Moves');
+    has('Exact gain');       // leverage table header
     has('Recommended Next Steps');
     has('Success metric');   // action table header
     has('Owner');

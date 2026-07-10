@@ -2,7 +2,7 @@
 
 import type { ElementType, ReactNode } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { ClipboardList, Scale, SlidersHorizontal, ScanSearch, Building2, Calculator, Tag } from 'lucide-react'
+import { ClipboardList, Scale, SlidersHorizontal, ScanSearch, Building2, Calculator, Tag, TrendingUp } from 'lucide-react'
 
 type PipelineStep = {
   icon: ElementType
@@ -50,6 +50,11 @@ const PIPELINE_STEPS: PipelineStep[] = [
     icon: Tag,
     label: 'Classify',
     desc: 'Overall maturity band — Laggard through Pacesetter — and every X-Ray finding is then handed to the agents as the grounding evidence for your tailored report.',
+  },
+  {
+    icon: TrendingUp,
+    label: 'Simulate',
+    desc: 'The pipeline re-runs with each answer improved one step, computing the exact score gain per move. Your results rank the highest-leverage improvements and the shortest simulated path to the next maturity band — reproducible arithmetic, not analyst opinion.',
   },
 ]
 

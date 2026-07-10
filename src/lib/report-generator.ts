@@ -40,6 +40,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { PILLARS, MATURITY_BANDS, type MaturityBand } from './pillars';
 import type { ScoringResult, PillarScoreResult, AdjustmentRecord } from './assessment-engine';
+import { computeLeverage, responsesFromScoring } from './assessment-engine';
 
 // ─── Constants (Light Theme — readable on white docx backgrounds) ──────────
 
@@ -294,9 +295,10 @@ function buildTableOfContents(): Paragraph[] {
     { title: '5. Strategic Insights', page: '7' },
     { title: '6. Sector Benchmark Comparison', page: '8' },
     { title: '7. Interdependency Adjustments', page: '9' },
-    { title: '8. Recommended Next Steps', page: '10' },
-    { title: '9. Methodology & Glossary', page: '11' },
-    { title: '10. Confidentiality & Disclaimer', page: '12' },
+    { title: '8. Highest-Leverage Moves', page: '10' },
+    { title: '9. Recommended Next Steps', page: '10' },
+    { title: '10. Methodology & Glossary', page: '11' },
+    { title: '11. Confidentiality & Disclaimer', page: '12' },
   ];
 
   const paragraphs: Paragraph[] = [
@@ -950,6 +952,58 @@ export async function generateAssessmentReport(data: AssessmentReportData): Prom
     }));
     children.push(spacer(120));
   }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 7C: HIGHEST-LEVERAGE MOVES (deterministic simulation)
+  // ═══════════════════════════════════════════════════════════════════════
+
+  try {
+    const leverageResponses = responsesFromScoring(scoringResult);
+    if (Object.keys(leverageResponses).length >= 40) {
+      const leverage = computeLeverage(leverageResponses, scoringResult.sectorWeighting?.sector);
+      const topMoves = leverage.moves.slice(0, 5).filter((m) => m.scoreDelta > 0);
+      if (topMoves.length > 0) {
+        children.push(headingParagraph('Highest-Leverage Moves', HeadingLevel.HEADING_2));
+        children.push(bodyParagraph(
+          `Each move below was computed by re-running the complete ${leverage.scoringVersion} scoring pipeline with that single answer improved one maturity step. The point gains shown are exact and reproducible — they reflect pillar weights, sector weighting and interdependency-rule releases, not analyst judgement.`,
+          { color: COLOR_TEXT_SECONDARY, size: 20, spacing: { before: 40, after: 80 } },
+        ));
+        const lvHeader = new TableRow({
+          children: [
+            makeHeaderCell('#', 500),
+            makeHeaderCell('Pillar', 1900),
+            makeHeaderCell('Improvement', 6100),
+            makeHeaderCell('Step', 1300),
+            makeHeaderCell('Exact gain', 1600),
+          ],
+          tableHeader: true,
+        });
+        const lvRows = topMoves.map((m, idx) => new TableRow({
+          children: [
+            makeCell(String(idx + 1), { bold: true, color: COLOR_BLUE, alignment: AlignmentType.CENTER, width: 500, shading: idx % 2 === 1 ? BG_ROW_ALT : undefined }),
+            makeCell(m.pillarName, { size: 18, color: COLOR_TEXT_SECONDARY, width: 1900, shading: idx % 2 === 1 ? BG_ROW_ALT : undefined }),
+            makeCell(m.questionText, { size: 18, width: 6100, shading: idx % 2 === 1 ? BG_ROW_ALT : undefined }),
+            makeCell(`${m.currentAnswer}/5 → ${m.targetAnswer}/5`, { size: 18, alignment: AlignmentType.CENTER, width: 1300, shading: idx % 2 === 1 ? BG_ROW_ALT : undefined }),
+            makeCell(`+${m.scoreDelta.toFixed(2)} pts`, { bold: true, color: COLOR_GREEN, alignment: AlignmentType.CENTER, width: 1600, shading: idx % 2 === 1 ? BG_ROW_ALT : undefined }),
+          ],
+          cantSplit: true,
+        }));
+        children.push(new Table({
+          rows: [lvHeader, ...lvRows],
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          borders: { top: thinBorder(BORDER_MEDIUM), bottom: thinBorder(BORDER_MEDIUM), left: thinBorder(BORDER_MEDIUM), right: thinBorder(BORDER_MEDIUM), insideHorizontal: thinBorder(BORDER_LIGHT), insideVertical: thinBorder(BORDER_LIGHT) },
+          layout: TableLayoutType.FIXED,
+        }));
+        if (leverage.nextBand && leverage.pathToNextBand.length > 0) {
+          children.push(bodyParagraph(
+            `Path to ${leverage.nextBand.label}: the organisation is ${leverage.nextBand.pointsNeeded.toFixed(1)} points from the next maturity band. The shortest simulated path crosses the boundary in ${leverage.pathToNextBand.length} one-step improvement${leverage.pathToNextBand.length === 1 ? '' : 's'}, ending at ${leverage.pathToNextBand[leverage.pathToNextBand.length - 1].scoreAfter.toFixed(1)}/100.`,
+            { color: COLOR_TEXT_SECONDARY, size: 20, spacing: { before: 100, after: 40 } },
+          ));
+        }
+        children.push(spacer(120));
+      }
+    }
+  } catch { /* leverage is additive — never block report generation */ }
 
   // ═══════════════════════════════════════════════════════════════════════
   // SECTION 8: RECOMMENDATIONS

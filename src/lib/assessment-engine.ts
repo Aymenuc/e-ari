@@ -93,16 +93,19 @@ interface InterdependencyRule {
 }
 
 /**
- * Documented interdependency rules:
- * 
- * RULE_1: If Governance score < 30, cap Technology score by multiplying by 0.7
- *   Rationale: High technology without governance creates uncontrolled risk.
- * 
- * RULE_2: If Data score < 30, cap Strategy score by multiplying by 0.85
- *   Rationale: AI strategy without adequate data infrastructure is aspirational, not actionable.
- * 
- * RULE_3: If any pillar scores below 15 (critical failure), flag it
- *   Rationale: Critical pillar failures must be highlighted regardless of overall score.
+ * Documented interdependency rules (each entry below carries its own
+ * rationale in `description`; thresholds and multipliers are part of the
+ * published methodology and only change with a SCORING_VERSION bump):
+ *
+ *   RULE_1  Governance < 30  → Technology × 0.70
+ *   RULE_2  Data < 30        → Strategy   × 0.85
+ *   RULE_3  Security < 30    → Technology × 0.85
+ *   RULE_4  Talent < 25      → Strategy   × 0.90
+ *   RULE_5  Governance < 35 AND Security < 35 → Process × 0.85
+ *   RULE_6  Culture < 30     → Process    × 0.92
+ *
+ * Separately, any pillar below 15 is flagged as a critical failure
+ * (CRITICAL_PILLAR_THRESHOLD) regardless of the overall score.
  */
 const INTERDEPENDENCY_RULES: InterdependencyRule[] = [
   {
@@ -197,7 +200,7 @@ export function normalizeAnswer(answer: number): number {
  */
 export function getMaturityBand(score: number): { band: MaturityBand; label: string; color: string; description: string } {
   if (score <= 25) return { band: 'laggard', label: MATURITY_BANDS.laggard.label, color: MATURITY_BANDS.laggard.color, description: MATURITY_BANDS.laggard.description };
-  if (score <= 50) return { band: 'follower', label: MATURITY_BANDS.follower.label, color: MATURITY_BANDS.follower.label, description: MATURITY_BANDS.follower.description };
+  if (score <= 50) return { band: 'follower', label: MATURITY_BANDS.follower.label, color: MATURITY_BANDS.follower.color, description: MATURITY_BANDS.follower.description };
   if (score <= 75) return { band: 'chaser', label: MATURITY_BANDS.chaser.label, color: MATURITY_BANDS.chaser.color, description: MATURITY_BANDS.chaser.description };
   return { band: 'pacesetter', label: MATURITY_BANDS.pacesetter.label, color: MATURITY_BANDS.pacesetter.color, description: MATURITY_BANDS.pacesetter.description };
 }
@@ -465,4 +468,172 @@ export function generateTemplateInsights(result: ScoringResult): {
   if (nextSteps.length === 0) nextSteps.push('Begin with a comprehensive AI readiness assessment to establish your baseline.');
 
   return { strengths, gaps, risks, nextSteps };
+}
+
+// ─── Leverage Simulation ────────────────────────────────────────────────────
+//
+// Because scoring is fully deterministic, we can answer the question every
+// consultancy report dodges: "which single improvement moves our score the
+// most?" — not as opinion, but by literally re-running the scoring pipeline
+// with each answer raised one step and measuring the exact overall delta.
+// Deltas are NOT uniform: sector weights, interdependency-rule releases and
+// pillar weighting make some one-step moves worth several times others.
+
+export interface LeverageMove {
+  questionId: string;
+  pillarId: string;
+  pillarName: string;
+  questionText: string;
+  currentAnswer: number;
+  targetAnswer: number;
+  /** Exact overall-score gain from this single one-step improvement. */
+  scoreDelta: number;
+  /** Interdependency rules whose penalty this move releases, if any. */
+  rulesReleased: string[];
+}
+
+export interface BandPathStep {
+  questionId: string;
+  pillarName: string;
+  questionText: string;
+  fromAnswer: number;
+  toAnswer: number;
+  scoreAfter: number;
+}
+
+export interface LeverageAnalysis {
+  baseScore: number;
+  /** All possible one-step moves, sorted by exact score gain (descending). */
+  moves: LeverageMove[];
+  /** The next maturity band up, and the exact points needed to reach it. */
+  nextBand: { band: MaturityBand; label: string; threshold: number; pointsNeeded: number } | null;
+  /**
+   * Greedy simulated path to the next band: repeatedly apply the current
+   * best one-step move and re-simulate. Empty if already at the top band
+   * or unreachable within maxSteps.
+   */
+  pathToNextBand: BandPathStep[];
+  scoringVersion: string;
+}
+
+const BAND_UPPER_BOUNDS: Array<{ band: MaturityBand; upper: number }> = [
+  { band: 'laggard', upper: 25 },
+  { band: 'follower', upper: 50 },
+  { band: 'chaser', upper: 75 },
+  { band: 'pacesetter', upper: 100 },
+];
+
+function questionLookup(questionId: string): { pillarId: string; pillarName: string; text: string } | null {
+  for (const pillar of PILLARS) {
+    const q = pillar.questions.find(q => q.id === questionId);
+    if (q) return { pillarId: pillar.id, pillarName: pillar.name, text: q.text };
+  }
+  return null;
+}
+
+/** All one-step improvement moves for a response set, exact-scored and sorted. */
+function simulateMoves(responses: ResponseMap, sector: string | undefined, base: ScoringResult): LeverageMove[] {
+  const baseRuleIds = new Set(base.adjustments.map(a => a.type));
+  const moves: LeverageMove[] = [];
+  for (const [questionId, answer] of Object.entries(responses)) {
+    if (answer >= 5) continue;
+    const meta = questionLookup(questionId);
+    if (!meta) continue;
+    const sim = scoreAssessment({ ...responses, [questionId]: answer + 1 }, sector);
+    const simRuleIds = new Set(sim.adjustments.map(a => a.type));
+    moves.push({
+      questionId,
+      pillarId: meta.pillarId,
+      pillarName: meta.pillarName,
+      questionText: meta.text,
+      currentAnswer: answer,
+      targetAnswer: answer + 1,
+      scoreDelta: Math.round((sim.overallScore - base.overallScore) * 100) / 100,
+      rulesReleased: [...baseRuleIds].filter(id => !simRuleIds.has(id)),
+    });
+  }
+  // Highest exact gain first; among equals, lift the weakest answer first.
+  moves.sort((a, b) => b.scoreDelta - a.scoreDelta || a.currentAnswer - b.currentAnswer);
+  return moves;
+}
+
+/**
+ * Compute the full leverage analysis for an assessment.
+ *
+ * Deterministic and side-effect-free: ~40 pipeline re-runs for the move
+ * table plus at most `maxSteps × 40` for the band path — pure arithmetic,
+ * no I/O, safe to run client-side.
+ */
+export function computeLeverage(
+  responses: ResponseMap,
+  sector?: string,
+  maxSteps: number = 12,
+): LeverageAnalysis {
+  const base = scoreAssessment(responses, sector);
+  const moves = simulateMoves(responses, sector, base);
+
+  // Next band up from the current score
+  const currentIdx = BAND_UPPER_BOUNDS.findIndex(b => b.band === base.maturityBand);
+  const next = currentIdx >= 0 && currentIdx < BAND_UPPER_BOUNDS.length - 1
+    ? BAND_UPPER_BOUNDS[currentIdx + 1]
+    : null;
+  const threshold = next ? BAND_UPPER_BOUNDS[currentIdx].upper : null;
+
+  let nextBand: LeverageAnalysis['nextBand'] = null;
+  const pathToNextBand: BandPathStep[] = [];
+
+  if (next && threshold !== null) {
+    nextBand = {
+      band: next.band,
+      label: MATURITY_BANDS[next.band].label,
+      threshold: threshold + 1,
+      pointsNeeded: Math.round((threshold + 1 - base.overallScore) * 100) / 100,
+    };
+
+    // Greedy simulation: apply the best available one-step move, re-score,
+    // repeat until the band boundary is crossed or the step budget runs out.
+    const working: ResponseMap = { ...responses };
+    let workingResult = base;
+    for (let step = 0; step < maxSteps && workingResult.overallScore <= threshold; step++) {
+      const stepMoves = simulateMoves(working, sector, workingResult);
+      const best = stepMoves[0];
+      if (!best || best.scoreDelta <= 0) break;
+      working[best.questionId] = best.targetAnswer;
+      workingResult = scoreAssessment(working, sector);
+      pathToNextBand.push({
+        questionId: best.questionId,
+        pillarName: best.pillarName,
+        questionText: best.questionText,
+        fromAnswer: best.currentAnswer,
+        toAnswer: best.targetAnswer,
+        scoreAfter: workingResult.overallScore,
+      });
+    }
+    // Budget exhausted without crossing: report no reachable path rather
+    // than a misleading partial one.
+    if (workingResult.overallScore <= threshold) pathToNextBand.length = 0;
+  }
+
+  return {
+    baseScore: base.overallScore,
+    moves,
+    nextBand,
+    pathToNextBand,
+    scoringVersion: SCORING_VERSION,
+  };
+}
+
+/**
+ * Rebuild the questionId → answer map from a persisted ScoringResult.
+ * Lets consumers (results page, report generator) run leverage analysis
+ * without re-fetching the raw response rows.
+ */
+export function responsesFromScoring(result: Pick<ScoringResult, 'pillarScores'>): ResponseMap {
+  const responses: ResponseMap = {};
+  for (const pillar of result.pillarScores) {
+    for (const qd of pillar.questionDetails ?? []) {
+      if (qd.answer >= 1 && qd.answer <= 5) responses[qd.questionId] = qd.answer;
+    }
+  }
+  return responses;
 }

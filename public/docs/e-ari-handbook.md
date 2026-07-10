@@ -144,6 +144,7 @@ A completed assessment produces a structured `Assessment` record:
 - **Sector benchmark comparison** (your scores vs. curated industry averages)
 - **Strength / weakness matrix** — top three pillars and bottom three
 - **Initial regulatory mapping** — pillars that align with applicable regulations (GDPR, EU AI Act, ISO 42001, NIST AI RMF)
+- **Leverage analysis** — the pipeline is re-run with each answer improved one step, ranking every possible move by its *exact* overall-score gain (including interdependency-rule releases and sector weighting), plus the shortest simulated path to the next maturity band
 
 This record is the seed for everything else. Crucially, the X-Ray findings are what every downstream agent grounds its narrative in — so the report you receive is anchored in *your* specific structural patterns, not a generic write-up of your numbers.
 
@@ -167,7 +168,7 @@ The pipeline executes in four sequential stages:
 
 ### 5.1 Scoring Agent
 
-**Deterministic**, no LLM involvement, runs first. Executes a seven-step pipeline:
+**Deterministic**, no LLM involvement, runs first. Executes an eight-step pipeline:
 
 1. **Validate** — every required question is answered
 2. **Normalize** — each pillar mapped to 0–100 from its Likert sum
@@ -176,6 +177,7 @@ The pipeline executes in four sequential stages:
 5. **Sector weighting** — pillar weights re-balanced for the organisation's sector and renormalised to 1.0 (§9.3)
 6. **Composite & classify** — final overall score, maturity band, critical-failure flags
 7. **X-Ray detection** — eight structural pattern detectors scan response combinations (§9.4)
+8. **Leverage simulation** — the entire pipeline is re-run with each answer raised one step, producing an exact score-gain ranking of every possible improvement and a greedy simulated path to the next maturity band. Because the engine is deterministic, these are reproducible facts, not estimates — the same property that lets a client audit their score lets them audit their roadmap
 
 The scoring math is open and reproducible. It is the only deterministic step in the pipeline — every other agent grounds its outputs against this scoring result *and* its X-Ray findings, which means LLM hallucinations cannot move your score, and the narrative cannot drift away from your actual structural patterns.
 

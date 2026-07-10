@@ -104,6 +104,7 @@ import { assessCertification, getCertificationBadge } from '@/lib/certification'
 import { assessComplianceGaps, getComplianceSummary } from '@/lib/regulatory-mapping'
 import { analyzeDrift, generateAlerts, getRecommendedSchedule } from '@/lib/monitoring-engine'
 import { getVocab, type EntityType } from '@/lib/entity-types'
+import { LeverageMoves } from '@/components/shared/leverage-moves'
 
 /* ─── Deterministic pseudo-random (avoids hydration mismatch) ─────────── */
 
@@ -1862,6 +1863,14 @@ export default function ResultsPage() {
               ))}
             </div>
           </section>
+
+          {/* Section separator */}
+          <div className="section-gradient-separator" />
+
+          {/* ─── HIGHEST-LEVERAGE MOVES (All Tiers — deterministic) ───────── */}
+          <FadeUp>
+            <LeverageMoves scoring={scoring} topN={5} />
+          </FadeUp>
 
           {/* Section separator */}
           <div className="section-gradient-separator" />
