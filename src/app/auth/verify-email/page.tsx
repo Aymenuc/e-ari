@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, XCircle, Clock, Mail, Loader2, RefreshCw, ArrowLeft, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { signIn } from 'next-auth/react';
-import { BrandWordmark } from '@/components/shared/brand-wordmark';
+import { AuthBrandLockup } from '@/components/shared/auth-brand-lockup';
 
 // ─── Email client shortcuts ──────────────────────────────────────────────────
 
@@ -45,12 +45,8 @@ function Shell({ children }: { children: React.ReactNode }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5 group">
-            <img src="/logo.svg" alt="E-ARI" className="h-9 w-9 rounded-lg transition-transform duration-200 group-hover:scale-105" />
-            <BrandWordmark size="md" />
-          </Link>
+        <div className="flex justify-center mb-8">
+          <AuthBrandLockup variant="compact" />
         </div>
 
         {/* Card */}

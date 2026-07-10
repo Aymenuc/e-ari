@@ -241,15 +241,21 @@ export function AdvancedInsights({
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="flex-1 h-2 rounded-full bg-navy-700 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all ${cs.complianceRate >= 75 ? 'bg-emerald-500' : cs.complianceRate >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
-                        style={{ width: `${cs.complianceRate}%` }}
-                      />
+                      {cs.complianceRate != null ? (
+                        <div
+                          className={`h-full rounded-full transition-all ${cs.complianceRate >= 75 ? 'bg-emerald-500' : cs.complianceRate >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
+                          style={{ width: `${cs.complianceRate}%` }}
+                        />
+                      ) : null}
                     </div>
-                    <span className="font-mono text-sm font-bold text-foreground">{cs.complianceRate}%</span>
+                    <span className="font-mono text-sm font-bold text-foreground">
+                      {cs.complianceRate != null ? `${cs.complianceRate}%` : '—'}
+                    </span>
                   </div>
                   <p className="text-xs text-muted-foreground font-sans mt-1">
-                    {cs.compliantCount} of {cs.totalRelevant} requirements met
+                    {cs.totalRelevant > 0
+                      ? `${cs.compliantCount} of ${cs.totalRelevant} checks passed`
+                      : 'No mapped pillar scores for this regulation'}
                   </p>
                 </div>
               ))}

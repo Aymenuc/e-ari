@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { AuthBrandLockup } from '@/components/shared/auth-brand-lockup';
 
 function ResetPasswordForm() {
   const params = useSearchParams();
@@ -123,10 +124,8 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 font-heading text-xl font-bold text-foreground">
-            E-ARI
-          </Link>
+        <div className="flex justify-center mb-8">
+          <AuthBrandLockup />
         </div>
 
         <Card className="bg-card border-border">

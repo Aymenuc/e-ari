@@ -38,7 +38,8 @@ export interface ComplianceSummary {
   regulation: string;
   compliantCount: number;
   totalRelevant: number;
-  complianceRate: number;
+  /** Share of mapping checks passed; `null` when no pillar scores overlap mapped pillars (do not treat as compliant). */
+  complianceRate: number | null;
   criticalGaps: number;
 }
 
@@ -271,8 +272,10 @@ export function assessComplianceGaps(
 
   for (const mapping of REGULATORY_MAPPINGS) {
     for (const pillarId of mapping.relevantPillars) {
-      const score = scoreMap.get(pillarId);
-      if (score === undefined) continue;
+      const raw = scoreMap.get(pillarId);
+      if (raw === undefined) continue;
+      const score = typeof raw === "number" ? raw : Number(raw);
+      if (!Number.isFinite(score)) continue;
 
       if (score < mapping.minScoreThreshold) {
         gaps.push({
@@ -315,13 +318,15 @@ export function getComplianceSummary(
 
     for (const mapping of mappings) {
       for (const pillarId of mapping.relevantPillars) {
-        const score = scoreMap.get(pillarId);
-        if (score === undefined) continue;
+        const raw = scoreMap.get(pillarId);
+        if (raw === undefined) continue;
+        const score = typeof raw === "number" ? raw : Number(raw);
+        if (!Number.isFinite(score)) continue;
         totalRelevant++;
         if (score >= mapping.minScoreThreshold) {
           compliantCount++;
         } else {
-          if (mapping.severity === 'critical') criticalGaps++;
+          if (mapping.severity === "critical") criticalGaps++;
         }
       }
     }
@@ -330,7 +335,8 @@ export function getComplianceSummary(
       regulation,
       compliantCount,
       totalRelevant,
-      complianceRate: totalRelevant > 0 ? Math.round((compliantCount / totalRelevant) * 100) : 100,
+      complianceRate:
+        totalRelevant > 0 ? Math.round((compliantCount / totalRelevant) * 100) : null,
       criticalGaps,
     };
   });

@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Navigation } from "@/components/shared/navigation";
 import { Footer } from "@/components/shared/footer";
+import { AuthBrandLockup } from "@/components/shared/auth-brand-lockup";
 
 const SECTORS = [
   "Technology", "Financial Services", "Healthcare", "Manufacturing",
@@ -123,9 +124,9 @@ function RegisterForm() {
     <Card className="w-full max-w-lg bg-navy-800 border-border">
       <CardHeader className="text-center">
         <div className="flex justify-center mb-4">
-          <img src="/logo.svg" alt="E-ARI" className="h-12 w-12 rounded-xl" />
+          <AuthBrandLockup />
         </div>
-        <CardTitle className="font-heading text-xl">Create Your Account</CardTitle>
+        <CardTitle className="font-heading text-xl">Create your account</CardTitle>
         <CardDescription className="text-muted-foreground font-sans">
           Start your AI readiness assessment journey
         </CardDescription>
