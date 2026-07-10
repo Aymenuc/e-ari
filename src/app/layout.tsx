@@ -8,6 +8,7 @@ import { Suspense } from "react";
 import { MotionConfig } from "framer-motion";
 import Script from "next/script";
 import { ConsentBanner } from "@/components/shared/consent-banner";
+import { MaintenanceAdminBanner } from "@/components/shared/maintenance-admin-banner";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -102,6 +103,7 @@ export default function RootLayout({
             <Suspense>
               <NavigationLoader />
             </Suspense>
+            <MaintenanceAdminBanner />
             {children}
             <Toaster />
             <ConsentBanner />

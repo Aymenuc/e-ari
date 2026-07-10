@@ -22,7 +22,7 @@
 // Bump this whenever a new migration is added to `apply-runtime-schema.ts`
 // or to the inline migrations below. Format: YYYY-MM-DD-N where N counts
 // migrations within the same day.
-const SCHEMA_VERSION = "2026-05-09-5";
+const SCHEMA_VERSION = "2026-07-10-1";
 
 // Module-scope guard: once a container has run instrumentation, never re-run.
 let migrationsApplied = false;
@@ -117,6 +117,17 @@ export async function register() {
         ('audit_logging',              'true',  NOW()),
         ('ip_whitelisting',            'false', NOW())
       ON CONFLICT ("key") DO NOTHING
+    `);
+
+    // ── One-shot data fix (2026-07-10) ───────────────────────────────────
+    // Pre-launch smoke test found production serving the maintenance page to
+    // every visitor: the admin toggle was left ON after testing, and admins
+    // bypass the rewrite so nobody noticed. Version-gated — runs exactly once
+    // with this deploy. (DB credentials are Vercel-sensitive, so this is the
+    // only write path available from outside an admin session.)
+    await db.$executeRawUnsafe(`
+      UPDATE "PlatformSetting" SET "value" = 'false', "updatedAt" = NOW()
+      WHERE "key" = 'maintenance_mode' AND "value" = 'true'
     `);
 
     // ── Compliance migrations (49 idempotent statements) ─────────────────
