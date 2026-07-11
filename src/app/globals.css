@@ -1406,3 +1406,10 @@
 @media (prefers-reduced-motion: reduce) {
   .hero-aurora-a, .hero-aurora-b, .hero-aurora-c { animation: none; }
 }
+
+/* Hide scrollbars on horizontally scrollable chip rows (results nav etc.) */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar { display: none; }
