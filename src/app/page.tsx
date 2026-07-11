@@ -46,7 +46,8 @@ import { Footer } from '@/components/shared/footer'
 import { ProductSpotlightCarousel } from '@/components/marketing/product-spotlight-carousel'
 import { HowScoringWorks } from '@/components/marketing/how-scoring-works'
 import { HeroScene, MouseSpotlight, Magnetic, HeroStats, FrameworkMarquee } from '@/components/marketing/hero-scene'
-import { InsightStream, RadarSweep, RadarPulse, CtaAura } from '@/components/marketing/landing-magic'
+import { InsightStream, CtaAura } from '@/components/marketing/landing-magic'
+import { MethodologyRadar } from '@/components/marketing/methodology-radar'
 import { AgentPanel } from '@/components/shared/agent-panel'
 import { PILLARS } from '@/lib/pillars'
 
@@ -690,145 +691,8 @@ export default function Home() {
             {/* ── Split layout: Radar left + Pillar list right ── */}
             <div className="mt-14 lg:mt-20 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
-              {/* LEFT — Living Constellation Radar */}
-              <FadeUp delay={0.1}>
-                <div className="relative mx-auto w-full max-w-md aspect-square">
-                  <div className="absolute inset-[8%] rounded-full opacity-[0.12]" style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 72%)' }} />
-
-                  <svg viewBox="0 0 220 220" className="w-full h-full" aria-label="8-pillar radar visualization">
-                    <defs>
-                      {/* Calm radial fill — softer center glow */}
-                      <radialGradient id="methodRadarFill" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stopColor="rgba(37,99,235,0.14)" />
-                        <stop offset="70%" stopColor="rgba(15,23,42,0.06)" />
-                        <stop offset="100%" stopColor="rgba(15,23,42,0.02)" />
-                      </radialGradient>
-                      <linearGradient id="methodStrokeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#1d4ed8" />
-                        <stop offset="100%" stopColor="#0369a1" />
-                      </linearGradient>
-                    </defs>
-
-                    {/* Watch-face grid rings — solid, faint, elegant */}
-                    {[20, 40, 60, 80].map((r, idx) => (
-                      <circle key={r} cx="110" cy="110" r={r} fill="none"
-                        stroke={idx === 3 ? 'rgba(37,99,235,0.10)' : 'rgba(48,57,74,0.14)'}
-                        strokeWidth={idx === 3 ? 0.6 : 0.4}
-                      />
-                    ))}
-
-                    {/* Axis lines — minimal, refined */}
-                    {PILLARS.map((_, i) => {
-                      const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2
-                      return (
-                        <line key={i} x1="110" y1="110"
-                          x2={110 + 80 * Math.cos(angle)} y2={110 + 80 * Math.sin(angle)}
-                          stroke="rgba(48,57,74,0.12)" strokeWidth="0.4" />
-                      )
-                    })}
-
-                    {/* Pulsing halos behind each vertex */}
-                    {SAMPLE_SCORES.map((p, i) => {
-                      const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2
-                      const r = (p.score / 100) * 80
-                      return (
-                        <RadarPulse
-                          key={`pulse-${i}`}
-                          cx={110 + r * Math.cos(angle)}
-                          cy={110 + r * Math.sin(angle)}
-                          color={p.color}
-                          delay={i * 0.35}
-                        />
-                      )
-                    })}
-
-                    {/* Data polygon — gentle fade-in, no aggressive scale */}
-                    <motion.polygon
-                      points={SAMPLE_SCORES.map((p, i) => {
-                        const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2
-                        const r = (p.score / 100) * 80
-                        return `${110 + r * Math.cos(angle)},${110 + r * Math.sin(angle)}`
-                      }).join(' ')}
-                      fill="url(#methodRadarFill)"
-                      stroke="url(#methodStrokeGrad)"
-                      strokeWidth="1.5"
-                      strokeLinejoin="round"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 1.8, delay: 0.3, ease: 'easeOut' }}
-                    />
-
-                    {SAMPLE_SCORES.map((p, i) => {
-                      const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2
-                      const r = (p.score / 100) * 80
-                      const cx = 110 + r * Math.cos(angle)
-                      const cy = 110 + r * Math.sin(angle)
-                      return (
-                        <motion.circle
-                          key={i}
-                          cx={cx} cy={cy}
-                          r="2.5" fill={p.color}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ duration: 0.35, delay: 0.45 + i * 0.05, ease: 'easeOut' }}
-                        />
-                      )
-                    })}
-
-                    {/* Pillar labels — static, clean typography */}
-                    {PILLARS.map((pillar, i) => {
-                      const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2
-                      const labelR = 98
-                      const cx = 110 + labelR * Math.cos(angle)
-                      const cy = 110 + labelR * Math.sin(angle)
-                      return (
-                        <g key={i}>
-                          <text
-                            x={cx} y={cy - 3}
-                            textAnchor="middle" dominantBaseline="middle"
-                            fill="#8b949e" fontSize="7" fontFamily="var(--font-jetbrains)" fontWeight="500"
-                          >
-                            {pillar.shortName}
-                          </text>
-                          <text
-                            x={cx} y={cy + 7}
-                            textAnchor="middle" dominantBaseline="middle"
-                            fill={SAMPLE_SCORES[i].color} fontSize="8" fontFamily="var(--font-jetbrains)" fontWeight="700"
-                          >
-                            {SAMPLE_SCORES[i].score}
-                          </text>
-                        </g>
-                      )
-                    })}
-
-                  </svg>
-
-                  {/* Rotating radar sweep — makes the chart a live instrument */}
-                  <RadarSweep />
-
-                  {/* Center score overlay — fade in once, calm */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="text-center">
-                      <motion.span
-                        className="block text-4xl font-heading font-semibold tracking-tight text-slate-100"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 1, delay: 1 }}
-                      >
-                        63.8
-                      </motion.span>
-                      <motion.span
-                        className="block text-[10px] font-mono text-muted-foreground tracking-[0.2em] uppercase mt-1"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.8, delay: 1.3 }}
-                      >
-                        E-ARI Score
-                      </motion.span>
-                    </div>
-                  </div>
-                </div>
-              </FadeUp>
+              {/* LEFT — self-drawing readiness radar (scroll-triggered reveal) */}
+              <MethodologyRadar />
 
               {/* RIGHT — Vertical pillar list */}
               <div className="space-y-0">

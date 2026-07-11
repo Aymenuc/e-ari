@@ -1427,29 +1427,3 @@
 @media (prefers-reduced-motion: reduce) {
   .marquee-track { animation: none; }
 }
-
-/* ─── Radar sweep (methodology) ────────────────────────────────────────────
-   A proper radar beam: conic gradient brightest at the LEADING edge (12
-   o'clock / 360deg) fading along the arc TRAILING behind it, rotating
-   clockwise. The hard 360→0 wrap gives a crisp leading edge that the beam
-   line aligns to. */
-@keyframes radarSweepSpin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-.radar-sweep {
-  background: conic-gradient(
-    from 0deg at 50% 50%,
-    rgba(56, 189, 248, 0) 0deg,
-    rgba(56, 189, 248, 0) 288deg,
-    rgba(56, 189, 248, 0.05) 320deg,
-    rgba(56, 189, 248, 0.30) 358deg,
-    rgba(56, 189, 248, 0) 360deg
-  );
-  transform-origin: 50% 50%;
-  animation: radarSweepSpin 6s linear infinite;
-  will-change: transform;
-}
-@media (prefers-reduced-motion: reduce) {
-  .radar-sweep { animation: none; }
-}

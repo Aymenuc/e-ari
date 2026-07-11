@@ -105,50 +105,6 @@ export function InsightStream() {
   );
 }
 
-// ─── Radar sweep ─────────────────────────────────────────────────────────────
-// A proper rotating radar beam: an angular (conic) gradient that is brightest
-// at the LEADING edge and fades along the arc TRAILING behind it, plus a thin
-// beam line at the leading edge — the way a real radar display sweeps. Rendered
-// as a circular HTML overlay sized to the r=80 ring; drop it into the radar's
-// relative container (a sibling of the <svg>, not inside it).
-//
-// inset 13.64% = (1 − 160/220) / 2, so the overlay circle exactly matches the
-// r=80 outer ring of the 220-unit viewBox.
-
-export function RadarSweep() {
-  const prefersReducedMotion = useReducedMotion();
-  if (prefersReducedMotion) return null;
-  return (
-    <div
-      className="absolute rounded-full overflow-hidden pointer-events-none z-[1]"
-      style={{ inset: '13.64%' }}
-      aria-hidden="true"
-    >
-      <div className="radar-sweep absolute inset-0">
-        {/* Leading beam line — center to the 12 o'clock edge */}
-        <div className="absolute left-1/2 top-0 h-1/2 w-px -translate-x-1/2 bg-gradient-to-b from-sky-300/70 via-sky-400/30 to-transparent" />
-      </div>
-    </div>
-  );
-}
-
-// ─── Pulsing radar data point ────────────────────────────────────────────────
-// A soft expanding halo behind each data vertex. SVG-native, center given.
-
-export function RadarPulse({ cx, cy, color, delay = 0 }: { cx: number; cy: number; color: string; delay?: number }) {
-  const prefersReducedMotion = useReducedMotion();
-  if (prefersReducedMotion) return null;
-  return (
-    <motion.circle
-      cx={cx} cy={cy} r="2.5" fill={color}
-      initial={{ opacity: 0.5, scale: 1 }}
-      animate={{ opacity: [0.5, 0, 0.5], scale: [1, 3, 1] }}
-      transition={{ duration: 3, repeat: Infinity, delay, ease: 'easeOut' }}
-      style={{ transformOrigin: `${cx}px ${cy}px` }}
-    />
-  );
-}
-
 // ─── Animated CTA aura ───────────────────────────────────────────────────────
 // Drifting conic glow behind the final CTA so the closer feels alive.
 
