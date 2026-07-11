@@ -432,6 +432,15 @@ export default function AssessmentPage() {
 
   const TOTAL_STEPS = 10; // sector + 8 pillars + 1 review
 
+  // ── Scroll to top on step change ───────────────────────────────────────────
+  // Each pillar step is taller than the viewport, so without this a "Next"
+  // click lands the user at the BOTTOM of the new step (where the button
+  // was) with question 1 off-screen above them — they had to scroll up to
+  // start every pillar.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+  }, [currentStep, prefersReducedMotion]);
+
   // ── Load draft on mount ────────────────────────────────────────────────────
   useEffect(() => {
     const draft = loadDraft();
