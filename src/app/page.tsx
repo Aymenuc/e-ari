@@ -45,6 +45,7 @@ import { Navigation } from '@/components/shared/navigation'
 import { Footer } from '@/components/shared/footer'
 import { ProductSpotlightCarousel } from '@/components/marketing/product-spotlight-carousel'
 import { HowScoringWorks } from '@/components/marketing/how-scoring-works'
+import { HeroScene, MouseSpotlight, Magnetic, HeroStats, FrameworkMarquee } from '@/components/marketing/hero-scene'
 import { AgentPanel } from '@/components/shared/agent-panel'
 import { PILLARS } from '@/lib/pillars'
 
@@ -489,6 +490,7 @@ export default function Home() {
             {/* Single ultra-faint hairline at the bottom — quiet section divider */}
             <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
           </div>
+          <MouseSpotlight />
 
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -518,6 +520,7 @@ export default function Home() {
                   </p>
 
                   <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+                    <Magnetic>
                     <Link href="/auth/register">
                       <Button
                         size="lg"
@@ -529,6 +532,7 @@ export default function Home() {
                         </span>
                       </Button>
                     </Link>
+                    </Magnetic>
                     <Link href="#agentic">
                       <Button
                         variant="outline"
@@ -539,198 +543,23 @@ export default function Home() {
                       </Button>
                     </Link>
                   </div>
+
+                  <HeroStats />
                 </FadeUp>
               </div>
 
-              {/* Right — dashboard preview (calm, no decorative floating badges) */}
+              {/* Right — the product performing itself: live agent-pipeline scene */}
               <FadeUp delay={0.12} className="flex justify-center lg:justify-end">
-                <div className="relative w-full max-w-lg">
-                  {/* Main preview card — living gradient border, deep shadow */}
-                  <div className="aurora-card rounded-xl p-[1px] shadow-[0_30px_70px_-24px_rgba(0,0,0,0.7)]">
-                  <div className="rounded-xl overflow-hidden relative bg-[#0e131c]">
-                    {/* Window chrome — refined: status dot + module label + monospace path */}
-                    <div className="flex items-center gap-3 px-4 py-2.5 bg-[#0a0f17] border-b border-white/[0.05]">
-                      <span className="relative flex h-1.5 w-1.5">
-                        <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400/60 animate-ping" />
-                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                      </span>
-                      <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-slate-500">
-                        Assessment / results
-                      </span>
-                      <span className="ml-auto text-[10px] font-mono text-slate-600">v5.3</span>
-                    </div>
-
-                    <div className="p-6 relative z-10">
-                      {/* Top row: Large score ring + info */}
-                      <div className="flex items-center gap-6">
-                        {/* Large animated score ring with gradient glow */}
-                        <div className="relative flex-shrink-0">
-                          <svg width="120" height="120" viewBox="0 0 120 120" aria-label="Overall readiness score: 67%">
-                            <defs>
-                              <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#1d4ed8" />
-                                <stop offset="100%" stopColor="#0369a1" />
-                              </linearGradient>
-                            </defs>
-                            <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(48,57,74,0.3)" strokeWidth="7" />
-                            <motion.circle
-                              cx="60"
-                              cy="60"
-                              r="52"
-                              fill="none"
-                              stroke="url(#scoreGradient)"
-                              strokeWidth="7"
-                              strokeLinecap="round"
-                              strokeDasharray={327}
-                              initial={{ strokeDashoffset: 327 }}
-                              animate={{ strokeDashoffset: 327 - 327 * 0.67 }}
-                              transition={{ duration: 2, ease: 'easeOut', delay: 0.5 }}
-                              transform="rotate(-90 60 60)"
-                            />
-                            <motion.text
-                              x="60" y="54" textAnchor="middle" fill="#e6edf3" fontSize="30" fontWeight="700" fontFamily="var(--font-plus-jakarta)"
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ duration: 0.5, delay: 1.2 }}
-                            >
-                              67
-                            </motion.text>
-                            <text x="60" y="72" textAnchor="middle" fill="#8b949e" fontSize="11" fontFamily="var(--font-inter)">
-                              / 100
-                            </text>
-                          </svg>
-                        </div>
-
-                        <div>
-                          <p className="font-heading font-bold text-slate-50 text-[19px] tracking-tight">E-ARI Score</p>
-                          <p className="text-[13px] text-slate-400 font-sans mt-1">Chaser &middot; 51&ndash;75 band</p>
-                          <div className="mt-3 inline-flex items-center gap-2 rounded-md border border-eari-blue/25 bg-eari-blue/10 px-2 py-1">
-                            <span className="h-1 w-1 rounded-full bg-eari-blue-light" />
-                            <span className="text-[10px] font-mono uppercase tracking-[0.16em] text-eari-blue-light/95">
-                              Deterministic v5.3
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Mini radar chart — calm constellation style */}
-                      <div className="mt-6 flex justify-center">
-                        <div className="relative">
-                          <svg width="200" height="200" viewBox="0 0 200 200" aria-label="Pillar radar chart">
-                            <defs>
-                              <linearGradient id="radarFill" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="rgba(37,99,235,0.1)" />
-                                <stop offset="100%" stopColor="rgba(15,23,42,0.12)" />
-                              </linearGradient>
-                            </defs>
-                            {/* Octagonal grid rings — solid, faint */}
-                            {[0.25, 0.5, 0.75, 1].map((scale) => (
-                              <polygon
-                                key={scale}
-                                points={SAMPLE_SCORES.map((_, i) => {
-                                  const angle = (Math.PI * 2 * i) / SAMPLE_SCORES.length - Math.PI / 2
-                                  const r = 80 * scale
-                                  return `${100 + r * Math.cos(angle)},${100 + r * Math.sin(angle)}`
-                                }).join(' ')}
-                                fill="none"
-                                stroke="rgba(48,57,74,0.15)"
-                                strokeWidth="0.4"
-                              />
-                            ))}
-                            {/* Axis lines — minimal */}
-                            {SAMPLE_SCORES.map((_, i) => {
-                              const angle = (Math.PI * 2 * i) / SAMPLE_SCORES.length - Math.PI / 2
-                              return (
-                                <line
-                                  key={i}
-                                  x1="100" y1="100"
-                                  x2={100 + 80 * Math.cos(angle)}
-                                  y2={100 + 80 * Math.sin(angle)}
-                                  stroke="rgba(48,57,74,0.10)"
-                                  strokeWidth="0.4"
-                                />
-                              )
-                            })}
-                            {/* Data polygon — gentle fade-in */}
-                            <motion.polygon
-                              points={SAMPLE_SCORES.map((pillar, i) => {
-                                const angle = (Math.PI * 2 * i) / SAMPLE_SCORES.length - Math.PI / 2
-                                const r = (pillar.score / 100) * 80
-                                return `${100 + r * Math.cos(angle)},${100 + r * Math.sin(angle)}`
-                              }).join(' ')}
-                              fill="url(#radarFill)"
-                              stroke="url(#scoreGradient)"
-                              strokeWidth="1"
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ duration: 1.5, delay: 0.6, ease: 'easeOut' }}
-                            />
-                            {SAMPLE_SCORES.map((pillar, i) => {
-                              const angle = (Math.PI * 2 * i) / SAMPLE_SCORES.length - Math.PI / 2
-                              const r = (pillar.score / 100) * 80
-                              const cx = 100 + r * Math.cos(angle)
-                              const cy = 100 + r * Math.sin(angle)
-                              return (
-                                <motion.circle
-                                  key={i}
-                                  cx={cx}
-                                  cy={cy}
-                                  r="2"
-                                  fill={pillar.color}
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  transition={{ duration: 0.35, delay: 0.75 + i * 0.04, ease: 'easeOut' }}
-                                />
-                              )
-                            })}
-                            {/* Pillar labels — static */}
-                            {SAMPLE_SCORES.map((pillar, i) => {
-                              const angle = (Math.PI * 2 * i) / SAMPLE_SCORES.length - Math.PI / 2
-                              const labelR = 95
-                              return (
-                                <text
-                                  key={i}
-                                  x={100 + labelR * Math.cos(angle)}
-                                  y={100 + labelR * Math.sin(angle)}
-                                  textAnchor="middle"
-                                  dominantBaseline="middle"
-                                  fill="#8b949e"
-                                  fontSize="8"
-                                  fontFamily="var(--font-jetbrains)"
-                                >
-                                  {pillar.name.slice(0, 3).toUpperCase()}
-                                </text>
-                              )
-                            })}
-                          </svg>
-                        </div>
-                      </div>
-
-                      {/* Pillar quick stats — paired columns, hairline rows */}
-                      <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-2.5 border-t border-white/[0.05] pt-4">
-                        {SAMPLE_SCORES.map((pillar, i) => (
-                          <motion.div
-                            key={pillar.name}
-                            className="flex items-center gap-3"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.4, delay: 0.7 + i * 0.04 }}
-                          >
-                            <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: pillar.color }} />
-                            <span className="text-[11px] text-slate-400 font-sans flex-1 truncate">{pillar.name}</span>
-                            <div className="h-[3px] w-12 rounded-full bg-white/[0.04] overflow-hidden">
-                              <div className="h-full rounded-full" style={{ backgroundColor: pillar.color, width: `${pillar.score}%` }} />
-                            </div>
-                            <span className="text-[11px] font-mono text-slate-200 tabular-nums w-6 text-right">{pillar.score}</span>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                </div>
+                <HeroScene />
               </FadeUp>
             </div>
+
+            {/* Frameworks the platform speaks — infinite quiet marquee */}
+            <FadeUp delay={0.3}>
+              <div className="mt-16 sm:mt-20">
+                <FrameworkMarquee />
+              </div>
+            </FadeUp>
           </div>
         </section>
 
