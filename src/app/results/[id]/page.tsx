@@ -105,6 +105,7 @@ import { assessComplianceGaps, getComplianceSummary } from '@/lib/regulatory-map
 import { analyzeDrift, generateAlerts, getRecommendedSchedule } from '@/lib/monitoring-engine'
 import { getVocab, type EntityType } from '@/lib/entity-types'
 import { LeverageMoves } from '@/components/shared/leverage-moves'
+import { ResultsSectionNav } from '@/components/shared/results-section-nav'
 
 /* ─── Deterministic pseudo-random (avoids hydration mismatch) ─────────── */
 
@@ -112,6 +113,21 @@ function seededRandom(seed: number) {
   const x = Math.sin(seed * 9301 + 49297) * 49297
   return x - Math.floor(x)
 }
+
+/* ─── In-page report navigation (sentinel anchors are inserted before each
+   section; tier-gated sections that never render are auto-hidden) ──────── */
+const RESULTS_NAV_SECTIONS = [
+  { id: 'sec-score', label: 'Score' },
+  { id: 'sec-summary', label: 'Summary' },
+  { id: 'sec-pillars', label: 'Pillars' },
+  { id: 'sec-action', label: 'Action Plan' },
+  { id: 'sec-compliance', label: 'Compliance' },
+  { id: 'sec-monitoring', label: 'Monitoring' },
+  { id: 'sec-insights', label: 'Insights' },
+  { id: 'sec-findings', label: 'Findings' },
+  { id: 'sec-benchmark', label: 'Benchmark' },
+  { id: 'sec-certification', label: 'Certification' },
+]
 
 /* ─── Tier Types ──────────────────────────────────────────────────────── */
 
@@ -1190,7 +1206,9 @@ export default function ResultsPage() {
       <Navigation />
 
       <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12 space-y-8">
+          <ResultsSectionNav sections={RESULTS_NAV_SECTIONS} />
+          <div id="sec-score" className="scroll-mt-24" />
 
           {/* ─── 1. HEADER SECTION — Premium Hero ──────────────────────── */}
           <FadeUp>
@@ -1296,8 +1314,6 @@ export default function ResultsPage() {
             </section>
           </FadeUp>
 
-          {/* Section separator */}
-          <div className="section-gradient-separator" />
 
           {sessionStatus === 'authenticated' && progressionState ? (
             <FadeUp>
@@ -1333,319 +1349,6 @@ export default function ResultsPage() {
               />
             </FadeUp>
           ) : null}
-
-          {/* ─── CERTIFICATION BADGE SECTION (All Tiers) ─────────────────── */}
-          <FadeUp>
-            <div className="aurora-card rounded-2xl p-[1px]">
-              <Card className="bg-navy-800/90 backdrop-blur-sm border-0 rounded-2xl hover-lift">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-eari-blue/15">
-                      <Award className="h-5 w-5 text-eari-blue-light" />
-                    </div>
-                    <div>
-                      <CardTitle className="font-heading text-xl font-bold tracking-tight text-foreground">
-                        E-ARI Certification
-                      </CardTitle>
-                      <CardDescription className="font-sans text-sm">
-                        Your AI readiness certification level
-                      </CardDescription>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className="ml-auto text-[10px] font-mono"
-                      style={{
-                        borderColor: `${certificationBadge.color}40`,
-                        color: certificationBadge.color,
-                        backgroundColor: `${certificationBadge.color}15`,
-                      }}
-                    >
-                      {certificationBadge.label}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col md:flex-row items-center gap-6">
-                    {/* SVG Badge */}
-                    <div className="flex-shrink-0" dangerouslySetInnerHTML={{ __html: certificationBadge.svg }} />
-
-                    <div className="flex-1 text-center md:text-left">
-                      {certificationResult.isCertified ? (
-                        <>
-                          <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
-                            <span className="font-heading text-2xl font-semibold tabular-nums" style={{ color: certificationResult.certification.color }}>
-                              {certificationResult.certification.label} Certified
-                            </span>
-                          </div>
-                          <p className="text-sm text-muted-foreground font-sans leading-relaxed mb-4">
-                            {certificationResult.certification.description}
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
-                            <span className="font-heading text-2xl font-extrabold text-muted-foreground">
-                              Not Yet Certified
-                            </span>
-                          </div>
-                          <p className="text-sm text-muted-foreground font-sans leading-relaxed mb-4">
-                            {certificationResult.certification.description}
-                          </p>
-                        </>
-                      )}
-
-                      {/* Next level path */}
-                      {certificationResult.nextLevel && (
-                        <div className="p-4 rounded-lg bg-navy-700/50 border border-border/20">
-                          <div className="flex items-center gap-2 mb-2">
-                            <TrendingUp className="h-4 w-4 text-eari-blue-light" />
-                            <span className="font-heading text-sm font-semibold text-foreground">
-                              Path to {certificationResult.nextLevel.label}
-                            </span>
-                          </div>
-                          {certificationResult.nextLevelGaps.length > 0 ? (
-                            <div className="space-y-2">
-                              <p className="text-xs text-muted-foreground font-sans">
-                                Improve these pillars to reach {certificationResult.nextLevel.label}:
-                              </p>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                {certificationResult.nextLevelGaps.map(gap => {
-                                  const pillarDef = PILLARS.find(p => p.id === gap.pillarId)
-                                  return (
-                                    <div key={gap.pillarId} className="flex items-center gap-2 p-2 rounded-md bg-navy-800/60">
-                                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: pillarDef?.color ?? '#8b949e' }} />
-                                      <span className="text-xs text-foreground font-sans">{gap.pillarName}</span>
-                                      <span className="ml-auto font-mono text-[10px] text-muted-foreground">
-                                        {Math.round(gap.current)} → {gap.required}
-                                      </span>
-                                    </div>
-                                  )
-                                })}
-                              </div>
-                              {scoring.overallScore < certificationResult.nextLevel.minOverallScore && (
-                                <p className="text-xs text-muted-foreground font-sans mt-2">
-                                  Overall score needs to reach {certificationResult.nextLevel.minOverallScore} (currently {Math.round(scoring.overallScore)})
-                                </p>
-                              )}
-                            </div>
-                          ) : (
-                            <p className="text-xs text-muted-foreground font-sans">
-                              Overall score needs to reach {certificationResult.nextLevel.minOverallScore} (currently {Math.round(scoring.overallScore)})
-                            </p>
-                          )}
-                        </div>
-                      )}
-
-                      {certificationResult.isCertified && certificationResult.level === 'platinum' && (
-                        <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20 mt-3">
-                          <div className="flex items-center gap-2">
-                            <Award className="h-4 w-4 text-purple-400" />
-                            <span className="font-heading text-sm font-semibold text-purple-400">
-                              Highest certification achieved — maintain excellence
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </FadeUp>
-
-          {/* Section separator */}
-          <div className="section-gradient-separator" />
-
-          {/* ─── READINESS OVER TIME (Feature 1) ──────────────────────── */}
-          <FadeUp delay={0.08}>
-            <div className="aurora-card rounded-2xl p-[1px]">
-              <Card className="bg-navy-800/90 backdrop-blur-sm border-0 rounded-2xl hover-lift">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-eari-blue/15">
-                      <Activity className="h-5 w-5 text-eari-blue-light" />
-                    </div>
-                    <div>
-                      <CardTitle className="font-heading text-xl font-bold tracking-tight text-foreground">
-                        Readiness Over Time
-                      </CardTitle>
-                      <CardDescription className="font-sans text-sm">
-                        Track your AI readiness progress across assessments
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {historyLoading ? (
-                    <div className="h-[300px] flex items-center justify-center">
-                      <Loader2 className="h-6 w-6 animate-spin text-eari-blue-light" />
-                    </div>
-                  ) : assessmentHistory.length <= 1 ? (
-                    <div className="flex flex-col items-center justify-center py-12 gap-4">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-eari-blue/10 border border-eari-blue/20">
-                        <TrendingUp className="h-8 w-8 text-eari-blue-light/50" />
-                      </div>
-                      <div className="text-center">
-                        <p className="font-heading font-semibold text-foreground text-lg mb-2">Unlock Trend Tracking</p>
-                        <p className="text-sm text-muted-foreground font-sans max-w-md leading-relaxed">
-                          {assessmentHistory.length === 0
-                            ? "Complete your first assessment to establish a baseline score. Future assessments will show your progress over time."
-                            : "Complete another assessment to unlock trend tracking. Your previous answers will be pre-filled for quick updating, and you'll see how your readiness has evolved."}
-                        </p>
-                      </div>
-                      <Button
-                        onClick={handleRerun}
-                        disabled={rerunning}
-                        variant="outline"
-                        className="border-eari-blue/30 text-eari-blue-light hover:bg-eari-blue/10 font-heading text-sm mt-2"
-                      >
-                        {rerunning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RotateCcw className="mr-2 h-4 w-4" />}
-                        Re-run Assessment
-                      </Button>
-                      <p className="text-[10px] text-muted-foreground/50 font-sans">
-                        We recommend quarterly re-assessments to track your AI readiness journey
-                      </p>
-                    </div>
-                  ) : (
-                    <>
-                      {/* Line Chart */}
-                      <div className="w-full h-[300px] sm:h-[350px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart
-                            data={assessmentHistory.map(a => {
-                              const entry: Record<string, string | number> = {
-                                date: a.completedAt
-                                  ? new Date(a.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                                  : 'N/A',
-                                overall: Math.round(a.overallScore ?? 0),
-                              }
-                              if (a.pillarScores && Array.isArray(a.pillarScores)) {
-                                a.pillarScores.forEach(ps => {
-                                  entry[ps.pillarId] = Math.round(ps.normalizedScore)
-                                })
-                              }
-                              return entry
-                            })}
-                            margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
-                          >
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(48,57,74,0.3)" />
-                            <XAxis
-                              dataKey="date"
-                              tick={{ fill: '#8b949e', fontSize: 11 }}
-                              axisLine={{ stroke: 'rgba(48,57,74,0.4)' }}
-                              tickLine={{ stroke: 'rgba(48,57,74,0.4)' }}
-                            />
-                            <YAxis
-                              domain={[0, 100]}
-                              tick={{ fill: '#8b949e', fontSize: 11 }}
-                              axisLine={{ stroke: 'rgba(48,57,74,0.4)' }}
-                              tickLine={{ stroke: 'rgba(48,57,74,0.4)' }}
-                            />
-                            <Tooltip
-                              contentStyle={{ background: '#161b22', border: '1px solid rgba(48,57,74,0.6)', borderRadius: '8px', fontSize: '12px' }}
-                              labelStyle={{ color: '#e6edf3', fontWeight: 600 }}
-                            />
-                            <Line type="monotone" dataKey="overall" name="Overall" stroke="#2563eb" strokeWidth={3} dot={{ fill: '#2563eb', r: 4 }} activeDot={{ r: 6 }} />
-                            {/* Sector average reference line */}
-                            {benchmarkData?.overall && benchmarkData.overall.avgScore > 0 && (
-                              <ReferenceLine
-                                y={Math.round(benchmarkData.overall.avgScore)}
-                                stroke="#f59e0b"
-                                strokeDasharray="6 3"
-                                strokeWidth={1.5}
-                                label={{
-                                  value: `Sector Avg: ${Math.round(benchmarkData.overall.avgScore)}%`,
-                                  position: 'right',
-                                  fill: '#f59e0b',
-                                  fontSize: 10,
-                                  fontFamily: 'var(--font-plus-jakarta)',
-                                }}
-                              />
-                            )}
-                            {PILLARS.map(pillar => (
-                              <Line
-                                key={pillar.id}
-                                type="monotone"
-                                dataKey={pillar.id}
-                                name={pillar.shortName}
-                                stroke={pillar.color}
-                                strokeWidth={1.5}
-                                strokeDasharray="4 2"
-                                dot={false}
-                                activeDot={{ r: 3 }}
-                              />
-                            ))}
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </div>
-
-                      {/* Legend */}
-                      <div className="flex flex-wrap items-center gap-3 mt-4 pt-4 border-t border-border/30">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-5 h-0.5 bg-eari-blue rounded" />
-                          <span className="text-xs text-muted-foreground font-sans font-medium">Overall</span>
-                        </div>
-                        {PILLARS.map(p => (
-                          <div key={p.id} className="flex items-center gap-1.5">
-                            <div className="w-3 h-0.5 rounded" style={{ backgroundColor: p.color, borderStyle: 'dashed' }} />
-                            <span className="text-[10px] text-muted-foreground font-sans">{p.shortName}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Score Changes Cards */}
-                      {assessmentHistory.length >= 2 && (() => {
-                        const current = assessmentHistory[assessmentHistory.length - 1]
-                        const previous = assessmentHistory[assessmentHistory.length - 2]
-                        if (!current.pillarScores || !previous.pillarScores) return null
-                        const changes = current.pillarScores.map(ps => {
-                          const prevPs = previous.pillarScores?.find(pp => pp.pillarId === ps.pillarId)
-                          const delta = prevPs ? Math.round(ps.normalizedScore - prevPs.normalizedScore) : 0
-                          return { pillarId: ps.pillarId, delta, currentScore: ps.normalizedScore }
-                        }).filter(c => c.delta !== 0)
-                        if (changes.length === 0) return null
-                        return (
-                          <div className="mt-4">
-                            <h4 className="font-heading text-sm font-semibold text-foreground mb-3">Score Changes</h4>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                              {changes.map(change => {
-                                const pillarDef = PILLARS.find(p => p.id === change.pillarId)
-                                return (
-                                  <div key={change.pillarId} className="p-2.5 rounded-lg bg-navy-700/40 border border-border/20">
-                                    <div className="flex items-center gap-1.5 mb-1">
-                                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: pillarDef?.color ?? '#8b949e' }} />
-                                      <span className="font-heading text-xs text-foreground">{pillarDef?.shortName}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <span className="font-mono text-xs text-foreground font-semibold">{Math.round(change.currentScore)}%</span>
-                                      <Badge
-                                        variant="outline"
-                                        className={`text-[9px] font-mono px-1 py-0 ${
-                                          change.delta > 0
-                                            ? 'border-emerald-500/30 text-emerald-400'
-                                            : 'border-red-500/30 text-red-400'
-                                        }`}
-                                      >
-                                        {change.delta > 0 ? <TrendingUp className="h-2.5 w-2.5 mr-0.5" /> : <TrendingDown className="h-2.5 w-2.5 mr-0.5" />}
-                                        {change.delta > 0 ? '+' : ''}{change.delta}%
-                                      </Badge>
-                                    </div>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          </div>
-                        )
-                      })()}
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </FadeUp>
-
-          {/* Section separator */}
-          <div className="section-gradient-separator" />
 
           {/* ─── TIER BADGE (read-only, from session) ───────────────────── */}
           <FadeUp delay={0.05}>
@@ -1709,6 +1412,7 @@ export default function ResultsPage() {
             </FadeUp>
           )}
 
+          <div id="sec-summary" className="scroll-mt-24" />
           {/* ─── 2. MATURITY BAND — Aurora Card ──────────────────────────── */}
           <FadeUp delay={0.1}>
             <div className="aurora-card rounded-2xl p-[1px]">
@@ -1764,8 +1468,6 @@ export default function ResultsPage() {
             </div>
           </FadeUp>
 
-          {/* Section separator */}
-          <div className="section-gradient-separator" />
 
           {/* ─── ENTERPRISE: EXECUTIVE SUMMARY (Print-Ready) ────────────── */}
           {isEnterprise && (
@@ -1838,6 +1540,7 @@ export default function ResultsPage() {
             </FadeUp>
           )}
 
+          <div id="sec-pillars" className="scroll-mt-24" />
           {/* ─── 3. PILLAR SCORE CARDS ──────────────────────────────────── */}
           <section>
             <FadeUp>
@@ -1864,17 +1567,15 @@ export default function ResultsPage() {
             </div>
           </section>
 
-          {/* Section separator */}
-          <div className="section-gradient-separator" />
 
+          <div id="sec-action" className="scroll-mt-24" />
           {/* ─── HIGHEST-LEVERAGE MOVES (All Tiers — deterministic) ───────── */}
           <FadeUp>
             <LeverageMoves scoring={scoring} topN={5} />
           </FadeUp>
 
-          {/* Section separator */}
-          <div className="section-gradient-separator" />
 
+          <div id="sec-compliance" className="scroll-mt-24" />
           {/* ─── REGULATORY COMPLIANCE SECTION (Pro+, locked for Free) ────── */}
           {isPro ? (
             <FadeUp>
@@ -2064,8 +1765,196 @@ export default function ResultsPage() {
             />
           )}
 
-          {/* Section separator */}
-          <div className="section-gradient-separator" />
+
+          <div id="sec-monitoring" className="scroll-mt-24" />
+          {/* ─── READINESS OVER TIME (Feature 1) ──────────────────────── */}
+          <FadeUp delay={0.08}>
+            <div className="aurora-card rounded-2xl p-[1px]">
+              <Card className="bg-navy-800/90 backdrop-blur-sm border-0 rounded-2xl hover-lift">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-eari-blue/15">
+                      <Activity className="h-5 w-5 text-eari-blue-light" />
+                    </div>
+                    <div>
+                      <CardTitle className="font-heading text-xl font-bold tracking-tight text-foreground">
+                        Readiness Over Time
+                      </CardTitle>
+                      <CardDescription className="font-sans text-sm">
+                        Track your AI readiness progress across assessments
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {historyLoading ? (
+                    <div className="h-[300px] flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin text-eari-blue-light" />
+                    </div>
+                  ) : assessmentHistory.length <= 1 ? (
+                    <div className="flex flex-col items-center justify-center py-12 gap-4">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-eari-blue/10 border border-eari-blue/20">
+                        <TrendingUp className="h-8 w-8 text-eari-blue-light/50" />
+                      </div>
+                      <div className="text-center">
+                        <p className="font-heading font-semibold text-foreground text-lg mb-2">Unlock Trend Tracking</p>
+                        <p className="text-sm text-muted-foreground font-sans max-w-md leading-relaxed">
+                          {assessmentHistory.length === 0
+                            ? "Complete your first assessment to establish a baseline score. Future assessments will show your progress over time."
+                            : "Complete another assessment to unlock trend tracking. Your previous answers will be pre-filled for quick updating, and you'll see how your readiness has evolved."}
+                        </p>
+                      </div>
+                      <Button
+                        onClick={handleRerun}
+                        disabled={rerunning}
+                        variant="outline"
+                        className="border-eari-blue/30 text-eari-blue-light hover:bg-eari-blue/10 font-heading text-sm mt-2"
+                      >
+                        {rerunning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RotateCcw className="mr-2 h-4 w-4" />}
+                        Re-run Assessment
+                      </Button>
+                      <p className="text-[10px] text-muted-foreground/50 font-sans">
+                        We recommend quarterly re-assessments to track your AI readiness journey
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Line Chart */}
+                      <div className="w-full h-[300px] sm:h-[350px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart
+                            data={assessmentHistory.map(a => {
+                              const entry: Record<string, string | number> = {
+                                date: a.completedAt
+                                  ? new Date(a.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                                  : 'N/A',
+                                overall: Math.round(a.overallScore ?? 0),
+                              }
+                              if (a.pillarScores && Array.isArray(a.pillarScores)) {
+                                a.pillarScores.forEach(ps => {
+                                  entry[ps.pillarId] = Math.round(ps.normalizedScore)
+                                })
+                              }
+                              return entry
+                            })}
+                            margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(48,57,74,0.3)" />
+                            <XAxis
+                              dataKey="date"
+                              tick={{ fill: '#8b949e', fontSize: 11 }}
+                              axisLine={{ stroke: 'rgba(48,57,74,0.4)' }}
+                              tickLine={{ stroke: 'rgba(48,57,74,0.4)' }}
+                            />
+                            <YAxis
+                              domain={[0, 100]}
+                              tick={{ fill: '#8b949e', fontSize: 11 }}
+                              axisLine={{ stroke: 'rgba(48,57,74,0.4)' }}
+                              tickLine={{ stroke: 'rgba(48,57,74,0.4)' }}
+                            />
+                            <Tooltip
+                              contentStyle={{ background: '#161b22', border: '1px solid rgba(48,57,74,0.6)', borderRadius: '8px', fontSize: '12px' }}
+                              labelStyle={{ color: '#e6edf3', fontWeight: 600 }}
+                            />
+                            <Line type="monotone" dataKey="overall" name="Overall" stroke="#2563eb" strokeWidth={3} dot={{ fill: '#2563eb', r: 4 }} activeDot={{ r: 6 }} />
+                            {/* Sector average reference line */}
+                            {benchmarkData?.overall && benchmarkData.overall.avgScore > 0 && (
+                              <ReferenceLine
+                                y={Math.round(benchmarkData.overall.avgScore)}
+                                stroke="#f59e0b"
+                                strokeDasharray="6 3"
+                                strokeWidth={1.5}
+                                label={{
+                                  value: `Sector Avg: ${Math.round(benchmarkData.overall.avgScore)}%`,
+                                  position: 'right',
+                                  fill: '#f59e0b',
+                                  fontSize: 10,
+                                  fontFamily: 'var(--font-plus-jakarta)',
+                                }}
+                              />
+                            )}
+                            {PILLARS.map(pillar => (
+                              <Line
+                                key={pillar.id}
+                                type="monotone"
+                                dataKey={pillar.id}
+                                name={pillar.shortName}
+                                stroke={pillar.color}
+                                strokeWidth={1.5}
+                                strokeDasharray="4 2"
+                                dot={false}
+                                activeDot={{ r: 3 }}
+                              />
+                            ))}
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      {/* Legend */}
+                      <div className="flex flex-wrap items-center gap-3 mt-4 pt-4 border-t border-border/30">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-5 h-0.5 bg-eari-blue rounded" />
+                          <span className="text-xs text-muted-foreground font-sans font-medium">Overall</span>
+                        </div>
+                        {PILLARS.map(p => (
+                          <div key={p.id} className="flex items-center gap-1.5">
+                            <div className="w-3 h-0.5 rounded" style={{ backgroundColor: p.color, borderStyle: 'dashed' }} />
+                            <span className="text-[10px] text-muted-foreground font-sans">{p.shortName}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Score Changes Cards */}
+                      {assessmentHistory.length >= 2 && (() => {
+                        const current = assessmentHistory[assessmentHistory.length - 1]
+                        const previous = assessmentHistory[assessmentHistory.length - 2]
+                        if (!current.pillarScores || !previous.pillarScores) return null
+                        const changes = current.pillarScores.map(ps => {
+                          const prevPs = previous.pillarScores?.find(pp => pp.pillarId === ps.pillarId)
+                          const delta = prevPs ? Math.round(ps.normalizedScore - prevPs.normalizedScore) : 0
+                          return { pillarId: ps.pillarId, delta, currentScore: ps.normalizedScore }
+                        }).filter(c => c.delta !== 0)
+                        if (changes.length === 0) return null
+                        return (
+                          <div className="mt-4">
+                            <h4 className="font-heading text-sm font-semibold text-foreground mb-3">Score Changes</h4>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                              {changes.map(change => {
+                                const pillarDef = PILLARS.find(p => p.id === change.pillarId)
+                                return (
+                                  <div key={change.pillarId} className="p-2.5 rounded-lg bg-navy-700/40 border border-border/20">
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: pillarDef?.color ?? '#8b949e' }} />
+                                      <span className="font-heading text-xs text-foreground">{pillarDef?.shortName}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-mono text-xs text-foreground font-semibold">{Math.round(change.currentScore)}%</span>
+                                      <Badge
+                                        variant="outline"
+                                        className={`text-[9px] font-mono px-1 py-0 ${
+                                          change.delta > 0
+                                            ? 'border-emerald-500/30 text-emerald-400'
+                                            : 'border-red-500/30 text-red-400'
+                                        }`}
+                                      >
+                                        {change.delta > 0 ? <TrendingUp className="h-2.5 w-2.5 mr-0.5" /> : <TrendingDown className="h-2.5 w-2.5 mr-0.5" />}
+                                        {change.delta > 0 ? '+' : ''}{change.delta}%
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        )
+                      })()}
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </FadeUp>
+
 
           {/* ─── MONITORING / READINESS TRACKING SECTION (Pro+) ─────────── */}
           {isPro ? (
@@ -2270,8 +2159,6 @@ export default function ResultsPage() {
             />
           )}
 
-          {/* Section separator */}
-          <div className="section-gradient-separator" />
 
           {/* ─── AI PULSE: CONTINUOUS MONITORING ──────────────────────────────── */}
           <FadeUp delay={0.08}>
@@ -2526,8 +2413,6 @@ export default function ResultsPage() {
             </div>
           </FadeUp>
 
-          {/* Section separator */}
-          <div className="section-gradient-separator" />
 
           {/* ─── 4. RADAR CHART — Holographic Display ──────────────────── */}
           <FadeUp>
@@ -2574,8 +2459,6 @@ export default function ResultsPage() {
             </div>
           </FadeUp>
 
-          {/* Section separator */}
-          <div className="section-gradient-separator" />
 
           {/* ─── 5. PILLAR BAR CHART — Premium Visualization ──────────── */}
           <FadeUp>
@@ -2643,9 +2526,8 @@ export default function ResultsPage() {
             </Card>
           </FadeUp>
 
-          {/* Section separator */}
-          <div className="section-gradient-separator" />
 
+          <div id="sec-insights" className="scroll-mt-24" />
           {/* ─── 6. AI STRATEGIC INSIGHTS SECTION ───────────────────────── */}
           <section>
             <FadeUp>
@@ -3048,9 +2930,8 @@ export default function ResultsPage() {
             )}
           </section>
 
-          {/* Section separator */}
-          <div className="section-gradient-separator" />
 
+          <div id="sec-findings" className="scroll-mt-24" />
           {/* ─── 6.5 X-RAY FINDINGS ──────────────────────────────────────── */}
           {scoring.xRayFindings && scoring.xRayFindings.length > 0 && (
             <section>
@@ -3453,6 +3334,7 @@ export default function ResultsPage() {
             </FadeUp>
           )}
 
+          <div id="sec-benchmark" className="scroll-mt-24" />
           {/* ─── SECTOR BENCHMARK SECTION (Enhanced) ────────────────────────── */}
           <FadeUp>
             <div className="aurora-card rounded-2xl p-[1px]">
@@ -3945,6 +3827,127 @@ export default function ResultsPage() {
               </Card>
             </FadeUp>
           )}
+
+          <div id="sec-certification" className="scroll-mt-24" />
+          {/* ─── CERTIFICATION BADGE SECTION (All Tiers) ─────────────────── */}
+          <FadeUp>
+            <div className="aurora-card rounded-2xl p-[1px]">
+              <Card className="bg-navy-800/90 backdrop-blur-sm border-0 rounded-2xl hover-lift">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-eari-blue/15">
+                      <Award className="h-5 w-5 text-eari-blue-light" />
+                    </div>
+                    <div>
+                      <CardTitle className="font-heading text-xl font-bold tracking-tight text-foreground">
+                        E-ARI Certification
+                      </CardTitle>
+                      <CardDescription className="font-sans text-sm">
+                        Your AI readiness certification level
+                      </CardDescription>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className="ml-auto text-[10px] font-mono"
+                      style={{
+                        borderColor: `${certificationBadge.color}40`,
+                        color: certificationBadge.color,
+                        backgroundColor: `${certificationBadge.color}15`,
+                      }}
+                    >
+                      {certificationBadge.label}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col md:flex-row items-center gap-6">
+                    {/* SVG Badge */}
+                    <div className="flex-shrink-0" dangerouslySetInnerHTML={{ __html: certificationBadge.svg }} />
+
+                    <div className="flex-1 text-center md:text-left">
+                      {certificationResult.isCertified ? (
+                        <>
+                          <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
+                            <span className="font-heading text-2xl font-semibold tabular-nums" style={{ color: certificationResult.certification.color }}>
+                              {certificationResult.certification.label} Certified
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground font-sans leading-relaxed mb-4">
+                            {certificationResult.certification.description}
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
+                            <span className="font-heading text-2xl font-extrabold text-muted-foreground">
+                              Not Yet Certified
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground font-sans leading-relaxed mb-4">
+                            {certificationResult.certification.description}
+                          </p>
+                        </>
+                      )}
+
+                      {/* Next level path */}
+                      {certificationResult.nextLevel && (
+                        <div className="p-4 rounded-lg bg-navy-700/50 border border-border/20">
+                          <div className="flex items-center gap-2 mb-2">
+                            <TrendingUp className="h-4 w-4 text-eari-blue-light" />
+                            <span className="font-heading text-sm font-semibold text-foreground">
+                              Path to {certificationResult.nextLevel.label}
+                            </span>
+                          </div>
+                          {certificationResult.nextLevelGaps.length > 0 ? (
+                            <div className="space-y-2">
+                              <p className="text-xs text-muted-foreground font-sans">
+                                Improve these pillars to reach {certificationResult.nextLevel.label}:
+                              </p>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {certificationResult.nextLevelGaps.map(gap => {
+                                  const pillarDef = PILLARS.find(p => p.id === gap.pillarId)
+                                  return (
+                                    <div key={gap.pillarId} className="flex items-center gap-2 p-2 rounded-md bg-navy-800/60">
+                                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: pillarDef?.color ?? '#8b949e' }} />
+                                      <span className="text-xs text-foreground font-sans">{gap.pillarName}</span>
+                                      <span className="ml-auto font-mono text-[10px] text-muted-foreground">
+                                        {Math.round(gap.current)} → {gap.required}
+                                      </span>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                              {scoring.overallScore < certificationResult.nextLevel.minOverallScore && (
+                                <p className="text-xs text-muted-foreground font-sans mt-2">
+                                  Overall score needs to reach {certificationResult.nextLevel.minOverallScore} (currently {Math.round(scoring.overallScore)})
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-muted-foreground font-sans">
+                              Overall score needs to reach {certificationResult.nextLevel.minOverallScore} (currently {Math.round(scoring.overallScore)})
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {certificationResult.isCertified && certificationResult.level === 'platinum' && (
+                        <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20 mt-3">
+                          <div className="flex items-center gap-2">
+                            <Award className="h-4 w-4 text-purple-400" />
+                            <span className="font-heading text-sm font-semibold text-purple-400">
+                              Highest certification achieved — maintain excellence
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </FadeUp>
+
 
           {/* ─── Advanced Insights: Certification, Regulatory, Monitoring ──── */}
           <AdvancedInsights

@@ -499,22 +499,22 @@ export default function Home() {
                   <div className="mb-7 flex items-center gap-3 justify-center lg:justify-start">
                     <span aria-hidden className="h-px w-10 bg-eari-blue/60" />
                     <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
-                      Agentic AI Readiness Platform
+                      AI Readiness · EU AI Act Compliance
                     </span>
                   </div>
 
                   <h1 className="font-heading text-[2.25rem] sm:text-[3rem] lg:text-[3.4rem] font-semibold tracking-[-0.035em] text-slate-50 leading-[1.05]">
-                    Six AI Agents.
+                    The AI readiness score
                     <br />
-                    <span className="font-medium text-eari-blue-light">One Mission.</span>
+                    <span className="font-medium text-eari-blue-light">you can defend.</span>
                   </h1>
 
                   <p className="mt-7 max-w-xl mx-auto lg:mx-0 font-heading text-lg sm:text-xl font-medium tracking-tight text-slate-300 leading-[1.45]">
-                    Enterprise AI readiness assessment — orchestrated by an agentic platform built for governance-heavy teams.
+                    Deterministic 8-pillar scoring, an EU AI Act compliance autopilot, and six AI agents that turn your score into a defensible action plan.
                   </p>
 
                   <p className="mt-5 max-w-xl mx-auto lg:mx-0 text-[15px] sm:text-base text-slate-400 font-sans leading-relaxed">
-                    Six specialised agents — Discovery, Insight, Literacy, Scoring, Report, and Assistant — work in concert to deliver outputs no single tool can match.
+                    Every number is reproducible arithmetic on a published methodology &mdash; auditable by your board, your auditor, and your regulator. No black box.
                   </p>
 
                   <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
@@ -733,7 +733,109 @@ export default function Home() {
         </section>
 
         {/* ─── 2. METHODOLOGY SECTION ───────────────────────────────────── */}
-        <ParallaxSection speed={0.05} className="py-20 sm:py-28 bg-navy-900" id="methodology">
+        {/* ─── 4B. CLIENTS SECTION ─────────────────────────────────────────── */}
+        <section className="py-14 sm:py-16 bg-navy-900 border-t border-b border-border/20" aria-labelledby="social-proof-heading">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <FadeUp>
+              <div className="text-center max-w-2xl mx-auto mb-10">
+                <h2 id="social-proof-heading" className="font-heading text-lg sm:text-xl font-semibold tracking-tight text-slate-100">
+                  Built for serious AI programs
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground font-sans leading-relaxed">
+                  Teams that need auditability and repeatable methodology — not slide-deck guesses.
+                </p>
+              </div>
+            </FadeUp>
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+              {ORG_ARCHETYPES.map((label, i) => (
+                <motion.span
+                  key={label}
+                  className="rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 text-xs sm:text-sm font-medium text-slate-300 font-sans tracking-tight hover:border-eari-blue/25 hover:bg-eari-blue/[0.06] transition-colors duration-300"
+                  initial={{ opacity: 0, y: 8 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.04, duration: 0.38, ease: 'easeOut' }}
+                >
+                  {label}
+                </motion.span>
+              ))}
+            </div>
+          </div>
+        </section>
+
+
+        <section className="py-16 sm:py-20 bg-navy-800/40 relative overflow-hidden" aria-labelledby="compliance-spotlight-heading">
+          <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+            <div
+              className="absolute top-1/2 right-0 translate-y-[-50%] w-[380px] h-[380px] rounded-full opacity-[0.05]"
+              style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.35) 0%, transparent 68%)' }}
+            />
+          </div>
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="rounded-2xl border border-emerald-500/[0.18] bg-[#0e131c] p-8 sm:p-10 lg:p-12 flex flex-col lg:flex-row lg:items-center gap-8 lg:gap-12 shadow-[0_30px_70px_-30px_rgba(0,0,0,0.7)]">
+              <div className="flex-1">
+                <Badge variant="outline" className="font-mono text-xs border-emerald-500/35 text-emerald-300 bg-emerald-500/5 mb-4">
+                  Compliance &amp; evidence
+                </Badge>
+                <h2 id="compliance-spotlight-heading" className="font-heading text-2xl sm:text-3xl font-semibold tracking-tight text-slate-100">
+                  From assessment to{' '}
+                  <span className="text-eari-blue-light font-medium">audit-ready artifacts</span>
+                </h2>
+                <p className="mt-4 text-muted-foreground font-sans leading-relaxed max-w-xl">
+                  Collect AI Act evidence, maintain FRIA and technical files, bundle regulator-facing submission packs, and rely on immutable admin logs—so governance teams ship filings without chasing screenshots.
+                </p>
+                <ul className="mt-6 grid sm:grid-cols-2 gap-3 text-sm text-muted-foreground font-sans">
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" aria-hidden />
+                    AI Act evidence trails
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" aria-hidden />
+                    FRIA &amp; technical documentation
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" aria-hidden />
+                    Submission-ready packs
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" aria-hidden />
+                    Admin audit logs
+                  </li>
+                </ul>
+                <div className="mt-8">
+                  <Link href="/portal/use-cases">
+                    <Button size="lg" className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold">
+                      Explore compliance workspace
+                      <ArrowRight className="ml-2 h-5 w-5" aria-hidden />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+              <div className="flex-shrink-0 w-full lg:w-auto lg:max-w-sm">
+                <div className="rounded-xl border border-white/[0.06] bg-navy-900/60 p-6 font-mono text-xs text-muted-foreground/80 space-y-3">
+                  <div className="flex items-center gap-2 text-emerald-400/90">
+                    <FileCheck className="h-4 w-4" aria-hidden />
+                    <span>Evidence vault · versioned</span>
+                  </div>
+                  <div className="h-px bg-border/30" />
+                  <p className="leading-relaxed">
+                    Technical file and FRIA drafts tied to systems; export packs for submissions; activity preserved in admin logs.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── 2D. PRODUCT MODULES CAROUSEL (Pulse, Literacy, Discovery, Assistant) ─── */}
+        <ProductSpotlightCarousel />
+
+        <div className="section-gradient-separator" aria-hidden="true">
+          <div className="h-px bg-gradient-to-r from-transparent via-eari-blue/20 to-transparent" />
+        </div>
+
+
+        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-900" id="methodology">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center max-w-2xl mx-auto">
@@ -1005,83 +1107,13 @@ export default function Home() {
         <div className="section-gradient-separator" aria-hidden="true">
           <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
         </div>
-        <section className="py-16 sm:py-20 bg-navy-900 relative overflow-hidden" aria-labelledby="compliance-spotlight-heading">
-          <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-            <div
-              className="absolute top-1/2 right-0 translate-y-[-50%] w-[380px] h-[380px] rounded-full opacity-[0.05]"
-              style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.35) 0%, transparent 68%)' }}
-            />
-          </div>
-          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-2xl border border-emerald-500/[0.18] bg-[#0e131c] p-8 sm:p-10 lg:p-12 flex flex-col lg:flex-row lg:items-center gap-8 lg:gap-12 shadow-[0_30px_70px_-30px_rgba(0,0,0,0.7)]">
-              <div className="flex-1">
-                <Badge variant="outline" className="font-mono text-xs border-emerald-500/35 text-emerald-300 bg-emerald-500/5 mb-4">
-                  Compliance &amp; evidence
-                </Badge>
-                <h2 id="compliance-spotlight-heading" className="font-heading text-2xl sm:text-3xl font-semibold tracking-tight text-slate-100">
-                  From assessment to{' '}
-                  <span className="text-eari-blue-light font-medium">audit-ready artifacts</span>
-                </h2>
-                <p className="mt-4 text-muted-foreground font-sans leading-relaxed max-w-xl">
-                  Collect AI Act evidence, maintain FRIA and technical files, bundle regulator-facing submission packs, and rely on immutable admin logs—so governance teams ship filings without chasing screenshots.
-                </p>
-                <ul className="mt-6 grid sm:grid-cols-2 gap-3 text-sm text-muted-foreground font-sans">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" aria-hidden />
-                    AI Act evidence trails
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" aria-hidden />
-                    FRIA &amp; technical documentation
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" aria-hidden />
-                    Submission-ready packs
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" aria-hidden />
-                    Admin audit logs
-                  </li>
-                </ul>
-                <div className="mt-8">
-                  <Link href="/portal/use-cases">
-                    <Button size="lg" className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold">
-                      Explore compliance workspace
-                      <ArrowRight className="ml-2 h-5 w-5" aria-hidden />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-              <div className="flex-shrink-0 w-full lg:w-auto lg:max-w-sm">
-                <div className="rounded-xl border border-white/[0.06] bg-navy-900/60 p-6 font-mono text-xs text-muted-foreground/80 space-y-3">
-                  <div className="flex items-center gap-2 text-emerald-400/90">
-                    <FileCheck className="h-4 w-4" aria-hidden />
-                    <span>Evidence vault · versioned</span>
-                  </div>
-                  <div className="h-px bg-border/30" />
-                  <p className="leading-relaxed">
-                    Technical file and FRIA drafts tied to systems; export packs for submissions; activity preserved in admin logs.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ─── 2D. PRODUCT MODULES CAROUSEL (Pulse, Literacy, Discovery, Assistant) ─── */}
-        <ProductSpotlightCarousel />
-
-        <div className="section-gradient-separator" aria-hidden="true">
-          <div className="h-px bg-gradient-to-r from-transparent via-eari-blue/20 to-transparent" />
-        </div>
-
         {/* ─── 3. SCORING PIPELINE SECTION ──────────────────────────────── */}
-        <ParallaxSection speed={0.04} className="py-20 sm:py-28 bg-navy-800/50" id="how-scoring-works">
+        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-800/50" id="how-scoring-works">
           <HowScoringWorks />
         </ParallaxSection>
 
         {/* ─── 3B. AGENTIC PROPERTIES SECTION ─────────────────────────────── */}
-        <ParallaxSection speed={0.04} className="py-20 sm:py-28 bg-navy-900 relative overflow-hidden" id="agentic">
+        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-900 relative overflow-hidden" id="agentic">
           <div
             className="absolute inset-0 pointer-events-none opacity-[0.035]"
             aria-hidden="true"
@@ -1323,7 +1355,7 @@ export default function Home() {
         </ParallaxSection>
 
         {/* ─── 4. AI INSIGHTS SECTION ───────────────────────────────────── */}
-        <ParallaxSection speed={0.04} className="py-20 sm:py-28 bg-navy-800/50">
+        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-800/50">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center max-w-3xl mx-auto">
@@ -1431,36 +1463,6 @@ export default function Home() {
             </div>
           </div>
         </ParallaxSection>
-
-        {/* ─── 4B. CLIENTS SECTION ─────────────────────────────────────────── */}
-        <section className="py-14 sm:py-16 bg-navy-900 border-t border-b border-border/20" aria-labelledby="social-proof-heading">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <FadeUp>
-              <div className="text-center max-w-2xl mx-auto mb-10">
-                <h2 id="social-proof-heading" className="font-heading text-lg sm:text-xl font-semibold tracking-tight text-slate-100">
-                  Built for serious AI programs
-                </h2>
-                <p className="mt-2 text-sm text-muted-foreground font-sans leading-relaxed">
-                  Teams that need auditability and repeatable methodology — not slide-deck guesses.
-                </p>
-              </div>
-            </FadeUp>
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-              {ORG_ARCHETYPES.map((label, i) => (
-                <motion.span
-                  key={label}
-                  className="rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 text-xs sm:text-sm font-medium text-slate-300 font-sans tracking-tight hover:border-eari-blue/25 hover:bg-eari-blue/[0.06] transition-colors duration-300"
-                  initial={{ opacity: 0, y: 8 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.04, duration: 0.38, ease: 'easeOut' }}
-                >
-                  {label}
-                </motion.span>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* ─── 4E. COMPETITIVE COMPARISON SECTION ──────────────────────────── */}
         <div className="section-gradient-separator" aria-hidden="true">
@@ -1578,7 +1580,7 @@ export default function Home() {
         </div>
 
         {/* ─── 4B. CONTINUOUS COMPLIANCE SUITE ─────────────────────────── */}
-        <ParallaxSection speed={0.04} className="py-20 sm:py-28 bg-navy-900" id="compliance-suite">
+        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-800/40" id="compliance-suite">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center max-w-2xl mx-auto mb-14">
