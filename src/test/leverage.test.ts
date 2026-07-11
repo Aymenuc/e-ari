@@ -77,6 +77,14 @@ describe('computeLeverage', () => {
     expect(leverage.moves).toHaveLength(0);
   });
 
+  it('template insights lead with exact-gain leverage moves', async () => {
+    const { generateTemplateInsightsSync } = await import('@/lib/ai-insights');
+    const result = scoreAssessment(buildResponses(3), 'healthcare');
+    const insights = generateTemplateInsightsSync(result, { sector: 'healthcare' });
+    expect(insights.nextSteps[0]).toMatch(/^Highest-leverage move:/);
+    expect(insights.nextSteps[0]).toMatch(/\+\d+\.\d points/);
+  });
+
   it('responsesFromScoring round-trips through a scoring result', () => {
     const responses = buildResponses(2, { strategy_1: 5, security_3: 4 });
     const result = scoreAssessment(responses, 'healthcare');

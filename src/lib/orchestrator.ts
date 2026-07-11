@@ -298,6 +298,7 @@ async function executeInsightAgent(ctx: PipelineContext): Promise<AIInsightResul
   const result = await generateAIInsights(ctx.scoringResult, {
     sector: ctx.sector,
     orgSize: ctx.orgSize,
+    organization: ctx.organization,
     entityType: ctx.orgContext?.entityType,
   }, ctx.responses);
 

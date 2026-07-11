@@ -17,8 +17,9 @@
  */
 
 import { PILLARS, getPillarById, LIKERT_LABELS, type PillarDefinition } from './pillars';
-import { ScoringResult, generateTemplateInsights, type ResponseMap, type QuestionScoreDetail } from './assessment-engine';
+import { ScoringResult, generateTemplateInsights, computeLeverage, responsesFromScoring, type ResponseMap, type QuestionScoreDetail } from './assessment-engine';
 import { getSectorById, getEffectivePillarQuestions, type SectorDefinition } from './sectors';
+import { getVocab } from './entity-types';
 import { LLM_API_URL_PRO, LLM_MODEL_PRO, LLM_API_KEY, withRetry } from './llm-config';
 import { complianceLLMChat } from '@/lib/compliance/llm';
 import type { Citation } from '@/lib/compliance/defensibility';
@@ -48,15 +49,15 @@ export interface AIInsightResult {
   generatedAt: string;
 }
 
-// 3.1.0 — anti-restatement rewrite. Prompt + template fallbacks now
-// produce insight-dense sentences (what the score MEANS for next decisions)
-// instead of descriptions that just restate the score + question text.
-// The earlier 3.0.0 ship was entity-aware in framing but still
-// restated questions in strengths/gaps — exactly the "feels generic /
-// repetitive" complaint the user filed.
+// 3.2.0 — leverage grounding. The prompt now carries the deterministic
+// LEVERAGE ANALYSIS block (top exact-gain moves + distance to next band)
+// and requires nextSteps to lead with those moves, citing point gains.
+// The LLM phrases the plan; it can no longer re-order what pays most.
+// (3.1.0 was the anti-restatement rewrite: insight-dense sentences instead
+// of score restatements.)
 //
-// Bumping invalidates any 3.0.x cache so the next read regenerates.
-export const PROMPT_VERSION = '3.1.0';
+// Bumping invalidates any 3.1.x cache so the next read regenerates.
+export const PROMPT_VERSION = '3.2.0';
 
 // ─── Likert answer interpretation ──────────────────────────────────────────
 
@@ -203,8 +204,6 @@ function buildInsightPrompt(
   // Without this, every prompt asked the model to write "executive summary
   // for a CEO with ROI in mind" — wrong for UN bodies, NGOs, universities,
   // public agencies. See src/lib/entity-types.ts.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { getVocab } = require('./entity-types') as typeof import('./entity-types');
   const vocab = getVocab(orgContext?.entityType);
   const entityFraming = `
 ## ENTITY TYPE: ${orgContext?.entityType ?? 'unknown'}
@@ -292,6 +291,26 @@ ${questionLines}`;
       ).join('\n')}\n\nThese findings are the most important context in this report. Every \`risks\` and \`nextSteps\` item you produce should map back to one of these patterns where applicable. Do NOT invent risks that aren't grounded here.`
     : '';
 
+  // ── Leverage Analysis (deterministic simulation) ──
+  // The exact-gain ranking from computeLeverage. Injecting it means the
+  // narrative's priorities provably match the published math: the LLM can
+  // phrase the plan, but it cannot re-order what pays most.
+  let leverageBlock = '';
+  try {
+    const leverageResponses = responses && Object.keys(responses).length >= 40
+      ? responses
+      : responsesFromScoring(result);
+    if (Object.keys(leverageResponses).length >= 40) {
+      const leverage = computeLeverage(leverageResponses, orgContext?.sector);
+      const topMoves = leverage.moves.slice(0, 5).filter(m => m.scoreDelta > 0);
+      if (topMoves.length > 0) {
+        leverageBlock = `\n## LEVERAGE ANALYSIS — EXACT SCORE GAINS (deterministic simulation)\nThe scoring pipeline was re-run with each answer improved one step. These are the top moves by EXACT overall-score gain:\n${topMoves.map((m, i) =>
+          `${i + 1}. [${m.questionId}] ${m.pillarName}: "${m.questionText}" — ${m.currentAnswer}/5 → ${m.targetAnswer}/5 = +${m.scoreDelta.toFixed(2)} pts${m.rulesReleased.length > 0 ? ` (releases ${m.rulesReleased.join(', ')})` : ''}`
+        ).join('\n')}${leverage.nextBand ? `\nDistance to ${leverage.nextBand.label}: ${leverage.nextBand.pointsNeeded.toFixed(1)} pts${leverage.pathToNextBand.length > 0 ? ` — shortest simulated path: ${leverage.pathToNextBand.length} one-step improvements` : ''}.` : ''}\n\nYour nextSteps MUST lead with these moves in this order (you may merge moves that share an owner), and each should cite its exact point gain. Do not propose a first action that is absent from this list.`;
+      }
+    }
+  } catch { /* leverage grounding is additive — never block insight generation */ }
+
   // ── Sector Weighting Application ──
   const sectorWeightingBlock = result.sectorWeighting
     ? `\n## SECTOR WEIGHTING APPLIED — ${result.sectorWeighting.sector}\nRationale: ${result.sectorWeighting.rationale}\nThis means in this organisation's sector, ${result.sectorWeighting.pillars.filter(p => p.multiplier >= 1.15).map(p => `${p.pillarId} (×${p.multiplier})`).join(', ') || 'no pillars'} count more toward the overall score, and ${result.sectorWeighting.pillars.filter(p => p.multiplier <= 0.9).map(p => `${p.pillarId} (×${p.multiplier})`).join(', ') || 'no pillars'} count less. Reflect this in your sector-aware narrative.${typeof result.baselineOverallScore === 'number' && Math.abs(result.overallScore - result.baselineOverallScore) >= 1 ? `\nBaseline (unweighted) overall: ${Math.round(result.baselineOverallScore)}% → Sector-weighted overall: ${Math.round(result.overallScore)}%.` : ''}`
@@ -315,7 +334,7 @@ ${sectorSection}
 
 ## DETAILED QUESTION-BY-QUESTION RESULTS
 ${pillarDetails}
-${criticalFailures}${adjustments}${xRayBlock}${sectorWeightingBlock}
+${criticalFailures}${adjustments}${xRayBlock}${leverageBlock}${sectorWeightingBlock}
 
 ---
 
@@ -727,8 +746,6 @@ function generateFallbackInsights(
   // Entity-type-aware vocabulary so template recommendations don't tell a
   // UN body to "scale across business units" or benchmark against
   // "industry peers". Falls back to neutral language for unknown entities.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { getVocab } = require('./entity-types') as typeof import('./entity-types');
   const vocab = getVocab(orgContext?.entityType);
   const isCommercial = orgContext?.entityType === 'commercial';
 
@@ -799,6 +816,20 @@ function generateFallbackInsights(
       opportunities.push(`${p.pillarName} at ${Math.round(p.normalizedScore)}% is positioned for accelerated improvement — focused effort on the lowest-scoring dimensions could yield measurable gains within two quarters.`);
     }
   }
+
+  // ── Leverage-first next steps (deterministic, zero LLM cost) ──
+  // Lead with the exact-gain moves from the leverage simulation so even the
+  // template fallback opens with provable prioritisation, then follow with
+  // the band-appropriate playbook.
+  try {
+    const leverageResponses = responsesFromScoring(result);
+    if (Object.keys(leverageResponses).length >= 40) {
+      const leverage = computeLeverage(leverageResponses, sectorId);
+      for (const m of leverage.moves.slice(0, 2).filter(mv => mv.scoreDelta > 0)) {
+        nextSteps.push(`Highest-leverage move: advance "${m.questionText}" (${m.pillarName}) from ${m.currentAnswer}/5 to ${m.targetAnswer}/5 — worth an exact +${m.scoreDelta.toFixed(1)} points on your overall score${m.rulesReleased.length > 0 ? ', and it releases a cross-pillar scoring penalty' : ''}.`);
+      }
+    }
+  } catch { /* leverage is additive — template insights must never fail */ }
 
   // ── Next steps based on maturity band ──
   if (result.overallScore <= 25) {
