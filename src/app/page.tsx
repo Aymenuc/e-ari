@@ -84,7 +84,7 @@ function ParallaxSection({ children, className, speed = 0.1, id }: { children: R
   const y = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, speed * -100])
 
   return (
-    <motion.section ref={ref} style={{ y }} className={className} id={id}>
+    <motion.section ref={ref} style={{ y }} className={`landing-section ${className ?? ''}`} id={id}>
       {children}
     </motion.section>
   )
@@ -567,7 +567,7 @@ export default function Home() {
 
         {/* ─── 2. METHODOLOGY SECTION ───────────────────────────────────── */}
         {/* ─── 4B. CLIENTS SECTION ─────────────────────────────────────────── */}
-        <section className="py-14 sm:py-16 bg-navy-900 border-t border-b border-border/20" aria-labelledby="social-proof-heading">
+        <section className="landing-section landing-section--bridge py-14 sm:py-16 bg-navy-900 border-t border-b border-border/20" aria-labelledby="social-proof-heading">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center max-w-2xl mx-auto mb-10">
@@ -597,7 +597,7 @@ export default function Home() {
         </section>
 
 
-        <section className="py-16 sm:py-20 bg-navy-800/40 relative overflow-hidden" aria-labelledby="compliance-spotlight-heading">
+        <section className="landing-section landing-section--cyan py-16 sm:py-20 bg-navy-800/40 relative overflow-hidden" aria-labelledby="compliance-spotlight-heading">
           <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
             <div
               className="absolute top-1/2 right-0 translate-y-[-50%] w-[380px] h-[380px] rounded-full opacity-[0.05]"
@@ -758,7 +758,7 @@ export default function Home() {
         <div className="section-gradient-separator" aria-hidden="true">
           <div className="h-px bg-gradient-to-r from-transparent via-eari-blue/20 to-transparent" />
         </div>
-        <section className="border-y border-white/[0.05] bg-navy-900/80 py-10 sm:py-11" aria-labelledby="capabilities-strip-heading">
+        <section className="landing-section landing-section--violet border-y border-white/[0.05] bg-navy-900/80 py-10 sm:py-11" aria-labelledby="capabilities-strip-heading">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="mb-8 flex flex-col gap-2 text-center lg:mb-9 lg:text-left">
@@ -1159,7 +1159,7 @@ export default function Home() {
         <div className="section-gradient-separator" aria-hidden="true">
           <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
         </div>
-        <section className="py-20 sm:py-28 bg-navy-900 relative overflow-hidden">
+        <section className="landing-section landing-section--violet py-20 sm:py-28 bg-navy-900 relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[560px] h-[380px] rounded-full opacity-[0.045]" style={{ background: 'radial-gradient(circle, #2563eb 0%, transparent 72%)' }} />
           </div>

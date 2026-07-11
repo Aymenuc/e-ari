@@ -296,7 +296,7 @@ function ParallaxSectionShell({ children }: { children: ReactNode }) {
       <div className="section-gradient-separator" aria-hidden="true">
         <div className="h-px bg-gradient-to-r from-transparent via-cyan-500/15 to-transparent" />
       </div>
-      <section className="relative overflow-hidden bg-navy-900/20 py-20 sm:py-28" id="product-spotlight">
+      <section className="landing-section landing-section--cyan relative overflow-hidden bg-navy-900/20 py-20 sm:py-28" id="product-spotlight">
         <div className="pointer-events-none absolute inset-0" aria-hidden="true">
           <div
             className="absolute left-1/2 top-0 h-[420px] w-[min(100%,720px)] -translate-x-1/2 opacity-[0.07]"
