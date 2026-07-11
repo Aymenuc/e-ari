@@ -425,25 +425,20 @@ export default function PricingPage() {
               </p>
             </FadeUp>
 
-            {/* Social proof badge */}
+            {/* Honest reassurances — no fabricated customer counts */}
             <FadeUp delay={0.15}>
-              <div className="mt-6 flex items-center justify-center gap-2">
-                <div className="flex -space-x-2">
-                  {[0, 1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="h-7 w-7 rounded-full border-2 border-navy-900 flex items-center justify-center text-[10px] font-heading font-bold"
-                      style={{
-                        backgroundColor: ['#2563eb20', '#d4a85320', '#10b98120', '#8b5cf620'][i],
-                        color: ['#2563eb', '#d4a853', '#10b981', '#8b5cf6'][i],
-                      }}
-                    >
-                      {['E', 'A', 'R', 'I'][i]}
-                    </div>
-                  ))}
-                </div>
-                <span className="text-sm text-muted-foreground font-sans">
-                  Trusted by <span className="text-foreground font-semibold">500+</span> organizations
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground font-sans">
+                <span className="inline-flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-emerald-400" aria-hidden />
+                  Free to start — no credit card
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-emerald-400" aria-hidden />
+                  Full assessment in ~15 minutes
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-emerald-400" aria-hidden />
+                  Deterministic scoring you can audit
                 </span>
               </div>
             </FadeUp>
