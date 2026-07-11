@@ -727,9 +727,6 @@ export default function Home() {
                       )
                     })}
 
-                    {/* Rotating radar sweep — makes the chart a live instrument */}
-                    <RadarSweep />
-
                     {/* Pulsing halos behind each vertex */}
                     {SAMPLE_SCORES.map((p, i) => {
                       const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2
@@ -805,6 +802,9 @@ export default function Home() {
                     })}
 
                   </svg>
+
+                  {/* Rotating radar sweep — makes the chart a live instrument */}
+                  <RadarSweep />
 
                   {/* Center score overlay — fade in once, calm */}
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

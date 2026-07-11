@@ -106,31 +106,29 @@ export function InsightStream() {
 }
 
 // ─── Radar sweep ─────────────────────────────────────────────────────────────
-// A slow rotating conic beam dropped into the methodology radar SVG so it
-// reads as a live instrument rather than a frozen chart. Renders in SVG
-// user units centered at (110,110); pass into the existing <svg viewBox>.
+// A proper rotating radar beam: an angular (conic) gradient that is brightest
+// at the LEADING edge and fades along the arc TRAILING behind it, plus a thin
+// beam line at the leading edge — the way a real radar display sweeps. Rendered
+// as a circular HTML overlay sized to the r=80 ring; drop it into the radar's
+// relative container (a sibling of the <svg>, not inside it).
+//
+// inset 13.64% = (1 − 160/220) / 2, so the overlay circle exactly matches the
+// r=80 outer ring of the 220-unit viewBox.
 
 export function RadarSweep() {
   const prefersReducedMotion = useReducedMotion();
   if (prefersReducedMotion) return null;
   return (
-    <>
-      <defs>
-        <linearGradient id="radarSweepGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="rgba(56,189,248,0)" />
-          <stop offset="100%" stopColor="rgba(56,189,248,0.28)" />
-        </linearGradient>
-      </defs>
-      <motion.g
-        style={{ transformOrigin: '110px 110px' }}
-        animate={{ rotate: 360 }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-      >
-        {/* Wedge from center — leading edge bright, trailing fades */}
-        <path d="M110,110 L110,30 A80,80 0 0,1 180,68 Z" fill="url(#radarSweepGrad)" opacity="0.5" />
-        <line x1="110" y1="110" x2="110" y2="30" stroke="rgba(56,189,248,0.55)" strokeWidth="0.8" />
-      </motion.g>
-    </>
+    <div
+      className="absolute rounded-full overflow-hidden pointer-events-none z-[1]"
+      style={{ inset: '13.64%' }}
+      aria-hidden="true"
+    >
+      <div className="radar-sweep absolute inset-0">
+        {/* Leading beam line — center to the 12 o'clock edge */}
+        <div className="absolute left-1/2 top-0 h-1/2 w-px -translate-x-1/2 bg-gradient-to-b from-sky-300/70 via-sky-400/30 to-transparent" />
+      </div>
+    </div>
   );
 }
 
