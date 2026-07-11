@@ -10,7 +10,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
-  --font-heading: var(--font-plus-jakarta);
+  --font-heading: var(--font-space-grotesk);
   --font-mono: var(--font-jetbrains);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -1353,4 +1353,56 @@
 
 .pipeline-detail-expand {
   animation: detailSlideIn 0.3s ease-out forwards;
+}
+
+
+/* ─── Hero aurora (Landing makeover) ─────────────────────────────────────
+   Pre-blurred radial gradients animated by transform only — GPU-cheap,
+   no filter: blur() on huge layers. Disabled under reduced motion. */
+@keyframes auroraDriftA {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-70px, 50px, 0) scale(1.18); }
+}
+@keyframes auroraDriftB {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.1); }
+  50% { transform: translate3d(80px, -40px, 0) scale(0.95); }
+}
+@keyframes auroraDriftC {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.5; }
+  50% { transform: translate3d(-40px, -60px, 0) scale(1.12); opacity: 0.8; }
+}
+.hero-aurora-a {
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.32) 0%, rgba(37, 99, 235, 0.08) 45%, transparent 70%);
+  animation: auroraDriftA 22s ease-in-out infinite;
+}
+.hero-aurora-b {
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.22) 0%, rgba(124, 58, 237, 0.06) 45%, transparent 70%);
+  animation: auroraDriftB 28s ease-in-out infinite;
+}
+.hero-aurora-c {
+  background: radial-gradient(circle, rgba(8, 145, 178, 0.16) 0%, transparent 65%);
+  animation: auroraDriftC 26s ease-in-out infinite;
+}
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 30%, transparent 75%);
+}
+.text-gradient-hero {
+  background: linear-gradient(100deg, #60a5fa 0%, #818cf8 48%, #c084fc 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.btn-gradient-primary {
+  background-image: linear-gradient(135deg, #2563eb 0%, #4f46e5 55%, #6d28d9 120%);
+  background-size: 150% 150%;
+  transition: background-position 0.4s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-gradient-primary:hover { background-position: 90% 50%; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-aurora-a, .hero-aurora-b, .hero-aurora-c { animation: none; }
 }

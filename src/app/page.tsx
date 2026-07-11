@@ -479,13 +479,13 @@ export default function Home() {
         })()}
         {/* ─── 1. HERO SECTION ──────────────────────────────────────────── */}
         <section id="hero-section" className="relative overflow-hidden pt-20 pb-24 sm:pt-28 sm:pb-32">
-          {/* Quiet navy base — one calm radial accent, no animation, no particles */}
-          <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,#070d18_0%,#0d1117_55%,#0d1117_100%)]" />
-            <div
-              className="absolute -top-32 right-[-5%] w-[min(640px,75vw)] h-[min(640px,75vw)] rounded-full opacity-[0.08]"
-              style={{ background: 'radial-gradient(circle, #2563eb 0%, transparent 65%)' }}
-            />
+          {/* Living navy base — drifting aurora blobs + masked engineering grid */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,#060b16_0%,#0b1020_55%,#0d1117_100%)]" />
+            <div className="hero-grid absolute inset-0" />
+            <div className="hero-aurora-a absolute -top-40 right-[-8%] w-[min(720px,85vw)] h-[min(720px,85vw)] rounded-full" />
+            <div className="hero-aurora-b absolute top-[30%] left-[-14%] w-[min(560px,70vw)] h-[min(560px,70vw)] rounded-full" />
+            <div className="hero-aurora-c absolute -bottom-32 left-[35%] w-[min(480px,60vw)] h-[min(480px,60vw)] rounded-full" />
             {/* Single ultra-faint hairline at the bottom — quiet section divider */}
             <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
           </div>
@@ -497,7 +497,7 @@ export default function Home() {
                 <FadeUp>
                   {/* Hairline rule + label — calmer than a pill badge */}
                   <div className="mb-7 flex items-center gap-3 justify-center lg:justify-start">
-                    <span aria-hidden className="h-px w-10 bg-eari-blue/60" />
+                    <span aria-hidden className="h-px w-10 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
                     <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
                       AI Readiness · EU AI Act Compliance
                     </span>
@@ -506,7 +506,7 @@ export default function Home() {
                   <h1 className="font-heading text-[2.25rem] sm:text-[3rem] lg:text-[3.4rem] font-semibold tracking-[-0.035em] text-slate-50 leading-[1.05]">
                     The AI readiness score
                     <br />
-                    <span className="font-medium text-eari-blue-light">you can defend.</span>
+                    <span className="font-medium text-gradient-hero">you can defend.</span>
                   </h1>
 
                   <p className="mt-7 max-w-xl mx-auto lg:mx-0 font-heading text-lg sm:text-xl font-medium tracking-tight text-slate-300 leading-[1.45]">
@@ -521,7 +521,7 @@ export default function Home() {
                     <Link href="/auth/register">
                       <Button
                         size="lg"
-                        className="group h-12 px-7 bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold text-[15px] tracking-[-0.005em] w-full sm:w-auto shadow-[0_8px_24px_-6px_rgba(37,99,235,0.45)] transition-all duration-200 hover:translate-y-[-1px] hover:shadow-[0_12px_28px_-6px_rgba(37,99,235,0.55)]"
+                        className="group h-12 px-7 btn-gradient-primary text-white font-heading font-semibold text-[15px] tracking-[-0.005em] w-full sm:w-auto shadow-[0_8px_28px_-6px_rgba(79,70,229,0.5)] hover:translate-y-[-1px] hover:shadow-[0_14px_34px_-6px_rgba(99,102,241,0.6)]"
                       >
                         <span className="flex items-center">
                           Start Free Assessment
@@ -545,8 +545,9 @@ export default function Home() {
               {/* Right — dashboard preview (calm, no decorative floating badges) */}
               <FadeUp delay={0.12} className="flex justify-center lg:justify-end">
                 <div className="relative w-full max-w-lg">
-                  {/* Main preview card — flat surface, no glassmorphism, single deep shadow */}
-                  <div className="rounded-xl overflow-hidden relative border border-white/[0.07] bg-[#0e131c] shadow-[0_30px_70px_-24px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.02)_inset]">
+                  {/* Main preview card — living gradient border, deep shadow */}
+                  <div className="aurora-card rounded-xl p-[1px] shadow-[0_30px_70px_-24px_rgba(0,0,0,0.7)]">
+                  <div className="rounded-xl overflow-hidden relative bg-[#0e131c]">
                     {/* Window chrome — refined: status dot + module label + monospace path */}
                     <div className="flex items-center gap-3 px-4 py-2.5 bg-[#0a0f17] border-b border-white/[0.05]">
                       <span className="relative flex h-1.5 w-1.5">
@@ -727,6 +728,7 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
+                </div>
               </FadeUp>
             </div>
           </div>
@@ -840,11 +842,11 @@ export default function Home() {
             <FadeUp>
               <div className="text-center max-w-2xl mx-auto">
                 <div className="mb-5 flex items-center justify-center gap-3">
-                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
                   <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
                     Methodology
                   </span>
-                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
                 </div>
                 <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
                   The 8-Pillar Framework
@@ -1129,11 +1131,11 @@ export default function Home() {
             <FadeUp>
               <div className="text-center max-w-2xl mx-auto">
                 <div className="mb-5 flex items-center justify-center gap-3">
-                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
                   <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
                     Agentic architecture
                   </span>
-                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
                 </div>
                 <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
                   The Innovation: Agentic AI Assessment
@@ -1360,11 +1362,11 @@ export default function Home() {
             <FadeUp>
               <div className="text-center max-w-3xl mx-auto">
                 <div className="mb-5 flex items-center justify-center gap-3">
-                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
                   <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
                     AI-powered insights
                   </span>
-                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
                 </div>
                 <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
                   Strategic Insights Powered by AI
@@ -1585,11 +1587,11 @@ export default function Home() {
             <FadeUp>
               <div className="text-center max-w-2xl mx-auto mb-14">
                 <div className="mb-5 flex items-center justify-center gap-3">
-                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
                   <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
                     Beyond the score
                   </span>
-                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
                 </div>
                 <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
                   From readiness score to <span className="text-eari-blue-light italic">continuous compliance</span>
@@ -1638,11 +1640,11 @@ export default function Home() {
             <FadeUp>
               <div className="text-center max-w-3xl mx-auto">
                 <div className="mb-5 flex items-center justify-center gap-3">
-                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
                   <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
                     Pricing
                   </span>
-                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
                 </div>
                 <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
                   Simple, Transparent Pricing
@@ -1789,11 +1791,11 @@ export default function Home() {
             <FadeUp>
               <div className="text-center mb-10">
                 <div className="mb-5 flex items-center justify-center gap-3">
-                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
                   <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
                     FAQ
                   </span>
-                  <span aria-hidden className="h-px w-8 bg-eari-blue/60" />
+                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
                 </div>
                 <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
                   Questions, answered

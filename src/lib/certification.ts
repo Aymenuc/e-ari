@@ -217,22 +217,22 @@ export function assessCertification(
   // Gaps for current achieved level
   const pillarGaps = computeGaps(certification, scoreMap);
 
-  // Next level (the one immediately above the achieved level)
+  // Next level = the one immediately ABOVE the achieved level.
+  // rankedLevels is ordered highest → lowest, so "above" is index - 1
+  // (index + 1 walks DOWN the ladder — that bug showed Gold orgs a
+  // "Path to Silver"). Uncertified orgs aim for bronze; platinum has
+  // nothing above it.
   const nextLevelIndex = rankedLevels.indexOf(achievedLevel);
   const nextLevelKey: Certification['level'] | null =
-    nextLevelIndex >= 0 && nextLevelIndex < rankedLevels.length - 1
-      ? rankedLevels[nextLevelIndex + 1]
-      : nextLevelIndex === -1 && rankedLevels.length > 0
-        ? rankedLevels[0] // "none" → next is bronze
-        : null;
-
-  // If achieved is platinum, there is no higher level
-  const nextLevel: Certification | null =
     achievedLevel === 'platinum'
       ? null
-      : nextLevelKey
-        ? getCertificationByLevel(nextLevelKey)
-        : null;
+      : achievedLevel === 'none'
+        ? 'bronze'
+        : rankedLevels[nextLevelIndex - 1];
+
+  const nextLevel: Certification | null = nextLevelKey
+    ? getCertificationByLevel(nextLevelKey)
+    : null;
 
   const nextLevelGaps = nextLevel ? computeGaps(nextLevel, scoreMap) : [];
 
@@ -309,7 +309,7 @@ export function getCertificationBadge(
   const barMid = color;
   const barDark = darkenColor(color, 30);
   const barLight = lightenColor(color, 25);
-  const fontStack = `'Plus Jakarta Sans','Inter','Helvetica Neue',Arial,sans-serif`;
+  const fontStack = `'Space Grotesk','Inter','Helvetica Neue',Arial,sans-serif`;
   const isNone = level === 'none';
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="E-ARI certification seal: ${label}">
