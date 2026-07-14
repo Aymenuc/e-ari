@@ -47,7 +47,8 @@ import { ProductSpotlightCarousel } from '@/components/marketing/product-spotlig
 import { HowScoringWorks } from '@/components/marketing/how-scoring-works'
 import { HeroScene, MouseSpotlight, Magnetic, HeroStats, FrameworkMarquee } from '@/components/marketing/hero-scene'
 import { InsightStream, CtaAura } from '@/components/marketing/landing-magic'
-import { MethodologyRadar } from '@/components/marketing/methodology-radar'
+import { MethodologyExplorer } from '@/components/marketing/methodology-radar'
+import { AgentsConstellation } from '@/components/marketing/agents-constellation'
 import { AgentPanel } from '@/components/shared/agent-panel'
 import { PILLARS } from '@/lib/pillars'
 
@@ -688,63 +689,8 @@ export default function Home() {
               </div>
             </FadeUp>
 
-            {/* ── Split layout: Radar left + Pillar list right ── */}
-            <div className="mt-14 lg:mt-20 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-
-              {/* LEFT — self-drawing readiness radar (scroll-triggered reveal) */}
-              <MethodologyRadar />
-
-              {/* RIGHT — Vertical pillar list */}
-              <div className="space-y-0">
-                {PILLARS.map((pillar, i) => {
-                  const Icon = ICON_MAP[pillar.icon] || Target
-                  const weightPct = Math.round(pillar.weight * 100)
-                  return (
-                    <FadeUp key={pillar.id} delay={i * 0.02}>
-                      <motion.div
-                        className="group relative py-4 border-b border-white/[0.04] last:border-b-0 cursor-default"
-                        initial={false}
-                        whileHover={{ x: 4 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        {/* Restraint pass: single muted icon, single accent
-                            for the score bar, single white type for the
-                            number. Color is no longer used to differentiate
-                            pillars (was rainbow); it is reserved for the
-                            score-bar fill so the eye scans relative
-                            performance, not which pillar is "blue" vs "pink". */}
-                        <div className="flex items-center gap-4">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-md flex-shrink-0 border border-white/[0.06] bg-white/[0.03]">
-                            <Icon className="h-4 w-4 text-muted-foreground/70 group-hover:text-eari-blue-light transition-colors" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-baseline gap-2">
-                              <span className="font-heading text-sm font-semibold text-foreground group-hover:text-white transition-colors">
-                                {pillar.name}
-                              </span>
-                              <span className="font-mono text-[10px] text-muted-foreground/60 flex-shrink-0">
-                                {weightPct}% weight
-                              </span>
-                            </div>
-                            <div className="mt-1.5 h-1 rounded-full bg-white/[0.04] overflow-hidden">
-                              <motion.div
-                                className="h-full rounded-full bg-eari-blue/80"
-                                initial={{ width: 0 }}
-                                animate={{ width: `${SAMPLE_SCORES[i].score}%` }}
-                                transition={{ duration: 0.65, delay: 0.35 + i * 0.04, ease: 'easeOut' }}
-                              />
-                            </div>
-                          </div>
-                          <span className="font-mono text-lg font-semibold tabular-nums text-foreground">
-                            {SAMPLE_SCORES[i].score}
-                          </span>
-                        </div>
-                      </motion.div>
-                    </FadeUp>
-                  )
-                })}
-              </div>
-            </div>
+            {/* ── Interactive explorer: radar ↔ pillar list, one linked state ── */}
+            <MethodologyExplorer />
 
             <FadeUp delay={0.15}>
               <p className="mt-12 text-center text-xs text-muted-foreground/50 font-mono tracking-wide">
@@ -858,213 +804,11 @@ export default function Home() {
               </div>
             </FadeUp>
 
-            {/* ── Orbital diagram left + Agent spotlight right ── */}
-            <div className="mt-14 lg:mt-20 grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-14 items-center">
-
-              {/* LEFT — Orbital hub: hexagonal spokes from shared geometry + pipeline order */}
-              <FadeUp delay={0.08} className="lg:col-span-3">
-                <div className="relative flex flex-col items-center justify-center py-6 sm:py-8">
-                  <p id="orbit-diagram-desc" className="sr-only">
-                    Six agents arranged clockwise from the top following the orchestration pipeline: Assess with Scoring Agent,
-                    then Discover, Analyze, Educate, Report, and Guide with Assistant Agent. Lines connect each agent to the central orchestrator hub.
-                  </p>
-                  <div
-                    className="relative mx-auto aspect-square w-full max-w-[min(380px,92vw)]"
-                    role="img"
-                    aria-labelledby="orbit-diagram-desc"
-                  >
-                    {/* Geometry layer — circles + spokes share ORBIT_CX, ORBIT_CY, ORBIT_R */}
-                    <svg
-                      className="absolute inset-0 z-0 h-full w-full text-white/[0.06]"
-                      viewBox={`0 0 ${ORBIT_VB} ${ORBIT_VB}`}
-                      preserveAspectRatio="xMidYMid meet"
-                      aria-hidden
-                    >
-                      <circle cx={ORBIT_CX} cy={ORBIT_CY} r={ORBIT_R} fill="none" stroke="currentColor" strokeWidth="0.75" />
-                      <circle cx={ORBIT_CX} cy={ORBIT_CY} r={52} fill="none" stroke="currentColor" strokeWidth="0.5" opacity={0.65} />
-                      {AGENTS_ORBIT_ORDERED.map((agent, i) => {
-                        const angle = orbitAngleRad(i, AGENTS_ORBIT_ORDERED.length)
-                        const x2 = ORBIT_CX + ORBIT_R * Math.cos(angle)
-                        const y2 = ORBIT_CY + ORBIT_R * Math.sin(angle)
-                        return (
-                          <motion.line
-                            key={`spoke-${agent.id}`}
-                            x1={ORBIT_CX}
-                            y1={ORBIT_CY}
-                            x2={x2}
-                            y2={y2}
-                            stroke={agent.color}
-                            strokeWidth="0.65"
-                            strokeOpacity={0.14}
-                            strokeLinecap="round"
-                            vectorEffect="non-scaling-stroke"
-                            initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: 0.28 + i * 0.045, duration: 0.42, ease: 'easeOut' }}
-                          />
-                        )
-                      })}
-                    </svg>
-
-                    {/* Hub */}
-                    <div className="absolute inset-0 z-[1] flex items-center justify-center pointer-events-none">
-                      <motion.div
-                        className="flex flex-col items-center gap-1.5 sm:gap-2"
-                        initial={{ opacity: 0, scale: 0.96 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.1, duration: 0.4, ease: 'easeOut' }}
-                      >
-                        <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-navy-800/95 border border-white/[0.1] shadow-md shadow-black/40">
-                          <Workflow className="h-6 w-6 sm:h-7 sm:w-7 text-eari-blue-light" />
-                        </div>
-                        <span className="text-[9px] sm:text-[10px] font-mono text-muted-foreground/55 uppercase tracking-widest text-center px-1">
-                          Orchestrator
-                        </span>
-                      </motion.div>
-                    </div>
-
-                    {/* Agent nodes — percentage position = same math as spokes */}
-                    {AGENTS_ORBIT_ORDERED.map((agent, i) => {
-                      const Icon = agent.icon
-                      const angle = orbitAngleRad(i, AGENTS_ORBIT_ORDERED.length)
-                      const { leftPct, topPct } = orbitPositionPct(angle)
-                      const shortLabel = agent.name.replace(/\s+Agent$/, '')
-                      return (
-                        <motion.div
-                          key={agent.id}
-                          className="absolute z-[2] -translate-x-1/2 -translate-y-1/2"
-                          style={{ left: `${leftPct}%`, top: `${topPct}%` }}
-                          initial={{ opacity: 0, scale: 0.94 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: 0.14 + i * 0.05, duration: 0.42, ease: 'easeOut' }}
-                        >
-                          <div className="relative flex flex-col items-center gap-1 group">
-                            <motion.div
-                              className="relative cursor-default"
-                              whileHover={{ scale: 1.04 }}
-                              transition={{ duration: 0.18 }}
-                            >
-                              <div
-                                className="relative flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl border border-white/[0.1] shadow-sm shadow-black/40"
-                                style={{ backgroundColor: `${agent.color}18` }}
-                              >
-                                <Icon className="h-[18px] w-[18px] sm:h-5 sm:w-5" style={{ color: agent.color }} />
-                              </div>
-                              <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-navy-900" />
-                            </motion.div>
-                            {/* Phones / tablets: label always visible (no hover orbit) */}
-                            <span className="max-w-[5.25rem] text-center font-mono text-[8px] sm:text-[9px] leading-snug text-muted-foreground/90 lg:hidden pointer-events-none">
-                              {shortLabel}
-                            </span>
-                            {/* Large screens: full name on hover */}
-                            <div className="pointer-events-none absolute left-1/2 top-full z-10 mt-1 hidden -translate-x-1/2 opacity-0 transition-opacity duration-200 group-hover:opacity-100 lg:block">
-                              <span className="whitespace-nowrap rounded border border-white/[0.06] bg-navy-900/95 px-2 py-0.5 font-mono text-[10px] text-muted-foreground/90 shadow-lg">
-                                {agent.name}
-                              </span>
-                            </div>
-                          </div>
-                        </motion.div>
-                      )
-                    })}
-                  </div>
-
-                  <p className="mt-4 max-w-sm text-center font-sans text-[11px] leading-relaxed text-muted-foreground/80 sm:text-xs lg:mt-5">
-                    <span className="font-mono text-eari-blue-light/90">Clockwise from top</span> matches the pipeline:{' '}
-                    {ORCHESTRATION_FLOW.map((s) => s.label).join(' → ')}.
-                  </p>
-
-                  {/* Pipeline flow — compact horizontal below orbital */}
-                  <div className="mt-10 flex items-center justify-center gap-0 flex-wrap">
-                    {ORCHESTRATION_FLOW.map((step, i) => (
-                      <div key={step.label} className="flex items-center">
-                        <motion.div
-                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-navy-800/50 border border-white/[0.04]"
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: 0.2 + i * 0.05, duration: 0.35, ease: 'easeOut' }}
-                        >
-                          <span className="text-[9px] font-mono font-bold text-eari-blue-light">{String(i + 1).padStart(2, '0')}</span>
-                          <span className="text-[11px] font-heading font-semibold text-foreground">{step.label}</span>
-                        </motion.div>
-                        {i < ORCHESTRATION_FLOW.length - 1 && (
-                          <ArrowRight className="h-3 w-3 text-muted-foreground/20 mx-1 flex-shrink-0" />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </FadeUp>
-
-              {/* RIGHT — Featured agent spotlight (same order as orbit / pipeline) */}
-              <div className="lg:col-span-2 space-y-0">
-                {AGENTS_ORBIT_ORDERED.map((agent, i) => {
-                  const Icon = agent.icon
-                  const isFeatured = i === 0 || i === 1
-                  return (
-                    <FadeUp key={agent.id} delay={i * 0.03}>
-                      <motion.div
-                        className="group relative cursor-default"
-                        whileHover={{ x: 3 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        {/* Featured agent — expanded card */}
-                        {isFeatured ? (
-                          <div className="rounded-xl border border-white/[0.06] bg-navy-800/40 p-5 mb-3">
-                            <div className="flex items-center gap-3 mb-3">
-                              <div
-                                className="flex h-10 w-10 items-center justify-center rounded-lg"
-                                style={{ backgroundColor: `${agent.color}15` }}
-                              >
-                                <Icon className="h-5 w-5" style={{ color: agent.color }} />
-                              </div>
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-heading text-sm font-semibold text-foreground">{agent.name}</span>
-                                  <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-navy-900" />
-                                </div>
-                                <span className="text-[10px] font-mono text-muted-foreground/50">{agent.tagline}</span>
-                              </div>
-                            </div>
-                            <p className="text-xs text-muted-foreground/70 leading-relaxed mb-3">{agent.description}</p>
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              {agent.capability.split(' · ').map(cap => (
-                                <span
-                                  key={cap}
-                                  className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.03] border border-white/[0.05] text-muted-foreground/60"
-                                >
-                                  {cap}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        ) : (
-                          /* Compact agent rows */
-                          <div className="flex items-center gap-3 py-3 border-b border-white/[0.04] last:border-b-0">
-                            <div
-                              className="flex h-8 w-8 items-center justify-center rounded-lg flex-shrink-0"
-                              style={{ backgroundColor: `${agent.color}10` }}
-                            >
-                              <Icon className="h-3.5 w-3.5" style={{ color: agent.color }} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className="font-heading text-xs font-semibold text-foreground group-hover:text-white transition-colors">{agent.name}</span>
-                                <span className="text-[9px] font-mono text-muted-foreground/30 hidden sm:inline">{agent.tagline}</span>
-                              </div>
-                            </div>
-                            <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-navy-900 flex-shrink-0" />
-                          </div>
-                        )}
-                      </motion.div>
-                    </FadeUp>
-                  )
-                })}
-              </div>
-            </div>
+            {/* ── Interactive constellation: orbit ↔ pipeline ↔ roster, one state ── */}
+            <AgentsConstellation
+              agents={AGENTS_ORBIT_ORDERED}
+              flowLabels={ORCHESTRATION_FLOW.map((f) => f.label)}
+            />
           </div>
         </ParallaxSection>
 
