@@ -748,10 +748,11 @@ export default function AssessmentPage() {
               aria-label={`Select ${sector.name} sector`}
               aria-pressed={isSelected}
             >
-              {/* Color accent bar at top */}
+              {/* Brand accent bar — one gradient for every sector; full
+                  strength on hover/selected, whisper otherwise (the old
+                  per-sector rainbow read as clipart) */}
               <motion.div
-                className="absolute top-0 left-0 right-0 h-1"
-                style={{ backgroundColor: sector.color }}
+                className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-eari-blue via-indigo-400 to-violet-400 transition-opacity duration-200 ${isSelected ? 'opacity-100' : 'opacity-25 group-hover:opacity-70'}`}
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
                 transition={{ delay: 0.2 + idx * 0.06, duration: 0.4, ease: EASE_OUT }}
@@ -760,8 +761,7 @@ export default function AssessmentPage() {
               {/* Icon + Name */}
               <div className="flex items-center gap-3">
                 <div
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-                  style={{ backgroundColor: `${sector.color}15` }}
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors duration-200 ${isSelected ? 'border-eari-blue/50 bg-eari-blue/15 text-eari-blue-light' : 'border-white/[0.07] bg-white/[0.03] text-slate-400 group-hover:text-eari-blue-light group-hover:border-eari-blue/30'}`}
                 >
                   {IconComponent && <IconComponent className="h-4.5 w-4.5" />}
                 </div>
@@ -780,12 +780,7 @@ export default function AssessmentPage() {
                 {sector.highlights.map((highlight) => (
                   <span
                     key={highlight}
-                    className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-sans font-medium"
-                    style={{
-                      backgroundColor: `${sector.color}10`,
-                      color: sector.color,
-                      border: `1px solid ${sector.color}25`,
-                    }}
+                    className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-sans font-medium border border-white/[0.06] bg-white/[0.03] text-muted-foreground/80"
                   >
                     {highlight}
                   </span>

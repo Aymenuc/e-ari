@@ -34,6 +34,7 @@ export async function GET() {
         status: true,
         sector: true,
         overallScore: true,
+        maturityBand: true,
         pillarScores: true,
         scoringVersion: true,
         methodologyVersion: true,

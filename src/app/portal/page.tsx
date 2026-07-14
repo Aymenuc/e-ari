@@ -88,6 +88,7 @@ interface Assessment {
   maturityBand: string | null;
   completedAt: string | null;
   createdAt: string;
+  isPulse?: boolean;
   responses: { id: string }[];
 }
 
@@ -160,6 +161,47 @@ function maturityBandColor(band: string | null): string {
     default:
       return 'text-muted-foreground';
   }
+}
+
+/** rAF count-up for the dashboard stat tiles. */
+function CountUpNumber({ value, duration = 1100 }: { value: number; duration?: number }) {
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    let raf = 0;
+    const t0 = performance.now();
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - t0) / duration);
+      setV(Math.round(value * (1 - Math.pow(1 - p, 3))));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value, duration]);
+  return <>{v}</>;
+}
+
+/** Compact readiness ring beside the welcome heading — latest completed score. */
+function MiniScoreRing({ score, band }: { score: number; band: string | null }) {
+  const color =
+    band === 'pacesetter' ? '#22c55e' : band === 'chaser' ? '#3b82f6' : band === 'follower' ? '#f59e0b' : '#ef4444';
+  const C = 2 * Math.PI * 26;
+  return (
+    <div className="relative hidden sm:flex h-16 w-16 items-center justify-center flex-shrink-0" aria-label={`Latest readiness score ${Math.round(score)}`}>
+      <svg width="64" height="64" viewBox="0 0 64 64">
+        <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(148,163,184,0.15)" strokeWidth="4" />
+        <circle
+          cx="32" cy="32" r="26" fill="none"
+          stroke={color} strokeWidth="4" strokeLinecap="round"
+          strokeDasharray={C} strokeDashoffset={C - (C * score) / 100}
+          transform="rotate(-90 32 32)"
+          style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.22,1,0.36,1)' }}
+        />
+      </svg>
+      <span className="absolute font-heading text-sm font-semibold tabular-nums text-foreground">
+        <CountUpNumber value={Math.round(score)} />
+      </span>
+    </div>
+  );
 }
 
 function truncateId(id: string): string {
@@ -293,6 +335,7 @@ export default function PortalPage() {
   const totalAssessments = assessments.length;
   const completedAssessments = assessments.filter((a) => a.status === 'completed').length;
   const scoredAssessments = assessments.filter((a) => a.status === 'completed' && a.overallScore !== null);
+  const latestCompleted = assessments.find((a) => a.status === 'completed' && !a.isPulse) ?? null;
   const averageScore =
     scoredAssessments.length > 0
       ? Math.round(scoredAssessments.reduce((sum, a) => sum + (a.overallScore ?? 0), 0) / scoredAssessments.length)
@@ -337,9 +380,18 @@ export default function PortalPage() {
 
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-          {/* ── Dashboard Header ──────────────────────────────────────────── */}
-          <section className="mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          {/* ── Dashboard Header — aurora band + live readiness ring ──────── */}
+          <section className="relative mb-8 overflow-hidden rounded-2xl border border-white/[0.05] bg-navy-800/40 px-5 py-6 sm:px-7">
+            <div aria-hidden className="absolute inset-0 pointer-events-none">
+              <div className="hero-aurora-a absolute -top-24 right-[-6%] w-[420px] h-[420px] rounded-full opacity-60" />
+              <div className="hero-aurora-b absolute -bottom-32 left-[10%] w-[360px] h-[360px] rounded-full opacity-50" />
+              <div className="hero-grid absolute inset-0 opacity-60" />
+            </div>
+            <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-4">
+                {latestCompleted && typeof latestCompleted.overallScore === 'number' ? (
+                  <MiniScoreRing score={latestCompleted.overallScore} band={latestCompleted.maturityBand} />
+                ) : null}
               <div>
                 <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
                   Welcome back, {userName}
@@ -351,6 +403,7 @@ export default function PortalPage() {
                   </Badge>
                   <span className="text-sm text-muted-foreground font-mono">{userEmail}</span>
                 </div>
+              </div>
               </div>
 
               {/* Quick Actions */}
@@ -373,9 +426,6 @@ export default function PortalPage() {
 
           <section id="inbox" className="mb-8 space-y-6 scroll-mt-24">
             <JourneyGuide />
-            {progressionState ? (
-              <ProgressionBanner state={progressionState} />
-            ) : null}
             <div className="grid gap-4 lg:grid-cols-3">
               <ComplianceInboxCard items={inboxItems} loading={inboxLoading} />
               {progressionState ? (
@@ -404,7 +454,7 @@ export default function PortalPage() {
                   <Skeleton className="mt-3 h-8 w-16" />
                 ) : (
                   <p className="mt-2 font-heading text-3xl font-semibold tabular-nums text-foreground">
-                    {totalAssessments}
+                    <CountUpNumber value={totalAssessments} />
                   </p>
                 )}
               </CardContent>
@@ -422,7 +472,7 @@ export default function PortalPage() {
                   <Skeleton className="mt-3 h-8 w-16" />
                 ) : (
                   <p className="mt-2 font-heading text-3xl font-semibold tabular-nums text-foreground">
-                    {completedAssessments}
+                    <CountUpNumber value={completedAssessments} />
                   </p>
                 )}
               </CardContent>
@@ -442,7 +492,7 @@ export default function PortalPage() {
                   <p className="mt-2 font-heading text-3xl font-semibold tabular-nums text-foreground">
                     {averageScore > 0 ? (
                       <>
-                        {averageScore}
+                        <CountUpNumber value={averageScore} />
                         <span className="ml-0.5 text-base font-medium text-muted-foreground">%</span>
                       </>
                     ) : (

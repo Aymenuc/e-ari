@@ -89,7 +89,6 @@ import { Footer } from '@/components/shared/footer'
 import { AIAssistant } from '@/components/shared/ai-assistant'
 import { AgentPanel } from '@/components/shared/agent-panel'
 import { PipelineStatus } from '@/components/shared/pipeline-status'
-import { ProgressionBanner } from '@/components/shared/progression-banner'
 import { ComplianceOutlook } from '@/components/shared/compliance-outlook'
 import { PillarEvidenceChip } from '@/components/shared/pillar-evidence-chip'
 import type { ProgressionState } from '@/lib/progression'
@@ -333,7 +332,11 @@ function ScoreRing({ score, maturityColor, pillarScores }: { score: number; matu
       {/* Floating metric badges */}
       {topMetrics.map((metric, i) => {
         const pillarDef = PILLARS.find(p => p.id === metric.pillarId)
-        const color = pillarDef?.color ?? '#8b949e'
+        // Colour by SCORE (same cool ramp as the methodology radar), not by
+        // the pillar's brand colour — Governance's red brand hue made a
+        // top-3 strength chip read as an alarm.
+        const t = Math.max(0, Math.min(1, (metric.normalizedScore - 40) / 45))
+        const color = `rgb(${Math.round(0x3a + (0x38 - 0x3a) * t)}, ${Math.round(0x52 + (0xbd - 0x52) * t)}, ${Math.round(0x74 + (0xf8 - 0x74) * t)})`
         const pos = badgePositions[i]
         return (
           <motion.div
@@ -1314,27 +1317,6 @@ export default function ResultsPage() {
             </section>
           </FadeUp>
 
-
-          {sessionStatus === 'authenticated' && progressionState ? (
-            <FadeUp>
-              <ProgressionBanner
-                state={progressionState}
-                cta={
-                  complianceSystemsForAssessment[0]?.id
-                    ? {
-                        label: 'Add evidence',
-                        href: `/portal/use-cases/systems/${complianceSystemsForAssessment[0].id}/evidence`,
-                      }
-                    : assessment?.id
-                      ? {
-                          label: 'Create use case',
-                          href: `/portal/use-cases/systems/new?assessmentId=${assessment.id}`,
-                        }
-                      : undefined
-                }
-              />
-            </FadeUp>
-          ) : null}
 
           {isPro && sessionStatus === 'authenticated' && complianceOutlook ? (
             <FadeUp>

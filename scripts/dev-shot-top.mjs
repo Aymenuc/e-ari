@@ -1,0 +1,11 @@
+import { chromium } from 'playwright';
+const [,, path, out] = process.argv;
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewportSize: { width: 1380, height: 860 } });
+await page.goto(`http://localhost:3000/api/dev/login?next=${encodeURIComponent(path)}`, { waitUntil: 'networkidle', timeout: 45000 }).catch(() => {});
+await page.waitForTimeout(5000);
+await page.evaluate(() => { document.cookie = 'cookie-consent=declined; path=/'; const b=[...document.querySelectorAll('button')].find(x=>x.textContent==='Decline'); b?.click(); });
+await page.waitForTimeout(800);
+await page.screenshot({ path: out });
+await browser.close();
+console.log(out);
