@@ -1031,9 +1031,9 @@ export default function AssessmentPage() {
                   <Badge
                     className="text-[10px] px-1.5 py-0 font-sans"
                     style={{
-                      backgroundColor: `${activeSectorDef.color}10`,
-                      color: activeSectorDef.color,
-                      border: `1px solid ${activeSectorDef.color}25`,
+                      backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                      color: '#93c5fd',
+                      border: '1px solid rgba(37, 99, 235, 0.28)',
                     }}
                   >
                     Tailored for {activeSectorDef.shortName}
@@ -1196,9 +1196,9 @@ export default function AssessmentPage() {
                   <Badge
                     className="text-[10px] px-1.5 py-0 font-sans"
                     style={{
-                      backgroundColor: `${activeSectorDef.color}10`,
-                      color: activeSectorDef.color,
-                      border: `1px solid ${activeSectorDef.color}25`,
+                      backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                      color: '#93c5fd',
+                      border: '1px solid rgba(37, 99, 235, 0.28)',
                     }}
                   >
                     {activeSectorDef.shortName}
@@ -1420,9 +1420,9 @@ export default function AssessmentPage() {
                   <Badge
                     className="text-[10px] px-1.5 py-0 font-sans"
                     style={{
-                      backgroundColor: `${activeSectorDef.color}10`,
-                      color: activeSectorDef.color,
-                      border: `1px solid ${activeSectorDef.color}25`,
+                      backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                      color: '#93c5fd',
+                      border: '1px solid rgba(37, 99, 235, 0.28)',
                     }}
                   >
                     {activeSectorDef.shortName}

@@ -970,7 +970,7 @@
   top: 0;
   left: 0;
   height: 3px;
-  background: linear-gradient(90deg, #2563eb, #06b6d4, #d4a853);
+  background: linear-gradient(90deg, #2563eb, #6366f1, #8b5cf6);
   z-index: 9999;
   transition: width 0.1s linear;
 }
