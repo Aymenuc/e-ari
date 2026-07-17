@@ -421,6 +421,49 @@ const LANDING_FAQ = [
    MAIN PAGE
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/** Structured data for search engines — built from the same content the
+ * page renders. No aggregateRating / review markup: we have no published
+ * reviews, and fabricated schema is a Google penalty AND a lie. */
+function StructuredData() {
+  const json = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Organization',
+        name: 'E-ARI',
+        url: 'https://www.e-ari.com',
+        logo: 'https://www.e-ari.com/logo.svg',
+        description:
+          'AI readiness assessment and EU AI Act compliance platform with deterministic 8-pillar scoring.',
+      },
+      {
+        '@type': 'SoftwareApplication',
+        name: 'E-ARI — Enterprise AI Readiness Index',
+        applicationCategory: 'BusinessApplication',
+        operatingSystem: 'Web',
+        url: 'https://www.e-ari.com',
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR', description: 'Free tier — first assessment and core scoring' },
+        description:
+          'Deterministic AI readiness scoring across 8 pillars, EU AI Act compliance workspace, shadow AI discovery, and Article 4 literacy training.',
+      },
+      {
+        '@type': 'FAQPage',
+        mainEntity: LANDING_FAQ.map((f) => ({
+          '@type': 'Question',
+          name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a },
+        })),
+      },
+    ],
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(json) }}
+    />
+  );
+}
+
 export default function Home() {
   // Session-aware so we can hide the AgentPanel on the public landing —
   // an Assistant launcher serves no purpose for unauthenticated visitors.
@@ -452,6 +495,7 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       <LandingBackdrop />
+      <StructuredData />
       <Navigation />
 
       <main className="flex-1">

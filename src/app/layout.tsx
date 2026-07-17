@@ -31,12 +31,41 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "E-ARI — Enterprise AI Readiness Assessment",
-  description: "Enterprise-grade AI readiness assessment platform. Measure, score, and strategize your organization's AI maturity across 8 critical pillars.",
-  keywords: ["AI readiness", "enterprise assessment", "AI maturity", "digital transformation", "AI strategy"],
+  metadataBase: new URL("https://www.e-ari.com"),
+  title: {
+    default: "E-ARI — AI Readiness Assessment & EU AI Act Compliance Platform",
+    template: "%s · E-ARI",
+  },
+  description:
+    "Deterministic 8-pillar AI readiness scoring, an EU AI Act compliance autopilot, and six AI agents that turn your score into a defensible action plan. Built for governance-heavy teams.",
+  keywords: [
+    "AI readiness assessment",
+    "EU AI Act compliance software",
+    "AI governance platform",
+    "AI Act Article 4 training",
+    "AI maturity assessment",
+    "shadow AI discovery",
+    "AI compliance autopilot",
+  ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "https://www.e-ari.com",
+    siteName: "E-ARI",
+    title: "E-ARI — The AI readiness score you can defend",
+    description:
+      "Deterministic 8-pillar scoring, EU AI Act compliance autopilot, and six AI agents. Every number is reproducible arithmetic on a published methodology.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "E-ARI — The AI readiness score you can defend",
+    description:
+      "Deterministic AI readiness scoring and EU AI Act compliance for governance-heavy teams.",
+  },
   icons: {
     icon: "/favicon.svg",
   },
+  robots: { index: true, follow: true },
   verification: {
     google: "6f332ee5e954d357",
   },

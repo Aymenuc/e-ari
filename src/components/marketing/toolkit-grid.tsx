@@ -73,13 +73,21 @@ function DiscoveryVignette({ go }: { go: boolean }) {
           <circle key={r} cx="80" cy="38" r={r} fill="none" stroke="rgba(148,163,184,0.12)" strokeWidth="0.6" />
         ))}
         {!prefersReducedMotion && go && (
-          <motion.line
-            x1="80" y1="38" x2="80" y2="0"
-            stroke="rgba(125,211,252,0.55)" strokeWidth="1"
-            style={{ transformOrigin: '80px 38px' }}
-            animate={{ rotate: 360 }}
-            transition={{ duration: 3.2, repeat: Infinity, ease: 'linear' }}
-          />
+          // SMIL rotation: framer's CSS rotate ignores viewBox space (the
+          // pixel transform-origin lands outside the scaled SVG, breaking
+          // the sweep). animateTransform rotates in viewBox coordinates.
+          <g>
+            <line x1="80" y1="38" x2="80" y2="2" stroke="rgba(125,211,252,0.6)" strokeWidth="1.2" strokeLinecap="round" />
+            <circle cx="80" cy="38" r="2" fill="rgba(125,211,252,0.8)" />
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="0 80 38"
+              to="360 80 38"
+              dur="3.2s"
+              repeatCount="indefinite"
+            />
+          </g>
         )}
         {blips.map((b, i) => (
           <motion.circle

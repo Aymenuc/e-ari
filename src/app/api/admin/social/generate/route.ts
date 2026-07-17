@@ -1,50 +1,23 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import {
+  generateMarketingPack,
+  MARKETING_TOPICS,
+  type MarketingChannel,
+} from "@/lib/marketing-engine";
 
-const TEMPLATES: Record<string, (sector?: string) => { content: string; platform: string; category: string }> = {
-  benchmark: (sector) => {
-    const sectorLabel = sector ? sector.charAt(0).toUpperCase() + sector.slice(1) : "Healthcare";
-    const score = Math.floor(Math.random() * 20) + 40;
-    return {
-      content: `📊 AI Readiness Benchmark Update: ${sectorLabel} organizations score an average of ${score}/100 on Data & Infrastructure. Where does your organization stand?\n\nTake the free E-ARI assessment and discover your AI readiness score → e-ari.com\n\n#AIReadiness #Benchmark #${sectorLabel.replace(/\s/g, "")} #DigitalTransformation`,
-      platform: "linkedin",
-      category: "benchmark",
-    };
-  },
-  compliance: (sector) => {
-    const frameworks = ["EU AI Act", "NIST AI RMF", "ISO/IEC 42001"];
-    const framework = frameworks[Math.floor(Math.random() * frameworks.length)];
-    const sectorLabel = sector ? sector.charAt(0).toUpperCase() + sector.slice(1) : "Enterprise";
-    return {
-      content: `⚖️ Is your organization ${framework}-compliant?\n\n${sectorLabel} leaders can't afford to ignore AI governance. The ${framework} sets the standard for responsible AI deployment.\n\nE-ARI helps you identify compliance gaps and build a roadmap to certification.\n\nStart your assessment → e-ari.com\n\n#AIGovernance #${framework.replace(/[\s/]/g, "")} #Compliance #${sectorLabel.replace(/\s/g, "")}`,
-      platform: "linkedin",
-      category: "compliance",
-    };
-  },
-  certification: () => {
-    const badge = "🏆";
-    return {
-      content: `${badge} Proud to announce: Another organization has earned their E-ARI AI Readiness Certification!\n\nOur certification demonstrates commitment to responsible and effective AI adoption. Stand out from the competition with a verified AI readiness score.\n\nGet certified → e-ari.com\n\n#AICertification #AIReadiness #Innovation #Leadership`,
-      platform: "linkedin",
-      category: "certification",
-    };
-  },
-  promotion: () => {
-    const features = [
-      "6-pillar assessment framework",
-      "AI-powered strategic insights",
-      "Continuous monthly monitoring with AI Pulse",
-      "Industry benchmarking across sectors",
-    ];
-    const feature = features[Math.floor(Math.random() * features.length)];
-    return {
-      content: `🚀 Ready to transform your AI strategy?\n\nE-ARI provides ${feature} — and much more.\n\nJoin 500+ organizations that trust E-ARI to measure, track, and improve their AI readiness.\n\nStart free → e-ari.com\n\n#AI #Strategy #DigitalTransformation #Innovation`,
-      platform: "linkedin",
-      category: "promotion",
-    };
-  },
-};
-
+/**
+ * POST /api/admin/social/generate — LLM marketing drafts grounded in
+ * compiled product facts (see lib/marketing-engine).
+ *
+ * Replaces the template generator that fabricated benchmark numbers
+ * (Math.random), invented certification announcements, claimed "500+
+ * organizations", and called the framework "6-pillar". Every draft this
+ * returns is grounded or it errors — no silent fallback to fiction.
+ *
+ * Body: { topic?: keyof MARKETING_TOPICS, channels?: MarketingChannel[],
+ *         brief?: string, type?: string (legacy alias for topic) }
+ */
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -52,22 +25,39 @@ export async function POST(req: Request) {
       return Response.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const body = await req.json();
-    const { type, sector } = body;
+    const body = await req.json().catch(() => ({}));
 
-    if (!type || !TEMPLATES[type]) {
-      return Response.json(
-        { error: `Invalid type. Must be one of: ${Object.keys(TEMPLATES).join(", ")}` },
-        { status: 400 }
-      );
+    // Legacy UI sent { type: benchmark|compliance|certification|promotion }.
+    const LEGACY_MAP: Record<string, string> = {
+      benchmark: "methodology",
+      compliance: "aiact-deadline",
+      certification: "methodology",
+      promotion: "leverage",
+    };
+    const topic: string =
+      body.topic && MARKETING_TOPICS[body.topic]
+        ? body.topic
+        : LEGACY_MAP[body.type] ?? "methodology";
+
+    const valid: MarketingChannel[] = ["linkedin", "twitter", "newsletter"];
+    const channels: MarketingChannel[] =
+      Array.isArray(body.channels) && body.channels.length > 0
+        ? body.channels.filter((c: string): c is MarketingChannel => valid.includes(c as MarketingChannel))
+        : ["linkedin"];
+    if (channels.length === 0) {
+      return Response.json({ error: "No valid channels requested" }, { status: 400 });
     }
 
-    // Use template generation (LLM integration can be added later)
-    const result = TEMPLATES[type](sector);
+    const brief = typeof body.brief === "string" ? body.brief.slice(0, 1200) : undefined;
 
-    return Response.json(result);
+    const drafts = await generateMarketingPack(topic, channels, brief);
+
+    // Legacy shape compatibility: old UI reads { content, platform, category }
+    // of a single draft; new UI reads { drafts }.
+    return Response.json({ ...drafts[0], drafts });
   } catch (error) {
     console.error("[SOCIAL_GENERATE]", error);
-    return Response.json({ error: "Failed to generate content" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Failed to generate content";
+    return Response.json({ error: message }, { status: 502 });
   }
 }

@@ -259,7 +259,11 @@ export default function SocialMediaPage() {
       const res = await fetch("/api/admin/social/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: composeCategory === "custom" ? "promotion" : composeCategory }),
+        body: JSON.stringify({
+          topic: composeCategory === "custom" ? "custom" : composeCategory,
+          channels: [composePlatform === "facebook" ? "linkedin" : composePlatform],
+          brief: composeCategory === "custom" && composeContent.trim() ? composeContent.trim() : undefined,
+        }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -682,7 +686,7 @@ export default function SocialMediaPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-medium text-muted-foreground">Category:</span>
                       <div className="flex gap-1">
-                        {["custom", "benchmark", "compliance", "certification", "promotion"].map((cat) => (
+                        {["custom", "aiact-deadline", "methodology", "leverage", "shadow-ai", "literacy"].map((cat) => (
                           <button
                             key={cat}
                             onClick={() => setComposeCategory(cat)}
@@ -692,7 +696,7 @@ export default function SocialMediaPage() {
                                 : "bg-navy-700/50 text-muted-foreground border border-border/50 hover:bg-navy-700/60"
                             }`}
                           >
-                            {cat}
+                            {cat.replace(/-/g, ' ')}
                           </button>
                         ))}
                       </div>
