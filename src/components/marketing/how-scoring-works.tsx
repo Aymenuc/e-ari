@@ -102,7 +102,7 @@ export function HowScoringWorks() {
             <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
             <span
               id="how-scoring-works-heading"
-              className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90"
+              className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400"
             >
               Deterministic engine
             </span>
@@ -153,7 +153,7 @@ export function HowScoringWorks() {
                   {/* Copy */}
                   <div className="min-w-0 flex-1 pt-0.5">
                     <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-                      <span className="font-mono text-[10px] font-bold tabular-nums text-eari-blue-light/80">
+                      <span className="font-mono text-[10px] font-bold tabular-nums text-slate-400">
                         {String(i + 1).padStart(2, '0')}
                       </span>
                       <h3 className="font-heading text-[15px] font-semibold tracking-tight text-slate-100 transition-colors duration-200 group-hover:text-white">

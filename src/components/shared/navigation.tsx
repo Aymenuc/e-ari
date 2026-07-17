@@ -70,7 +70,7 @@ export function Navigation() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="flex items-center gap-2 px-2">
                       <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-eari-blue text-white text-xs font-heading">
+                        <AvatarFallback className="bg-slate-100 text-navy-900 text-xs font-heading font-semibold">
                           {session.user?.name?.[0]?.toUpperCase() || session.user?.email?.[0]?.toUpperCase() || "U"}
                         </AvatarFallback>
                       </Avatar>

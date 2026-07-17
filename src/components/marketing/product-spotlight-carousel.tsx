@@ -113,7 +113,7 @@ export function ProductSpotlightCarousel() {
     <ParallaxSectionShell>
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-10 max-w-2xl text-center">
-          <span className="mb-3 inline-block font-mono text-[11px] uppercase tracking-[0.2em] text-eari-blue-light/80">
+          <span className="mb-3 inline-block font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400">
             Platform
           </span>
           <h2

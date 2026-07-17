@@ -43,7 +43,7 @@ import { Badge } from '@/components/ui/badge'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Navigation } from '@/components/shared/navigation'
 import { Footer } from '@/components/shared/footer'
-import { ProductSpotlightCarousel } from '@/components/marketing/product-spotlight-carousel'
+import { ToolkitGrid } from '@/components/marketing/toolkit-grid'
 import { HowScoringWorks } from '@/components/marketing/how-scoring-works'
 import { HeroScene, Magnetic, HeroStats, FrameworkMarquee } from '@/components/marketing/hero-scene'
 import { LandingBackdrop } from '@/components/marketing/landing-backdrop'
@@ -464,21 +464,21 @@ export default function Home() {
           if (daysLeft <= 0) return (
             <div className="border-b border-eari-blue/20 bg-eari-blue/[0.06] px-4 py-2.5 text-center">
               <p className="font-sans text-[13px] text-slate-300">
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-eari-blue-light mr-3">EU AI Act</span>
-                High-risk obligations are now in full application. <Link href="/assessment" className="text-eari-blue-light hover:underline font-medium">Check your exposure →</Link>
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mr-3">EU AI Act</span>
+                High-risk obligations are now in full application. <Link href="/assessment" className="text-slate-400 hover:underline font-medium">Check your exposure →</Link>
               </p>
             </div>
           )
           return (
             <div className="border-b border-eari-blue/20 bg-eari-blue/[0.06] px-4 py-2.5 text-center">
               <p className="font-sans text-[13px] text-slate-300">
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-eari-blue-light mr-3">EU AI Act</span>
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mr-3">EU AI Act</span>
                 Full high-risk obligations apply on <span className="text-slate-100 font-medium">2 August 2026</span>
                 <span className="mx-2 text-slate-500">·</span>
-                <span className="font-mono tabular-nums text-eari-blue-light font-semibold">{daysLeft} days</span> to be audit-ready
+                <span className="font-mono tabular-nums text-slate-400 font-semibold">{daysLeft} days</span> to be audit-ready
                 <span className="mx-2 text-slate-500">·</span>
                 penalties up to €35M / 7% of turnover
-                <Link href="/assessment" className="ml-3 text-eari-blue-light hover:underline font-medium">Start free assessment →</Link>
+                <Link href="/assessment" className="ml-3 text-slate-400 hover:underline font-medium">Start free assessment →</Link>
               </p>
             </div>
           )
@@ -494,7 +494,7 @@ export default function Home() {
                   {/* Hairline rule + label — calmer than a pill badge */}
                   <div className="mb-7 flex items-center gap-3 justify-center lg:justify-start">
                     <span aria-hidden className="h-px w-10 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
-                    <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
                       AI Readiness · EU AI Act Compliance
                     </span>
                   </div>
@@ -604,7 +604,7 @@ export default function Home() {
                 </Badge>
                 <h2 id="compliance-spotlight-heading" className="font-heading text-2xl sm:text-3xl font-semibold tracking-tight text-slate-100">
                   From assessment to{' '}
-                  <span className="text-eari-blue-light font-medium">audit-ready artifacts</span>
+                  <span className="text-slate-400 font-medium">audit-ready artifacts</span>
                 </h2>
                 <p className="mt-4 text-muted-foreground font-sans leading-relaxed max-w-xl">
                   Collect AI Act evidence, maintain FRIA and technical files, bundle regulator-facing submission packs, and rely on immutable admin logs—so governance teams ship filings without chasing screenshots.
@@ -653,7 +653,7 @@ export default function Home() {
         </section>
 
         {/* ─── 2D. PRODUCT MODULES CAROUSEL (Pulse, Literacy, Discovery, Assistant) ─── */}
-        <ProductSpotlightCarousel />
+        <ToolkitGrid />
 
 
 
@@ -663,7 +663,7 @@ export default function Home() {
               <div className="text-center max-w-2xl mx-auto">
                 <div className="mb-5 flex items-center justify-center gap-3">
                   <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
-                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
                     Methodology
                   </span>
                   <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
@@ -693,7 +693,7 @@ export default function Home() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="mb-8 flex flex-col gap-2 text-center lg:mb-9 lg:text-left">
-                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/85">
+                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
                   Platform capabilities
                 </span>
                 <h2 id="capabilities-strip-heading" className="font-heading text-lg font-semibold tracking-tight text-slate-100 sm:text-xl">
@@ -772,7 +772,7 @@ export default function Home() {
               <div className="text-center max-w-2xl mx-auto">
                 <div className="mb-5 flex items-center justify-center gap-3">
                   <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
-                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
                     Agentic architecture
                   </span>
                   <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
@@ -801,7 +801,7 @@ export default function Home() {
               <div className="text-center max-w-3xl mx-auto">
                 <div className="mb-5 flex items-center justify-center gap-3">
                   <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
-                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
                     AI-powered insights
                   </span>
                   <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
@@ -980,7 +980,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="flex items-center justify-center w-5 h-5 rounded-full bg-eari-blue/15">
-                    <Check className="h-3 w-3 text-eari-blue-light" />
+                    <Check className="h-3 w-3 text-slate-400" />
                   </div>
                   <span className="text-xs text-slate-300 font-sans">E-ARI</span>
                 </div>
@@ -997,13 +997,13 @@ export default function Home() {
               <div className="text-center max-w-2xl mx-auto mb-14">
                 <div className="mb-5 flex items-center justify-center gap-3">
                   <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
-                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
                     Beyond the score
                   </span>
                   <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
                 </div>
                 <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
-                  From readiness score to <span className="text-eari-blue-light italic">continuous compliance</span>
+                  From readiness score to <span className="text-slate-400 italic">continuous compliance</span>
                 </h2>
                 <p className="mt-4 text-[17px] text-slate-400 font-sans leading-relaxed">
                   The assessment tells you where you stand. These four modules keep you defensible — every week, not once a year.
@@ -1019,7 +1019,7 @@ export default function Home() {
               ].map((m, i) => (
                 <FadeUp key={m.title} delay={i * 0.06}>
                   <div className="h-full rounded-xl border border-border/60 bg-navy-800 p-6 hover:border-eari-blue/40 transition-colors">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/80">{m.tag}</span>
+                    <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">{m.tag}</span>
                     <h3 className="mt-2 font-heading text-base font-semibold text-slate-100">{m.title}</h3>
                     <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground">{m.desc}</p>
                   </div>
@@ -1028,7 +1028,7 @@ export default function Home() {
             </div>
             <FadeUp delay={0.2}>
               <p className="mt-10 text-center font-sans text-sm text-muted-foreground">
-                Included with the <Link href="/pricing" className="text-eari-blue-light hover:underline">Autopilot plan</Link> — plus a read/write API for your GRC stack (<Link href="/developers" className="text-eari-blue-light hover:underline">API reference</Link>).
+                Included with the <Link href="/pricing" className="text-slate-400 hover:underline">Autopilot plan</Link> — plus a read/write API for your GRC stack (<Link href="/developers" className="text-slate-400 hover:underline">API reference</Link>).
               </p>
             </FadeUp>
           </div>
@@ -1050,7 +1050,7 @@ export default function Home() {
               <div className="text-center max-w-3xl mx-auto">
                 <div className="mb-5 flex items-center justify-center gap-3">
                   <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
-                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
                     Pricing
                   </span>
                   <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
@@ -1201,7 +1201,7 @@ export default function Home() {
               <div className="text-center mb-10">
                 <div className="mb-5 flex items-center justify-center gap-3">
                   <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
-                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
                     FAQ
                   </span>
                   <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
@@ -1222,7 +1222,7 @@ export default function Home() {
                       <AccordionItem key={item.q} value={`landing-faq-${index}`} className="border-white/[0.06]">
                         <AccordionTrigger className="py-5 font-heading font-semibold text-foreground text-left hover:no-underline hover:bg-white/[0.02] rounded-md px-2 -mx-2 transition-colors min-h-[48px] text-[15px] sm:text-base">
                           <span className="flex items-start gap-3 text-left">
-                            <HelpCircle className="h-5 w-5 text-eari-blue-light shrink-0 mt-0.5" aria-hidden />
+                            <HelpCircle className="h-5 w-5 text-slate-400 shrink-0 mt-0.5" aria-hidden />
                             {item.q}
                           </span>
                         </AccordionTrigger>
@@ -1235,7 +1235,7 @@ export default function Home() {
                   <div className="border-t border-white/[0.06] px-6 py-4 bg-navy-900/40">
                     <p className="text-center text-sm text-muted-foreground font-sans">
                       Pricing and billing questions?{' '}
-                      <Link href="/pricing#faq" className="text-eari-blue-light hover:text-eari-blue-light/90 font-medium underline-offset-4 hover:underline">
+                      <Link href="/pricing#faq" className="text-slate-400 hover:text-slate-400 font-medium underline-offset-4 hover:underline">
                         See the pricing FAQ
                       </Link>
                       .

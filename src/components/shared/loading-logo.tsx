@@ -12,9 +12,9 @@ import { cn } from '@/lib/utils'
  */
 
 const BARS = [
-  { x: 12, y: 13, w: 24, h: 4, fill: '#60a5fa' }, // top    — Pacesetter (lightest)
-  { x: 12, y: 22, w: 14, h: 4, fill: '#3b82f6' }, // middle — Chaser
-  { x: 12, y: 31, w: 24, h: 4, fill: '#1e40af' }, // bottom — Foundation (deepest)
+  { x: 12, y: 13, w: 24, h: 4, fill: 'rgba(241,245,249,1)' },    // top    — full light
+  { x: 12, y: 22, w: 14, h: 4, fill: 'rgba(241,245,249,0.62)' }, // middle — 62%
+  { x: 12, y: 31, w: 24, h: 4, fill: 'rgba(241,245,249,0.35)' }, // bottom — 35%
 ]
 
 export interface LoadingLogoProps {

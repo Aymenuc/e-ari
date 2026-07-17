@@ -12,20 +12,16 @@ const sizeClass: Record<NonNullable<BrandWordmarkProps["size"]>, string> = {
   lg: "text-xl",
 };
 
-/** Same gradient as `.gradient-text-blue` / hero — lockup “E-ARI”. */
+/** Monochrome lockup — matches logo v3 (light on navy, no accent tie-in). */
 const wordmarkStyle: CSSProperties = {
-  backgroundImage: "linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)",
-  WebkitBackgroundClip: "text",
-  backgroundClip: "text",
-  WebkitTextFillColor: "transparent",
-  color: "transparent",
+  color: "#f1f5f9",
 };
 
 export function BrandWordmark({ className, size = "md" }: BrandWordmarkProps) {
   return (
     <span
       className={cn(
-        "inline-block font-heading font-semibold tracking-tight drop-shadow-[0_0_12px_rgba(37,99,235,0.35)]",
+        "inline-block font-heading font-semibold tracking-tight",
         sizeClass[size],
         className,
       )}

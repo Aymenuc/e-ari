@@ -119,7 +119,7 @@ export function AgentsConstellation({
                       transition={{ duration: 2, repeat: Infinity, ease: 'easeOut' }}
                     />
                   )}
-                  <Workflow className="h-6 w-6 sm:h-7 sm:w-7 text-eari-blue-light" />
+                  <Workflow className="h-6 w-6 sm:h-7 sm:w-7 text-slate-400" />
                 </div>
                 <span className="text-[9px] sm:text-[10px] font-mono text-muted-foreground/55 uppercase tracking-widest text-center px-1">
                   Orchestrator
@@ -195,7 +195,7 @@ export function AgentsConstellation({
                       : 'bg-navy-800/50 border-white/[0.04] hover:border-white/[0.1]'
                   }`}
                 >
-                  <span className={`text-[9px] font-mono font-bold ${i === activeIdx ? 'text-eari-blue-light' : 'text-muted-foreground/60'}`}>
+                  <span className={`text-[9px] font-mono font-bold ${i === activeIdx ? 'text-slate-400' : 'text-muted-foreground/60'}`}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   <span className={`text-[11px] font-heading font-semibold ${i === activeIdx ? 'text-white' : 'text-foreground'}`}>{label}</span>
