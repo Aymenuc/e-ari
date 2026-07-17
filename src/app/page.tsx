@@ -45,7 +45,8 @@ import { Navigation } from '@/components/shared/navigation'
 import { Footer } from '@/components/shared/footer'
 import { ProductSpotlightCarousel } from '@/components/marketing/product-spotlight-carousel'
 import { HowScoringWorks } from '@/components/marketing/how-scoring-works'
-import { HeroScene, MouseSpotlight, Magnetic, HeroStats, FrameworkMarquee } from '@/components/marketing/hero-scene'
+import { HeroScene, Magnetic, HeroStats, FrameworkMarquee } from '@/components/marketing/hero-scene'
+import { LandingBackdrop } from '@/components/marketing/landing-backdrop'
 import { InsightStream, CtaAura } from '@/components/marketing/landing-magic'
 import { MethodologyExplorer } from '@/components/marketing/methodology-radar'
 import { AgentsConstellation } from '@/components/marketing/agents-constellation'
@@ -85,7 +86,7 @@ function ParallaxSection({ children, className, speed = 0.1, id }: { children: R
   const y = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [0, speed * -100])
 
   return (
-    <motion.section ref={ref} style={{ y }} className={`landing-section ${className ?? ''}`} id={id}>
+    <motion.section ref={ref} style={{ y }} className={className} id={id}>
       {children}
     </motion.section>
   )
@@ -449,7 +450,8 @@ export default function Home() {
   )
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900">
+    <div className="min-h-screen flex flex-col">
+      <LandingBackdrop />
       <Navigation />
 
       <main className="flex-1">
@@ -483,17 +485,6 @@ export default function Home() {
         })()}
         {/* ─── 1. HERO SECTION ──────────────────────────────────────────── */}
         <section id="hero-section" className="relative overflow-hidden pt-20 pb-24 sm:pt-28 sm:pb-32">
-          {/* Living navy base — drifting aurora blobs + masked engineering grid */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,#060b16_0%,#0b1020_55%,#0d1117_100%)]" />
-            <div className="hero-grid absolute inset-0" />
-            <div className="hero-aurora-a absolute -top-40 right-[-8%] w-[min(720px,85vw)] h-[min(720px,85vw)] rounded-full" />
-            <div className="hero-aurora-b absolute top-[30%] left-[-14%] w-[min(560px,70vw)] h-[min(560px,70vw)] rounded-full" />
-            <div className="hero-aurora-c absolute -bottom-32 left-[35%] w-[min(480px,60vw)] h-[min(480px,60vw)] rounded-full" />
-            {/* Single ultra-faint hairline at the bottom — quiet section divider */}
-            <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-          </div>
-          <MouseSpotlight />
 
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -568,7 +559,7 @@ export default function Home() {
 
         {/* ─── 2. METHODOLOGY SECTION ───────────────────────────────────── */}
         {/* ─── 4B. CLIENTS SECTION ─────────────────────────────────────────── */}
-        <section className="landing-section landing-section--bridge py-14 sm:py-16 bg-navy-900 border-t border-b border-border/20" aria-labelledby="social-proof-heading">
+        <section className="py-14 sm:py-16" aria-labelledby="social-proof-heading">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center max-w-2xl mx-auto mb-10">
@@ -598,7 +589,7 @@ export default function Home() {
         </section>
 
 
-        <section className="landing-section landing-section--cyan py-16 sm:py-20 bg-navy-800/40 relative overflow-hidden" aria-labelledby="compliance-spotlight-heading">
+        <section className="py-16 sm:py-20 relative overflow-hidden" aria-labelledby="compliance-spotlight-heading">
           <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
             <div
               className="absolute top-1/2 right-0 translate-y-[-50%] w-[380px] h-[380px] rounded-full opacity-[0.05]"
@@ -664,12 +655,9 @@ export default function Home() {
         {/* ─── 2D. PRODUCT MODULES CAROUSEL (Pulse, Literacy, Discovery, Assistant) ─── */}
         <ProductSpotlightCarousel />
 
-        <div className="section-gradient-separator" aria-hidden="true">
-          <div className="h-px bg-gradient-to-r from-transparent via-eari-blue/20 to-transparent" />
-        </div>
 
 
-        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-900" id="methodology">
+        <ParallaxSection speed={0.03} className="py-20 sm:py-28" id="methodology">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center max-w-2xl mx-auto">
@@ -701,10 +689,7 @@ export default function Home() {
         </ParallaxSection>
 
         {/* ─── 2B. CAPABILITY STRIP (no card chrome — matches calm landing rhythm) ─── */}
-        <div className="section-gradient-separator" aria-hidden="true">
-          <div className="h-px bg-gradient-to-r from-transparent via-eari-blue/20 to-transparent" />
-        </div>
-        <section className="landing-section landing-section--violet border-y border-white/[0.05] bg-navy-900/80 py-10 sm:py-11" aria-labelledby="capabilities-strip-heading">
+        <section className="py-10 sm:py-11" aria-labelledby="capabilities-strip-heading">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="mb-8 flex flex-col gap-2 text-center lg:mb-9 lg:text-left">
@@ -764,16 +749,13 @@ export default function Home() {
         </section>
 
         {/* ─── 2C. COMPLIANCE SPOTLIGHT ───────────────────────────────────── */}
-        <div className="section-gradient-separator" aria-hidden="true">
-          <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
-        </div>
         {/* ─── 3. SCORING PIPELINE SECTION ──────────────────────────────── */}
-        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-800/50" id="how-scoring-works">
+        <ParallaxSection speed={0.03} className="py-20 sm:py-28" id="how-scoring-works">
           <HowScoringWorks />
         </ParallaxSection>
 
         {/* ─── 3B. AGENTIC PROPERTIES SECTION ─────────────────────────────── */}
-        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-900 relative overflow-hidden" id="agentic">
+        <ParallaxSection speed={0.03} className="py-20 sm:py-28 relative overflow-hidden" id="agentic">
           <div
             className="absolute inset-0 pointer-events-none opacity-[0.035]"
             aria-hidden="true"
@@ -813,7 +795,7 @@ export default function Home() {
         </ParallaxSection>
 
         {/* ─── 4. AI INSIGHTS SECTION ───────────────────────────────────── */}
-        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-800/50">
+        <ParallaxSection speed={0.03} className="py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center max-w-3xl mx-auto">
@@ -900,10 +882,7 @@ export default function Home() {
         </ParallaxSection>
 
         {/* ─── 4E. COMPETITIVE COMPARISON SECTION ──────────────────────────── */}
-        <div className="section-gradient-separator" aria-hidden="true">
-          <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
-        </div>
-        <section className="landing-section landing-section--violet py-20 sm:py-28 bg-navy-900 relative overflow-hidden">
+        <section className="py-20 sm:py-28 relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[560px] h-[380px] rounded-full opacity-[0.045]" style={{ background: 'radial-gradient(circle, #2563eb 0%, transparent 72%)' }} />
           </div>
@@ -1010,12 +989,9 @@ export default function Home() {
           </div>
         </section>
 
-        <div className="section-gradient-separator" aria-hidden="true">
-          <div className="h-px bg-gradient-to-r from-transparent via-eari-blue/20 to-transparent" />
-        </div>
 
         {/* ─── 4B. CONTINUOUS COMPLIANCE SUITE ─────────────────────────── */}
-        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-800/40" id="compliance-suite">
+        <ParallaxSection speed={0.03} className="py-20 sm:py-28" id="compliance-suite">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center max-w-2xl mx-auto mb-14">
@@ -1059,7 +1035,7 @@ export default function Home() {
         </ParallaxSection>
 
         {/* ─── 5. PRICING SECTION ───────────────────────────────────────── */}
-        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-900 relative overflow-hidden" id="pricing">
+        <ParallaxSection speed={0.03} className="py-20 sm:py-28 relative overflow-hidden" id="pricing">
           {/* Subtle grid background */}
           <div className="absolute inset-0 pricing-grid-bg pointer-events-none" aria-hidden="true" />
           <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
@@ -1219,7 +1195,7 @@ export default function Home() {
         </ParallaxSection>
 
         {/* ─── FAQ ───────────────────────────────────────────────── */}
-        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-800/35 border-t border-border/25 scroll-mt-24" id="faq">
+        <ParallaxSection speed={0.03} className="py-20 sm:py-28 scroll-mt-24" id="faq">
           <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center mb-10">
@@ -1272,7 +1248,7 @@ export default function Home() {
         </ParallaxSection>
 
         {/* ─── CTA Banner ───────────────────────────────────────────────── */}
-        <ParallaxSection speed={0.03} className="py-20 sm:py-28 bg-navy-900 relative overflow-hidden" id="cta">
+        <ParallaxSection speed={0.03} className="py-20 sm:py-28 relative overflow-hidden" id="cta">
           <CtaAura />
           <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
             <FadeUp>

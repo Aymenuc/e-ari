@@ -67,8 +67,8 @@
   --card-foreground: #e6edf3;
   --popover: #161b22;
   --popover-foreground: #e6edf3;
-  --primary: #d4a853;
-  --primary-foreground: #14100a;
+  --primary: #f6f7f9;
+  --primary-foreground: #0b1020;
   --secondary: #1c2333;
   --secondary-foreground: #e6edf3;
   --muted: #1c2333;
@@ -100,8 +100,8 @@
   --foreground: #0d1117;
   --card: #f8fafc;
   --card-foreground: #0d1117;
-  --primary: #d4a853;
-  --primary-foreground: #14100a;
+  --primary: #f6f7f9;
+  --primary-foreground: #0b1020;
   --muted: #f1f5f9;
   --muted-foreground: #64748b;
   --border: #e2e8f0;
@@ -1398,62 +1398,11 @@
   color: transparent;
 }
 .btn-gradient-primary {
-  background-image: linear-gradient(135deg, #e6c37a 0%, #d4a853 50%, #b98a35 120%);
-  background-size: 150% 150%;
-  color: #14100a !important;
-  transition: background-position 0.4s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  background: #f6f7f9;
+  color: #0b1020 !important;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
-.btn-gradient-primary:hover { background-position: 90% 50%; }
-
-/* ─── Landing continuity ────────────────────────────────────────────────
-   The hero establishes the visual system; these layers carry its depth and
-   engineering texture through the rest of the landing page without competing
-   with section content. */
-.landing-section {
-  --landing-glow: rgba(37, 99, 235, 0.12);
-  --landing-accent: rgba(124, 58, 237, 0.07);
-  --landing-glow-x: 86%;
-  --landing-glow-y: 12%;
-  position: relative;
-  isolation: isolate;
-  background-color: #0d1117;
-  background-image:
-    radial-gradient(ellipse 56% 78% at var(--landing-glow-x) var(--landing-glow-y), var(--landing-glow), transparent 68%),
-    radial-gradient(ellipse 44% 64% at 8% 100%, var(--landing-accent), transparent 70%),
-    linear-gradient(180deg, rgba(6, 11, 22, 0.9) 0%, rgba(11, 16, 32, 0.76) 52%, rgba(13, 17, 23, 0.96) 100%),
-    linear-gradient(rgba(148, 163, 184, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.035) 1px, transparent 1px);
-  background-position: center, center, center, center, center;
-  background-size: auto, auto, auto, 56px 56px, 56px 56px;
-  box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.07), inset 0 -1px 0 rgba(148, 163, 184, 0.05);
-}
-
-.landing-section--bridge {
-  --landing-glow: rgba(37, 99, 235, 0.15);
-  --landing-accent: rgba(124, 58, 237, 0.09);
-  --landing-glow-x: 78%;
-  --landing-glow-y: -20%;
-}
-
-.landing-section--cyan {
-  --landing-glow: rgba(8, 145, 178, 0.13);
-  --landing-accent: rgba(37, 99, 235, 0.08);
-  --landing-glow-x: 92%;
-  --landing-glow-y: 28%;
-}
-
-.landing-section--violet {
-  --landing-glow: rgba(124, 58, 237, 0.12);
-  --landing-accent: rgba(37, 99, 235, 0.08);
-  --landing-glow-x: 14%;
-  --landing-glow-y: 12%;
-}
-
-@media (max-width: 640px) {
-  .landing-section {
-    background-size: auto, auto, auto, 40px 40px, 40px 40px;
-  }
-}
+.btn-gradient-primary:hover { background: #ffffff; }
 
 @media (prefers-reduced-motion: reduce) {
   .hero-aurora-a, .hero-aurora-b, .hero-aurora-c { animation: none; }
@@ -1485,15 +1434,27 @@
    Replaces the generic AI-startup blue on every primary CTA. Gold demands
    dark text for contrast (white-on-gold fails AA), hence one class that
    owns bg + fg + hover together instead of utility soup. */
+/* Quiet luxury: solid light button on deep navy — the corporate move.
+   No accent colour to fight the content; presence comes from contrast
+   and restraint (the gold experiment read loud, not premium). */
 .btn-brand {
-  background-image: linear-gradient(135deg, #e6c37a 0%, #d4a853 50%, #b98a35 115%);
-  color: #14100a !important;
-  box-shadow: 0 8px 24px -8px rgba(212, 168, 83, 0.4);
-  transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  background: #f6f7f9;
+  color: #0b1020 !important;
+  box-shadow: 0 10px 28px -12px rgba(0, 0, 0, 0.55);
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 .btn-brand:hover {
-  filter: brightness(1.07);
+  background: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 12px 30px -8px rgba(212, 168, 83, 0.5);
+  box-shadow: 0 14px 34px -12px rgba(0, 0, 0, 0.6);
 }
 .btn-brand:active { transform: translateY(0); }
+
+
+/* ─── Unified landing backdrop ────────────────────────────────────────── */
+.backdrop-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+}

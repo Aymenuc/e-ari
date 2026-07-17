@@ -251,7 +251,7 @@ export function ProductSpotlightCarousel() {
                         <Link href={slide.href}>
                           <Button
                             size="lg"
-                            className="rounded-xl bg-eari-blue px-6 font-heading font-semibold text-white shadow-[0_12px_40px_-12px_rgba(37,99,235,0.55)] hover:bg-eari-blue-dark"
+                            className="rounded-xl btn-brand px-6 font-heading font-semibold"
                           >
                             Open {slide.title}
                             <ArrowRight className="ml-2 h-4 w-4" aria-hidden />

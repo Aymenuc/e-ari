@@ -1,15 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" role="img" aria-label="E-ARI">
   <!--
-    E-ARI brand mark, v2 — the Threshold E.
-    A confident geometric "E" formed from three horizontal bars on a deep-
-    navy rounded square. The middle bar is shorter than the outer two,
-    which reads simultaneously as an E and as an abstract bar-chart of
-    ascending readiness. Three values of brand blue (deep → light) carry
-    the maturity-progression story without any rainbow ornament.
+    E-ARI brand mark, v3 — the Threshold E, monochrome.
+    Same confident geometry (an E that doubles as ascending readiness
+    bars), now told in graduated LIGHT instead of three blues: full,
+    62%, 35% white. Reads corporate on any surface, ties to no accent
+    system, and matches the certification seal's structural mark.
   -->
   <rect width="48" height="48" rx="11" fill="#0a1024"/>
-  <rect x="0.5" y="0.5" width="47" height="47" rx="10.5" stroke="#1e2a45" stroke-opacity="0.8" stroke-width="1" fill="none"/>
-  <rect x="12" y="13" width="24" height="4" rx="1.2" fill="#60a5fa"/>
-  <rect x="12" y="22" width="14" height="4" rx="1.2" fill="#3b82f6"/>
-  <rect x="12" y="31" width="24" height="4" rx="1.2" fill="#1e40af"/>
+  <rect x="0.5" y="0.5" width="47" height="47" rx="10.5" stroke="#26314d" stroke-opacity="0.9" stroke-width="1" fill="none"/>
+  <rect x="12" y="13" width="24" height="4" rx="1.2" fill="#f1f5f9"/>
+  <rect x="12" y="22" width="14" height="4" rx="1.2" fill="#f1f5f9" fill-opacity="0.62"/>
+  <rect x="12" y="31" width="24" height="4" rx="1.2" fill="#f1f5f9" fill-opacity="0.35"/>
 </svg>
