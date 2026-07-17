@@ -552,7 +552,7 @@ export default function RoleInsightsPage() {
               <FadeUp>
                 <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-border/15">
                   <Link href="/assessment">
-                    <Button className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold">
+                    <Button className="btn-brand font-heading font-semibold">
                       Start Full Assessment
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>

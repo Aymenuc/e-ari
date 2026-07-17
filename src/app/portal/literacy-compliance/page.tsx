@@ -123,7 +123,7 @@ export default function LiteracyCompliancePage() {
             <div className="flex flex-wrap gap-2">
               <Input placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} className="max-w-52 bg-navy-700 border-border/60 font-sans" />
               <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="max-w-64 bg-navy-700 border-border/60 font-sans" />
-              <Button disabled={busy} onClick={addMember} className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans">Add</Button>
+              <Button disabled={busy} onClick={addMember} className="btn-brand font-sans">Add</Button>
               <input ref={fileRef} type="file" accept=".csv" hidden onChange={(e) => e.target.files?.[0] && importCsv(e.target.files[0])} />
               <Button variant="outline" disabled={busy} onClick={() => fileRef.current?.click()} className="border-border font-sans"><Upload className="h-4 w-4 mr-2" />Import CSV</Button>
             </div>
@@ -176,7 +176,7 @@ export default function LiteracyCompliancePage() {
                 </button>
               ))}
             </div>
-            <Button disabled={busy || selected.size === 0 || selectedModules.size === 0} onClick={assign} className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading">
+            <Button disabled={busy || selected.size === 0 || selectedModules.size === 0} onClick={assign} className="btn-brand font-heading">
               {busy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
               Assign & email {selected.size > 0 ? `${selected.size} member${selected.size === 1 ? '' : 's'}` : ''}
             </Button>

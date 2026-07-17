@@ -446,7 +446,7 @@ export default function DataProcessingPage() {
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <a href="mailto:legal@e-ari.com">
-                      <Button size="lg" className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold shadow-md shadow-eari-blue/15 min-h-[44px]">
+                      <Button size="lg" className="btn-brand font-heading font-semibold shadow-md shadow-eari-blue/15 min-h-[44px]">
                         Request Custom DPA
                         <ArrowRight className="ml-2 h-5 w-5" />
                       </Button>

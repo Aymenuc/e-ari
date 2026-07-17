@@ -159,7 +159,7 @@ export default function NewAISystemPage() {
               <Button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-heading"
+                className="w-full btn-brand font-heading"
               >
                 {submitting ? (
                   <>

@@ -126,7 +126,7 @@ function ConfirmState({ token, email }: { token: string; email: string }) {
         </p>
       </motion.div>
       <motion.div variants={fadeUp} custom={2} initial="hidden" animate="visible">
-        <Button onClick={handleConfirm} disabled={submitting} className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-sans h-11 gap-2">
+        <Button onClick={handleConfirm} disabled={submitting} className="w-full btn-brand font-sans h-11 gap-2">
           {submitting ? <><Loader2 className="h-4 w-4 animate-spin" />Verifying…</> : 'Verify Email Address'}
         </Button>
       </motion.div>
@@ -153,7 +153,7 @@ function SuccessState() {
       </motion.div>
 
       <motion.div variants={fadeUp} custom={2} initial="hidden" animate="visible">
-        <Button asChild className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-sans h-11">
+        <Button asChild className="w-full btn-brand font-sans h-11">
           <Link href="/auth/login">Sign in to your account</Link>
         </Button>
       </motion.div>
@@ -222,7 +222,7 @@ function ExpiredState({ email }: { email: string }) {
               <Button
                 onClick={handleResend}
                 disabled={resending || !email}
-                className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-sans h-11 gap-2"
+                className="w-full btn-brand font-sans h-11 gap-2"
               >
                 {resending ? <><Loader2 className="h-4 w-4 animate-spin" />Sending new link…</> : <><RefreshCw className="h-4 w-4" />Resend verification email</>}
               </Button>
@@ -260,7 +260,7 @@ function InvalidState() {
       </motion.div>
 
       <motion.div variants={fadeUp} custom={2} initial="hidden" animate="visible">
-        <Button asChild className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-sans h-11">
+        <Button asChild className="w-full btn-brand font-sans h-11">
           <Link href="/auth/login">Back to sign in</Link>
         </Button>
       </motion.div>

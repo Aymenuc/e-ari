@@ -470,7 +470,7 @@ export function ContextEnrichment({
             <Button
               onClick={handleEnrich}
               disabled={status === 'loading'}
-              className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-sans h-11 gap-2"
+              className="w-full btn-brand font-sans h-11 gap-2"
               aria-label="Enrich assessment with organization context"
             >
               {status === 'loading' ? (
@@ -747,7 +747,7 @@ export function ContextEnrichment({
               >
                 <Button
                   onClick={handleContinue}
-                  className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-sans h-11 gap-2"
+                  className="w-full btn-brand font-sans h-11 gap-2"
                   aria-label="Continue to assessment with enriched context"
                 >
                   Continue

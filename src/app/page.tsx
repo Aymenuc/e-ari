@@ -638,7 +638,7 @@ export default function Home() {
                 </ul>
                 <div className="mt-8">
                   <Link href="/portal/use-cases">
-                    <Button size="lg" className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold">
+                    <Button size="lg" className="btn-brand font-heading font-semibold">
                       Explore compliance workspace
                       <ArrowRight className="ml-2 h-5 w-5" aria-hidden />
                     </Button>
@@ -1197,7 +1197,7 @@ export default function Home() {
                             <Button
                               className={`w-full font-heading font-semibold h-11 ${
                                 isPro
-                                  ? 'bg-eari-blue hover:bg-eari-blue-dark text-white border border-white/[0.08]'
+                                  ? 'btn-brand border border-white/[0.08]'
                                   : isEnterprise
                                   ? 'bg-[#b8923f]/90 hover:bg-[#c9a44d] text-navy-950 border border-[#d4a853]/40'
                                   : 'bg-transparent border border-white/[0.12] text-foreground hover:bg-navy-700/90 hover:border-white/[0.16]'

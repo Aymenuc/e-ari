@@ -321,7 +321,7 @@ export default function AISystemOverviewPage() {
                 ) : null}
               </div>
               <Link href={`/portal/use-cases/systems/${id}/evidence`}>
-                <Button className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading">
+                <Button className="btn-brand font-heading">
                   <FileStack className="h-4 w-4 mr-2" />
                   Evidence vault
                 </Button>

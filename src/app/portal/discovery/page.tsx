@@ -109,7 +109,7 @@ export default function DiscoveryPage() {
               </button>
             ))}
             <input ref={fileRef} type="file" accept=".csv" hidden onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-            <Button disabled={busy} onClick={() => fileRef.current?.click()} className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading ml-auto">
+            <Button disabled={busy} onClick={() => fileRef.current?.click()} className="btn-brand font-heading ml-auto">
               {busy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Upload className="h-4 w-4 mr-2" />}Upload CSV
             </Button>
           </CardContent>
@@ -139,7 +139,7 @@ export default function DiscoveryPage() {
                     <Badge className="text-[10px] font-mono bg-emerald-500/15 text-emerald-400 border-emerald-500/30 ml-auto">In AI Registry</Badge>
                   ) : (
                     <div className="ml-auto flex gap-2">
-                      <Button size="sm" disabled={busy} onClick={() => act(t.id, 'register')} className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans text-xs">
+                      <Button size="sm" disabled={busy} onClick={() => act(t.id, 'register')} className="btn-brand font-sans text-xs">
                         <PlusCircle className="h-3.5 w-3.5 mr-1.5" />Register
                       </Button>
                       <Button size="sm" variant="outline" disabled={busy} onClick={() => act(t.id, 'ignore')} className="border-border text-muted-foreground font-sans text-xs">

@@ -892,8 +892,8 @@ ${numberedBlock}
 Return ONLY valid JSON — raw JSON, no markdown fences.
 {
   "industryContext": "2–4 plain sentences on AI trends in this sector. Each sentence MUST end with a citation like [S7] pointing at a SECTOR-SOURCE.",
-  "orgSpecificContext": "2–4 plain sentences about THIS specific ${vocab.noun} only if grounded in ORG-SOURCES. EVERY sentence MUST contain at least one citation [Sn] referencing ORG-SOURCES only. Use vocabulary appropriate to a ${vocab.noun} (e.g. ${vocab.scalingNoun}, ${vocab.valueNoun}) — do NOT impose commercial-company framing on a non-commercial org.",
-  "aiInitiatives": ["short label [Sn]"],
+  "orgSpecificContext": "2–4 plain sentences about THIS specific ${vocab.noun}'s INTERNAL AI adoption and operational readiness only if grounded in ORG-SOURCES. EVERY sentence MUST contain at least one citation [Sn] referencing ORG-SOURCES only. Use vocabulary appropriate to a ${vocab.noun} (e.g. ${vocab.scalingNoun}, ${vocab.valueNoun}) — do NOT impose commercial-company framing on a non-commercial org. If sources only document EXTERNAL AI work (research, advisory projects, partner deliverables), you may note that in ONE sentence clearly labelled as external output, and you MUST state plainly that the ${vocab.noun}'s internal AI adoption is not publicly documented.",
+  "aiInitiatives": ["short label [Sn] — ONLY AI the ${vocab.noun} itself uses or deploys in its own operations. Research projects, publications, and client/partner deliverables are NOT internal initiatives; exclude them. Return [] if none are documented."],
   "techStackSignals": ["technology [Sn]"],
   "regulatoryConsiderations": ["plain regulation note [Sn]"],
   "competitiveLandscape": "2–3 sentences on positioning vs. ${vocab.peerNoun} — cite ORG-SOURCES with [Sn]. Use the framing '${vocab.peerNoun}' / 'mandate scope' / 'sector landscape', not 'competitors' unless the entity_type is commercial. If insufficient org evidence, say so honestly."
@@ -904,6 +904,7 @@ RULES:
 - Temperature-equivalent discipline: do NOT invent facts. If ORG-SOURCES do not clearly identify the organization, say evidence is thin and cite what exists.
 - Each factual clause needs [Sn] from the numbered list above.
 - Do NOT merge facts from unrelated entities sharing the same name.
+- INTERNAL vs EXTERNAL: this assessment measures the organisation's OWN internal AI readiness — the AI it uses, governs, and operates itself. Work ABOUT AI done FOR others (research programmes, advisory projects, publications, partner-country deliverables) is external output, not internal adoption. Never present external output as internal AI use. Absence is a finding: if only external AI work is documented, say internal adoption is not publicly evidenced — that honest gap is more valuable than padding.
 - Strings plain English — no markdown headers, no bare URLs.\n- FINAL-PASS DISCIPLINE: there is no downstream verification. Delete any sentence you cannot support with a citation from the numbered sources; an empty string beats an ungrounded claim.`;
 
     const content = await glmComplete(

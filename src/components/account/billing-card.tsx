@@ -240,7 +240,7 @@ export function BillingCard({ tier }: BillingCardProps) {
             <Button
               onClick={handleManageBilling}
               disabled={loading}
-              className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-sans min-h-[44px]"
+              className="w-full btn-brand font-sans min-h-[44px]"
             >
               {loading ? (
                 <>
@@ -313,7 +313,7 @@ export function BillingCard({ tier }: BillingCardProps) {
                     <DialogClose asChild>
                       <Button variant="outline" className="font-sans" disabled={submitting}>Cancel</Button>
                     </DialogClose>
-                    <Button onClick={handleSubmitRefund} disabled={submitting} className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans">
+                    <Button onClick={handleSubmitRefund} disabled={submitting} className="btn-brand font-sans">
                       {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Submitting...</> : 'Submit Request'}
                     </Button>
                   </DialogFooter>

@@ -97,7 +97,7 @@ export default function VendorResponsePage() {
           </CardContent>
         </Card>
       ))}
-      <Button disabled={submitting || answeredCount === 0} onClick={submit} className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading w-full h-11">
+      <Button disabled={submitting || answeredCount === 0} onClick={submit} className="btn-brand font-heading w-full h-11">
         {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
         Submit questionnaire
       </Button>

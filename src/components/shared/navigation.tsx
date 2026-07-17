@@ -143,7 +143,7 @@ export function Navigation() {
                   </Button>
                 </Link>
                 <Link href="/auth/register">
-                  <Button className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans shadow-md shadow-eari-blue/15 transition-colors">
+                  <Button className="btn-brand font-sans shadow-md shadow-eari-blue/15 transition-colors">
                     Get Started
                   </Button>
                 </Link>
@@ -193,7 +193,7 @@ export function Navigation() {
                   </Button>
                 </Link>
                 <Link href="/auth/register" onClick={() => setMobileOpen(false)}>
-                  <Button className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-sans shadow-md shadow-eari-blue/15">
+                  <Button className="w-full btn-brand font-sans shadow-md shadow-eari-blue/15">
                     Get Started
                   </Button>
                 </Link>

@@ -215,7 +215,7 @@ export default function CheckoutPageInner() {
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link href={`/auth/login?callbackUrl=${encodeURIComponent(`/checkout?plan=${effectivePlan}`)}`}>
-                  <Button className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading w-full sm:w-auto min-h-[44px]">
+                  <Button className="btn-brand font-heading w-full sm:w-auto min-h-[44px]">
                     Sign In
                   </Button>
                 </Link>
@@ -386,7 +386,7 @@ export default function CheckoutPageInner() {
                       className={`w-full font-heading font-semibold h-12 text-base ${
                         effectivePlan === 'enterprise'
                           ? 'bg-[#c9a227] hover:bg-[#b89220] text-navy-950 shadow-md shadow-black/15'
-                          : 'bg-eari-blue hover:bg-eari-blue-dark text-white shadow-md shadow-eari-blue/15'
+                          : 'btn-brand shadow-md shadow-eari-blue/15'
                       }`}
                     >
                       {loading ? (

@@ -87,7 +87,7 @@ export default function ApiKeysPage() {
                 <button key={s} onClick={() => setScope(s)} className={`px-3 py-2 font-mono text-xs uppercase ${scope === s ? 'bg-eari-blue/20 text-eari-blue-light' : 'text-muted-foreground'}`}>{s}</button>
               ))}
             </div>
-            <Button disabled={busy} onClick={create} className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans">
+            <Button disabled={busy} onClick={create} className="btn-brand font-sans">
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create'}
             </Button>
           </CardContent>

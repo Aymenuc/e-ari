@@ -52,7 +52,7 @@ export default function ControlsPage() {
         {loading ? <Loader2 className="h-6 w-6 animate-spin text-eari-blue-light" /> : !summary || summary.systemsTotal === 0 ? (
           <Card className="bg-navy-800 border-border/60"><CardContent className="p-8 text-center space-y-3">
             <p className="font-sans text-sm text-muted-foreground">No AI systems registered yet — controls derive from your registry.</p>
-            <Button asChild className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading"><Link href="/portal/discovery">Run Shadow AI Discovery</Link></Button>
+            <Button asChild className="btn-brand font-heading"><Link href="/portal/discovery">Run Shadow AI Discovery</Link></Button>
           </CardContent></Card>
         ) : (
           <>

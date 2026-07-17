@@ -46,7 +46,7 @@ export default function NotFound() {
             >
               <Button
                 asChild
-                className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans shadow-md shadow-eari-blue/20 transition-all duration-200"
+                className="btn-brand font-sans shadow-md shadow-eari-blue/20 transition-all duration-200"
               >
                 <Link href="/">
                   <Home className="h-4 w-4 mr-2" />

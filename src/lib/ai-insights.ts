@@ -49,6 +49,9 @@ export interface AIInsightResult {
   generatedAt: string;
 }
 
+// 3.3.0 — org-name voice + internal-vs-external honesty rules (the
+// narrative names the organisation and never presents external AI output
+// as internal adoption).
 // 3.2.0 — leverage grounding. The prompt now carries the deterministic
 // LEVERAGE ANALYSIS block (top exact-gain moves + distance to next band)
 // and requires nextSteps to lead with those moves, citing point gains.
@@ -57,7 +60,7 @@ export interface AIInsightResult {
 // of score restatements.)
 //
 // Bumping invalidates any 3.1.x cache so the next read regenerates.
-export const PROMPT_VERSION = '3.2.0';
+export const PROMPT_VERSION = '3.3.0';
 
 // ─── Likert answer interpretation ──────────────────────────────────────────
 
@@ -89,6 +92,10 @@ const SECTOR_REGULATORY_CONTEXT: Record<string, string> = {
 // ─── System Prompt ─────────────────────────────────────────────────────────
 
 const SYSTEM_PROMPT = `You are a senior AI readiness analyst producing a board-ready assessment report. Your analysis must be specific, evidence-grounded, and actionable — never generic or superficial.
+
+## VOICE
+- When the organisation's name is provided in the assessment data, refer to it BY NAME throughout ("UNU-EGOV's data governance…"), never as "your organization" or "the organization". The reader must feel this was written about THEM specifically.
+- Organisational context from web sources distinguishes INTERNAL AI adoption from EXTERNAL AI output (research, advisory work, partner projects). Never treat external output as internal readiness; if internal adoption is undocumented, say so honestly — that gap IS the finding.
 
 ## YOUR ANALYTICAL METHODOLOGY
 
@@ -601,16 +608,16 @@ function getQuestionTopicShort(pillarId: string, questionId: string, sectorId?: 
   // Extract a short topic from the question text (first clause or phrase)
   const text = question.text;
   // Try to extract the core topic from the question
-  const match = text.match(/^(?:Does|To what extent|How)\s+(?:your\s+organization\s+)?(?:have|does|is|can|effectively|well|strongly|mature|receptive|prepared|established)?\s*(.+?)[\?\.]/i);
+  const match = text.match(/^(?:Does|To what extent(?: do(?:es)?)?|How)\s+(?:(?:well|mature|effectively|strongly|receptive|prepared|established)\s+)?(?:(?:does|is|are|can|do)\s+)?(?:your\s+(?:organization|organisation|institution|agency|company|university|hospital|firm|utility)(?:'s)?\s+)?(?:have\s+|has\s+)?(.+?)[\?\.]/i);
   if (match?.[1]) {
-    return match[1].trim().toLowerCase();
+    return match[1].trim();
   }
   // Fallback: truncate at first comma or 60 chars
   const commaIdx = text.indexOf(',');
   if (commaIdx > 10 && commaIdx < 80) {
-    return text.substring(0, commaIdx).toLowerCase();
+    return text.substring(0, commaIdx);
   }
-  return text.length > 60 ? text.substring(0, 57).toLowerCase() + '...' : text.toLowerCase();
+  return text.length > 60 ? text.substring(0, 57) + '...' : text;
 }
 
 // ─── Main AI Insights Generator ────────────────────────────────────────────
@@ -864,9 +871,14 @@ function generateFallbackInsights(
   // Executive summary
   const topPillar = [...result.pillarScores].sort((a, b) => b.normalizedScore - a.normalizedScore)[0];
   const bottomPillar = [...result.pillarScores].sort((a, b) => a.normalizedScore - b.normalizedScore)[0];
-  const sectorPrefix = sectorName ? `As a ${sectorName} organization, ` : '';
+  // Address the reader's actual organisation by NAME wherever we have it —
+  // "As a Education organization, your organization's…" was both broken
+  // grammar and the exact generic voice this product exists to avoid.
+  const orgName = orgContext?.organization?.trim();
+  const subject = orgName || `Your ${vocab.noun}`;
+  const sectorSuffix = sectorName ? ` within the ${sectorName.toLowerCase()} sector` : '';
 
-  const executiveSummary = `${sectorPrefix}your organization's AI readiness stands at ${Math.round(result.overallScore)}% (${result.maturityLabel}). The strongest dimension is ${topPillar.pillarName} at ${Math.round(topPillar.normalizedScore)}%, driven by ${getQuestionTopicShort(topPillar.pillarId, [...topPillar.questionDetails].sort((a, b) => b.answer - a.answer)[0]?.questionId || '', sectorId)}. The most consequential gap is ${bottomPillar.pillarName} at ${Math.round(bottomPillar.normalizedScore)}%, where ${getQuestionTopicShort(bottomPillar.pillarId, [...bottomPillar.questionDetails].sort((a, b) => a.answer - b.answer)[0]?.questionId || '', sectorId)} is the weakest link. The first priority should be addressing ${bottomPillar.pillarName.toLowerCase()} fundamentals before scaling AI initiatives that depend on this capability.`;
+  const executiveSummary = `${subject}'s AI readiness stands at ${Math.round(result.overallScore)}% (${result.maturityLabel})${sectorSuffix}. The strongest dimension is ${topPillar.pillarName} at ${Math.round(topPillar.normalizedScore)}%, anchored by the top-scoring answer on \u201c${getQuestionTopicShort(topPillar.pillarId, [...topPillar.questionDetails].sort((a, b) => b.answer - a.answer)[0]?.questionId || '', sectorId)}\u201d. The most consequential gap is ${bottomPillar.pillarName} at ${Math.round(bottomPillar.normalizedScore)}%, where \u201c${getQuestionTopicShort(bottomPillar.pillarId, [...bottomPillar.questionDetails].sort((a, b) => a.answer - b.answer)[0]?.questionId || '', sectorId)}\u201d scored lowest. The first priority should be addressing ${bottomPillar.pillarName.toLowerCase()} fundamentals before scaling AI initiatives that depend on this capability.`;
 
   return {
     executiveSummary,

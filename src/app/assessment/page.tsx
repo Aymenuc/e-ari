@@ -390,7 +390,7 @@ function AuthGate() {
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               <Link href="/auth/login" className="w-full">
-                <Button className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-sans h-11">
+                <Button className="w-full btn-brand font-sans h-11">
                   Sign In
                 </Button>
               </Link>
@@ -1346,7 +1346,7 @@ export default function AssessmentPage() {
         <Button
           onClick={handleSubmit}
           disabled={!allPillarsComplete || isSubmitting}
-          className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans h-11 px-8"
+          className="btn-brand font-sans h-11 px-8"
           size="lg"
         >
           {isSubmitting ? (
@@ -1581,7 +1581,7 @@ export default function AssessmentPage() {
                       <motion.div whileTap={{ scale: 0.95 }}>
                         <Button
                           onClick={handleNext}
-                          className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans h-11 px-6"
+                          className="btn-brand font-sans h-11 px-6"
                         >
                           Next
                           <ChevronRight className="h-4 w-4" />
@@ -1614,7 +1614,7 @@ export default function AssessmentPage() {
           <DialogFooter className="flex-col gap-2 sm:flex-col">
             <Button
               onClick={handleResumeDraft}
-              className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-sans h-11"
+              className="w-full btn-brand font-sans h-11"
             >
               Resume Draft
             </Button>

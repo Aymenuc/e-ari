@@ -312,7 +312,7 @@ export default function PricingPage() {
       if (tierId === 'professional') {
         return (
           <Link href="/auth/register" className="w-full">
-            <Button className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold shadow-md shadow-eari-blue/15 min-h-[44px]">
+            <Button className="w-full btn-brand font-heading font-semibold shadow-md shadow-eari-blue/15 min-h-[44px]">
               {ctaText} <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
@@ -351,7 +351,7 @@ export default function PricingPage() {
       if (isGrowth || isEnterprise) return <Button disabled className="w-full bg-navy-700 text-muted-foreground font-heading min-h-[44px]">Included in your plan</Button>
       return (
         <Link href="/checkout?plan=professional" className="w-full">
-          <Button className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold shadow-md shadow-eari-blue/15 min-h-[44px]">
+          <Button className="w-full btn-brand font-heading font-semibold shadow-md shadow-eari-blue/15 min-h-[44px]">
             {ctaText} <ArrowUpRight className="ml-2 h-4 w-4" />
           </Button>
         </Link>
@@ -738,7 +738,7 @@ export default function PricingPage() {
                     {!isLoggedIn ? (
                       <>
                         <Link href="/auth/register">
-                          <Button size="lg" className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold shadow-md shadow-eari-blue/15 min-h-[44px]">
+                          <Button size="lg" className="btn-brand font-heading font-semibold shadow-md shadow-eari-blue/15 min-h-[44px]">
                             Start Free
                             <ArrowRight className="ml-2 h-5 w-5" />
                           </Button>
@@ -751,7 +751,7 @@ export default function PricingPage() {
                       </>
                     ) : isFree ? (
                       <Link href="/checkout?plan=professional">
-                        <Button size="lg" className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold shadow-md shadow-eari-blue/15 min-h-[44px]">
+                        <Button size="lg" className="btn-brand font-heading font-semibold shadow-md shadow-eari-blue/15 min-h-[44px]">
                           Upgrade to Pro
                           <ArrowUpRight className="ml-2 h-5 w-5" />
                         </Button>
@@ -765,7 +765,7 @@ export default function PricingPage() {
                       </Link>
                     ) : (
                       <Link href="/portal">
-                        <Button size="lg" className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold min-h-[44px]">
+                        <Button size="lg" className="btn-brand font-heading font-semibold min-h-[44px]">
                           Go to Dashboard
                           <ArrowRight className="ml-2 h-5 w-5" />
                         </Button>

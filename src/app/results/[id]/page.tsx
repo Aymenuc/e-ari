@@ -406,7 +406,7 @@ function LockedSectionCard({
               </div>
               <Button
                 onClick={onUpgrade}
-                className="font-heading font-semibold h-11 px-6 bg-eari-blue hover:bg-eari-blue-dark text-white shadow-md shadow-eari-blue/15"
+                className="font-heading font-semibold h-11 px-6 btn-brand shadow-md shadow-eari-blue/15"
               >
                 <ArrowUpRight className="mr-2 h-4 w-4" />
                 Upgrade to {config.label}
@@ -1017,7 +1017,7 @@ export default function ResultsPage() {
                 </Button>
               </Link>
               <Link href="/assessment">
-                <Button className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading w-full sm:w-auto">
+                <Button className="btn-brand font-heading w-full sm:w-auto">
                   Start New Assessment
                 </Button>
               </Link>
@@ -1262,7 +1262,7 @@ export default function ResultsPage() {
                           <Button
                             onClick={handleRerun}
                             disabled={rerunning}
-                            className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-10 px-5 text-sm shadow-md shadow-eari-blue/15"
+                            className="btn-brand font-heading font-semibold h-10 px-5 text-sm shadow-md shadow-eari-blue/15"
                             title="Pre-filled with your previous answers for quick updating"
                           >
                             {rerunning ? (
@@ -1344,7 +1344,7 @@ export default function ResultsPage() {
                   </div>
                   {userTier === 'free' && (
                     <Link href="/checkout?plan=professional" className="ml-auto">
-                      <Button size="sm" className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading text-xs h-8 px-3">
+                      <Button size="sm" className="btn-brand font-heading text-xs h-8 px-3">
                         <ArrowUpRight className="mr-1 h-3 w-3" />
                         Upgrade
                       </Button>
@@ -1382,7 +1382,7 @@ export default function ResultsPage() {
                         </p>
                       </div>
                       <Link href="/checkout?plan=professional">
-                        <Button className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-10 px-5 text-sm shadow-md shadow-eari-blue/15 flex-shrink-0">
+                        <Button className="btn-brand font-heading font-semibold h-10 px-5 text-sm shadow-md shadow-eari-blue/15 flex-shrink-0">
                           <ArrowUpRight className="mr-1.5 h-3.5 w-3.5" />
                           Upgrade to Pro
                         </Button>
@@ -2170,7 +2170,7 @@ export default function ResultsPage() {
                       </CardDescription>
                     </div>
                     <Link href="/pulse">
-                      <Button className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-9 px-4 text-sm shadow-md shadow-eari-blue/15">
+                      <Button className="btn-brand font-heading font-semibold h-9 px-4 text-sm shadow-md shadow-eari-blue/15">
                         <Activity className="mr-1.5 h-3.5 w-3.5" />
                         Open AI Pulse
                         <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
@@ -3402,7 +3402,7 @@ export default function ResultsPage() {
                         {/* Action buttons */}
                         <div className="flex flex-col sm:flex-row gap-2">
                           <Button
-                            className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-9 px-5 text-sm shadow-md shadow-eari-blue/15"
+                            className="btn-brand font-heading font-semibold h-9 px-5 text-sm shadow-md shadow-eari-blue/15"
                             onClick={async () => {
                               try {
                                 const res = await fetch('/api/benchmark/consent', {
@@ -3608,7 +3608,7 @@ export default function ResultsPage() {
                       </div>
                       {!benchmarkConsented && (
                         <Button
-                          className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-9 px-5 text-sm shadow-md shadow-eari-blue/15"
+                          className="btn-brand font-heading font-semibold h-9 px-5 text-sm shadow-md shadow-eari-blue/15"
                           onClick={async () => {
                             try {
                               const res = await fetch('/api/benchmark/consent', {
@@ -3979,7 +3979,7 @@ export default function ResultsPage() {
                 <Button
                   onClick={handleExportPDF}
                   disabled={exporting}
-                  className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-12 px-6 shadow-md shadow-eari-blue/15"
+                  className="btn-brand font-heading font-semibold h-12 px-6 shadow-md shadow-eari-blue/15"
                 >
                   {exporting ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

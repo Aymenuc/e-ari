@@ -106,7 +106,7 @@ export default function VendorsPage() {
           <CardContent className="flex flex-wrap gap-2">
             <Input placeholder="Vendor name (e.g. OpenAI)" value={name} onChange={(e) => setName(e.target.value)} className="max-w-60 bg-navy-700 border-border/60 font-sans" />
             <Input placeholder="Contact email (optional)" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} className="max-w-64 bg-navy-700 border-border/60 font-sans" />
-            <Button disabled={busy} onClick={add} className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans">Add vendor</Button>
+            <Button disabled={busy} onClick={add} className="btn-brand font-sans">Add vendor</Button>
           </CardContent>
         </Card>
 

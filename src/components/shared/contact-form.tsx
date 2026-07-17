@@ -99,7 +99,7 @@ export function ContactForm() {
       <Button
         type="submit"
         disabled={loading}
-        className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-sans text-sm h-9 shadow-md shadow-eari-blue/15"
+        className="w-full btn-brand font-sans text-sm h-9 shadow-md shadow-eari-blue/15"
       >
         {loading ? (
           <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Sending…</>

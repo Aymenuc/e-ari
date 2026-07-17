@@ -288,7 +288,7 @@ export default function PulsePage() {
                       <Button
                         onClick={handleRunPulse}
                         disabled={running}
-                        className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-12 px-6 shadow-md shadow-eari-blue/20 min-w-[180px]"
+                        className="btn-brand font-heading font-semibold h-12 px-6 shadow-md shadow-eari-blue/20 min-w-[180px]"
                       >
                         {running ? (
                           <>
@@ -353,7 +353,7 @@ export default function PulsePage() {
                   <Button
                     onClick={handleRunPulse}
                     disabled={running}
-                    className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-12 px-8 shadow-md shadow-eari-blue/20"
+                    className="btn-brand font-heading font-semibold h-12 px-8 shadow-md shadow-eari-blue/20"
                   >
                     {running ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

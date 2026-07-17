@@ -153,7 +153,7 @@ export function JourneyGuide() {
         {/* ── One primary next action ── */}
         {next ? (
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <Button asChild className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading h-10 px-5">
+            <Button asChild className="btn-brand font-heading h-10 px-5">
               <Link href={next.href}>{next.cta}<ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
             <p className="font-sans text-xs text-muted-foreground">{next.plain}</p>

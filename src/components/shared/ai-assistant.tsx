@@ -180,7 +180,7 @@ export function AIAssistant({ userTier = 'free' }: AIAssistantProps) {
                 </div>
                 <div className="w-full space-y-2">
                   <Link href="/checkout?plan=professional" className="w-full block">
-                    <Button className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-11 shadow-md shadow-eari-blue/15">
+                    <Button className="w-full btn-brand font-heading font-semibold h-11 shadow-md shadow-eari-blue/15">
                       <ArrowUpRight className="mr-2 h-4 w-4" />
                       Upgrade to Professional
                     </Button>
@@ -340,7 +340,7 @@ export function AIAssistant({ userTier = 'free' }: AIAssistantProps) {
                   type="submit"
                   size="icon"
                   disabled={isLoading || !input.trim()}
-                  className="h-10 w-10 bg-eari-blue hover:bg-eari-blue-dark text-white flex-shrink-0"
+                  className="h-10 w-10 btn-brand flex-shrink-0"
                 >
                   <Send className="h-4 w-4" />
                 </Button>

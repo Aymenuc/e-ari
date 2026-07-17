@@ -45,7 +45,7 @@ function AcceptInner() {
               {result.ok ? <CheckCircle2 className="h-8 w-8 text-emerald-400 mx-auto" /> : <AlertCircle className="h-8 w-8 text-red-400 mx-auto" />}
               <p className="font-sans text-sm text-muted-foreground">{result.message}</p>
               {result.ok && (
-                <Button asChild className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading w-full">
+                <Button asChild className="btn-brand font-heading w-full">
                   <Link href="/portal">Open the workspace</Link>
                 </Button>
               )}
@@ -58,7 +58,7 @@ function AcceptInner() {
                 Sign in — or create a free account — with the email this invitation was sent to, then come back to this link.
               </p>
               <div className="flex flex-col gap-2">
-                <Button asChild className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading w-full">
+                <Button asChild className="btn-brand font-heading w-full">
                   <Link href={`/auth/login?callbackUrl=${encodeURIComponent(`/team/accept?token=${token}`)}`}>Sign in</Link>
                 </Button>
                 <Button asChild variant="outline" className="border-border font-sans w-full">
@@ -71,7 +71,7 @@ function AcceptInner() {
               <p className="font-sans text-sm text-muted-foreground">
                 Signed in as <span className="text-foreground">{session.user?.email}</span>. Accept to join the shared workspace.
               </p>
-              <Button disabled={busy} onClick={accept} className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading w-full">
+              <Button disabled={busy} onClick={accept} className="btn-brand font-heading w-full">
                 {busy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 Accept invitation
               </Button>

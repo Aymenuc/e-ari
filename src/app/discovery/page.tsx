@@ -505,7 +505,7 @@ export default function DiscoveryPage() {
                     {/* CTA */}
                     <div className="flex flex-col sm:flex-row gap-3">
                       <Link href="/assessment" className="flex-1">
-                        <Button className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-11">
+                        <Button className="w-full btn-brand font-heading font-semibold h-11">
                           Take Formal Assessment
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
@@ -598,7 +598,7 @@ export default function DiscoveryPage() {
                     type="submit"
                     size="icon"
                     disabled={isLoading || isGeneratingProfile || !input.trim()}
-                    className="h-10 w-10 bg-eari-blue hover:bg-eari-blue-dark text-white flex-shrink-0"
+                    className="h-10 w-10 btn-brand flex-shrink-0"
                   >
                     <Send className="h-4 w-4" />
                   </Button>

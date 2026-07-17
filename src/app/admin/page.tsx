@@ -1049,7 +1049,7 @@ export default function AdminPage() {
             </p>
             <Button
               onClick={() => router.push("/portal")}
-              className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans"
+              className="btn-brand font-sans"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Portal
@@ -2230,7 +2230,7 @@ export default function AdminPage() {
                       <span className="text-xs text-muted-foreground font-mono">
                         {filteredUsers.length} user{filteredUsers.length !== 1 ? "s" : ""}
                       </span>
-                      <Button size="sm" onClick={() => openEmailDialog(null)} className="h-8 text-xs font-sans bg-eari-blue hover:bg-eari-blue-dark text-white gap-1.5">
+                      <Button size="sm" onClick={() => openEmailDialog(null)} className="h-8 text-xs font-sans btn-brand gap-1.5">
                         <Megaphone className="h-3.5 w-3.5" />
                         Broadcast
                       </Button>
@@ -2745,7 +2745,7 @@ export default function AdminPage() {
                   <p className="text-sm text-muted-foreground font-sans mt-1">Review, approve, or reject user refund requests</p>
                 </div>
                 <Link href="/admin/refunds">
-                  <Button className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans">
+                  <Button className="btn-brand font-sans">
                     Open Full Refund Panel
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </Button>
@@ -3084,7 +3084,7 @@ export default function AdminPage() {
                               size="sm"
                               onClick={handleSendReply}
                               disabled={replySending || !replyBody.trim() || !replySubject.trim()}
-                              className="font-sans bg-eari-blue hover:bg-eari-blue-dark text-white text-xs h-8 px-4 gap-1.5 disabled:opacity-50"
+                              className="font-sans btn-brand text-xs h-8 px-4 gap-1.5 disabled:opacity-50"
                             >
                               {replySending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
                               {replySending ? "Sending…" : "Send Reply"}
@@ -3312,7 +3312,7 @@ export default function AdminPage() {
                     size="sm"
                     onClick={handleSendEmail}
                     disabled={emailSending || !emailSubject.trim() || !emailBody.trim()}
-                    className="font-sans bg-eari-blue hover:bg-eari-blue-dark text-white text-sm gap-1.5"
+                    className="font-sans btn-brand text-sm gap-1.5"
                   >
                     {emailSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                     {emailSending ? "Sending…" : emailTarget ? "Send Email" : "Broadcast"}

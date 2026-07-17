@@ -504,7 +504,7 @@ export default function IntegrationsPage() {
                             ) : (
                               <Button
                                 size="sm"
-                                className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-sans h-9 text-xs"
+                                className="w-full btn-brand font-sans h-9 text-xs"
                                 onClick={() => setConnectModal(provider)}
                               >
                                 <Link2 className="h-3 w-3 mr-1" />
@@ -605,7 +605,7 @@ export default function IntegrationsPage() {
                   You&apos;ll be redirected to {connectModal.name} to authorize E-ARI access. Your data stays secure.
                 </p>
                 <Button
-                  className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans"
+                  className="btn-brand font-sans"
                   onClick={handleConnect}
                 >
                   <Link2 className="h-4 w-4 mr-2" />
@@ -627,7 +627,7 @@ export default function IntegrationsPage() {
               <Button
                 onClick={handleConnect}
                 disabled={saving || (connectModal?.configType === 'webhook' && !webhookUrl.trim()) || (connectModal?.configType === 'apikey' && !apiKey.trim())}
-                className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans"
+                className="btn-brand font-sans"
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Link2 className="h-4 w-4 mr-2" />}
                 {saving ? 'Connecting...' : 'Connect'}

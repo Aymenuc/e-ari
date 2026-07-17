@@ -192,7 +192,7 @@ export function RefundCard() {
             <DialogTrigger asChild>
               <Button
                 size="sm"
-                className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans min-h-[44px]"
+                className="btn-brand font-sans min-h-[44px]"
               >
                 <Plus className="h-4 w-4 mr-1" />
                 New Request
@@ -272,7 +272,7 @@ export function RefundCard() {
                 <Button
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans"
+                  className="btn-brand font-sans"
                 >
                   {submitting ? (
                     <>

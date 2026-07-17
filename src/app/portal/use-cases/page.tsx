@@ -58,7 +58,7 @@ export default function UseCasesDashboardPage() {
             </p>
           </div>
           <Link href="/portal/use-cases/systems/new">
-            <Button className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading shadow-md shadow-eari-blue/15">
+            <Button className="btn-brand font-heading shadow-md shadow-eari-blue/15">
               <Plus className="h-4 w-4 mr-2" />
               New use case
             </Button>

@@ -409,7 +409,7 @@ export default function PortalPage() {
               {/* Quick Actions */}
               <div className="flex items-center gap-3">
                 <Link href="/assessment">
-                  <Button className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans min-h-[44px]">
+                  <Button className="btn-brand font-sans min-h-[44px]">
                     <ClipboardCheck className="h-4 w-4 mr-2" />
                     Start New Assessment
                   </Button>
@@ -570,7 +570,7 @@ export default function PortalPage() {
                       No assessments yet. Start your first assessment to measure your AI readiness.
                     </p>
                     <Link href="/assessment">
-                      <Button className="mt-4 bg-eari-blue hover:bg-eari-blue-dark text-white font-sans min-h-[44px]">
+                      <Button className="mt-4 btn-brand font-sans min-h-[44px]">
                         <ClipboardCheck className="h-4 w-4 mr-2" />
                         Start Assessment
                       </Button>
@@ -739,7 +739,7 @@ export default function PortalPage() {
                         <DialogClose asChild>
                           <Button variant="outline" className="font-sans">Cancel</Button>
                         </DialogClose>
-                        <Button onClick={handleSaveProfile} className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans">Save Changes</Button>
+                        <Button onClick={handleSaveProfile} className="btn-brand font-sans">Save Changes</Button>
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
@@ -938,7 +938,7 @@ export default function PortalPage() {
               {userTier === 'free' && (
                 <CardFooter>
                   <Link href="/checkout?plan=professional" className="w-full">
-                    <Button className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-sans min-h-[44px]">
+                    <Button className="w-full btn-brand font-sans min-h-[44px]">
                       <ArrowUpRight className="h-4 w-4 mr-2" />
                       Upgrade Plan
                     </Button>

@@ -673,7 +673,7 @@ function QuizEngine({ category, onComplete }: { category: QuizCategory; onComple
         >
           <Button
             onClick={handleNext}
-            className="font-heading font-semibold bg-eari-blue hover:bg-eari-blue-dark text-white"
+            className="font-heading font-semibold btn-brand"
           >
             {currentQ < category.questions.length - 1 ? 'Next Question' : 'See Results'}
             <ChevronRight className="ml-1 h-4 w-4" />
@@ -901,7 +901,7 @@ function QuizResults({ category, score, total, onRetry }: { category: QuizCatego
           Retry Quiz
         </Button>
         <Link href="/literacy/roles">
-          <Button className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading">
+          <Button className="btn-brand font-heading">
             View Role-Based Insights
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
@@ -1130,7 +1130,7 @@ function LiteracyPageContent() {
                           <Button
                             size="sm"
                             onClick={() => { setActiveQuiz(weakParam || focusAreas[0]); setQuizResult(null); }}
-                            className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading"
+                            className="btn-brand font-heading"
                           >
                             <Play className="h-3.5 w-3.5 mr-1.5" />
                             Start with {QUIZ_CATEGORIES.find(c => c.id === (weakParam || focusAreas[0]))?.title || 'Weakest Area'}
@@ -1352,7 +1352,7 @@ function LiteracyPageContent() {
                   </p>
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                     <Link href="/literacy/roles">
-                      <Button size="lg" className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-11 px-7">
+                      <Button size="lg" className="btn-brand font-heading font-semibold h-11 px-7">
                         Explore Role Insights
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>

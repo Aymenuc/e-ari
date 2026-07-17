@@ -441,7 +441,7 @@ function QuestionHelpMode({
         <Button
           onClick={onRequestHelp}
           disabled={!currentQuestionText}
-          className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-11 w-full"
+          className="btn-brand font-heading font-semibold h-11 w-full"
         >
           <Sparkles className="h-4 w-4 mr-2" />
           Get AI Help
@@ -638,7 +638,7 @@ function OptimizationMode({
       {!response && !isLoading && !error && (
         <Button
           onClick={onRequestOptimization}
-          className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-11 w-full"
+          className="btn-brand font-heading font-semibold h-11 w-full"
         >
           <TrendingUp className="h-4 w-4 mr-2" />
           Get Optimization Plan
@@ -757,7 +757,7 @@ function InsightsMode({
         <Button
           onClick={onRequestInsights}
           disabled={!orgContext && !pillarScores?.length}
-          className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-11 w-full"
+          className="btn-brand font-heading font-semibold h-11 w-full"
         >
           <Lightbulb className="h-4 w-4 mr-2" />
           Generate Insights
@@ -880,7 +880,7 @@ function RoadmapMode({
         <Button
           onClick={onRequestRoadmap}
           disabled={overallScore === undefined}
-          className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-11 w-full"
+          className="btn-brand font-heading font-semibold h-11 w-full"
         >
           <Map className="h-4 w-4 mr-2" />
           Generate Roadmap
@@ -1155,7 +1155,7 @@ function DiscoveryInterviewMode({
 
         <Button
           onClick={handleStart}
-          className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-11 w-full"
+          className="btn-brand font-heading font-semibold h-11 w-full"
         >
           <MessageSquare className="h-4 w-4 mr-2" />
           Start Discovery Interview
@@ -1241,7 +1241,7 @@ function DiscoveryInterviewMode({
             <Button
               onClick={handleSend}
               disabled={!inputValue.trim() || isLoading}
-              className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading h-11 w-11 px-0 flex-shrink-0"
+              className="btn-brand font-heading h-11 w-11 px-0 flex-shrink-0"
             >
               <Send className="h-4 w-4" />
             </Button>
@@ -1505,7 +1505,7 @@ function BenchmarkMode({
         <Button
           onClick={onRequestBenchmark}
           disabled={!pillarScores?.length}
-          className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-11 w-full"
+          className="btn-brand font-heading font-semibold h-11 w-full"
         >
           <BarChart3 className="h-4 w-4 mr-2" />
           Compare with Sector

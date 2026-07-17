@@ -254,7 +254,7 @@ function RegisterForm() {
           </div>
           <Button
             type="submit"
-            className="w-full bg-eari-blue hover:bg-eari-blue-dark text-white font-sans"
+            className="w-full btn-brand font-sans"
             disabled={loading}
           >
             {loading ? "Creating account..." : "Create Account"}

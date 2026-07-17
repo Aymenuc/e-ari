@@ -240,7 +240,7 @@ export default function SocialMediaPage() {
             <p className="text-muted-foreground font-sans text-sm mb-6">
               You do not have admin privileges to view this page.
             </p>
-            <Button onClick={() => router.push("/admin")} className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans">
+            <Button onClick={() => router.push("/admin")} className="btn-brand font-sans">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Admin
             </Button>
@@ -770,7 +770,7 @@ export default function SocialMediaPage() {
                       )}
                       <Button
                         onClick={handlePublishNow}
-                        className="bg-eari-blue hover:bg-eari-blue-dark text-white"
+                        className="btn-brand"
                       >
                         <Send className="h-4 w-4 mr-2" />
                         Publish Now
@@ -996,7 +996,7 @@ export default function SocialMediaPage() {
                           <Button
                             size="sm"
                             onClick={() => { setActiveTab("compose"); }}
-                            className="bg-eari-blue hover:bg-eari-blue-dark text-white text-xs"
+                            className="btn-brand text-xs"
                           >
                             <Plus className="h-3.5 w-3.5 mr-1" />
                             Create Post
@@ -1059,7 +1059,7 @@ export default function SocialMediaPage() {
                 </div>
                 <Button
                   onClick={() => setShowAccountDialog(true)}
-                  className="bg-eari-blue hover:bg-eari-blue-dark text-white"
+                  className="btn-brand"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Account
@@ -1080,7 +1080,7 @@ export default function SocialMediaPage() {
                     <p className="text-sm text-muted-foreground/70 mb-4">Add your first social media account to get started</p>
                     <Button
                       onClick={() => setShowAccountDialog(true)}
-                      className="bg-eari-blue hover:bg-eari-blue-dark text-white"
+                      className="btn-brand"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Add Account
@@ -1329,7 +1329,7 @@ export default function SocialMediaPage() {
               <Button
                 onClick={handleAddAccount}
                 disabled={savingAccount}
-                className="bg-eari-blue hover:bg-eari-blue-dark text-white"
+                className="btn-brand"
               >
                 {savingAccount ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
                 Add Account
@@ -1403,7 +1403,7 @@ export default function SocialMediaPage() {
                   <Button
                     onClick={() => handlePublishExisting(selectedPost.id)}
                     disabled={publishingId === selectedPost.id}
-                    className="bg-eari-blue hover:bg-eari-blue-dark text-white"
+                    className="btn-brand"
                   >
                     {publishingId === selectedPost.id ? (
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />

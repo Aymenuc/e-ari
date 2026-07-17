@@ -105,7 +105,7 @@ export default function TrainPage() {
                 </p>
               </div>
             )}
-            <Button disabled={!allAnswered || submitting} onClick={submit} className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading">
+            <Button disabled={!allAnswered || submitting} onClick={submit} className="btn-brand font-heading">
               {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               {result && !result.passed ? 'Retry quiz' : 'Submit answers'}
             </Button>
@@ -138,7 +138,7 @@ export default function TrainPage() {
                 <p className="font-sans text-xs text-muted-foreground">~{m.minutes} min{m.completed && m.score != null ? ` · completed, ${Math.round(m.score)}%` : ''}</p>
               </div>
             </div>
-            <Button variant={m.completed ? 'outline' : 'default'} className={m.completed ? 'border-border font-sans' : 'bg-eari-blue hover:bg-eari-blue-dark text-white font-sans'}
+            <Button variant={m.completed ? 'outline' : 'default'} className={m.completed ? 'border-border font-sans' : 'btn-brand font-sans'}
               onClick={() => { setActive(m); setAnswers({}); setResult(null); }}>
               {m.completed ? 'Review' : 'Start'}
             </Button>

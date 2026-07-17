@@ -70,7 +70,7 @@ export default function Error({
             >
               <Button
                 onClick={reset}
-                className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans shadow-md shadow-eari-blue/20 transition-all duration-200"
+                className="btn-brand font-sans shadow-md shadow-eari-blue/20 transition-all duration-200"
               >
                 <RotateCcw className="h-4 w-4 mr-2" />
                 Try Again

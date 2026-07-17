@@ -93,7 +93,7 @@ export default function TeamPage() {
                     className={`px-3 py-2 font-mono text-xs uppercase ${role === r ? 'bg-eari-blue/20 text-eari-blue-light' : 'text-muted-foreground'}`}>{r}</button>
                 ))}
               </div>
-              <Button disabled={busy || !email} onClick={invite} className="bg-eari-blue hover:bg-eari-blue-dark text-white font-sans">
+              <Button disabled={busy || !email} onClick={invite} className="btn-brand font-sans">
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="h-4 w-4 mr-2" />Invite</>}
               </Button>
             </CardContent>

@@ -241,7 +241,7 @@ export default async function HandbookPage() {
               Reach out to the team or start your first assessment to see it in action.
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-3">
-              <Button asChild className="bg-eari-blue hover:bg-eari-blue-dark">
+              <Button asChild className="btn-brand">
                 <Link href="/assessment">Start free assessment</Link>
               </Button>
               <Button asChild variant="outline" className="border-border/50">

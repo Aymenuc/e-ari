@@ -67,8 +67,8 @@
   --card-foreground: #e6edf3;
   --popover: #161b22;
   --popover-foreground: #e6edf3;
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
+  --primary: #d4a853;
+  --primary-foreground: #14100a;
   --secondary: #1c2333;
   --secondary-foreground: #e6edf3;
   --muted: #1c2333;
@@ -100,8 +100,8 @@
   --foreground: #0d1117;
   --card: #f8fafc;
   --card-foreground: #0d1117;
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
+  --primary: #d4a853;
+  --primary-foreground: #14100a;
   --muted: #f1f5f9;
   --muted-foreground: #64748b;
   --border: #e2e8f0;
@@ -1398,8 +1398,9 @@
   color: transparent;
 }
 .btn-gradient-primary {
-  background-image: linear-gradient(135deg, #2563eb 0%, #4f46e5 55%, #6d28d9 120%);
+  background-image: linear-gradient(135deg, #e6c37a 0%, #d4a853 50%, #b98a35 120%);
   background-size: 150% 150%;
+  color: #14100a !important;
   transition: background-position 0.4s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 .btn-gradient-primary:hover { background-position: 90% 50%; }
@@ -1478,3 +1479,21 @@
 @media (prefers-reduced-motion: reduce) {
   .marquee-track { animation: none; }
 }
+
+
+/* ─── Brand primary button — champagne gold on navy ──────────────────────
+   Replaces the generic AI-startup blue on every primary CTA. Gold demands
+   dark text for contrast (white-on-gold fails AA), hence one class that
+   owns bg + fg + hover together instead of utility soup. */
+.btn-brand {
+  background-image: linear-gradient(135deg, #e6c37a 0%, #d4a853 50%, #b98a35 115%);
+  color: #14100a !important;
+  box-shadow: 0 8px 24px -8px rgba(212, 168, 83, 0.4);
+  transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-brand:hover {
+  filter: brightness(1.07);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px -8px rgba(212, 168, 83, 0.5);
+}
+.btn-brand:active { transform: translateY(0); }

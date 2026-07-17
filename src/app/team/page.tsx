@@ -334,7 +334,7 @@ export default function TeamPage() {
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/auth/register">
-                  <Button size="lg" className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold h-12 px-8 text-base w-full sm:w-auto">
+                  <Button size="lg" className="btn-brand font-heading font-semibold h-12 px-8 text-base w-full sm:w-auto">
                     Start Free Assessment
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>

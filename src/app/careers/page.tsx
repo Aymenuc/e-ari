@@ -448,7 +448,7 @@ export default function CareersPage() {
                             </p>
                             <div className="mt-4 flex items-center gap-3">
                               <a href={`mailto:careers@e-ari.com?subject=Application: ${job.title}`}>
-                                <Button className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold shadow-md shadow-eari-blue/15 h-9 px-5 text-sm">
+                                <Button className="btn-brand font-heading font-semibold shadow-md shadow-eari-blue/15 h-9 px-5 text-sm">
                                   Apply Now
                                   <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                                 </Button>
@@ -482,7 +482,7 @@ export default function CareersPage() {
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                 <a href="mailto:careers@e-ari.com?subject=General Application">
-                  <Button size="lg" className="bg-eari-blue hover:bg-eari-blue-dark text-white font-heading font-semibold shadow-md shadow-eari-blue/15 h-12 px-8">
+                  <Button size="lg" className="btn-brand font-heading font-semibold shadow-md shadow-eari-blue/15 h-12 px-8">
                     <Mail className="mr-2 h-4 w-4" />
                     Send Open Application
                   </Button>
