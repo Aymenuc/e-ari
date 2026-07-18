@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { GraduationCap, Upload, FileDown, Loader2, Send, Trash2, CheckCircle2 } from 'lucide-react';
-import { TRAINING_MODULES } from '@/lib/training-modules';
+import { TRAINING_MODULES, ROLE_TRACKS } from '@/lib/training-modules';
 
 interface Member {
   id: string; name: string; email: string; role: string | null; department: string | null;
@@ -168,6 +168,16 @@ export default function LiteracyCompliancePage() {
           <CardHeader><CardTitle className="font-heading text-base">Assign training</CardTitle>
             <CardDescription className="font-sans">Select members above, choose modules, send. Each member gets one personal magic link — no account needed.</CardDescription></CardHeader>
           <CardContent className="space-y-4">
+            {/* Role tracks — one click selects the right curriculum for a role */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70">Role tracks</span>
+              {Object.entries(ROLE_TRACKS).map(([key, track]) => (
+                <button key={key} onClick={() => setSelectedModules(new Set(track.moduleIds))}
+                  className="px-2.5 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] font-sans text-[11px] text-muted-foreground hover:text-foreground hover:border-white/[0.16] transition-colors">
+                  {track.label}
+                </button>
+              ))}
+            </div>
             <div className="flex flex-wrap gap-2">
               {TRAINING_MODULES.map((m) => (
                 <button key={m.id} onClick={() => { const s = new Set(selectedModules); if (s.has(m.id)) s.delete(m.id); else s.add(m.id); setSelectedModules(s); }}

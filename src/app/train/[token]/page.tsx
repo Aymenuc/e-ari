@@ -55,7 +55,7 @@ export default function TrainPage() {
   const shell = (children: React.ReactNode) => (
     <div className="min-h-screen bg-navy-900 text-foreground">
       <header className="border-b border-border/40 px-6 py-4">
-        <span className="font-heading font-bold text-lg text-eari-blue-light">E-ARI</span>
+        <span className="font-heading font-bold text-lg text-slate-100">E-ARI</span>
         <span className="ml-3 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">AI Literacy Training · EU AI Act Article 4</span>
       </header>
       <main className="mx-auto max-w-3xl px-6 py-10">{children}</main>
@@ -63,7 +63,7 @@ export default function TrainPage() {
   );
 
   if (error) return shell(<Card className="bg-navy-800 border-red-500/30"><CardContent className="p-6 flex items-center gap-3"><AlertCircle className="h-5 w-5 text-red-400" /><p className="font-sans">{error}</p></CardContent></Card>);
-  if (!data) return shell(<div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-eari-blue-light" /></div>);
+  if (!data) return shell(<div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-slate-100" /></div>);
 
   if (active) {
     const allAnswered = active.quiz.every((_, i) => answers[i] !== undefined);
@@ -132,7 +132,7 @@ export default function TrainPage() {
         <Card key={m.id} className="bg-navy-800 border-border/60 hover:border-eari-blue/40 transition-colors">
           <CardContent className="p-5 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
-              {m.completed ? <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" /> : <BookOpen className="h-5 w-5 text-eari-blue-light shrink-0" />}
+              {m.completed ? <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" /> : <BookOpen className="h-5 w-5 text-slate-100 shrink-0" />}
               <div className="min-w-0">
                 <p className="font-heading text-sm font-semibold">{m.title}</p>
                 <p className="font-sans text-xs text-muted-foreground">~{m.minutes} min{m.completed && m.score != null ? ` · completed, ${Math.round(m.score)}%` : ''}</p>
