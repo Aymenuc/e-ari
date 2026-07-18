@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { CareerApplicationForm } from '@/components/shared/career-application-form'
 import { motion } from 'framer-motion'
 import {
   MapPin,
@@ -91,55 +92,6 @@ const JOB_LISTINGS: JobListing[] = [
     hot: true,
   },
   {
-    id: 'ai-insights-engineer',
-    title: 'AI Insights Engineer',
-    department: 'AI & Research',
-    location: 'Remote',
-    type: 'Full-time',
-    salary: '$150K – $200K',
-    posted: '1 week ago',
-    description: 'Design and optimize the prompt architecture behind E-ARI\'s 6-agent pipeline. You will be responsible for the quality, specificity, and reliability of AI-generated insights — ensuring they are grounded in assessment data, free of generic language, and actionable for executives. This is not a prompt-tweaking role; it requires deep understanding of structured output, hallucination control, and evaluation methodology.',
-    requirements: [
-      '3+ years working with LLMs in production — prompt engineering, fine-tuning, or retrieval-augmented generation',
-      'Experience designing multi-step agent pipelines with structured JSON output and fallback strategies',
-      'Strong TypeScript/Python skills for building evaluation harnesses and quality metrics',
-      'Understanding of AI safety, bias detection, and responsible AI practices in enterprise contexts',
-      'Ability to write and maintain rigorous evaluation datasets for LLM output quality',
-    ],
-    benefits: [
-      'Direct impact on the core AI product — your work is what users see and trust',
-      'Access to state-of-the-art LLM APIs and compute resources',
-      'Collaborate with governance and methodology experts to ground AI outputs in domain knowledge',
-      'Present research at AI conferences (budget included)',
-    ],
-    icon: Brain,
-    hot: true,
-  },
-  {
-    id: 'product-designer',
-    title: 'Senior Product Designer',
-    department: 'Design',
-    location: 'Hybrid — Paris, FR',
-    type: 'Full-time',
-    salary: '\u20AC90K – \u20AC120K',
-    posted: '3 days ago',
-    description: 'Shape the user experience of E-ARI from assessment flow to results interpretation. Our users are C-suite executives, transformation leads, and governance officers who need clarity, not complexity. You will design interfaces that make multi-dimensional scoring, AI narratives, and benchmark data instantly understandable — and make the paid tiers feel worth every penny.',
-    requirements: [
-      '5+ years of product design experience in B2B SaaS, enterprise tools, or data-heavy applications',
-      'Portfolio demonstrating complex data visualization and dashboard design (not just marketing pages)',
-      'Fluency in Figma with systematic component design and design token management',
-      'Experience designing tiered product experiences — what to show, what to gate, and how to make upgrades compelling',
-      'Strong collaboration skills with engineering — you prototype in code or work closely with those who do',
-    ],
-    benefits: [
-      'Own the design system and visual language of a category-defining product',
-      'Small design team means real ownership, not pixel-pushing',
-      'Annual design conference attendance (Config, DotCSS, etc.)',
-      'Relocation support for Paris-based hybrid role',
-    ],
-    icon: Sparkles,
-  },
-  {
     id: 'governance-analyst',
     title: 'AI Governance Analyst',
     department: 'Governance',
@@ -162,127 +114,6 @@ const JOB_LISTINGS: JobListing[] = [
       'Flexible working with London office access',
     ],
     icon: Shield,
-  },
-  {
-    id: 'devops-engineer',
-    title: 'DevOps & Platform Engineer',
-    department: 'Engineering',
-    location: 'Berlin, DE',
-    type: 'Full-time',
-    salary: '\u20AC100K – \u20AC140K',
-    posted: '5 days ago',
-    description: 'Build and maintain the infrastructure that powers E-ARI\'s assessment platform — from database operations and deployment pipelines to monitoring, alerting, and cost optimization. You will ensure our platform meets enterprise SLA requirements, manage our LLM API integrations at scale, and implement the security controls required by our enterprise and government clients.',
-    requirements: [
-      '4+ years of DevOps/SRE experience with cloud infrastructure (AWS, GCP, or Azure)',
-      'Strong experience with Docker, Kubernetes, and infrastructure-as-code (Terraform/Pulumi)',
-      'Experience managing LLM API integrations at scale — rate limiting, cost monitoring, fallback routing',
-      'Security-first mindset: SOC 2, data encryption, access control, audit logging',
-      'German working proficiency preferred for Berlin-based compliance coordination',
-    ],
-    benefits: [
-      'Greenfield infrastructure — you set the standards, not inherit tech debt',
-      'Work with enterprise clients who demand (and fund) best-in-class infrastructure',
-      'Germany-standard benefits: 30 days vacation, public transport, pension contribution',
-      'Annual infrastructure and tooling budget',
-    ],
-    icon: Zap,
-  },
-  {
-    id: 'enterprise-account-executive',
-    title: 'Enterprise Account Executive',
-    department: 'Sales',
-    location: 'San Francisco, US',
-    type: 'Full-time',
-    salary: '$130K – $170K + OTE $250K+',
-    posted: '4 days ago',
-    description: 'Drive enterprise adoption of E-ARI across mid-market and enterprise compliance teams. You will manage the full sales cycle from initial outreach through procurement, security review, and contract negotiation. Our product sells itself to the right buyer — you need to find them, articulate the value of evidence-based AI readiness assessment, and navigate complex enterprise purchasing processes.',
-    requirements: [
-      '5+ years of enterprise SaaS sales experience with deal sizes $50K+ ARR',
-      'Proven track record selling to C-suite and transformation leaders at large organizations',
-      'Experience navigating enterprise procurement, security reviews, and legal negotiations',
-      'Understanding of AI/ML landscape — you can speak credibly about AI readiness, governance, and responsible AI',
-      'SF Bay Area network in technology, financial services, or healthcare preferred',
-    ],
-    benefits: [
-      'Uncapped commission with accelerators — top performers earn $350K+',
-      'Equity participation in a high-growth category',
-      'Dedicated SDR support and marketing budget',
-      'President\'s Club trips and annual sales kickoff',
-    ],
-    icon: BarChart3,
-  },
-  {
-    id: 'data-scientist',
-    title: 'Senior Data Scientist',
-    department: 'AI & Research',
-    location: 'Remote',
-    type: 'Full-time',
-    salary: '$145K – $195K',
-    posted: '3 days ago',
-    description: 'Drive the analytical engine behind E-ARI\'s assessment scoring, benchmarking, and sector-specific insights. You will design and validate statistical models that power our maturity classifications, develop sector-specific normalization algorithms, and build evaluation frameworks that ensure our scoring methodology remains rigorous and defensible. This is not a traditional data science role — you will be shaping how organizations worldwide measure their AI readiness.',
-    requirements: [
-      '5+ years in data science or quantitative research with a strong statistical foundation',
-      'Expertise in Python (pandas, scikit-learn, scipy) and experience with statistical modeling and hypothesis testing',
-      'Experience designing scoring frameworks, index methodologies, or composite indicators',
-      'Strong communication skills — you will explain methodology decisions to non-technical stakeholders',
-      'Background in psychometrics, survey methodology, or assessment design preferred',
-    ],
-    benefits: [
-      'Direct influence on the core scoring methodology at the heart of the product',
-      'Present methodology research at academic and industry conferences',
-      'Access to unique enterprise AI readiness datasets for research publications',
-      'Flexible remote work with quarterly team gatherings',
-    ],
-    icon: Brain,
-    hot: true,
-  },
-  {
-    id: 'assessment-methodologist',
-    title: 'Assessment Methodologist',
-    department: 'Methodology',
-    location: 'Hybrid — Lisbon, PT',
-    type: 'Full-time',
-    salary: '\u20AC85K – \u20AC115K',
-    posted: '1 week ago',
-    description: 'Own the rigor behind E-ARI\'s 8-pillar assessment framework. You will validate question design, refine pillar weights, develop sector-specific adjustments, and ensure our methodology meets the standards expected by enterprise auditors and government regulators. This role sits at the intersection of research methodology, public policy, and product — perfect for someone who cares about measurement integrity as much as practical impact.',
-    requirements: [
-      'Advanced degree (Ph.D. preferred) in social science research methods, public policy, psychometrics, or related field',
-      '3+ years designing assessment frameworks, survey instruments, or evaluation methodologies',
-      'Deep understanding of Likert-scale design, construct validity, and reliability testing',
-      'Experience translating research methodology into product requirements and engineering specifications',
-      'Familiarity with AI governance frameworks (EU AI Act, NIST AI RMF, ISO 42001) strongly preferred',
-    ],
-    benefits: [
-      'Shape the methodological foundation of a category-defining product',
-      'Work with international organizations and government agencies on AI governance',
-      'Sponsored academic publications and conference attendance',
-      'Lisbon office with relocation support and flexible hybrid arrangement',
-    ],
-    icon: Target,
-  },
-  {
-    id: 'customer-success-lead',
-    title: 'Customer Success Lead',
-    department: 'Sales',
-    location: 'London, UK',
-    type: 'Full-time',
-    salary: '\u00A380K – \u00A3105K',
-    posted: '5 days ago',
-    description: 'Ensure E-ARI\'s enterprise clients extract maximum value from their AI readiness assessments. You will manage the post-sale relationship for Fortune 500 and government accounts, guide clients through assessment interpretation, help them translate scores into actionable roadmaps, and identify expansion opportunities. This is a high-visibility role where your ability to connect assessment insights to business outcomes directly drives retention and growth.',
-    requirements: [
-      '4+ years in enterprise customer success, account management, or strategic consulting',
-      'Experience managing C-suite relationships at large organizations',
-      'Ability to translate complex analytical outputs into executive-ready narratives and action plans',
-      'Understanding of AI/ML concepts sufficient to credibly discuss assessment results with technical stakeholders',
-      'Track record of driving net revenue retention above 110% in B2B SaaS',
-    ],
-    benefits: [
-      'High-impact role — your work directly determines client success and company revenue',
-      'Work with compliance leaders — DPOs, internal auditors, and AI programme leads',
-      'Clear career path to VP Customer Success or Chief Customer Officer',
-      'London office with hybrid flexibility and competitive equity package',
-    ],
-    icon: Users,
   },
 ]
 
@@ -332,14 +163,14 @@ export default function CareersPage() {
                 </Badge>
                 <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
                   Build the Standard for{' '}
-                  <span className="text-eari-blue-light">AI Readiness</span>
+                  <span className="text-slate-400">AI Readiness</span>
                 </h1>
                 <p className="mt-6 text-lg sm:text-xl text-muted-foreground font-sans leading-relaxed max-w-2xl mx-auto">
                   Join a team that believes AI readiness deserves the same rigor as financial auditing. We are replacing guesswork with evidence — and we need exceptional people to make it happen.
                 </p>
                 <div className="mt-8 flex items-center justify-center gap-6">
                   <div className="flex items-center gap-2">
-                    <Briefcase className="h-4 w-4 text-eari-blue-light" />
+                    <Briefcase className="h-4 w-4 text-slate-400" />
                     <span className="text-sm text-muted-foreground font-sans">{JOB_LISTINGS.length} open positions</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -378,7 +209,7 @@ export default function CareersPage() {
                     <Card className="bg-navy-800 border-border/50 hover:border-eari-blue/30 transition-colors duration-300 h-full">
                       <CardContent className="p-6">
                         <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-eari-blue/15 mb-4">
-                          <Icon className="h-5 w-5 text-eari-blue-light" />
+                          <Icon className="h-5 w-5 text-slate-400" />
                         </div>
                         <h3 className="font-heading font-semibold text-foreground text-base mb-2">{perk.title}</h3>
                         <p className="text-sm text-muted-foreground font-sans leading-relaxed">{perk.desc}</p>
@@ -414,7 +245,7 @@ export default function CareersPage() {
                       <CardContent className="p-6">
                         <div className="flex items-start gap-4">
                           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-eari-blue/15 flex-shrink-0">
-                            <JobIcon className="h-6 w-6 text-eari-blue-light" />
+                            <JobIcon className="h-6 w-6 text-slate-400" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
@@ -447,17 +278,17 @@ export default function CareersPage() {
                               {job.description}
                             </p>
                             <div className="mt-4 flex items-center gap-3">
-                              <a href={`mailto:careers@e-ari.com?subject=Application: ${job.title}`}>
-                                <Button className="btn-brand font-heading font-semibold shadow-md shadow-eari-blue/15 h-9 px-5 text-sm">
+                              <a href="#apply">
+                                <Button className="btn-brand font-heading font-semibold h-9 px-5 text-sm">
                                   Apply Now
                                   <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                                 </Button>
                               </a>
-                              <Link href={`mailto:careers@e-ari.com?subject=Question about: ${job.title}`}>
+                              <a href={`mailto:careers@e-ari.com?subject=Question about: ${job.title}`}>
                                 <Button variant="ghost" className="text-muted-foreground font-sans text-xs h-9">
                                   Ask a question
                                 </Button>
-                              </Link>
+                              </a>
                             </div>
                           </div>
                         </div>
@@ -470,28 +301,20 @@ export default function CareersPage() {
           </div>
         </section>
 
-        {/* ─── NOT SEEING YOUR ROLE? ────────────────────────────────────── */}
-        <section className="py-16 sm:py-20 bg-navy-800/50">
-          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
+        {/* ─── APPLY (real form — persists + emails, no mailto) ─────────── */}
+        <section id="apply" className="py-16 sm:py-20 bg-navy-800/50 scroll-mt-24">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
-              <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
-                Don&apos;t See Your Role?
-              </h2>
-              <p className="mt-4 text-lg text-muted-foreground font-sans max-w-xl mx-auto leading-relaxed">
-                We are always looking for exceptional people who share our conviction that AI readiness deserves the same rigor as financial auditing. If that resonates, send us your story — we create roles for the right people.
-              </p>
-              <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="mailto:careers@e-ari.com?subject=General Application">
-                  <Button size="lg" className="btn-brand font-heading font-semibold shadow-md shadow-eari-blue/15 h-12 px-8">
-                    <Mail className="mr-2 h-4 w-4" />
-                    Send Open Application
-                  </Button>
-                </a>
-                <Link href="/team">
-                  <Button variant="outline" size="lg" className="border-border hover:bg-navy-700 text-foreground font-heading font-semibold h-12 px-8">
-                    Meet the Team
-                  </Button>
-                </Link>
+              <div className="text-center mb-10">
+                <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
+                  Apply
+                </h2>
+                <p className="mt-4 text-lg text-muted-foreground font-sans max-w-xl mx-auto leading-relaxed">
+                  Pick a role &mdash; or choose &ldquo;open application&rdquo; if you think we need you and don&apos;t know it yet. A link to your work says more than a formal CV.
+                </p>
+              </div>
+              <div className="rounded-xl border border-white/[0.07] bg-navy-800/60 p-6 sm:p-8">
+                <CareerApplicationForm roles={JOB_LISTINGS.map((j) => j.title)} />
               </div>
             </FadeUp>
           </div>
@@ -522,7 +345,7 @@ export default function CareersPage() {
                   <Card className="bg-navy-800 border-border/50 h-full">
                     <CardContent className="p-6">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-eari-blue/15 mb-4">
-                        <span className="font-heading text-sm font-bold text-eari-blue-light">{item.step}</span>
+                        <span className="font-heading text-sm font-bold text-slate-400">{item.step}</span>
                       </div>
                       <h3 className="font-heading font-semibold text-foreground text-base mb-2">{item.title}</h3>
                       <p className="text-sm text-muted-foreground font-sans leading-relaxed">{item.desc}</p>

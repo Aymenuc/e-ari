@@ -44,7 +44,7 @@ function FadeUp({ children, className, delay = 0 }: { children: React.ReactNode;
 const FOUNDER = {
   name: 'Dr. Aymen Boudebouz',
   title: 'Founder & CEO',
-  bio: 'Dr. Aymen Boudebouz is the visionary behind E-ARI, driven by a conviction that enterprise AI readiness must be measured with the same rigor we apply to financial audits and cybersecurity assessments. A seasoned researcher with a Ph.D. in Spatial Planning and Urban Governance from the Universities of Porto and Coimbra, Dr. Boudebouz brings years of experience in digital governance, policy-driven innovation, and evaluating deliberative processes in both public and private sectors. His research on community development, e-participation, and the intersection of technology and governance has been published in leading academic venues and presented at international conferences. Recognizing a critical gap — that organizations were investing billions in AI without a standardized, evidence-based method to assess their actual readiness — he founded E-ARI to close it. The platform provides organisations — from mid-market teams to public bodies — with a deterministic, transparent, and board-ready assessment methodology that leaves no room for guesswork. His approach rejects vanity metrics and AI hype in favor of reproducible scoring, clear maturity classifications, and actionable strategic insights that executives can trust when making multi-million dollar AI investment decisions.',
+  bio: 'Aymen holds a Ph.D. in Spatial Planning and Urban Governance from the Universities of Porto and Coimbra, and spent his research career studying how institutions actually adopt technology — e-participation, digital governance, and the gap between policy ambition and operational reality. E-ARI is that research turned into software: he watched organisations invest heavily in AI with no rigorous way to measure whether they were ready for it, and built the deterministic, auditable assessment he believed the market owed them. No vanity metrics, no black box — a score you can defend in front of a board or a regulator.',
   highlights: [
     'Holds a Ph.D. in Spatial Planning and Urban Governance, with extensive research on digital governance and social innovation',
     'Architected the 8-Pillar AI Readiness Framework used across enterprise and government sectors',
@@ -63,25 +63,21 @@ const LEADERSHIP = [
   {
     name: 'Sarah Chen',
     title: 'Head of Assessment Methodology',
-    bio: 'Former enterprise architect at a Big Four consultancy, Sarah designed the scoring pipeline that makes E-ARI deterministic and reproducible. She ensures every assessment question, weight, and adjustment rule is grounded in validated research and industry benchmarks.',
     icon: Target,
   },
   {
     name: 'Marcus Okonkwo',
     title: 'Head of AI & Insights',
-    bio: 'With a background in NLP research and responsible AI deployment, Marcus leads the AI insights engine that generates strategic narratives from assessment data. His team ensures AI-generated content is clearly labeled, grounded in scores, and never alters calculated results.',
     icon: Sparkles,
   },
   {
     name: 'Dr. Elena Vasquez',
     title: 'Head of Governance & Ethics',
-    bio: 'A former policy advisor on AI regulation, Elena ensures E-ARI\'s governance and ethics pillars reflect the latest regulatory requirements. She oversees the privacy-first architecture and ensures all data handling meets enterprise-grade compliance standards.',
     icon: Shield,
   },
   {
     name: 'James Nakamura',
     title: 'Head of Product Engineering',
-    bio: 'James leads the engineering team building E-ARI\'s platform, from the assessment wizard to the results dashboard and PDF reporting. He brings a decade of experience shipping enterprise SaaS products with a focus on reliability, accessibility, and performance.',
     icon: Rocket,
   },
 ]
@@ -146,12 +142,12 @@ export default function TeamPage() {
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center max-w-3xl mx-auto">
-                <Badge variant="outline" className="mb-6 font-mono text-xs border-eari-blue/40 text-eari-blue-light">
+                <Badge variant="outline" className="mb-6 font-mono text-xs border-eari-blue/40 text-slate-400">
                   The People Behind E-ARI
                 </Badge>
                 <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
                   Building the Standard for{' '}
-                  <span className="text-eari-blue-light">AI Readiness</span>
+                  <span className="text-slate-400">AI Readiness</span>
                 </h1>
                 <p className="mt-6 text-lg sm:text-xl text-muted-foreground font-sans leading-relaxed max-w-2xl mx-auto">
                   We are a team of strategists, engineers, and researchers united by one conviction: organizations deserve a rigorous, transparent way to measure their AI readiness — not guesswork.
@@ -166,7 +162,7 @@ export default function TeamPage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center mb-16">
-                <Badge variant="outline" className="font-mono text-xs border-eari-blue/40 text-eari-blue-light mb-4">
+                <Badge variant="outline" className="font-mono text-xs border-eari-blue/40 text-slate-400 mb-4">
                   Leadership
                 </Badge>
                 <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground">
@@ -181,19 +177,19 @@ export default function TeamPage() {
                 <Card className="bg-navy-800 border-border/50 overflow-hidden">
                   {/* Avatar placeholder with gradient */}
                   <div className="relative h-64 bg-navy-800/90 border-b border-white/[0.06] flex items-center justify-center">
-                    <div className="w-28 h-28 rounded-full bg-eari-blue flex items-center justify-center shadow-lg shadow-eari-blue/25">
-                      <span className="font-heading text-4xl font-bold text-white">AB</span>
+                    <div className="w-28 h-28 rounded-full bg-slate-100 flex items-center justify-center shadow-lg shadow-black/40">
+                      <span className="font-heading text-4xl font-bold text-navy-900">AB</span>
                     </div>
                     {/* Decorative elements */}
                     <div className="absolute top-4 right-4">
-                      <Badge className="bg-eari-blue/20 text-eari-blue-light border-eari-blue/30 text-xs font-mono">
+                      <Badge className="bg-eari-blue/20 text-slate-400 border-eari-blue/30 text-xs font-mono">
                         Founder
                       </Badge>
                     </div>
                   </div>
                   <CardContent className="p-6">
                     <h3 className="font-heading text-2xl font-bold text-foreground">{FOUNDER.name}</h3>
-                    <p className="font-heading text-sm font-medium text-eari-blue-light mt-1">{FOUNDER.title}</p>
+                    <p className="font-heading text-sm font-medium text-slate-400 mt-1">{FOUNDER.title}</p>
 
                     {/* Social links */}
                     <div className="flex items-center gap-3 mt-4">
@@ -227,7 +223,7 @@ export default function TeamPage() {
                   {FOUNDER.highlights.map((highlight, i) => (
                     <div key={i} className="flex items-start gap-3">
                       <div className="flex h-6 w-6 items-center justify-center rounded-full bg-eari-blue/15 flex-shrink-0 mt-0.5">
-                        <span className="text-eari-blue-light font-heading text-xs font-bold">{i + 1}</span>
+                        <span className="text-slate-400 font-heading text-xs font-bold">{i + 1}</span>
                       </div>
                       <p className="text-sm text-foreground font-sans leading-relaxed">{highlight}</p>
                     </div>
@@ -270,12 +266,11 @@ export default function TeamPage() {
                       <CardContent className="p-6">
                         <div className="flex items-start gap-4">
                           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-eari-blue/12 border border-eari-blue/20 flex-shrink-0">
-                            <Icon className="h-6 w-6 text-eari-blue-light" />
+                            <Icon className="h-6 w-6 text-slate-400" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <h3 className="font-heading font-semibold text-foreground text-base">{person.name}</h3>
-                            <p className="font-heading text-sm text-eari-blue-light mt-0.5">{person.title}</p>
-                            <p className="mt-3 text-sm text-muted-foreground font-sans leading-relaxed">{person.bio}</p>
+                            <p className="font-heading text-sm text-slate-400 mt-0.5">{person.title}</p>
                           </div>
                         </div>
                       </CardContent>
@@ -309,7 +304,7 @@ export default function TeamPage() {
                     <Card className="bg-navy-800 border-border/50 hover:border-eari-blue/30 transition-colors duration-300 h-full">
                       <CardContent className="p-6">
                         <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-eari-blue/15 mb-4">
-                          <Icon className="h-5 w-5 text-eari-blue-light" />
+                          <Icon className="h-5 w-5 text-slate-400" />
                         </div>
                         <h3 className="font-heading font-semibold text-foreground text-base mb-2">{value.title}</h3>
                         <p className="text-sm text-muted-foreground font-sans leading-relaxed">{value.desc}</p>
