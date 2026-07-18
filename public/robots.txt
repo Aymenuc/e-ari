@@ -1,8 +1,21 @@
 User-agent: *
 Allow: /
+
+# Application surfaces — auth-gated, never useful in search results.
 Disallow: /admin/
 Disallow: /portal/
 Disallow: /api/
 Disallow: /auth/
+Disallow: /assessment
+Disallow: /checkout
+Disallow: /pulse
+Disallow: /results/
+Disallow: /integrations
+Disallow: /compliance
+Disallow: /branding
+Disallow: /maintenance
+Disallow: /train/
+Disallow: /vendor-response/
+Disallow: /team/accept
 
 Sitemap: https://www.e-ari.com/sitemap.xml
