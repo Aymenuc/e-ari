@@ -114,7 +114,7 @@ function tierLabel(tier: string): string {
 function tierBadgeClasses(tier: string): string {
   switch (tier) {
     case 'professional':
-      return 'bg-eari-blue/20 text-eari-blue-light border-eari-blue/30';
+      return 'bg-eari-blue/20 text-slate-300 border-eari-blue/30';
     case 'growth':
       return 'bg-violet-500/20 text-violet-400 border-violet-500/30';
     case 'autopilot':
@@ -619,7 +619,7 @@ export default function PortalPage() {
                               <div className="flex items-center justify-end gap-2">
                                 {assessment.status === 'completed' && (
                                   <Link href={`/results/${assessment.id}`}>
-                                    <Button variant="ghost" size="sm" className="font-sans text-eari-blue-light hover:text-eari-blue h-8 min-h-[44px] px-2">
+                                    <Button variant="ghost" size="sm" className="font-sans text-slate-300 hover:text-eari-blue h-8 min-h-[44px] px-2">
                                       <Eye className="h-4 w-4 mr-1" />
                                       <span className="hidden sm:inline">View Results</span>
                                     </Button>
@@ -627,7 +627,7 @@ export default function PortalPage() {
                                 )}
                                 {assessment.status === 'draft' && (
                                   <Link href="/assessment">
-                                    <Button variant="ghost" size="sm" className="font-sans text-eari-blue-light hover:text-eari-blue h-8 min-h-[44px] px-2">
+                                    <Button variant="ghost" size="sm" className="font-sans text-slate-300 hover:text-eari-blue h-8 min-h-[44px] px-2">
                                       <PlayCircle className="h-4 w-4 mr-1" />
                                       <span className="hidden sm:inline">Continue</span>
                                     </Button>
@@ -747,7 +747,7 @@ export default function PortalPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-eari-blue/20 text-eari-blue-light font-heading font-bold text-sm">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-eari-blue/20 text-slate-300 font-heading font-bold text-sm">
                     {userName[0]?.toUpperCase() || 'U'}
                   </div>
                   <div>
@@ -874,19 +874,19 @@ export default function PortalPage() {
                     {userTier === 'free' && (
                       <>
                         <li className="flex items-center gap-2 text-sm text-foreground font-sans">
-                          <ChevronRight className="h-3 w-3 text-eari-blue-light" />
+                          <ChevronRight className="h-3 w-3 text-slate-300" />
                           Up to {freeTierLimit} assessments
                         </li>
                         <li className="flex items-center gap-2 text-sm text-foreground font-sans">
-                          <ChevronRight className="h-3 w-3 text-eari-blue-light" />
+                          <ChevronRight className="h-3 w-3 text-slate-300" />
                           Scoring &amp; maturity band
                         </li>
                         <li className="flex items-center gap-2 text-sm text-foreground font-sans">
-                          <ChevronRight className="h-3 w-3 text-eari-blue-light" />
+                          <ChevronRight className="h-3 w-3 text-slate-300" />
                           1 AI Insight summary
                         </li>
                         <li className="flex items-center gap-2 text-sm text-foreground font-sans">
-                          <ChevronRight className="h-3 w-3 text-eari-blue-light" />
+                          <ChevronRight className="h-3 w-3 text-slate-300" />
                           AI Literacy assessment
                         </li>
                       </>
@@ -894,19 +894,19 @@ export default function PortalPage() {
                     {userTier === 'professional' && (
                       <>
                         <li className="flex items-center gap-2 text-sm text-foreground font-sans">
-                          <ChevronRight className="h-3 w-3 text-eari-blue-light" />
+                          <ChevronRight className="h-3 w-3 text-slate-300" />
                           Unlimited assessments
                         </li>
                         <li className="flex items-center gap-2 text-sm text-foreground font-sans">
-                          <ChevronRight className="h-3 w-3 text-eari-blue-light" />
+                          <ChevronRight className="h-3 w-3 text-slate-300" />
                           AI-powered insights
                         </li>
                         <li className="flex items-center gap-2 text-sm text-foreground font-sans">
-                          <ChevronRight className="h-3 w-3 text-eari-blue-light" />
+                          <ChevronRight className="h-3 w-3 text-slate-300" />
                           Priority email support
                         </li>
                         <li className="flex items-center gap-2 text-sm text-foreground font-sans">
-                          <ChevronRight className="h-3 w-3 text-eari-blue-light" />
+                          <ChevronRight className="h-3 w-3 text-slate-300" />
                           Benchmark comparisons
                         </li>
                       </>
@@ -914,19 +914,19 @@ export default function PortalPage() {
                     {userTier === 'enterprise' && (
                       <>
                         <li className="flex items-center gap-2 text-sm text-foreground font-sans">
-                          <ChevronRight className="h-3 w-3 text-eari-blue-light" />
+                          <ChevronRight className="h-3 w-3 text-slate-300" />
                           Everything in Professional
                         </li>
                         <li className="flex items-center gap-2 text-sm text-foreground font-sans">
-                          <ChevronRight className="h-3 w-3 text-eari-blue-light" />
+                          <ChevronRight className="h-3 w-3 text-slate-300" />
                           SSO &amp; custom branding
                         </li>
                         <li className="flex items-center gap-2 text-sm text-foreground font-sans">
-                          <ChevronRight className="h-3 w-3 text-eari-blue-light" />
+                          <ChevronRight className="h-3 w-3 text-slate-300" />
                           Dedicated account manager
                         </li>
                         <li className="flex items-center gap-2 text-sm text-foreground font-sans">
-                          <ChevronRight className="h-3 w-3 text-eari-blue-light" />
+                          <ChevronRight className="h-3 w-3 text-slate-300" />
                           SLA guarantees
                         </li>
                       </>
@@ -971,7 +971,7 @@ export default function PortalPage() {
                     className="flex items-center gap-3 p-3 rounded-lg hover:bg-navy-700 transition-colors min-h-[44px]"
                   >
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-eari-blue/20">
-                      <Mail className="h-4 w-4 text-eari-blue-light" />
+                      <Mail className="h-4 w-4 text-slate-300" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-foreground font-sans">Email Support</p>

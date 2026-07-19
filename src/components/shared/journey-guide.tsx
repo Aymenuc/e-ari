@@ -125,7 +125,7 @@ export function JourneyGuide() {
                 key={st.id}
                 className={`relative rounded-lg border p-3.5 transition-colors ${
                   isNext
-                    ? 'border-eari-blue/50 bg-eari-blue/10'
+                    ? 'border-slate-300/40 bg-white/[0.05]'
                     : done
                       ? 'border-emerald-500/25 bg-emerald-500/[0.04]'
                       : 'border-border/40 opacity-55'
@@ -135,12 +135,12 @@ export function JourneyGuide() {
                   <span className="font-mono text-[10px] text-muted-foreground">{i + 1}</span>
                   {done
                     ? <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                    : <Icon className={`h-4 w-4 ${isNext ? 'text-eari-blue-light' : 'text-muted-foreground'}`} />}
+                    : <Icon className={`h-4 w-4 ${isNext ? 'text-slate-200' : 'text-muted-foreground'}`} />}
                   <span className={`font-heading text-sm font-semibold ${done ? 'text-emerald-300' : isNext ? 'text-foreground' : 'text-slate-400'}`}>
                     {st.title}
                   </span>
                   {isNext && (
-                    <span className="ml-auto font-mono text-[9px] uppercase tracking-wider text-eari-blue-light">you are here</span>
+                    <span className="ml-auto font-mono text-[9px] uppercase tracking-wider text-slate-200">you are here</span>
                   )}
                 </div>
                 <p className="font-sans text-[11.5px] leading-snug text-muted-foreground">
@@ -169,7 +169,7 @@ export function JourneyGuide() {
         <div className="mt-4 pt-3 border-t border-border/30 flex flex-wrap items-center gap-x-5 gap-y-1.5">
           <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground/70">Tools</span>
           {TOOLS.map((t) => (
-            <Link key={t.href} href={t.href} className="inline-flex items-center gap-1.5 font-sans text-xs text-muted-foreground hover:text-eari-blue-light transition-colors">
+            <Link key={t.href} href={t.href} className="inline-flex items-center gap-1.5 font-sans text-xs text-muted-foreground hover:text-slate-200 transition-colors">
               <t.icon className="h-3 w-3" />{t.label}
             </Link>
           ))}

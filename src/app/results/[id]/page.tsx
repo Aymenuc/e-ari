@@ -142,8 +142,8 @@ const TIER_CONFIG: Record<UserTier, { label: string; color: string; bgColor: str
   },
   professional: {
     label: 'Professional',
-    color: 'text-eari-blue-light',
-    bgColor: 'bg-eari-blue/15',
+    color: 'text-slate-300',
+    bgColor: 'bg-white/[0.04] border border-white/[0.07]',
     borderColor: 'border-eari-blue/30',
     icon: Award,
   },
@@ -197,6 +197,15 @@ function FadeUp({ children, className, delay = 0 }: { children: React.ReactNode;
       {children}
     </motion.div>
   )
+}
+
+
+/* Score → colour on one cool ramp (matches the methodology radar):
+   40 → muted steel, 85 → bright cyan. Replaces the eight per-pillar hues. */
+function scoreRampColor(score: number): string {
+  const t = Math.max(0, Math.min(1, (score - 40) / 45))
+  const ch = (a: number, b: number) => Math.round(a + (b - a) * t)
+  return `rgb(${ch(0x3a, 0x38)}, ${ch(0x52, 0xbd)}, ${ch(0x74, 0xf8)})`
 }
 
 /* ─── Maturity helpers ─────────────────────────────────────────────────── */
@@ -400,7 +409,7 @@ function LockedSectionCard({
                 <p className="text-sm text-muted-foreground font-sans max-w-md leading-relaxed">
                   {description}
                 </p>
-                <p className="mt-2 text-xs font-mono uppercase tracking-wider text-eari-blue-light/60">
+                <p className="mt-2 text-xs font-mono uppercase tracking-wider text-slate-300/60">
                   What you&apos;re missing — unlock to reveal full insights
                 </p>
               </div>
@@ -439,9 +448,8 @@ function PillarCard({
   const [isOpen, setIsOpen] = useState(false)
   const pillarDef = PILLARS.find(p => p.id === pillar.pillarId)
   const Icon = pillarDef ? ICON_MAP[pillarDef.icon] || Target : Target
-  const pillarColor = pillarDef?.color ?? '#8b949e'
-  // Lighter version for gradient end
-  const pillarColorLight = pillarColor === '#2563eb' ? '#06b6d4' : pillarColor === '#ef4444' ? '#f59e0b' : `${pillarColor}99`
+  const pillarColor = scoreRampColor(pillar.normalizedScore)
+  const pillarColorLight = `${pillarColor.slice(0, -1)}, 0.65)`.replace('rgb', 'rgba')
 
   return (
     <FadeUp delay={index * 0.06}>
@@ -544,7 +552,7 @@ function PillarCard({
                   })}
                   {(evidenceClauseCount ?? 0) > 0 && complianceSystemId ? (
                     <div className="mt-4 rounded-lg border border-eari-blue/25 bg-eari-blue/5 p-3 space-y-2">
-                      <p className="text-[10px] font-heading uppercase tracking-wide text-eari-blue-light">
+                      <p className="text-[10px] font-heading uppercase tracking-wide text-slate-300">
                         Compliance evidence vault
                       </p>
                       <div className="flex flex-wrap items-center gap-2">
@@ -558,7 +566,7 @@ function PillarCard({
                               ? `/portal/use-cases/systems/${complianceSystemId}/evidence`
                               : '#')
                           }
-                          className="text-[11px] text-eari-blue-light hover:text-eari-blue font-heading underline underline-offset-2"
+                          className="text-[11px] text-slate-300 hover:text-eari-blue font-heading underline underline-offset-2"
                         >
                           View backing documents
                         </Link>
@@ -1137,8 +1145,8 @@ export default function ResultsPage() {
     {
       label: '6-12 Months',
       subtitle: 'Scaling & Optimization',
-      color: 'text-eari-blue-light',
-      bgColor: 'bg-eari-blue/15',
+      color: 'text-slate-300',
+      bgColor: 'bg-white/[0.04] border border-white/[0.07]',
       borderColor: 'border-eari-blue/30',
       items: scoring.pillarScores
         .filter(p => p.normalizedScore >= 65)
@@ -1235,7 +1243,7 @@ export default function ResultsPage() {
                             {scoring.maturityLabel}
                           </Badge>
                           {assessment?.sector && assessment.sector !== 'general' && (
-                            <Badge variant="outline" className="text-sm px-3 py-1 font-heading border-eari-blue/30 text-eari-blue-light">
+                            <Badge variant="outline" className="text-sm px-3 py-1 font-heading border-eari-blue/30 text-slate-300">
                               <Briefcase className="h-3.5 w-3.5 mr-1.5" />
                               {getSectorById(assessment.sector)?.name || assessment.sector}
                             </Badge>
@@ -1249,7 +1257,7 @@ export default function ResultsPage() {
                             Scoring v{scoring.scoringVersion}
                           </span>
                           {scoring.sectorWeighting && typeof scoring.baselineOverallScore === 'number' && Math.abs(scoring.overallScore - scoring.baselineOverallScore) >= 1 && (
-                            <Badge variant="outline" className="font-mono text-[10px] border-eari-blue/30 text-eari-blue-light/90" title={scoring.sectorWeighting.rationale}>
+                            <Badge variant="outline" className="font-mono text-[10px] border-eari-blue/30 text-slate-300" title={scoring.sectorWeighting.rationale}>
                               {Math.round(scoring.baselineOverallScore)}% baseline → {Math.round(scoring.overallScore)}% {scoring.sectorWeighting.sector}-weighted
                             </Badge>
                           )}
@@ -1275,7 +1283,7 @@ export default function ResultsPage() {
                           <Link href={`/portal/use-cases/systems/new?assessmentId=${assessment.id}`}>
                             <Button
                               variant="outline"
-                              className="border-eari-blue/40 text-eari-blue-light hover:bg-eari-blue/10 font-heading font-semibold h-10 px-5 text-sm"
+                              className="border-eari-blue/40 text-slate-300 hover:bg-eari-blue/10 font-heading font-semibold h-10 px-5 text-sm"
                             >
                               <Scale className="mr-2 h-4 w-4" />
                               Move from readiness to compliance
@@ -1370,8 +1378,8 @@ export default function ResultsPage() {
                 <Card className="relative bg-navy-800 border-0 rounded-xl">
                   <CardContent className="p-4 sm:p-5">
                     <div className="flex flex-col sm:flex-row items-center gap-4">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-eari-blue/15 flex-shrink-0">
-                        <Sparkles className="h-5 w-5 text-eari-blue-light" />
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.07] flex-shrink-0">
+                        <Sparkles className="h-5 w-5 text-slate-300" />
                       </div>
                       <div className="flex-1 text-center sm:text-left">
                         <p className="font-heading font-semibold text-foreground text-sm">
@@ -1398,7 +1406,7 @@ export default function ResultsPage() {
           {/* ─── 2. MATURITY BAND — Aurora Card ──────────────────────────── */}
           <FadeUp delay={0.1}>
             <div className="aurora-card rounded-2xl p-[1px]">
-              <Card className="bg-navy-800/90 backdrop-blur-sm border-0 rounded-2xl hover-lift">
+              <Card className="bg-navy-800/40 border-0 rounded-2xl">
                 <CardContent className="p-6">
                   <div className="flex flex-col sm:flex-row items-center gap-5">
                     <div
@@ -1412,7 +1420,7 @@ export default function ResultsPage() {
                     <div className="text-center sm:text-left flex-1">
                       <div className="flex items-center gap-2 justify-center sm:justify-start">
                         <h2 className="font-heading text-2xl font-bold text-foreground tracking-tight">
-                          Maturity Classification: <span className="font-semibold text-[#d4b878]">{scoring.maturityLabel}</span>
+                          Maturity Classification: <span className="font-semibold text-slate-100">{scoring.maturityLabel}</span>
                         </h2>
                         <Badge variant="outline" className="font-mono text-[10px] border-border text-muted-foreground">
                           {scoring.maturityBand === 'laggard' && '0-25'}
@@ -1562,11 +1570,11 @@ export default function ResultsPage() {
           {isPro ? (
             <FadeUp>
               <div className="aurora-card rounded-2xl p-[1px]">
-                <Card className="bg-navy-800/90 backdrop-blur-sm border-0 rounded-2xl hover-lift">
+                <Card className="bg-navy-800/40 border-0 rounded-2xl">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-eari-blue/15">
-                        <Landmark className="h-5 w-5 text-eari-blue-light" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.07]">
+                        <Landmark className="h-5 w-5 text-slate-300" />
                       </div>
                       <div>
                         <CardTitle className="font-heading text-xl font-bold tracking-tight text-foreground">
@@ -1576,7 +1584,7 @@ export default function ResultsPage() {
                           Gap analysis against EU AI Act, NIST AI RMF, and ISO 42001
                         </CardDescription>
                       </div>
-                      <Badge variant="outline" className="ml-auto text-[10px] font-mono border-eari-blue/30 text-eari-blue-light">
+                      <Badge variant="outline" className="ml-auto text-[10px] font-mono border-eari-blue/30 text-slate-300">
                         Professional
                       </Badge>
                     </div>
@@ -1636,7 +1644,7 @@ export default function ResultsPage() {
                             {regGaps.length > 0 && (
                               <Collapsible className="mt-3">
                                 <CollapsibleTrigger asChild>
-                                  <button className="flex items-center gap-1 text-[10px] text-eari-blue-light hover:text-eari-blue font-heading transition-colors w-full">
+                                  <button className="flex items-center gap-1 text-[10px] text-slate-300 hover:text-eari-blue font-heading transition-colors w-full">
                                     <ChevronRight className="h-3 w-3" />
                                     View {regGaps.length} gap{regGaps.length > 1 ? 's' : ''}
                                   </button>
@@ -1752,11 +1760,11 @@ export default function ResultsPage() {
           {/* ─── READINESS OVER TIME (Feature 1) ──────────────────────── */}
           <FadeUp delay={0.08}>
             <div className="aurora-card rounded-2xl p-[1px]">
-              <Card className="bg-navy-800/90 backdrop-blur-sm border-0 rounded-2xl hover-lift">
+              <Card className="bg-navy-800/40 border-0 rounded-2xl">
                 <CardHeader>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-eari-blue/15">
-                      <Activity className="h-5 w-5 text-eari-blue-light" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.07]">
+                      <Activity className="h-5 w-5 text-slate-300" />
                     </div>
                     <div>
                       <CardTitle className="font-heading text-xl font-bold tracking-tight text-foreground">
@@ -1771,12 +1779,12 @@ export default function ResultsPage() {
                 <CardContent>
                   {historyLoading ? (
                     <div className="h-[300px] flex items-center justify-center">
-                      <Loader2 className="h-6 w-6 animate-spin text-eari-blue-light" />
+                      <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
                     </div>
                   ) : assessmentHistory.length <= 1 ? (
                     <div className="flex flex-col items-center justify-center py-12 gap-4">
                       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-eari-blue/10 border border-eari-blue/20">
-                        <TrendingUp className="h-8 w-8 text-eari-blue-light/50" />
+                        <TrendingUp className="h-8 w-8 text-slate-300/50" />
                       </div>
                       <div className="text-center">
                         <p className="font-heading font-semibold text-foreground text-lg mb-2">Unlock Trend Tracking</p>
@@ -1790,7 +1798,7 @@ export default function ResultsPage() {
                         onClick={handleRerun}
                         disabled={rerunning}
                         variant="outline"
-                        className="border-eari-blue/30 text-eari-blue-light hover:bg-eari-blue/10 font-heading text-sm mt-2"
+                        className="border-eari-blue/30 text-slate-300 hover:bg-eari-blue/10 font-heading text-sm mt-2"
                       >
                         {rerunning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RotateCcw className="mr-2 h-4 w-4" />}
                         Re-run Assessment
@@ -1855,13 +1863,13 @@ export default function ResultsPage() {
                                 }}
                               />
                             )}
-                            {PILLARS.map(pillar => (
+                            {PILLARS.map((pillar, pi) => (
                               <Line
                                 key={pillar.id}
                                 type="monotone"
                                 dataKey={pillar.id}
                                 name={pillar.shortName}
-                                stroke={pillar.color}
+                                stroke={scoreRampColor(40 + (pi / (PILLARS.length - 1)) * 45)}
                                 strokeWidth={1.5}
                                 strokeDasharray="4 2"
                                 dot={false}
@@ -1906,7 +1914,7 @@ export default function ResultsPage() {
                                 return (
                                   <div key={change.pillarId} className="p-2.5 rounded-lg bg-navy-700/40 border border-border/20">
                                     <div className="flex items-center gap-1.5 mb-1">
-                                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: pillarDef?.color ?? '#8b949e' }} />
+                                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'rgba(148,163,184,0.55)' }} />
                                       <span className="font-heading text-xs text-foreground">{pillarDef?.shortName}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -1942,11 +1950,11 @@ export default function ResultsPage() {
           {isPro ? (
             <FadeUp>
               <div className="aurora-card rounded-2xl p-[1px]">
-                <Card className="bg-navy-800/90 backdrop-blur-sm border-0 rounded-2xl hover-lift">
+                <Card className="bg-navy-800/40 border-0 rounded-2xl">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-eari-blue/15">
-                        <Activity className="h-5 w-5 text-eari-blue-light" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.07]">
+                        <Activity className="h-5 w-5 text-slate-300" />
                       </div>
                       <div>
                         <CardTitle className="font-heading text-xl font-bold tracking-tight text-foreground">
@@ -1956,7 +1964,7 @@ export default function ResultsPage() {
                           Drift detection, risk tracking, and monitoring schedule
                         </CardDescription>
                       </div>
-                      <Badge variant="outline" className="ml-auto text-[10px] font-mono border-eari-blue/30 text-eari-blue-light">
+                      <Badge variant="outline" className="ml-auto text-[10px] font-mono border-eari-blue/30 text-slate-300">
                         Professional
                       </Badge>
                     </div>
@@ -2012,10 +2020,10 @@ export default function ResultsPage() {
                           {monitoringSchedule && (
                             <div className="p-4 rounded-lg bg-navy-700/40 border border-border/20 text-center">
                               <div className="flex items-center justify-center gap-2 mb-2">
-                                <Clock className="h-5 w-5 text-eari-blue-light" />
+                                <Clock className="h-5 w-5 text-slate-300" />
                                 <span className="font-heading text-sm font-semibold text-foreground">Schedule</span>
                               </div>
-                              <p className="font-heading text-lg font-bold text-eari-blue-light capitalize">
+                              <p className="font-heading text-lg font-bold text-slate-300 capitalize">
                                 {monitoringSchedule.frequency}
                               </p>
                               <p className="text-[10px] text-muted-foreground font-sans mt-1">
@@ -2039,7 +2047,7 @@ export default function ResultsPage() {
                               const DirectionIcon = pd.direction === 'improving' ? TrendingUp : pd.direction === 'regressing' ? TrendingDown : Minus
                               return (
                                 <div key={pd.pillarId} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border ${chipColor}`}>
-                                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: pillarDef?.color ?? '#8b949e' }} />
+                                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'rgba(148,163,184,0.55)' }} />
                                   <span className="font-heading text-[11px] font-semibold">{pillarDef?.shortName ?? pd.pillarName}</span>
                                   <DirectionIcon className="h-3 w-3" />
                                   <span className="font-mono text-[10px]">{pd.drift > 0 ? '+' : ''}{pd.drift.toFixed(1)}</span>
@@ -2053,11 +2061,11 @@ export default function ResultsPage() {
                         {monitoringAlerts && monitoringAlerts.length > 0 && (
                           <div>
                             <div className="flex items-center gap-2 mb-3">
-                              <Bell className="h-4 w-4 text-eari-blue-light" />
+                              <Bell className="h-4 w-4 text-slate-300" />
                               <h4 className="font-heading text-sm font-semibold text-foreground">
                                 Active Alerts
                               </h4>
-                              <Badge variant="outline" className="text-[9px] font-mono border-eari-blue/30 text-eari-blue-light">
+                              <Badge variant="outline" className="text-[9px] font-mono border-eari-blue/30 text-slate-300">
                                 {monitoringAlerts.length}
                               </Badge>
                             </div>
@@ -2074,14 +2082,14 @@ export default function ResultsPage() {
                                     <Badge variant="outline" className={`text-[8px] font-mono px-1 py-0 ${
                                       alert.severity === 'critical' ? 'border-red-500/30 text-red-400'
                                         : alert.severity === 'warning' ? 'border-amber-500/30 text-amber-400'
-                                          : 'border-eari-blue/30 text-eari-blue-light'
+                                          : 'border-eari-blue/30 text-slate-300'
                                     }`}>
                                       {alert.severity}
                                     </Badge>
                                     <span className="font-heading text-xs font-semibold text-foreground">{alert.title}</span>
                                   </div>
                                   <p className="text-[10px] text-muted-foreground font-sans leading-snug">{alert.description}</p>
-                                  <p className="text-[9px] text-eari-blue-light/70 font-sans mt-1">→ {alert.recommendation}</p>
+                                  <p className="text-[9px] text-slate-300/70 font-sans mt-1">→ {alert.recommendation}</p>
                                 </div>
                               ))}
                             </div>
@@ -2099,7 +2107,7 @@ export default function ResultsPage() {
                       /* No drift analysis available - only 1 assessment */
                       <div className="flex flex-col items-center justify-center py-8 gap-4">
                         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-eari-blue/10 border border-eari-blue/20">
-                          <Activity className="h-8 w-8 text-eari-blue-light/50" />
+                          <Activity className="h-8 w-8 text-slate-300/50" />
                         </div>
                         <div className="text-center">
                           <p className="font-heading font-semibold text-foreground text-lg mb-2">Unlock Drift Tracking</p>
@@ -2111,7 +2119,7 @@ export default function ResultsPage() {
                           onClick={handleRerun}
                           disabled={rerunning}
                           variant="outline"
-                          className="border-eari-blue/30 text-eari-blue-light hover:bg-eari-blue/10 font-heading text-sm mt-2"
+                          className="border-eari-blue/30 text-slate-300 hover:bg-eari-blue/10 font-heading text-sm mt-2"
                         >
                           {rerunning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RotateCcw className="mr-2 h-4 w-4" />}
                           Re-run Assessment
@@ -2145,11 +2153,11 @@ export default function ResultsPage() {
           {/* ─── AI PULSE: CONTINUOUS MONITORING ──────────────────────────────── */}
           <FadeUp delay={0.08}>
             <div className="aurora-card rounded-2xl p-[1px]">
-              <Card className="bg-navy-800/90 backdrop-blur-sm border-0 rounded-2xl hover-lift">
+              <Card className="bg-navy-800/40 border-0 rounded-2xl">
                 <CardHeader>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-eari-blue/15 relative">
-                      <Activity className="h-5 w-5 text-eari-blue-light" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.07] relative">
+                      <Activity className="h-5 w-5 text-slate-300" />
                       {/* Pulse dot */}
                       <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-eari-blue-light ring-2 ring-eari-blue/30" />
@@ -2181,14 +2189,14 @@ export default function ResultsPage() {
                 <CardContent>
                   {pulseLoading ? (
                     <div className="flex items-center justify-center py-8">
-                      <Loader2 className="h-6 w-6 animate-spin text-eari-blue-light" />
+                      <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
                     </div>
                   ) : pulseData ? (
                     <div className="space-y-4">
                       {/* Pulse Score Summary */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="p-4 rounded-xl bg-navy-700/40 border border-border/20 text-center">
-                          <p className="font-heading text-3xl font-semibold tabular-nums text-eari-blue-light">{Math.round(pulseData.overallScore)}%</p>
+                          <p className="font-heading text-3xl font-semibold tabular-nums text-slate-300">{Math.round(pulseData.overallScore)}%</p>
                           <p className="text-xs text-muted-foreground font-sans mt-1">Pulse Score</p>
                           <p className="font-mono text-[10px] text-muted-foreground mt-0.5">{pulseData.month}</p>
                         </div>
@@ -2217,7 +2225,7 @@ export default function ResultsPage() {
                       {pulseData.scoreChanges.length > 0 && (
                         <div>
                           <h4 className="font-heading text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                            <RefreshCw className="h-4 w-4 text-eari-blue-light" />
+                            <RefreshCw className="h-4 w-4 text-slate-300" />
                             Pillar Score Changes
                           </h4>
                           <div className="flex flex-wrap gap-2">
@@ -2231,7 +2239,7 @@ export default function ResultsPage() {
                               const DirIcon = sc.delta > 0 ? TrendingUp : sc.delta < 0 ? TrendingDown : Minus
                               return (
                                 <div key={sc.pillarId} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border ${chipColor}`}>
-                                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: pillarDef?.color ?? '#8b949e' }} />
+                                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'rgba(148,163,184,0.55)' }} />
                                   <span className="font-heading text-[11px] font-semibold">{pillarDef?.shortName ?? sc.pillarName}</span>
                                   <DirIcon className="h-3 w-3" />
                                   <span className="font-mono text-[10px]">
@@ -2286,7 +2294,7 @@ export default function ResultsPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="p-4 rounded-xl bg-navy-700/40 border border-border/20">
                           <div className="flex items-center gap-2 mb-2">
-                            <RefreshCw className="h-4 w-4 text-eari-blue-light" />
+                            <RefreshCw className="h-4 w-4 text-slate-300" />
                             <span className="font-heading text-sm font-semibold text-foreground">Monthly Pulse Checks</span>
                           </div>
                           <p className="text-xs text-muted-foreground font-sans leading-relaxed">
@@ -2332,7 +2340,7 @@ export default function ResultsPage() {
                           </p>
                         </div>
                         <Link href="/pulse">
-                          <Button variant="outline" size="sm" className="border-eari-blue/30 text-eari-blue-light hover:bg-eari-blue/10 font-heading text-xs h-8">
+                          <Button variant="outline" size="sm" className="border-eari-blue/30 text-slate-300 hover:bg-eari-blue/10 font-heading text-xs h-8">
                             View Full Pulse
                             <ChevronRight className="ml-1 h-3 w-3" />
                           </Button>
@@ -2345,7 +2353,7 @@ export default function ResultsPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="p-4 rounded-xl bg-navy-700/40 border border-border/20">
                           <div className="flex items-center gap-2 mb-2">
-                            <RefreshCw className="h-4 w-4 text-eari-blue-light" />
+                            <RefreshCw className="h-4 w-4 text-slate-300" />
                             <span className="font-heading text-sm font-semibold text-foreground">Monthly Pulse Checks</span>
                           </div>
                           <p className="text-xs text-muted-foreground font-sans leading-relaxed">
@@ -2372,8 +2380,8 @@ export default function ResultsPage() {
                         </div>
                       </div>
                       <div className="p-4 rounded-lg bg-navy-700/50 border border-eari-blue/20 flex items-center gap-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-eari-blue/15">
-                          <Activity className="h-5 w-5 text-eari-blue-light" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.07]">
+                          <Activity className="h-5 w-5 text-slate-300" />
                         </div>
                         <div className="flex-1">
                           <p className="font-heading text-sm font-semibold text-foreground">Start tracking your readiness over time</p>
@@ -2382,7 +2390,7 @@ export default function ResultsPage() {
                           </p>
                         </div>
                         <Link href="/pulse">
-                          <Button variant="outline" size="sm" className="border-eari-blue/30 text-eari-blue-light hover:bg-eari-blue/10 font-heading text-xs h-8">
+                          <Button variant="outline" size="sm" className="border-eari-blue/30 text-slate-300 hover:bg-eari-blue/10 font-heading text-xs h-8">
                             Run First Pulse
                             <ChevronRight className="ml-1 h-3 w-3" />
                           </Button>
@@ -2399,7 +2407,7 @@ export default function ResultsPage() {
           {/* ─── 4. RADAR CHART — Holographic Display ──────────────────── */}
           <FadeUp>
             <div className="aurora-card rounded-2xl p-[1px]">
-              <Card className="bg-navy-800/90 backdrop-blur-sm border-0 rounded-2xl hover-lift">
+              <Card className="bg-navy-800/40 border-0 rounded-2xl">
                 <CardHeader>
                   <CardTitle className="font-heading text-2xl font-bold tracking-tight text-foreground">
                     Readiness Radar
@@ -2522,7 +2530,7 @@ export default function ResultsPage() {
                     variant="outline"
                     className={`text-[10px] font-mono ${
                       insights.isAIGenerated
-                        ? 'border-eari-blue/40 text-eari-blue-light'
+                        ? 'border-eari-blue/40 text-slate-300'
                         : 'border-border text-muted-foreground'
                     }`}
                   >
@@ -2551,7 +2559,7 @@ export default function ResultsPage() {
                       <Card className="bg-navy-800 border-eari-blue/20 ring-1 ring-eari-blue/10 hover-lift">
                         <CardContent className="p-6">
                           <div className="flex items-center gap-2 mb-3">
-                            <Info className="h-4 w-4 text-eari-blue-light" />
+                            <Info className="h-4 w-4 text-slate-300" />
                             <h3 className="font-heading font-semibold text-foreground text-lg tracking-tight">
                               Executive Summary
                             </h3>
@@ -2674,7 +2682,7 @@ export default function ResultsPage() {
                           <ol className="space-y-3">
                             {insights.nextSteps.map((step, i) => (
                               <li key={i} className="flex items-start gap-3">
-                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-eari-blue/15 text-eari-blue-light font-heading text-xs font-semibold flex-shrink-0 mt-0.5">
+                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/[0.04] border border-white/[0.07] text-slate-300 font-heading text-xs font-semibold flex-shrink-0 mt-0.5">
                                   {i + 1}
                                 </span>
                                 <span className="text-sm text-foreground font-sans leading-relaxed">
@@ -2693,7 +2701,7 @@ export default function ResultsPage() {
                         <Card className="bg-navy-800 border-border/50 hover-lift">
                           <CardContent className="p-6">
                             <div className="flex items-center gap-2 mb-4">
-                              <Brain className="h-4 w-4 text-eari-blue-light" />
+                              <Brain className="h-4 w-4 text-slate-300" />
                               <h3 className="font-heading font-semibold text-foreground tracking-tight">
                                 Pillar Drilldown
                               </h3>
@@ -2766,7 +2774,7 @@ export default function ResultsPage() {
                           onClick={() => fetchInsights()}
                           variant="outline"
                           size="sm"
-                          className="border-eari-blue/30 text-eari-blue-light hover:bg-eari-blue/10 font-heading text-xs mt-2"
+                          className="border-eari-blue/30 text-slate-300 hover:bg-eari-blue/10 font-heading text-xs mt-2"
                         >
                           <RefreshCw className="mr-1.5 h-3.5 w-3.5" aria-hidden />
                           Retry Loading Insights
@@ -2789,11 +2797,11 @@ export default function ResultsPage() {
                     <Card className="bg-navy-800 border-eari-blue/15 ring-1 ring-eari-blue/5 hover-lift">
                       <CardContent className="p-6">
                         <div className="flex items-center gap-2 mb-4">
-                          <Brain className="h-4 w-4 text-eari-blue-light" aria-hidden />
+                          <Brain className="h-4 w-4 text-slate-300" aria-hidden />
                           <h3 className="font-heading font-semibold text-foreground tracking-tight">
                             AI Insight Summary
                           </h3>
-                          <Badge variant="outline" className="ml-auto text-[10px] font-mono border-eari-blue/30 text-eari-blue-light">
+                          <Badge variant="outline" className="ml-auto text-[10px] font-mono border-eari-blue/30 text-slate-300">
                             1 of 5 insights included
                           </Badge>
                         </div>
@@ -2921,7 +2929,7 @@ export default function ResultsPage() {
                 <div className="mb-6">
                   <div className="mb-2 flex items-center gap-3">
                     <span aria-hidden className="h-px w-6 bg-eari-blue/60" />
-                    <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-eari-blue-light/90">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-300">
                       Structural Patterns
                     </span>
                   </div>
@@ -2939,7 +2947,7 @@ export default function ResultsPage() {
                   const sevColor: Record<PatternSeverity, { border: string; bg: string; text: string; icon: string }> = {
                     critical: { border: 'border-red-500/35', bg: 'bg-red-500/12', text: 'text-red-400', icon: 'text-red-400' },
                     high:     { border: 'border-amber-500/35', bg: 'bg-amber-500/12', text: 'text-amber-400', icon: 'text-amber-400' },
-                    medium:   { border: 'border-eari-blue/35', bg: 'bg-eari-blue/12', text: 'text-eari-blue-light', icon: 'text-eari-blue-light' },
+                    medium:   { border: 'border-eari-blue/35', bg: 'bg-white/[0.04] border border-white/[0.07]', text: 'text-slate-300', icon: 'text-slate-300' },
                     low:      { border: 'border-slate-500/30', bg: 'bg-slate-500/10', text: 'text-slate-300', icon: 'text-slate-400' },
                   }
                   const c = sevColor[finding.severity]
@@ -3154,11 +3162,11 @@ export default function ResultsPage() {
               <Card className="bg-navy-800 border-border/50 hover-lift">
                 <CardHeader>
                   <div className="flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-eari-blue-light" />
+                    <Clock className="h-5 w-5 text-slate-300" />
                     <CardTitle className="font-heading text-lg text-foreground">
                       Historical Comparison
                     </CardTitle>
-                    <Badge variant="outline" className="ml-auto text-[10px] font-mono border-eari-blue/30 text-eari-blue-light">
+                    <Badge variant="outline" className="ml-auto text-[10px] font-mono border-eari-blue/30 text-slate-300">
                       Professional
                     </Badge>
                   </div>
@@ -3228,11 +3236,11 @@ export default function ResultsPage() {
               <Card className="bg-navy-800 border-border/50 hover-lift">
                 <CardHeader>
                   <div className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-eari-blue-light" />
+                    <BarChart3 className="h-5 w-5 text-slate-300" />
                     <CardTitle className="font-heading text-lg text-foreground">
                       Recommendation Priority Matrix
                     </CardTitle>
-                    <Badge variant="outline" className="ml-auto text-[10px] font-mono border-eari-blue/30 text-eari-blue-light">
+                    <Badge variant="outline" className="ml-auto text-[10px] font-mono border-eari-blue/30 text-slate-300">
                       Professional
                     </Badge>
                   </div>
@@ -3320,7 +3328,7 @@ export default function ResultsPage() {
           {/* ─── SECTOR BENCHMARK SECTION (Enhanced) ────────────────────────── */}
           <FadeUp>
             <div className="aurora-card rounded-2xl p-[1px]">
-              <Card className="bg-navy-800/90 backdrop-blur-sm border-0 rounded-2xl hover-lift">
+              <Card className="bg-navy-800/40 border-0 rounded-2xl">
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15">
@@ -3353,8 +3361,8 @@ export default function ResultsPage() {
                       {/* Main consent content */}
                       <div className="p-5 bg-eari-blue/[0.04] border border-white/[0.06] rounded-xl">
                         <div className="flex items-start gap-3 mb-4">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-eari-blue/15 flex-shrink-0">
-                            <Shield className="h-5 w-5 text-eari-blue-light" />
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.07] flex-shrink-0">
+                            <Shield className="h-5 w-5 text-slate-300" />
                           </div>
                           <div>
                             <h3 className="font-heading font-semibold text-foreground text-sm mb-1">
@@ -3441,7 +3449,7 @@ export default function ResultsPage() {
 
                   {benchmarkLoading ? (
                     <div className="h-[250px] flex items-center justify-center">
-                      <Loader2 className="h-6 w-6 animate-spin text-eari-blue-light" />
+                      <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
                     </div>
                   ) : benchmarkData && (benchmarkData.pillars?.some((p: any) => p.sampleSize > 0) || benchmarkData.pillars?.some((p: any) => p.avgScore > 0)) ? (
                     <>
@@ -3516,7 +3524,7 @@ export default function ResultsPage() {
                             <div key={ps.pillarId} className="space-y-1.5">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: pillarDef?.color ?? '#8b949e' }} />
+                                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'rgba(148,163,184,0.55)' }} />
                                   <span className="font-heading text-xs text-foreground">{pillarDef?.shortName}</span>
                                 </div>
                                 <div className="flex items-center gap-3 text-xs">
@@ -3549,7 +3557,7 @@ export default function ResultsPage() {
                                 <div className="absolute top-0 h-full rounded-full bg-amber-500/30" style={{ width: `${Math.min(100, sectorAvg)}%` }} />
                                 <motion.div
                                   className="absolute top-0 h-full rounded-full"
-                                  style={{ backgroundColor: pillarDef?.color ?? '#8b949e' }}
+                                  style={{ backgroundColor: 'rgba(148,163,184,0.55)' }}
                                   initial={{ width: 0 }}
                                   animate={{ width: `${yourScore}%` }}
                                   transition={{ duration: 1, ease: 'easeOut' }}
@@ -3814,11 +3822,11 @@ export default function ResultsPage() {
           {/* ─── CERTIFICATION BADGE SECTION (All Tiers) ─────────────────── */}
           <FadeUp>
             <div className="aurora-card rounded-2xl p-[1px]">
-              <Card className="bg-navy-800/90 backdrop-blur-sm border-0 rounded-2xl hover-lift">
+              <Card className="bg-navy-800/40 border-0 rounded-2xl">
                 <CardHeader>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-eari-blue/15">
-                      <Award className="h-5 w-5 text-eari-blue-light" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.07]">
+                      <Award className="h-5 w-5 text-slate-300" />
                     </div>
                     <div>
                       <CardTitle className="font-heading text-xl font-bold tracking-tight text-foreground">
@@ -3875,7 +3883,7 @@ export default function ResultsPage() {
                       {certificationResult.nextLevel && (
                         <div className="p-4 rounded-lg bg-navy-700/50 border border-border/20">
                           <div className="flex items-center gap-2 mb-2">
-                            <TrendingUp className="h-4 w-4 text-eari-blue-light" />
+                            <TrendingUp className="h-4 w-4 text-slate-300" />
                             <span className="font-heading text-sm font-semibold text-foreground">
                               Path to {certificationResult.nextLevel.label}
                             </span>
@@ -3890,7 +3898,7 @@ export default function ResultsPage() {
                                   const pillarDef = PILLARS.find(p => p.id === gap.pillarId)
                                   return (
                                     <div key={gap.pillarId} className="flex items-center gap-2 p-2 rounded-md bg-navy-800/60">
-                                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: pillarDef?.color ?? '#8b949e' }} />
+                                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'rgba(148,163,184,0.55)' }} />
                                       <span className="text-xs text-foreground font-sans">{gap.pillarName}</span>
                                       <span className="ml-auto font-mono text-[10px] text-muted-foreground">
                                         {Math.round(gap.current)} → {gap.required}
@@ -3995,7 +4003,7 @@ export default function ResultsPage() {
                 >
                   <Lock className="mr-2 h-4 w-4" />
                   Export Report
-                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-navy-800 text-eari-blue-light text-[10px] font-sans px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity border border-eari-blue/20">
+                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-navy-800 text-slate-300 text-[10px] font-sans px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity border border-eari-blue/20">
                     Upgrade to Professional
                   </span>
                 </Button>

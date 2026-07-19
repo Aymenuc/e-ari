@@ -51,28 +51,28 @@ const FONT_BODY = 'Inter';
 const COLOR_PRIMARY = '1A1A2E';     // Near-black for main headings
 const COLOR_TEXT = '2D3748';        // Dark gray for body text
 const COLOR_TEXT_SECONDARY = '64748B'; // Medium gray for secondary text
-const COLOR_BLUE = '2563EB';        // Brand blue for accents
-const COLOR_BLUE_DARK = '1D4ED8';   // Darker blue
-const COLOR_CYAN = '0891B2';        // Teal/cyan accent
+const COLOR_BLUE = '334155';        // Slate accent — the doc's ONE accent
+const COLOR_BLUE_DARK = '1E293B';   // Deep slate
+const COLOR_CYAN = '475569';        // (retired accent → slate)
 const COLOR_GREEN = '16A34A';       // Green for positive
 const COLOR_AMBER = 'D97706';       // Amber for warnings
 const COLOR_RED = 'DC2626';         // Red for risks
-const COLOR_PINK = 'DB2777';        // Pink accent
-const COLOR_TEAL = '0D9488';        // Teal accent
+const COLOR_PINK = '475569';        // (retired accent → slate)
+const COLOR_TEAL = '475569';        // (retired accent → slate)
 const COLOR_SLATE = '475569';       // Slate gray
 const COLOR_WHITE = 'FFFFFF';
 
 // Background/shading colors (light fills for tables)
 const BG_HEADER = '1E293B';        // Dark slate for header row text (white text)
 const BG_ROW_ALT = 'F8FAFC';       // Very light blue-gray for alternating rows
-const BG_BLUE_LIGHT = 'EFF6FF';    // Light blue tint
-const BG_GREEN_LIGHT = 'F0FDF4';   // Light green tint
-const BG_AMBER_LIGHT = 'FFFBEB';   // Light amber tint
-const BG_RED_LIGHT = 'FEF2F2';     // Light red tint
-const BG_SCORE = 'F1F5F9';        // Light gray for score sections
-const BG_SCORE_HIGH = 'DCFCE7';    // Green tint for high scores
-const BG_SCORE_MED = 'FEF9C3';     // Yellow tint for medium scores
-const BG_SCORE_LOW = 'FEE2E2';     // Red tint for low scores
+const BG_BLUE_LIGHT = 'FFFFFF';    // (tints retired — whitespace is the luxury)
+const BG_GREEN_LIGHT = 'FFFFFF';   // (retired)
+const BG_AMBER_LIGHT = 'FFFFFF';   // (retired)
+const BG_RED_LIGHT = 'FFFFFF';     // (retired)
+const BG_SCORE = 'F8FAFC';        // Single quiet panel tone
+const BG_SCORE_HIGH = 'F8FAFC';    // (traffic lights retired — type carries meaning)
+const BG_SCORE_MED = 'F8FAFC';     // (retired)
+const BG_SCORE_LOW = 'F8FAFC';     // (retired)
 
 // Border colors
 const BORDER_LIGHT = 'E2E8F0';     // Light border
@@ -166,9 +166,10 @@ function getScoreBgColor(score: number): string {
   return BG_SCORE_LOW;
 }
 
-function getPillarColor(pillarId: string): string {
-  const pillar = PILLARS.find(p => p.id === pillarId);
-  return pillar?.color || COLOR_BLUE;
+function getPillarColor(_pillarId: string): string {
+  // One ink for all pillars — differentiation comes from the score bars and
+  // typography, not eight competing hues.
+  return COLOR_SLATE;
 }
 
 function thinBorder(color: string = BORDER_LIGHT) {

@@ -701,33 +701,15 @@
 /* ─── Card chrome (enterprise — static border, no rainbow animation) ───── */
 
 .aurora-card {
+  /* Quiet-luxury card: the animated gradient ring era is over. One hairline,
+     one soft depth shadow, no blur — presence through restraint. */
   position: relative;
-  background: rgba(15, 23, 42, 0.35);
-  backdrop-filter: blur(12px);
-  border: none;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 12px 40px -18px rgba(0, 0, 0, 0.45);
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 10px 34px -18px rgba(0, 0, 0, 0.5);
 }
 
-.aurora-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.09),
-    rgba(37, 99, 235, 0.14) 45%,
-    rgba(255, 255, 255, 0.05)
-  );
-  background-size: 100% 100%;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
+/* .aurora-card::before removed — no gradient ring in the corporate system */
 
 .aurora-border-glow {
   position: absolute;
@@ -1016,8 +998,8 @@
 }
 
 .hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.5);
 }
 
 /* Shimmer button for upgrade CTAs */
