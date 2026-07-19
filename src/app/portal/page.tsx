@@ -426,109 +426,11 @@ export default function PortalPage() {
 
           <section id="inbox" className="mb-8 space-y-6 scroll-mt-24">
             <JourneyGuide />
-            <div className="grid gap-4 lg:grid-cols-3">
-              <ComplianceInboxCard items={inboxItems} loading={inboxLoading} />
-              {progressionState ? (
-                <CoverageGaugeCard
-                  obligationsApplicable={progressionState.verifying.obligationsApplicable}
-                  obligationsEvidenced={progressionState.verifying.obligationsEvidenced}
-                />
-              ) : (
-                <CoverageGaugeCard obligationsApplicable={0} obligationsEvidenced={0} />
-              )}
-              <RecentActivityCard assessments={assessments} />
-            </div>
           </section>
 
-          {/* ── Quick Stats Row ───────────────────────────────────────────── */}
-          <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-            <Card className="bg-navy-800/70 border-border/50 transition-colors hover:border-border">
-              <CardContent className="p-4 sm:p-5">
-                <div className="flex items-baseline justify-between">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                    Total assessments
-                  </p>
-                  <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground/50" aria-hidden />
-                </div>
-                {loading ? (
-                  <Skeleton className="mt-3 h-8 w-16" />
-                ) : (
-                  <p className="mt-2 font-heading text-3xl font-semibold tabular-nums text-foreground">
-                    <CountUpNumber value={totalAssessments} />
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="bg-navy-800/70 border-border/50 transition-colors hover:border-border">
-              <CardContent className="p-4 sm:p-5">
-                <div className="flex items-baseline justify-between">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                    Completed
-                  </p>
-                  <Shield className="h-3.5 w-3.5 text-muted-foreground/50" aria-hidden />
-                </div>
-                {loading ? (
-                  <Skeleton className="mt-3 h-8 w-16" />
-                ) : (
-                  <p className="mt-2 font-heading text-3xl font-semibold tabular-nums text-foreground">
-                    <CountUpNumber value={completedAssessments} />
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="bg-navy-800/70 border-border/50 transition-colors hover:border-border">
-              <CardContent className="p-4 sm:p-5">
-                <div className="flex items-baseline justify-between">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                    Average score
-                  </p>
-                  <BarChart3 className="h-3.5 w-3.5 text-muted-foreground/50" aria-hidden />
-                </div>
-                {loading ? (
-                  <Skeleton className="mt-3 h-8 w-16" />
-                ) : (
-                  <p className="mt-2 font-heading text-3xl font-semibold tabular-nums text-foreground">
-                    {averageScore > 0 ? (
-                      <>
-                        <CountUpNumber value={averageScore} />
-                        <span className="ml-0.5 text-base font-medium text-muted-foreground">%</span>
-                      </>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="bg-navy-800/70 border-border/50 transition-colors hover:border-border">
-              <CardContent className="p-4 sm:p-5">
-                <div className="flex items-baseline justify-between">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                    Current tier
-                  </p>
-                  <Award className="h-3.5 w-3.5 text-muted-foreground/50" aria-hidden />
-                </div>
-                {loading ? (
-                  <Skeleton className="mt-3 h-8 w-24" />
-                ) : (
-                  <p className="mt-2 font-heading text-3xl font-semibold text-foreground">
-                    {tierLabel(userTier)}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </section>
-
-          {/* Quick Access grid removed 2026-05-09 — superseded by the
-              JourneyGuide spine above (one primary action + tools row),
-              which stages module discovery instead of presenting eight
-              equal tiles to a first-time user. */}
-
-          {/* ── Assessment History ─────────────────────────────────────────── */}
-          <section className="mb-8">
+          {/* ── Work zone: the table you act on + a live context rail ──────── */}
+          <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3 items-start">
+            <div className="lg:col-span-2 space-y-6">
             <Card className="bg-navy-800 border-border/60">
               <CardHeader>
                 <CardTitle className="font-heading text-lg text-foreground">Assessment History</CardTitle>
@@ -671,9 +573,111 @@ export default function PortalPage() {
                 )}
               </CardContent>
             </Card>
+            </div>
+
+            <aside className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+            <Card className="bg-navy-800/70 border-border/50 transition-colors hover:border-border">
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-baseline justify-between">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Total assessments
+                  </p>
+                  <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground/50" aria-hidden />
+                </div>
+                {loading ? (
+                  <Skeleton className="mt-3 h-8 w-16" />
+                ) : (
+                  <p className="mt-2 font-heading text-3xl font-semibold tabular-nums text-foreground">
+                    <CountUpNumber value={totalAssessments} />
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="bg-navy-800/70 border-border/50 transition-colors hover:border-border">
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-baseline justify-between">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Completed
+                  </p>
+                  <Shield className="h-3.5 w-3.5 text-muted-foreground/50" aria-hidden />
+                </div>
+                {loading ? (
+                  <Skeleton className="mt-3 h-8 w-16" />
+                ) : (
+                  <p className="mt-2 font-heading text-3xl font-semibold tabular-nums text-foreground">
+                    <CountUpNumber value={completedAssessments} />
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="bg-navy-800/70 border-border/50 transition-colors hover:border-border">
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-baseline justify-between">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Average score
+                  </p>
+                  <BarChart3 className="h-3.5 w-3.5 text-muted-foreground/50" aria-hidden />
+                </div>
+                {loading ? (
+                  <Skeleton className="mt-3 h-8 w-16" />
+                ) : (
+                  <p className="mt-2 font-heading text-3xl font-semibold tabular-nums text-foreground">
+                    {averageScore > 0 ? (
+                      <>
+                        <CountUpNumber value={averageScore} />
+                        <span className="ml-0.5 text-base font-medium text-muted-foreground">%</span>
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="bg-navy-800/70 border-border/50 transition-colors hover:border-border">
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-baseline justify-between">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Current tier
+                  </p>
+                  <Award className="h-3.5 w-3.5 text-muted-foreground/50" aria-hidden />
+                </div>
+                {loading ? (
+                  <Skeleton className="mt-3 h-8 w-24" />
+                ) : (
+                  <p className="mt-2 font-heading text-3xl font-semibold text-foreground">
+                    {tierLabel(userTier)}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+              </div>
+              <ComplianceInboxCard items={inboxItems} loading={inboxLoading} />
+              {progressionState ? (
+                <CoverageGaugeCard
+                  obligationsApplicable={progressionState.verifying.obligationsApplicable}
+                  obligationsEvidenced={progressionState.verifying.obligationsEvidenced}
+                />
+              ) : (
+                <CoverageGaugeCard obligationsApplicable={0} obligationsEvidenced={0} />
+              )}
+              <RecentActivityCard assessments={assessments} />
+            </aside>
           </section>
 
-          {/* ── Bottom Grid: Profile / Subscription / Billing / Support ────── */}
+
+          {/* Quick Access grid removed 2026-05-09 — superseded by the
+              JourneyGuide spine above (one primary action + tools row),
+              which stages module discovery instead of presenting eight
+              equal tiles to a first-time user. */}
+
+
+          {/* ── Account chrome — demoted below the work zone ──────────────── */}
+          <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60">Account &amp; support</p>
           <section className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Profile Section */}
             <Card className="bg-navy-800 border-border/60">

@@ -104,7 +104,7 @@ import { assessComplianceGaps, getComplianceSummary } from '@/lib/regulatory-map
 import { analyzeDrift, generateAlerts, getRecommendedSchedule } from '@/lib/monitoring-engine'
 import { getVocab, type EntityType } from '@/lib/entity-types'
 import { LeverageMoves } from '@/components/shared/leverage-moves'
-import { ResultsSectionNav } from '@/components/shared/results-section-nav'
+import { ResultsTabs } from '@/components/shared/results-tabs'
 
 /* ─── Deterministic pseudo-random (avoids hydration mismatch) ─────────── */
 
@@ -113,19 +113,13 @@ function seededRandom(seed: number) {
   return x - Math.floor(x)
 }
 
-/* ─── In-page report navigation (sentinel anchors are inserted before each
-   section; tier-gated sections that never render are auto-hidden) ──────── */
-const RESULTS_NAV_SECTIONS = [
-  { id: 'sec-score', label: 'Score' },
-  { id: 'sec-summary', label: 'Summary' },
-  { id: 'sec-pillars', label: 'Pillars' },
-  { id: 'sec-action', label: 'Action Plan' },
-  { id: 'sec-compliance', label: 'Compliance' },
-  { id: 'sec-monitoring', label: 'Monitoring' },
-  { id: 'sec-insights', label: 'Insights' },
-  { id: 'sec-findings', label: 'Findings' },
-  { id: 'sec-benchmark', label: 'Benchmark' },
-  { id: 'sec-certification', label: 'Certification' },
+/* ─── Report views — one reader-job per tab (replaces the 18k-px scroll) ── */
+const RESULTS_TABS = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'action', label: 'Action Plan' },
+  { id: 'compliance', label: 'Compliance' },
+  { id: 'findings', label: 'Insights & Findings' },
+  { id: 'benchmark', label: 'Benchmark & Certification' },
 ]
 
 /* ─── Tier Types ──────────────────────────────────────────────────────── */
@@ -618,6 +612,7 @@ export default function ResultsPage() {
   const [exporting, setExporting] = useState(false)
   const [agentOpen, setAgentOpen] = useState(false)
   const [scrollProgress, setScrollProgress] = useState(0)
+  const [activeTab, setActiveTab] = useState('overview')
   const [pulseData, setPulseData] = useState<{
     id: string
     overallScore: number
@@ -1218,7 +1213,8 @@ export default function ResultsPage() {
 
       <main className="flex-1">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12 space-y-8">
-          <ResultsSectionNav sections={RESULTS_NAV_SECTIONS} />
+          <ResultsTabs tabs={RESULTS_TABS} active={activeTab} onChange={setActiveTab} />
+          {activeTab === 'overview' && (<>
           <div id="sec-score" className="scroll-mt-24" />
 
           {/* ─── 1. HEADER SECTION — Premium Hero ──────────────────────── */}
@@ -1558,6 +1554,8 @@ export default function ResultsPage() {
           </section>
 
 
+          </>)}
+          {activeTab === 'action' && (<>
           <div id="sec-action" className="scroll-mt-24" />
           {/* ─── HIGHEST-LEVERAGE MOVES (All Tiers — deterministic) ───────── */}
           <FadeUp>
@@ -1565,6 +1563,8 @@ export default function ResultsPage() {
           </FadeUp>
 
 
+          </>)}
+          {activeTab === 'compliance' && (<>
           <div id="sec-compliance" className="scroll-mt-24" />
           {/* ─── REGULATORY COMPLIANCE SECTION (Pro+, locked for Free) ────── */}
           {isPro ? (
@@ -2517,6 +2517,8 @@ export default function ResultsPage() {
           </FadeUp>
 
 
+          </>)}
+          {activeTab === 'findings' && (<>
           <div id="sec-insights" className="scroll-mt-24" />
           {/* ─── 6. AI STRATEGIC INSIGHTS SECTION ───────────────────────── */}
           <section>
@@ -3324,6 +3326,8 @@ export default function ResultsPage() {
             </FadeUp>
           )}
 
+          </>)}
+          {activeTab === 'benchmark' && (<>
           <div id="sec-benchmark" className="scroll-mt-24" />
           {/* ─── SECTOR BENCHMARK SECTION (Enhanced) ────────────────────────── */}
           <FadeUp>
@@ -4044,6 +4048,8 @@ export default function ResultsPage() {
               </div>
             )}
           </FadeUp>
+
+          </>)}
 
         </div>
       </main>
