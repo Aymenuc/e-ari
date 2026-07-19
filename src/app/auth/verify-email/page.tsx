@@ -90,7 +90,7 @@ function ConfirmState({ token, email }: { token: string; email: string }) {
                 });
                 sessionStorage.removeItem('pendingVerificationCreds');
                 if (!login?.error) {
-                  router.replace(creds.callbackUrl || '/portal');
+                  router.replace(creds.callbackUrl || '/welcome');
                   return;
                 }
               }

@@ -17,7 +17,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   ClipboardCheck, Search, ShieldCheck, Activity, CheckCircle2,
-  ArrowRight, GraduationCap, Plug, UsersRound, KeyRound,
+  ArrowRight, GraduationCap, Plug, UsersRound, KeyRound, Compass,
 } from 'lucide-react';
 
 interface Steps {
@@ -88,6 +88,7 @@ const STATIONS: Station[] = [
 
 /** Secondary tools — always reachable, never competing with the spine. */
 const TOOLS = [
+  { href: '/welcome', icon: Compass, label: 'Orientation' },
   { href: '/portal/vendors', icon: Plug, label: 'Vendor Risk' },
   { href: '/portal/literacy-compliance', icon: GraduationCap, label: 'Article 4 Training' },
   { href: '/portal/team', icon: UsersRound, label: 'Team' },

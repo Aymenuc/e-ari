@@ -44,7 +44,7 @@ function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/portal";
+  const callbackUrl = searchParams.get("callbackUrl") || "/welcome";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
