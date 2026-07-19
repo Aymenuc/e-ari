@@ -829,11 +829,7 @@ export function PipelineStatus({ assessmentId, autoPoll = true, pollInterval = 3
           </p>
           <button
             onClick={handleTriggerPipeline}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-            style={{
-              background: 'linear-gradient(135deg, #2563eb, #06b6d4)',
-              boxShadow: '0 4px 20px rgba(37, 99, 235, 0.3)',
-            }}
+            className="btn-brand flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium"
           >
             <Zap className="w-4 h-4" />
             Run Pipeline

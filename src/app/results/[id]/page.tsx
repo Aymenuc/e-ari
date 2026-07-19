@@ -105,6 +105,7 @@ import { analyzeDrift, generateAlerts, getRecommendedSchedule } from '@/lib/moni
 import { getVocab, type EntityType } from '@/lib/entity-types'
 import { LeverageMoves } from '@/components/shared/leverage-moves'
 import { ResultsTabs } from '@/components/shared/results-tabs'
+import { OverviewSpread } from '@/components/shared/overview-spread'
 
 /* ─── Deterministic pseudo-random (avoids hydration mismatch) ─────────── */
 
@@ -1322,49 +1323,6 @@ export default function ResultsPage() {
           </FadeUp>
 
 
-          {isPro && sessionStatus === 'authenticated' && complianceOutlook ? (
-            <FadeUp>
-              <ComplianceOutlook
-                outlook={complianceOutlook}
-                baselineHref="/portal/use-cases"
-                createUseCaseHref={
-                  assessment?.id
-                    ? `/portal/use-cases/systems/new?assessmentId=${assessment.id}`
-                    : undefined
-                }
-              />
-            </FadeUp>
-          ) : null}
-
-          {/* ─── TIER BADGE (read-only, from session) ───────────────────── */}
-          <FadeUp delay={0.05}>
-            <Card className="bg-navy-800/60 border-border/60 hover-lift">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground font-sans">Your plan:</span>
-                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-heading font-semibold ${tierConfig.bgColor} ${tierConfig.color} ${tierConfig.borderColor} border`}>
-                    <TierIcon className="h-3.5 w-3.5" />
-                    {tierConfig.label}
-                  </div>
-                  {userTier === 'free' && (
-                    <Link href="/checkout?plan=professional" className="ml-auto">
-                      <Button size="sm" className="btn-brand font-heading text-xs h-8 px-3">
-                        <ArrowUpRight className="mr-1 h-3 w-3" />
-                        Upgrade
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </FadeUp>
-
-          {/* ─── AI AGENT PIPELINE STATUS ────────────────────────────────── */}
-          {isPro && (
-            <FadeUp delay={0.07}>
-              <PipelineStatus assessmentId={id} />
-            </FadeUp>
-          )}
 
           {/* ─── FREE TIER UPGRADE BANNER ────────────────────────────────── */}
           {!isPro && (
@@ -1399,61 +1357,10 @@ export default function ResultsPage() {
           )}
 
           <div id="sec-summary" className="scroll-mt-24" />
-          {/* ─── 2. MATURITY BAND — Aurora Card ──────────────────────────── */}
-          <FadeUp delay={0.1}>
-            <div className="aurora-card rounded-2xl p-[1px]">
-              <Card className="bg-navy-800/40 border-0 rounded-2xl">
-                <CardContent className="p-6">
-                  <div className="flex flex-col sm:flex-row items-center gap-5">
-                    <div
-                      className="flex h-16 w-16 items-center justify-center rounded-xl flex-shrink-0"
-                      style={{ backgroundColor: `${scoring.maturityColor}20` }}
-                    >
-                      <span className="font-heading font-semibold text-3xl tabular-nums count-up-animate" style={{ color: scoring.maturityColor }}>
-                        {Math.round(scoring.overallScore)}
-                      </span>
-                    </div>
-                    <div className="text-center sm:text-left flex-1">
-                      <div className="flex items-center gap-2 justify-center sm:justify-start">
-                        <h2 className="font-heading text-2xl font-bold text-foreground tracking-tight">
-                          Maturity Classification: <span className="font-semibold text-slate-100">{scoring.maturityLabel}</span>
-                        </h2>
-                        <Badge variant="outline" className="font-mono text-[10px] border-border text-muted-foreground">
-                          {scoring.maturityBand === 'laggard' && '0-25'}
-                          {scoring.maturityBand === 'follower' && '26-50'}
-                          {scoring.maturityBand === 'chaser' && '51-75'}
-                          {scoring.maturityBand === 'pacesetter' && '76-100'}
-                        </Badge>
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground font-sans leading-relaxed">
-                        {getMaturityBandDescription(scoring.maturityBand)}
-                      </p>
-                      {/* Band position progress bar */}
-                      <div className="mt-3 max-w-md">
-                        <div className="h-2 rounded-full maturity-band-progress overflow-hidden relative">
-                          <motion.div
-                            className="absolute top-0 h-full w-3 rounded-full bg-white/80 shadow-lg"
-                            style={{ left: '0%' }}
-                            initial={{ left: '0%' }}
-                            animate={{ left: `${Math.min(97, Math.max(1, scoring.overallScore - 2))}%` }}
-                            transition={{ duration: 1.5, ease: 'easeOut', delay: 0.5 }}
-                          />
-                        </div>
-                        <div className="flex justify-between mt-1">
-                          <span className="font-mono text-[9px] text-muted-foreground">0</span>
-                          <span className="font-mono text-[9px] text-muted-foreground">25</span>
-                          <span className="font-mono text-[9px] text-muted-foreground">50</span>
-                          <span className="font-mono text-[9px] text-muted-foreground">75</span>
-                          <span className="font-mono text-[9px] text-muted-foreground">100</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+          {/* ─── Composed state-of-readiness spread ─────────────────────── */}
+          <FadeUp>
+            <OverviewSpread scoring={scoring} onGoTo={setActiveTab} />
           </FadeUp>
-
 
           {/* ─── ENTERPRISE: EXECUTIVE SUMMARY (Print-Ready) ────────────── */}
           {isEnterprise && (
@@ -1526,34 +1433,6 @@ export default function ResultsPage() {
             </FadeUp>
           )}
 
-          <div id="sec-pillars" className="scroll-mt-24" />
-          {/* ─── 3. PILLAR SCORE CARDS ──────────────────────────────────── */}
-          <section>
-            <FadeUp>
-              <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground mb-6">
-                Pillar Scores
-              </h2>
-            </FadeUp>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {scoring.pillarScores.map((pillar, i) => (
-                <PillarCard
-                  key={pillar.pillarId}
-                  pillar={pillar}
-                  index={i}
-                  showDetails={isPro}
-                  evidenceClauseCount={pillarEvidenceCounts[pillar.pillarId]}
-                  complianceSystemId={complianceSystemsForAssessment[0]?.id}
-                  evidenceVaultHref={
-                    isPro && complianceSystemsForAssessment[0]?.id
-                      ? `/portal/use-cases/systems/${complianceSystemsForAssessment[0].id}/evidence`
-                      : undefined
-                  }
-                />
-              ))}
-            </div>
-          </section>
-
-
           </>)}
           {activeTab === 'action' && (<>
           <div id="sec-action" className="scroll-mt-24" />
@@ -1565,6 +1444,19 @@ export default function ResultsPage() {
 
           </>)}
           {activeTab === 'compliance' && (<>
+          {isPro && sessionStatus === 'authenticated' && complianceOutlook ? (
+            <FadeUp>
+              <ComplianceOutlook
+                outlook={complianceOutlook}
+                baselineHref="/portal/use-cases"
+                createUseCaseHref={
+                  assessment?.id
+                    ? `/portal/use-cases/systems/new?assessmentId=${assessment.id}`
+                    : undefined
+                }
+              />
+            </FadeUp>
+          ) : null}
           <div id="sec-compliance" className="scroll-mt-24" />
           {/* ─── REGULATORY COMPLIANCE SECTION (Pro+, locked for Free) ────── */}
           {isPro ? (
@@ -2519,6 +2411,41 @@ export default function ResultsPage() {
 
           </>)}
           {activeTab === 'findings' && (<>
+          {/* ─── AI AGENT PIPELINE STATUS ────────────────────────────────── */}
+          {isPro && (
+            <FadeUp delay={0.07}>
+              <PipelineStatus assessmentId={id} />
+            </FadeUp>
+          )}
+
+          <div id="sec-pillars" className="scroll-mt-24" />
+          {/* ─── 3. PILLAR SCORE CARDS ──────────────────────────────────── */}
+          <section>
+            <FadeUp>
+              <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground mb-6">
+                Pillar Scores
+              </h2>
+            </FadeUp>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {scoring.pillarScores.map((pillar, i) => (
+                <PillarCard
+                  key={pillar.pillarId}
+                  pillar={pillar}
+                  index={i}
+                  showDetails={isPro}
+                  evidenceClauseCount={pillarEvidenceCounts[pillar.pillarId]}
+                  complianceSystemId={complianceSystemsForAssessment[0]?.id}
+                  evidenceVaultHref={
+                    isPro && complianceSystemsForAssessment[0]?.id
+                      ? `/portal/use-cases/systems/${complianceSystemsForAssessment[0].id}/evidence`
+                      : undefined
+                  }
+                />
+              ))}
+            </div>
+          </section>
+
+
           <div id="sec-insights" className="scroll-mt-24" />
           {/* ─── 6. AI STRATEGIC INSIGHTS SECTION ───────────────────────── */}
           <section>
