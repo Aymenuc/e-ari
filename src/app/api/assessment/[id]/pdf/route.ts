@@ -212,6 +212,8 @@ export async function GET(
       userName: reportData.userName,
       sector: reportData.sector,
       completedAt: reportData.completedAt,
+      benchmarkData: reportData.benchmarkData,
+      previousScore: reportData.previousScore,
     });
     return new NextResponse(pdfBytes as BodyInit, {
       headers: {
