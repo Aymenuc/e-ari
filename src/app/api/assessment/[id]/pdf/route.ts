@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { scoreAssessment, type ResponseMap } from "@/lib/assessment-engine";
 import { generateAIInsights, generateTemplateInsightsSync } from "@/lib/ai-insights";
 import { generateAssessmentReport, type AssessmentReportData } from "@/lib/report-generator";
+import { generateAssessmentPdf } from "@/lib/report-pdf";
 import { getSectorStats } from "@/lib/benchmark-engine";
 import { getSetting } from "@/lib/platform-settings";
 import { checkQuota, recordReportGenerated } from "@/lib/tier-limits";
@@ -185,17 +186,37 @@ export async function GET(
       };
     }
 
-    const docxBuffer = await generateAssessmentReport(reportData);
-
     // Record the report generation against the monthly quota (audit-log
     // pattern using the existing Notification table). Fire-and-forget —
     // failure here doesn't block the download.
     void recordReportGenerated(ws.ownerId, id);
 
-    return new NextResponse(new Uint8Array(docxBuffer), {
+    // PDF is the default (immutable trust artifact); ?format=docx serves
+    // the editable working copy. The route kept its /pdf name and finally
+    // earned it.
+    const format = req.nextUrl.searchParams.get("format");
+    if (format === "docx") {
+      const docxBuffer = await generateAssessmentReport(reportData);
+      return new NextResponse(new Uint8Array(docxBuffer), {
+        headers: {
+          "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "Content-Disposition": `attachment; filename="E-ARI-Assessment-Report-${id.slice(0, 8)}.docx"`,
+        },
+      });
+    }
+
+    const pdfBytes = await generateAssessmentPdf({
+      scoringResult: reportData.scoringResult,
+      insights: reportData.insights,
+      organization: reportData.organization,
+      userName: reportData.userName,
+      sector: reportData.sector,
+      completedAt: reportData.completedAt,
+    });
+    return new NextResponse(pdfBytes as BodyInit, {
       headers: {
-        "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "Content-Disposition": `attachment; filename="E-ARI-Assessment-Report-${id.slice(0, 8)}.docx"`,
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="E-ARI-Assessment-Report-${id.slice(0, 8)}.pdf"`,
       },
     });
   } catch (error) {

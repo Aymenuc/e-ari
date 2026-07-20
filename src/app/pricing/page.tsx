@@ -71,8 +71,8 @@ const PRICING_TIERS = [
   {
     id: 'free',
     name: 'Starter',
-    price: '$0',
-    yearlyPrice: '$0',
+    price: 'Free',
+    yearlyPrice: 'Free',
     period: 'forever',
     yearlyPeriod: '',
     description: '1 assessment and 3 pulse checks per month to explore AI readiness at no cost',
@@ -330,7 +330,7 @@ export default function PricingPage() {
       if (tierId === 'enterprise') {
         return (
           <Link href="/contact" className="w-full">
-            <Button className="w-full bg-[#c9a227] hover:bg-[#b89220] text-navy-950 font-heading font-semibold shadow-md shadow-black/15 min-h-[44px]">
+            <Button className="w-full btn-brand font-heading font-semibold min-h-[44px]">
               {ctaText} <ArrowUpRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
@@ -372,7 +372,7 @@ export default function PricingPage() {
       if (isEnterprise) return <Button disabled className="w-full bg-amber-500/20 text-amber-400 border border-amber-500/30 font-heading min-h-[44px]">Current Plan</Button>
       return (
         <Link href="/contact" className="w-full">
-          <Button className="w-full bg-[#c9a227] hover:bg-[#b89220] text-navy-950 font-heading font-semibold shadow-md shadow-black/15 min-h-[44px]">
+          <Button className="w-full btn-brand font-heading font-semibold min-h-[44px]">
             {ctaText} <ArrowUpRight className="ml-2 h-4 w-4" />
           </Button>
         </Link>
@@ -758,7 +758,7 @@ export default function PricingPage() {
                       </Link>
                     ) : isPro ? (
                       <Link href="/checkout?plan=enterprise">
-                        <Button size="lg" className="bg-[#c9a227] hover:bg-[#b89220] text-navy-950 font-heading font-semibold shadow-md shadow-black/15 min-h-[44px]">
+                        <Button size="lg" className="btn-brand font-heading font-semibold min-h-[44px]">
                           Contact Sales for Enterprise
                           <ArrowUpRight className="ml-2 h-5 w-5" />
                         </Button>

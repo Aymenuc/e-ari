@@ -908,15 +908,16 @@ export default function ResultsPage() {
   }, [])
 
   /* ─── Export Report handler ──────────────────────────────────────────── */
-  const handleExportPDF = async () => {
+  const handleExportPDF = async (format: 'pdf' | 'docx' = 'pdf') => {
     if (!isPro) return
     setExporting(true)
     try {
-      const res = await fetch(`/api/assessment/${id}/pdf`)
+      const res = await fetch(`/api/assessment/${id}/pdf${format === 'docx' ? '?format=docx' : ''}`)
       if (res.ok) {
-        // Verify we got a valid DOCX response (not an HTML error page)
+        // Verify we got the expected binary (not an HTML error page)
         const contentType = res.headers.get('content-type') || ''
-        if (!contentType.includes('openxmlformats')) {
+        const expected = format === 'docx' ? 'openxmlformats' : 'application/pdf'
+        if (!contentType.includes(expected)) {
           // Server returned OK but wrong content type — likely an error page
           const text = await res.text()
           let errorMsg = 'Unexpected response format from server'
@@ -939,7 +940,7 @@ export default function ResultsPage() {
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `E-ARI-Report-${id.slice(0, 8)}.docx`
+        a.download = `E-ARI-Report-${id.slice(0, 8)}.${format}`
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
@@ -3916,7 +3917,7 @@ export default function ResultsPage() {
             <div className="flex flex-col sm:flex-row gap-4 pt-6">
               {isPro ? (
                 <Button
-                  onClick={handleExportPDF}
+                  onClick={() => handleExportPDF('pdf')}
                   disabled={exporting}
                   className="btn-brand font-heading font-semibold h-12 px-6 shadow-md shadow-eari-blue/15"
                 >
@@ -3925,7 +3926,7 @@ export default function ResultsPage() {
                   ) : (
                     <Download className="mr-2 h-4 w-4" />
                   )}
-                  Export Report (.docx)
+                  Export Report (PDF)
                 </Button>
               ) : (
                 <Button
@@ -3938,6 +3939,15 @@ export default function ResultsPage() {
                     Upgrade to Professional
                   </span>
                 </Button>
+              )}
+              {isPro && (
+                <button
+                  onClick={() => handleExportPDF('docx')}
+                  disabled={exporting}
+                  className="self-center font-sans text-xs text-slate-400 hover:text-slate-100 transition-colors underline underline-offset-4"
+                >
+                  Word version (editable)
+                </button>
               )}
               <Link href="/assessment">
                 <Button className="bg-navy-700 hover:bg-navy-600 text-foreground font-heading font-semibold h-12 px-6 w-full sm:w-auto">

@@ -283,8 +283,8 @@ const AGENTS_ORBIT_ORDERED = AGENT_ORBIT_IDS.map((id) => {
 const PRICING_TIERS = [
   {
     name: 'Starter',
-    price: '$0',
-    yearlyPrice: '$0',
+    price: 'Free',
+    yearlyPrice: 'Free',
     period: 'forever',
     yearlyPeriod: 'forever',
     description: 'Explore AI readiness with your first assessment and core scoring.',
@@ -387,7 +387,8 @@ const PRICING_TIERS = [
   },
 ]
 
-/* ─── Client logos (businesses that have used E-ARI) ────────────────────── */
+/* ─── Organisation archetypes the platform is built for — deliberately NOT
+   client logos or counts: we publish no social proof we cannot corroborate. */
 
 const ORG_ARCHETYPES = [
   'Regulated enterprise',
@@ -405,7 +406,7 @@ const LANDING_FAQ = [
   },
   {
     q: 'How long does an assessment take?',
-    a: 'Most organizations complete their first pass in under 20 minutes. You can save progress and return; deeper evidence work happens in the portal over time.',
+    a: 'Most organizations complete their first pass in about 15 minutes. You can save progress and return; deeper evidence work happens in the portal over time.',
   },
   {
     q: 'What makes this “agentic” instead of a chatbot?',
@@ -1300,7 +1301,7 @@ export default function Home() {
                 Ready to Measure Your AI Readiness?
               </h2>
               <p className="mt-4 text-lg text-muted-foreground font-sans max-w-2xl mx-auto">
-                Start with a free assessment. Get your E-ARI score across 8 pillars in under 20 minutes. No credit card required.
+                Start with a free assessment. Get your E-ARI score across 8 pillars in about 15 minutes. No credit card required.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                 <Magnetic>
