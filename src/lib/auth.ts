@@ -7,6 +7,7 @@ import { db } from "./db";
 import bcrypt from "bcryptjs";
 import { sendWelcomeEmail } from "./email-service";
 import { getSetting } from "./platform-settings";
+import { grantEarlyAccessIfEligible } from "@/lib/early-access";
 
 /**
  * Resolve the canonical NEXTAUTH_URL.
@@ -287,12 +288,14 @@ export const authOptions: NextAuthOptions = {
         try {
           const dbUser = await db.user.findUnique({
             where: { email: token.email as string },
-            select: { id: true, tier: true, role: true },
+            select: { id: true, tier: true, role: true, earlyAccessAt: true },
           });
           if (dbUser) {
             token.id = dbUser.id;
-            token.tier = dbUser.tier;
             token.role = dbUser.role;
+            // Early Access: grants the programme tier once, writing it to the
+            // DB so every server gate sees it too. No-op once granted or off.
+            token.tier = await grantEarlyAccessIfEligible(dbUser);
           }
         } catch (err) {
           // Transient DB failure — keep the existing token claims. The user

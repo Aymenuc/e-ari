@@ -16,6 +16,7 @@ export interface PlatformSettings {
   custom_brand_logo_url: string;
   custom_brand_accent_color: string;
   enterprise_price_label: string;
+  early_access_mode: boolean;
 }
 
 const DEFAULTS: PlatformSettings = {
@@ -34,6 +35,7 @@ const DEFAULTS: PlatformSettings = {
   custom_brand_logo_url: '',
   custom_brand_accent_color: '#2563EB',
   enterprise_price_label: 'Custom',
+  early_access_mode: true,
 };
 
 export async function getPlatformSettings(): Promise<PlatformSettings> {

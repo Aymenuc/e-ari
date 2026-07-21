@@ -105,7 +105,7 @@ const PRICING_TIERS = [
     description: '5 assessments and 15 pulse checks per month with full Literacy Hub access',
     icon: Sparkles,
     color: '#2563eb',
-    colorClass: 'text-eari-blue-light',
+    colorClass: 'text-slate-400',
     bgColor: 'bg-eari-blue/15',
     borderColor: 'border-eari-blue/30',
     features: [
@@ -264,6 +264,7 @@ export default function PricingPage() {
   const { data: session, status: sessionStatus } = useSession()
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>('monthly')
   const [enterprisePriceLabel, setEnterprisePriceLabel] = useState('Custom')
+  const [earlyAccess, setEarlyAccess] = useState(false)
 
   const userTier = sessionStatus === 'authenticated'
     ? ((session?.user as Record<string, unknown>)?.tier as string) || 'free'
@@ -282,11 +283,25 @@ export default function PricingPage() {
         if (typeof data.enterprisePriceLabel === 'string' && data.enterprisePriceLabel.trim()) {
           setEnterprisePriceLabel(data.enterprisePriceLabel.trim())
         }
+        setEarlyAccess(data.earlyAccess === true)
       })
       .catch(() => {
         // Keep default label
       })
   }, [])
+
+  const earlyAccessBanner = earlyAccess ? (
+    <div className="mx-auto mb-10 max-w-3xl rounded-xl border border-white/[0.08] bg-navy-800/50 px-6 py-5 text-center">
+      <p className="font-heading text-base font-semibold text-foreground">
+        Early Access — every plan below is free right now
+      </p>
+      <p className="mt-2 font-sans text-sm text-muted-foreground">
+        E-ARI is in Early Access while we work with our first cohort. Create an account and you get the
+        full Growth feature set at no cost and no card required. Prices are shown so you know what the
+        platform will cost when the programme ends — we will tell you well before that happens.
+      </p>
+    </div>
+  ) : null
 
   const pricingTiers = PRICING_TIERS.map((tier) =>
     tier.id === 'enterprise'
@@ -299,6 +314,17 @@ export default function PricingPage() {
   // ---------------------------------------------------------------------------
 
   function renderCTA(tierId: string, ctaText: string) {
+    // Early Access: every paid tier is granted free, so a "Subscribe" button
+    // would be a dead end. One honest CTA — create an account — instead.
+    if (earlyAccess && tierId !== 'enterprise') {
+      return (
+        <Link href={isLoggedIn ? '/portal' : '/auth/register'} className="w-full">
+          <Button className="w-full btn-brand font-heading font-semibold min-h-[44px]">
+            {isLoggedIn ? 'Open your dashboard' : 'Get free access'} <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </Link>
+      )
+    }
     if (!isLoggedIn) {
       if (tierId === 'free') {
         return (
@@ -347,7 +373,7 @@ export default function PricingPage() {
       )
     }
     if (tierId === 'professional') {
-      if (isPro) return <Button disabled className="w-full bg-eari-blue/20 text-eari-blue-light border border-eari-blue/30 font-heading min-h-[44px]">Current Plan</Button>
+      if (isPro) return <Button disabled className="w-full bg-eari-blue/20 text-slate-400 border border-eari-blue/30 font-heading min-h-[44px]">Current Plan</Button>
       if (isGrowth || isEnterprise) return <Button disabled className="w-full bg-navy-700 text-muted-foreground font-heading min-h-[44px]">Included in your plan</Button>
       return (
         <Link href="/checkout?plan=professional" className="w-full">
@@ -416,7 +442,7 @@ export default function PricingPage() {
             <FadeUp delay={0.05}>
               <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight">
                 Pricing built around{' '}
-                <span className="text-eari-blue-light font-medium italic">how you scale</span>
+                <span className="text-slate-400 font-medium italic">how you scale</span>
               </h1>
             </FadeUp>
             <FadeUp delay={0.1}>
@@ -445,6 +471,13 @@ export default function PricingPage() {
           </div>
         </section>
 
+        {/* --- Early Access programme banner --- */}
+        {earlyAccessBanner && (
+          <section className="pb-2">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">{earlyAccessBanner}</div>
+          </section>
+        )}
+
         {/* --- Billing Toggle --- */}
         <section className="pb-4">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex justify-center">
@@ -454,7 +487,7 @@ export default function PricingPage() {
                   onClick={() => setBillingPeriod('monthly')}
                   className={`px-4 py-2 rounded-lg text-sm font-heading font-semibold transition-all min-h-[40px] ${
                     billingPeriod === 'monthly'
-                      ? 'bg-eari-blue text-white shadow-lg shadow-eari-blue/20'
+                      ? 'bg-slate-100 text-navy-900'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -464,7 +497,7 @@ export default function PricingPage() {
                   onClick={() => setBillingPeriod('yearly')}
                   className={`px-4 py-2 rounded-lg text-sm font-heading font-semibold transition-all min-h-[40px] flex items-center gap-2 ${
                     billingPeriod === 'yearly'
-                      ? 'bg-eari-blue text-white shadow-lg shadow-eari-blue/20'
+                      ? 'bg-slate-100 text-navy-900'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -520,7 +553,11 @@ export default function PricingPage() {
                                   animate={{ opacity: 1, y: 0 }}
                                   exit={{ opacity: 0, y: 8 }}
                                   transition={{ duration: 0.2 }}
-                                  className="font-heading text-3xl font-bold text-foreground"
+                                  className={`font-heading text-3xl font-bold ${
+                                    earlyAccess && tier.id !== 'free' && tier.id !== 'enterprise'
+                                      ? 'text-muted-foreground/60 line-through decoration-1'
+                                      : 'text-foreground'
+                                  }`}
                                 >
                                   {displayPrice}
                                 </motion.span>
@@ -531,6 +568,11 @@ export default function PricingPage() {
                                 </span>
                               )}
                             </div>
+                            {earlyAccess && tier.id !== 'free' && tier.id !== 'enterprise' && (
+                              <p className="mt-1 font-heading text-sm font-semibold text-foreground">
+                                Free during Early Access
+                              </p>
+                            )}
                             {billingPeriod === 'yearly' && tier.id === 'professional' && (
                               <p className="mt-1 text-xs text-emerald-400 font-sans">Save €98/yr (17% off)</p>
                             )}
@@ -547,7 +589,7 @@ export default function PricingPage() {
                               <li key={feature.text} className="flex items-start gap-2.5">
                                 {feature.included ? (
                                   <div className={`flex h-5 w-5 items-center justify-center rounded-full ${feature.highlight ? 'bg-eari-blue/20' : tier.bgColor} flex-shrink-0 mt-0.5`}>
-                                    <Check className={`h-3 w-3 ${feature.highlight ? 'text-eari-blue-light' : tier.colorClass}`} />
+                                    <Check className={`h-3 w-3 ${feature.highlight ? 'text-slate-400' : tier.colorClass}`} />
                                   </div>
                                 ) : (
                                   <div className="flex h-5 w-5 items-center justify-center rounded-full bg-navy-700/50 flex-shrink-0 mt-0.5">
@@ -633,7 +675,7 @@ export default function PricingPage() {
                         <tr className="border-b border-border/40">
                           <th className="text-left p-4 font-heading font-semibold text-foreground min-w-[160px]">Feature</th>
                           <th className="text-center p-3 font-heading font-semibold text-muted-foreground w-28">Starter</th>
-                          <th className="text-center p-3 font-heading font-semibold text-eari-blue-light w-28 bg-eari-blue/5">Professional</th>
+                          <th className="text-center p-3 font-heading font-semibold text-slate-400 w-28 bg-eari-blue/5">Professional</th>
                           <th className="text-center p-3 font-heading font-semibold text-violet-400 w-28 bg-violet-500/5">Growth</th>
                           <th className="text-center p-3 font-heading font-semibold text-amber-400 w-28">Enterprise</th>
                         </tr>
@@ -698,7 +740,7 @@ export default function PricingPage() {
                       <AccordionItem key={index} value={`faq-${index}`} className="border-border/40">
                         <AccordionTrigger className="px-6 py-4 font-heading font-semibold text-foreground text-left hover:no-underline hover:bg-navy-700/30 transition-colors min-h-[44px]">
                           <span className="flex items-center gap-2">
-                            <HelpCircle className="h-4 w-4 text-eari-blue-light flex-shrink-0" />
+                            <HelpCircle className="h-4 w-4 text-slate-400 flex-shrink-0" />
                             {faq.question}
                           </span>
                         </AccordionTrigger>

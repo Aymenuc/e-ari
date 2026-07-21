@@ -7,6 +7,7 @@ import { getServerSession } from 'next-auth'
 import Stripe from 'stripe'
 import { authOptions } from '@/lib/auth'
 import { getBaseUrl } from '@/lib/site-url'
+import { isEarlyAccessOn, EARLY_ACCESS_TIER } from '@/lib/early-access'
 import {
   createCheckoutSession,
   STRIPE_PRICE_PRO,
@@ -19,6 +20,20 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
+    // ── Early Access: subscriptions are intentionally closed ──────────────
+    // Everyone receives the programme tier free; taking money now would be
+    // both unnecessary and misleading. Flip `early_access_mode` off in Admin
+    // to reopen checkout.
+    if (await isEarlyAccessOn()) {
+      return NextResponse.json(
+        {
+          error: 'early_access',
+          message: `Subscriptions are closed during Early Access — every account already has full ${EARLY_ACCESS_TIER}-tier features at no cost. We will be in touch before the programme ends.`,
+        },
+        { status: 409 },
+      )
+    }
+
     const body = await request.json()
     const { tier, billing } = body as { tier?: string; billing?: string }
 
