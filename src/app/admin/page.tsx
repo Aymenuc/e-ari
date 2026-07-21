@@ -475,6 +475,7 @@ interface PlatformSettings {
   custom_brand_logo_url: string;
   custom_brand_accent_color: string;
   enterprise_price_label: string;
+  early_access_mode: boolean;
 }
 
 function SettingsTab() {
@@ -722,11 +723,16 @@ function SettingsTab() {
         <CardHeader>
           <CardTitle className="font-heading text-lg flex items-center gap-2">
             <CreditCard className="h-5 w-5 text-eari-blue" />
-            Pricing Labels
+            Pricing &amp; Early Access
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
+          <SettingRow
+            settingKey="early_access_mode"
+            label="Early Access mode"
+            description="Grants every account full Growth features free and closes checkout. Prices stay visible on /pricing, struck through with 'Free during Early Access'. Turn OFF to reopen subscriptions — then run endEarlyAccess() to return granted accounts to free (paying customers are never touched)."
+          />
+          <div className="space-y-2 pt-2 border-t border-border/40">
             <Label htmlFor="enterprise_price_label">Enterprise Price Label</Label>
             <Input
               id="enterprise_price_label"
