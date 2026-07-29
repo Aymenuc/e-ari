@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import bcrypt from 'bcryptjs';
+import { checkRateLimitFromRequest } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
+    // The reset token is the sole credential here, so an unlimited endpoint is
+    // an offline-speed guessing oracle exposed over HTTP.
+    const rateLimitError = await checkRateLimitFromRequest(req, 'reset-password', 5, 60);
+    if (rateLimitError) return rateLimitError;
+
     const { token, email, password } = await req.json();
 
     if (!token || !email || !password) {

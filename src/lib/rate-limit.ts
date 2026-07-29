@@ -64,6 +64,10 @@ export const ENDPOINT_LIMITS: Record<string, RateLimitConfig> = {
   compliance_upload: { limit: 20, windowMs: ONE_HOUR_MS },
   compliance_classify: { limit: 5, windowMs: ONE_HOUR_MS },
   compliance_generate: { limit: 10, windowMs: ONE_HOUR_MS },
+  // Failed password attempts, keyed by the account being targeted rather than
+  // by IP: the threat is a sustained guess against one known address, and an
+  // attacker rotating source addresses would walk straight past an IP bucket.
+  login: { limit: 8, windowMs: FIFTEEN_MINUTES_MS },
   default: { limit: 30, windowMs: FIFTEEN_MINUTES_MS },
 };
 

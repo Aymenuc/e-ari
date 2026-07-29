@@ -5,6 +5,7 @@ import GitHubProvider from "next-auth/providers/github";
 import TwitterProvider from "next-auth/providers/twitter";
 import { db } from "./db";
 import bcrypt from "bcryptjs";
+import { checkRateLimit } from "./rate-limit";
 import { sendWelcomeEmail } from "./email-service";
 import { getSetting } from "./platform-settings";
 import { grantEarlyAccessIfEligible } from "@/lib/early-access";
@@ -40,6 +41,25 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           return null;
+        }
+
+        /**
+         * Throttle password guessing.
+         *
+         * Every other unauthenticated endpoint goes through
+         * checkRateLimitFromRequest, but the credentials callback never sees a
+         * NextRequest, so this route was the one unmetered door in the auth
+         * surface — unlimited guesses against any known address.
+         *
+         * Keyed by the target account, not the caller: the realistic attack is
+         * a sustained run against one address, and anyone with a proxy pool
+         * would step around an IP bucket. Consumed before the bcrypt compare so
+         * the work is bounded too.
+         */
+        const identifier = credentials.email.toLowerCase().trim();
+        const limit = await checkRateLimit('login', identifier);
+        if (!limit.allowed) {
+          throw new Error('TOO_MANY_ATTEMPTS');
         }
 
         const user = await db.user.findUnique({

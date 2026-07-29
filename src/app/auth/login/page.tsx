@@ -39,6 +39,11 @@ function LoginForm() {
 
       if (result?.error === 'EMAIL_NOT_VERIFIED') {
         router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
+      } else if (result?.error === 'TOO_MANY_ATTEMPTS') {
+        // Distinguished from a wrong password on purpose: someone locked out by
+        // their own typing needs to know waiting fixes it, or they will sit
+        // there re-entering a password that was right two attempts ago.
+        setError("Too many sign-in attempts. Please wait a few minutes and try again.");
       } else if (result?.error) {
         setError("Invalid email or password. Please try again.");
       } else {

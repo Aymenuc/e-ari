@@ -4,11 +4,17 @@ import { Resend } from 'resend';
 import crypto from 'crypto';
 import { resetEmailHtml } from '@/lib/email-templates';
 import { getBaseUrl } from '@/lib/site-url';
+import { checkRateLimitFromRequest } from '@/lib/rate-limit';
 
 const BASE_URL = getBaseUrl();
 
 export async function POST(req: NextRequest) {
   try {
+    // Unauthenticated and it sends mail on demand: without a cap this endpoint
+    // will deliver an unlimited reset flood to any address an attacker names.
+    const rateLimitError = await checkRateLimitFromRequest(req, 'forgot-password', 3, 60);
+    if (rateLimitError) return rateLimitError;
+
     const { email } = await req.json();
     if (!email || typeof email !== 'string') {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
