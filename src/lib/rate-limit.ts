@@ -68,6 +68,14 @@ export const ENDPOINT_LIMITS: Record<string, RateLimitConfig> = {
   // by IP: the threat is a sustained guess against one known address, and an
   // attacker rotating source addresses would walk straight past an IP bucket.
   login: { limit: 8, windowMs: FIFTEEN_MINUTES_MS },
+  // Report export. Growth and Enterprise have an unlimited *report* quota, and
+  // each export used to run a fresh LLM narrative, so "unlimited reports"
+  // silently meant "unlimited spend on our inference bill". The quota stays
+  // unlimited; this only stops a loop.
+  report: { limit: 10, windowMs: FIFTEEN_MINUTES_MS },
+  // A pipeline run executes the whole agent fleet, so it is the single most
+  // expensive thing a request can trigger. Deliberately tight.
+  pipeline: { limit: 3, windowMs: FIFTEEN_MINUTES_MS },
   default: { limit: 30, windowMs: FIFTEEN_MINUTES_MS },
 };
 

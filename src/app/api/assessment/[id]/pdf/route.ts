@@ -4,12 +4,13 @@ import { authOptions } from "@/lib/auth";
 import { resolveWorkspace, canWrite } from "@/lib/workspace";
 import { db } from "@/lib/db";
 import { scoreAssessment, type ResponseMap } from "@/lib/assessment-engine";
-import { generateAIInsights, generateTemplateInsightsSync } from "@/lib/ai-insights";
+import { generateAIInsights, generateTemplateInsightsSync, PROMPT_VERSION } from "@/lib/ai-insights";
 import { generateAssessmentReport, type AssessmentReportData } from "@/lib/report-generator";
 import { generateAssessmentPdf } from "@/lib/report-pdf";
 import { getSectorStats } from "@/lib/benchmark-engine";
 import { getSetting } from "@/lib/platform-settings";
 import { checkQuota, recordReportGenerated } from "@/lib/tier-limits";
+import { checkRateLimit, resolveIdentifier } from "@/lib/rate-limit";
 
 // GET /api/assessment/[id]/pdf — Generate professional .docx assessment report
 export async function GET(
@@ -39,6 +40,18 @@ export async function GET(
 
     if (assessment.status !== "completed") {
       return NextResponse.json({ error: "Assessment not yet completed" }, { status: 400 });
+    }
+
+    // The monthly report quota is Infinity on Growth and above, so it is not a
+    // spend control — it was the only thing between a download loop and an
+    // unbounded run of LLM narrative generations. This bounds the loop without
+    // touching what the plans promise.
+    const rate = await checkRateLimit('report', resolveIdentifier(session.user.id, req));
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { error: 'Too many report exports. Please wait a few minutes and try again.' },
+        { status: 429 },
+      );
     }
 
     // Tier quota gate — every tier has a monthly report allowance per /pricing.
@@ -85,12 +98,33 @@ export async function GET(
     // for UN bodies / NGOs / public agencies.
     const entityType = assessment.entityType || undefined;
     if (userTier === 'professional' || userTier === 'growth' || userTier === 'enterprise') {
+      // Reuse the narrative the insights route already generated and cached on
+      // the assessment. This route used to ignore that cache entirely and pay
+      // for a fresh generation on every single download of the same report.
+      let cached: { isAIGenerated?: boolean; promptVersion?: string } | null = null;
+      if (assessment.aiInsights) {
+        try {
+          const stored = JSON.parse(assessment.aiInsights);
+          if (stored && typeof stored === 'object' && stored.isAIGenerated === true && stored.promptVersion === PROMPT_VERSION) {
+            cached = stored;
+          }
+        } catch { /* corrupt cache — regenerate below */ }
+      }
+
       try {
-        insights = await generateAIInsights(scoringResult, {
+        insights = cached ?? await generateAIInsights(scoringResult, {
           sector: narrativeSector,
           orgSize: assessment.user.orgSize || undefined,
           entityType,
         }, responseMap);
+
+        // Write back so the next export — and the results page — are free.
+        if (!cached) {
+          await db.assessment.update({
+            where: { id },
+            data: { aiInsights: JSON.stringify(insights) },
+          }).catch(() => { /* the report is what matters; caching is best-effort */ });
+        }
       } catch {
         insights = generateTemplateInsightsSync(scoringResult, {
           sector: narrativeSector,

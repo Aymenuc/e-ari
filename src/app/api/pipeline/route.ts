@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { checkRateLimit, resolveIdentifier } from '@/lib/rate-limit';
 import {
   executePipeline,
   getLatestPipelineRun,
@@ -24,6 +25,16 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Runs the whole agent fleet — the most expensive request in the product,
+    // and until now callable in a loop by any signed-in user.
+    const rate = await checkRateLimit('pipeline', resolveIdentifier(session.user.id, req));
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { error: 'Too many pipeline runs. Please wait a few minutes and try again.' },
+        { status: 429 },
+      );
     }
 
     const body = await req.json();

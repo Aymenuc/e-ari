@@ -127,16 +127,16 @@ export function JourneyGuide() {
                   isNext
                     ? 'border-slate-300/40 bg-white/[0.05]'
                     : done
-                      ? 'border-emerald-500/25 bg-emerald-500/[0.04]'
+                      ? 'border-white/[0.1] bg-white/[0.02]'
                       : 'border-border/40 opacity-55'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className="font-mono text-[10px] text-muted-foreground">{i + 1}</span>
                   {done
-                    ? <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                    ? <CheckCircle2 className="h-4 w-4 text-slate-400" />
                     : <Icon className={`h-4 w-4 ${isNext ? 'text-slate-200' : 'text-muted-foreground'}`} />}
-                  <span className={`font-heading text-sm font-semibold ${done ? 'text-emerald-300' : isNext ? 'text-foreground' : 'text-slate-400'}`}>
+                  <span className={`font-heading text-sm font-semibold ${done ? 'text-slate-400' : isNext ? 'text-foreground' : 'text-slate-500'}`}>
                     {st.title}
                   </span>
                   {isNext && (
@@ -160,7 +160,7 @@ export function JourneyGuide() {
             <p className="font-sans text-xs text-muted-foreground">{next.plain}</p>
           </div>
         ) : allDone ? (
-          <p className="mt-4 font-sans text-sm text-emerald-400">
+          <p className="mt-4 font-sans text-sm text-slate-300">
             All four stages are active — your weekly digest keeps watch. Everything below is your live workspace.
           </p>
         ) : null}
