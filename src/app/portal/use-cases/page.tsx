@@ -6,8 +6,9 @@ import { Navigation } from "@/components/shared/navigation";
 import { Footer } from "@/components/shared/footer";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { TeachingEmptyState } from "@/components/shared/teaching-empty-state";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Plus, Scale, FileStack, ArrowUpRight } from "lucide-react";
+import { Loader2, Plus, Scale, FileStack, ArrowUpRight, ShieldCheck } from "lucide-react";
 
 interface SystemRow {
   id: string;
@@ -87,9 +88,22 @@ export default function UseCasesDashboardPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-eari-blue-light" />
               </div>
             ) : systems.length === 0 ? (
-              <p className="text-sm text-muted-foreground font-sans py-6 text-center">
-                No use cases yet. Create one to open the evidence vault.
-              </p>
+              <TeachingEmptyState
+                icon={ShieldCheck}
+                headline="Turn one AI system into a compliance file"
+                payoff="Register a system and we classify it against the EU AI Act, map the obligations that actually apply to it, and open an evidence vault where each uploaded document is matched to the clause it satisfies. This is what an auditor asks to see."
+                needs={[
+                  'One AI system you already use — a chatbot, a scoring model, a vendor feature counts',
+                  'Roughly what it does and who it affects (two sentences, no documentation required)',
+                  'Any contracts, model cards or DPIAs you have — these can come later',
+                ]}
+                action={
+                  <Button asChild className="btn-brand font-heading font-semibold">
+                    <Link href="/portal/use-cases/systems/new">Register your first system</Link>
+                  </Button>
+                }
+                footnote="About five minutes per system."
+              />
             ) : (
               <ul className="divide-y divide-border/40">
                 {systems.map((s) => (

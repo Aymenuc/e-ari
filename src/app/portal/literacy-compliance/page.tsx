@@ -6,6 +6,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { Navigation } from '@/components/shared/navigation';
 import { Footer } from '@/components/shared/footer';
 import { Button } from '@/components/ui/button';
+import { TeachingEmptyState } from '@/components/shared/teaching-empty-state';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -129,7 +130,17 @@ export default function LiteracyCompliancePage() {
             </div>
 
             {loading ? <Loader2 className="h-6 w-6 animate-spin text-eari-blue-light" /> : members.length === 0 ? (
-              <p className="font-sans text-sm text-muted-foreground">No team members yet.</p>
+              <TeachingEmptyState
+                icon={GraduationCap}
+                headline="Article 4 has applied since February 2025"
+                payoff="The AI Act requires you to ensure your staff have AI literacy appropriate to their role. Add your people, pick a role track, and every completed module becomes a dated attestation you can export as evidence. Your staff need no accounts — each gets a personal link by email."
+                needs={[
+                  'Names and email addresses of the staff who use or decide on AI',
+                  'Add them one at a time, or paste a CSV with name and email columns',
+                  'Roughly 45 to 100 minutes of study per person, depending on their track',
+                ]}
+                footnote="Assigning takes about three minutes; the roster export is one click."
+              />
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm font-sans">

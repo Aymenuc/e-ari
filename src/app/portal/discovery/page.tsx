@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Radar, Loader2, Upload, EyeOff, PlusCircle, Undo2 } from 'lucide-react';
+import { TeachingEmptyState } from '@/components/shared/teaching-empty-state';
 
 interface Catalog { id: string; name: string; category: string; vendor: string; trainsOnData: string; risk: string; note: string }
 interface Tool { id: string; rawName: string; source: string; userCount: number | null; status: string; catalog: Catalog | null }
@@ -117,7 +118,22 @@ export default function DiscoveryPage() {
 
         {loading ? <Loader2 className="h-6 w-6 animate-spin text-eari-blue-light" /> : visible.length === 0 ? (
           <Card className="bg-navy-800 border-border/60"><CardContent className="p-8 text-center">
-            <p className="font-sans text-sm text-muted-foreground">No scans yet. Upload an export above — results appear here with risk highlights.</p>
+            <TeachingEmptyState
+              icon={Radar}
+              headline="Find the AI tools nobody declared"
+              payoff="Upload one export and we match every line against a catalogue of AI tools, flagging the ones that carry risk. Most organisations are surprised by what comes back — that surprise is the point, and it is far cheaper to find it here than in an audit."
+              needs={[
+                'A CSV export of app sign-ins from your SSO (Google Workspace, Okta, Entra ID, or similar)',
+                'Or a CSV of software expenses from your finance tool — the vendor-name column is enough',
+                'No integration, no admin credentials, no agent to install',
+              ]}
+              action={
+                <Button disabled={busy} onClick={() => fileRef.current?.click()} className="btn-brand font-heading font-semibold">
+                  <Upload className="h-4 w-4 mr-2" />Upload a CSV
+                </Button>
+              }
+              footnote="Takes about ten minutes, most of which is exporting the file."
+            />
           </CardContent></Card>
         ) : (
           <div className="space-y-3">

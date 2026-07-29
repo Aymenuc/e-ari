@@ -6,11 +6,12 @@ import { useEffect, useState, useCallback } from 'react';
 import { Navigation } from '@/components/shared/navigation';
 import { Footer } from '@/components/shared/footer';
 import { Button } from '@/components/ui/button';
+import { TeachingEmptyState } from '@/components/shared/teaching-empty-state';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { ShieldAlert, Loader2, Send, Trash2, Building2, FileUp } from 'lucide-react';
+import { ShieldAlert, Loader2, Send, Trash2, Building2, FileUp, Plug } from 'lucide-react';
 import { useRef } from 'react';
 
 interface Vendor {
@@ -113,7 +114,16 @@ export default function VendorsPage() {
         {loading ? <Loader2 className="h-6 w-6 animate-spin text-eari-blue-light" /> : vendors.length === 0 ? (
           <Card className="bg-navy-800 border-border/60"><CardContent className="p-8 text-center">
             <Building2 className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-            <p className="font-sans text-sm text-muted-foreground">No vendors yet. Tools registered from Shadow AI Discovery auto-create their vendors here.</p>
+            <TeachingEmptyState
+              icon={Plug}
+              headline="Know what your AI vendors do with your data"
+              payoff="Send a vendor a ten-minute questionnaire and get back a deterministic risk score, with critical flags for the two answers that matter most: whether they train on your data, and whether a data-processing agreement exists. As the deployer, their gaps become your obligations."
+              needs={[
+                'A vendor name and one contact email — they need no account to respond',
+                'Nothing else; the questionnaire is sent as a secure link and scored on return',
+              ]}
+              footnote="Tools you register from Shadow AI Discovery appear here automatically."
+            />
           </CardContent></Card>
         ) : (
           <div className="space-y-4">
