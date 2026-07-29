@@ -298,7 +298,7 @@ const PRICING_TIERS = [
       { text: '1 team member', included: true },
       { text: 'Community support', included: true },
       { text: 'AI narrative insights', included: false },
-      { text: '.docx report download', included: false },
+      { text: 'Board-ready report (PDF + Word)', included: false },
       { text: 'Sector benchmarks', included: false },
       { text: 'Admin portal', included: false },
     ],
@@ -321,7 +321,7 @@ const PRICING_TIERS = [
       { text: 'Full AI narrative insights', included: true },
       { text: '15 pulse checks per month', included: true },
       { text: '5 team members', included: true },
-      { text: '3 .docx report downloads/mo', included: true },
+      { text: '3 Board-ready report (PDF + Word)s/mo', included: true },
       { text: 'Core sector benchmarks', included: true },
       { text: 'Basic admin portal', included: true },
       { text: 'Email support', included: true },
@@ -346,7 +346,7 @@ const PRICING_TIERS = [
       { text: '20 assessments per month', included: true },
       { text: '50 pulse checks per month', included: true },
       { text: '25 team members', included: true },
-      { text: 'Unlimited .docx reports', included: true },
+      { text: 'Unlimited board-ready reports (PDF + Word)', included: true },
       { text: 'All sector benchmarks', included: true },
       { text: 'Full admin portal', included: true },
       { text: 'Read-only API access', included: true },
@@ -473,6 +473,7 @@ export default function Home() {
 
   const [isAnnual, setIsAnnual] = useState(false)
   const [enterprisePriceLabel, setEnterprisePriceLabel] = useState('Custom')
+  const [earlyAccess, setEarlyAccess] = useState(false)
 
   useEffect(() => {
     fetch('/api/pricing-config')
@@ -481,6 +482,7 @@ export default function Home() {
         if (typeof data.enterprisePriceLabel === 'string' && data.enterprisePriceLabel.trim()) {
           setEnterprisePriceLabel(data.enterprisePriceLabel.trim())
         }
+        setEarlyAccess(data.earlyAccess === true)
       })
       .catch(() => {
         // Keep default label
@@ -1121,7 +1123,22 @@ export default function Home() {
               </div>
             </FadeUp>
 
-            <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+            {earlyAccess && (
+              <FadeUp>
+                <div className="mx-auto mt-10 max-w-3xl rounded-xl border border-white/[0.08] bg-navy-800/50 px-6 py-5 text-center">
+                  <p className="font-heading text-base font-semibold text-slate-100">
+                    Early Access &mdash; every plan below is free right now
+                  </p>
+                  <p className="mt-2 font-sans text-sm text-slate-400">
+                    We&apos;re working with our first cohort. Create an account and you get the full Growth
+                    feature set at no cost, no card required. Prices are shown so you know what the platform
+                    will cost when the programme ends.
+                  </p>
+                </div>
+              </FadeUp>
+            )}
+
+            <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
               {pricingTiers.map((tier, i) => {
                 const TierIcon = tier.icon
                 const isPro = tier.highlighted
@@ -1144,7 +1161,7 @@ export default function Home() {
                       >
                         {isPro && (
                           <div className="absolute top-0 left-1/2 -translate-x-1/2 z-10">
-                            <Badge className="bg-eari-blue text-white font-heading text-[10px] uppercase tracking-wide px-3 py-1 border border-white/10 shadow-sm shadow-black/30">
+                            <Badge className="bg-slate-100 text-navy-900 font-heading text-[10px] uppercase tracking-wide px-3 py-1 border border-white/10 shadow-sm shadow-black/30">
                               Most popular
                             </Badge>
                           </div>
@@ -1158,7 +1175,7 @@ export default function Home() {
                             >
                               <TierIcon className="h-5 w-5" style={{ color: tier.color }} />
                             </div>
-                            <CardTitle className="font-heading text-lg text-foreground" style={{ color: isPro ? tier.color : undefined }}>
+                            <CardTitle className="font-heading text-lg text-foreground" >
                               {tier.name}
                             </CardTitle>
                           </div>
@@ -1167,15 +1184,22 @@ export default function Home() {
 
                         <CardContent>
                           <div className="mt-2 mb-6">
-                            {isPro ? (
-                              <span className="font-heading text-5xl font-semibold tracking-tight text-slate-100">{isAnnual ? tier.yearlyPrice : tier.price}</span>
-                            ) : isEnterprise ? (
-                              <span className="font-heading text-5xl font-semibold tracking-tight text-[#d4b878]">{isAnnual ? tier.yearlyPrice : tier.price}</span>
-                            ) : (
-                              <span className="font-heading text-5xl font-semibold tracking-tight text-foreground">{isAnnual ? tier.yearlyPrice : tier.price}</span>
-                            )}
+                            <span
+                              className={`font-heading text-5xl font-semibold tracking-tight ${
+                                earlyAccess && !isEnterprise && tier.name !== 'Starter'
+                                  ? 'text-muted-foreground/50 line-through decoration-1'
+                                  : 'text-slate-100'
+                              }`}
+                            >
+                              {isAnnual ? tier.yearlyPrice : tier.price}
+                            </span>
                             {(isAnnual ? tier.yearlyPeriod : tier.period) && (
                               <span className="text-muted-foreground font-sans text-sm ml-1">{isAnnual ? tier.yearlyPeriod : tier.period}</span>
+                            )}
+                            {earlyAccess && !isEnterprise && tier.name !== 'Starter' && (
+                              <p className="mt-2 font-heading text-sm font-semibold text-slate-100">
+                                Free during Early Access
+                              </p>
                             )}
                           </div>
 
@@ -1214,18 +1238,25 @@ export default function Home() {
                         </CardContent>
 
                         <CardFooter className="pt-2">
-                          <Link href={isAnnual ? (tier.yearlyHref || tier.href) : tier.href} className="w-full">
+                          <Link
+                            href={
+                              earlyAccess && !isEnterprise
+                                ? '/auth/register'
+                                : isAnnual
+                                ? (tier.yearlyHref || tier.href)
+                                : tier.href
+                            }
+                            className="w-full"
+                          >
                             <Button
                               className={`w-full font-heading font-semibold h-11 ${
-                                isPro
+                                isPro || (earlyAccess && !isEnterprise)
                                   ? 'btn-brand border border-white/[0.08]'
-                                  : isEnterprise
-                                  ? 'bg-[#b8923f]/90 hover:bg-[#c9a44d] text-navy-950 border border-[#d4a853]/40'
                                   : 'bg-transparent border border-white/[0.12] text-foreground hover:bg-navy-700/90 hover:border-white/[0.16]'
                               }`}
                             >
-                              {tier.cta}
-                              {isPro && <ArrowRight className="ml-2 h-4 w-4" />}
+                              {earlyAccess && !isEnterprise ? 'Get free access' : tier.cta}
+                              {(isPro || (earlyAccess && !isEnterprise)) && <ArrowRight className="ml-2 h-4 w-4" />}
                             </Button>
                           </Link>
                         </CardFooter>

@@ -86,7 +86,7 @@ const PRICING_TIERS = [
       { text: '3 pulse checks / month', included: true },
       { text: '1 team member', included: true },
       { text: 'Basic Literacy Hub', included: true },
-      { text: '1 .docx report / month (€29 add-on)', included: true },
+      { text: '1 board-ready report / month (PDF + Word)', included: true },
       { text: '1 sector benchmark', included: true },
       { text: 'Community support', included: true },
       { text: 'Admin portal', included: false },
@@ -113,7 +113,7 @@ const PRICING_TIERS = [
       { text: '15 pulse checks / month', included: true },
       { text: '5 team members', included: true },
       { text: 'Full Literacy library', included: true },
-      { text: '3 .docx reports included', included: true },
+      { text: '3 board-ready reports / month (PDF + Word)', included: true },
       { text: '5 sector benchmarks', included: true },
       { text: 'Basic admin portal', included: true },
       { text: 'Email support (48h)', included: true },
@@ -140,7 +140,7 @@ const PRICING_TIERS = [
       { text: '50 pulse checks / month', included: true },
       { text: '25 team members', included: true },
       { text: 'Full library + Learning Paths', included: true },
-      { text: 'Unlimited .docx reports', included: true },
+      { text: 'Unlimited board-ready reports (PDF + Word)', included: true },
       { text: 'All sectors', included: true },
       { text: 'Full admin portal', included: true },
       { text: 'Read-only API access', included: true },
@@ -224,7 +224,7 @@ const COMPARISON_FEATURES = [
 const FAQ_ITEMS = [
   {
     question: 'What is the difference between Professional and Growth?',
-    answer: 'Professional is for individual practitioners or small teams — 5 assessments, 15 pulse checks, 5 team members, and basic admin. Growth is built for scaling organizations: 20 assessments, 50 pulse checks, 25 team members, all sector benchmarks, unlimited .docx reports, full admin portal, read-only API, and quarterly business reviews with our team.',
+    answer: 'Professional is for individual practitioners or small teams — 5 assessments, 15 pulse checks, 5 team members, and basic admin. Growth is built for scaling organizations: 20 assessments, 50 pulse checks, 25 team members, all sector benchmarks, unlimited board-ready reports, full admin portal, read-only API, and quarterly business reviews with our team.',
   },
   {
     question: 'Are the plan limits per account or per user?',
@@ -236,7 +236,7 @@ const FAQ_ITEMS = [
   },
   {
     question: 'What is the €29 .docx add-on on Starter?',
-    answer: 'Starter includes 1 .docx report download per month. If you need additional downloads without upgrading, you can purchase extra reports at €29 each. Professional includes 3, and Growth and Enterprise are unlimited.',
+    answer: 'Starter includes 1 board-ready report download per month. If you need additional downloads without upgrading, you can purchase extra reports at €29 each. Professional includes 3, and Growth and Enterprise are unlimited.',
   },
   {
     question: 'Can I cancel anytime?',
