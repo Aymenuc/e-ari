@@ -531,10 +531,10 @@ export default function PulsePage() {
                         <Line
                           type="monotone"
                           dataKey="overall"
-                          stroke="#2563eb"
+                          stroke="#38bdf8"
                           strokeWidth={3}
-                          dot={{ fill: '#2563eb', r: 5, strokeWidth: 2, stroke: '#161b22' }}
-                          activeDot={{ r: 7, fill: '#3b82f6', stroke: '#161b22', strokeWidth: 2 }}
+                          dot={{ fill: '#38bdf8', r: 5, strokeWidth: 2, stroke: '#161b22' }}
+                          activeDot={{ r: 7, fill: '#7dd3fc', stroke: '#161b22', strokeWidth: 2 }}
                           animationDuration={1200}
                         />
                         {/* Sector average reference line */}

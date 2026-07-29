@@ -5,6 +5,10 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
+import { MATURITY_BANDS } from '@/lib/pillars'
+
+/** Used only if a band label arrives that isn't in MATURITY_BANDS. */
+const FALLBACK_BAND_COLOR = '#7d93ad'
 import {
   Brain,
   Send,
@@ -302,7 +306,7 @@ export default function DiscoveryPage() {
               className="pointer-events-none absolute inset-0"
             >
               <div className="absolute -top-32 right-1/4 h-96 w-96 rounded-full bg-eari-blue/8 blur-3xl" />
-              <div className="absolute -bottom-32 left-1/4 h-96 w-96 rounded-full bg-violet-500/6 blur-3xl" />
+              <div className="absolute -bottom-32 left-1/4 h-96 w-96 rounded-full bg-slate-400/[0.05] blur-3xl" />
             </div>
             <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
               <div className="mb-5 flex items-center gap-3">
@@ -382,12 +386,11 @@ export default function DiscoveryPage() {
     )
   }
 
-  const bandColors: Record<string, string> = {
-    Laggard: '#ef4444',
-    Follower: '#f59e0b',
-    Chaser: '#3b82f6',
-    Pacesetter: '#22c55e',
-  }
+  /* Derived from MATURITY_BANDS rather than restated. This map had already
+     drifted out of sync with the canonical band colours once. */
+  const bandColors: Record<string, string> = Object.fromEntries(
+    Object.values(MATURITY_BANDS).map(b => [b.label, b.color]),
+  )
 
   return (
     <div className="min-h-screen flex flex-col bg-navy-900">
@@ -445,7 +448,7 @@ export default function DiscoveryPage() {
                       </CardTitle>
                       <Badge
                         className="font-heading text-xs text-white"
-                        style={{ backgroundColor: bandColors[profile.estimatedBand] || '#3b82f6' }}
+                        style={{ backgroundColor: bandColors[profile.estimatedBand] || FALLBACK_BAND_COLOR }}
                       >
                         {profile.estimatedBand}
                       </Badge>
@@ -459,7 +462,7 @@ export default function DiscoveryPage() {
                           <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(48,57,74,0.4)" strokeWidth="6" />
                           <circle
                             cx="50" cy="50" r="45" fill="none"
-                            stroke={bandColors[profile.estimatedBand] || '#3b82f6'}
+                            stroke={bandColors[profile.estimatedBand] || FALLBACK_BAND_COLOR}
                             strokeWidth="6" strokeLinecap="round"
                             strokeDasharray={283}
                             strokeDashoffset={283 - 283 * (profile.estimatedScore / 100)}
@@ -682,7 +685,7 @@ export default function DiscoveryPage() {
               <Card className="bg-navy-800 border-border/50 h-full">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <AlertTriangle className="h-4 w-4 text-orange-400" />
+                    <AlertTriangle className="h-4 w-4 text-amber-400" />
                     <h3 className="font-heading font-semibold text-sm text-foreground">Not a Substitute</h3>
                   </div>
                   <p className="text-xs text-muted-foreground font-sans leading-relaxed">

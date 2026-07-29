@@ -40,7 +40,6 @@ import {
   type PortalInboxItem,
 } from '@/components/shared/compliance-inbox';
 import { CoverageGaugeCard } from '@/components/shared/coverage-gauge';
-import { RecentActivityCard } from '@/components/shared/recent-activity';
 import type { ProgressionState } from '@/lib/progression';
 import { AIAssistant } from '@/components/shared/ai-assistant';
 import { BillingCard } from '@/components/account/billing-card';
@@ -76,6 +75,8 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { scoreRamp } from '@/lib/score-ramp';
+import { tierBadgeClasses } from '@/lib/tier';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -111,21 +112,6 @@ function tierLabel(tier: string): string {
   }
 }
 
-function tierBadgeClasses(tier: string): string {
-  switch (tier) {
-    case 'professional':
-      return 'bg-eari-blue/20 text-slate-300 border-eari-blue/30';
-    case 'growth':
-      return 'bg-violet-500/20 text-violet-400 border-violet-500/30';
-    case 'autopilot':
-      return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
-    case 'enterprise':
-      return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-    default:
-      return 'bg-muted text-muted-foreground border-border';
-  }
-}
-
 function statusBadge(status: string) {
   switch (status) {
     case 'completed':
@@ -148,16 +134,19 @@ function maturityBandLabel(band: string | null): string {
   return map[band] ?? band;
 }
 
+/* The band is just a coarser view of the score, so it uses the same cool
+   ordinal ramp the results page draws scores with. A red/amber/green traffic
+   light here contradicted that ramp two cards apart on the same screen. */
 function maturityBandColor(band: string | null): string {
   switch (band) {
     case 'pacesetter':
-      return 'text-emerald-400';
+      return 'text-sky-300';
     case 'chaser':
-      return 'text-blue-400';
+      return 'text-sky-400/80';
     case 'follower':
-      return 'text-amber-400';
+      return 'text-slate-400';
     case 'laggard':
-      return 'text-red-400';
+      return 'text-slate-500';
     default:
       return 'text-muted-foreground';
   }
@@ -181,9 +170,10 @@ function CountUpNumber({ value, duration = 1100 }: { value: number; duration?: n
 }
 
 /** Compact readiness ring beside the welcome heading — latest completed score. */
-function MiniScoreRing({ score, band }: { score: number; band: string | null }) {
-  const color =
-    band === 'pacesetter' ? '#22c55e' : band === 'chaser' ? '#3b82f6' : band === 'follower' ? '#f59e0b' : '#ef4444';
+function MiniScoreRing({ score }: { score: number; band?: string | null }) {
+  /* Same ramp the results page uses, driven by the score itself rather than
+     by the band — the ring and the number it wraps can no longer disagree. */
+  const color = scoreRamp(score);
   const C = 2 * Math.PI * 26;
   return (
     <div className="relative hidden sm:flex h-16 w-16 items-center justify-center flex-shrink-0" aria-label={`Latest readiness score ${Math.round(score)}`}>
@@ -202,10 +192,6 @@ function MiniScoreRing({ score, band }: { score: number; band: string | null }) 
       </span>
     </div>
   );
-}
-
-function truncateId(id: string): string {
-  return id.length > 12 ? `${id.slice(0, 8)}...` : id;
 }
 
 // ---------------------------------------------------------------------------
@@ -489,7 +475,7 @@ export default function PortalPage() {
                     <Table>
                       <TableHeader>
                         <TableRow className="border-border/40 hover:bg-transparent">
-                          <TableHead className="text-muted-foreground font-sans">Assessment ID</TableHead>
+                          <TableHead className="text-muted-foreground font-sans">Assessment</TableHead>
                           <TableHead className="text-muted-foreground font-sans">Date</TableHead>
                           <TableHead className="text-muted-foreground font-sans">Status</TableHead>
                           <TableHead className="text-muted-foreground font-sans">Score</TableHead>
@@ -498,11 +484,11 @@ export default function PortalPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {assessments.map((assessment) => (
+                        {assessments.map((assessment, i) => (
                           <TableRow key={assessment.id} className="border-border/30">
                             <TableCell>
-                              <span className="font-mono text-xs text-muted-foreground" title={assessment.id}>
-                                {truncateId(assessment.id)}
+                              <span className="font-sans text-sm text-foreground" title={assessment.id}>
+                                {assessment.isPulse ? 'Pulse check' : 'Assessment'} #{assessments.length - i}
                               </span>
                             </TableCell>
                             <TableCell>
@@ -671,7 +657,6 @@ export default function PortalPage() {
               ) : (
                 <CoverageGaugeCard obligationsApplicable={0} obligationsEvidenced={0} />
               )}
-              <RecentActivityCard assessments={assessments} />
             </aside>
           </section>
 

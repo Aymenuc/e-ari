@@ -33,7 +33,7 @@ const NOTIFICATION_ICONS: Record<string, React.ElementType> = {
 const NOTIFICATION_COLORS: Record<string, string> = {
   pulse_ready: 'text-emerald-400 bg-emerald-500/15',
   assessment_completed: 'text-eari-blue-light bg-eari-blue/15',
-  insight_ready: 'text-purple-400 bg-purple-500/15',
+  insight_ready: 'text-slate-200 bg-white/[0.07]',
   quarterly_reminder: 'text-amber-400 bg-amber-500/15',
   benchmark_update: 'text-cyan-400 bg-cyan-500/15',
   weekly_digest: 'text-blue-400 bg-blue-500/15',

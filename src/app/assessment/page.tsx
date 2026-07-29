@@ -77,51 +77,63 @@ interface LikertOptionConfig {
   glowColor: string;
 }
 
+/**
+ * The five Likert options.
+ *
+ * These were previously tinted red / orange / grey / blue / green. That is a
+ * measurement problem, not a styling one: colouring the options by valence
+ * tells the respondent which answers are the "bad" ones before they answer,
+ * and pushes them up the scale. On an instrument whose output is sold as a
+ * defensible, reproducible score, the input must not editorialise.
+ *
+ * The scale is ordered, so the ladder is expressed as neutral luminance —
+ * 1 sits back, 5 comes forward. Rank stays legible; approval does not.
+ */
 const LIKERT_OPTIONS: LikertOptionConfig[] = [
   {
     value: 1,
     label: 'Strongly Disagree',
-    tintClass: 'bg-red-500/5 hover:bg-red-500/10 border-red-500/20',
-    selectedBg: 'bg-red-500/15',
-    selectedBorder: 'border-red-500',
-    selectedText: 'text-red-400',
-    glowColor: 'rgba(239, 68, 68, 0.3)',
+    tintClass: 'bg-white/[0.015] hover:bg-white/[0.04] border-white/[0.07]',
+    selectedBg: 'bg-white/[0.07]',
+    selectedBorder: 'border-slate-500',
+    selectedText: 'text-slate-300',
+    glowColor: 'rgba(148, 163, 184, 0.22)',
   },
   {
     value: 2,
     label: 'Disagree',
-    tintClass: 'bg-orange-500/5 hover:bg-orange-500/10 border-orange-500/20',
-    selectedBg: 'bg-orange-500/15',
-    selectedBorder: 'border-orange-500',
-    selectedText: 'text-orange-400',
-    glowColor: 'rgba(249, 115, 22, 0.3)',
+    tintClass: 'bg-white/[0.02] hover:bg-white/[0.05] border-white/[0.08]',
+    selectedBg: 'bg-white/[0.08]',
+    selectedBorder: 'border-slate-400',
+    selectedText: 'text-slate-300',
+    glowColor: 'rgba(148, 163, 184, 0.24)',
   },
   {
     value: 3,
     label: 'Neutral',
-    tintClass: 'bg-muted/50 hover:bg-muted border-border',
-    selectedBg: 'bg-muted',
-    selectedBorder: 'border-muted-foreground',
-    selectedText: 'text-muted-foreground',
-    glowColor: 'rgba(139, 148, 158, 0.2)',
+    tintClass: 'bg-white/[0.025] hover:bg-white/[0.06] border-white/[0.09]',
+    selectedBg: 'bg-white/[0.09]',
+    selectedBorder: 'border-slate-400',
+    selectedText: 'text-slate-200',
+    glowColor: 'rgba(148, 163, 184, 0.26)',
   },
   {
     value: 4,
     label: 'Agree',
-    tintClass: 'bg-blue-500/5 hover:bg-blue-500/10 border-blue-500/20',
-    selectedBg: 'bg-blue-500/15',
-    selectedBorder: 'border-blue-500',
-    selectedText: 'text-blue-400',
-    glowColor: 'rgba(59, 130, 246, 0.3)',
+    tintClass: 'bg-white/[0.03] hover:bg-white/[0.07] border-white/[0.1]',
+    selectedBg: 'bg-white/[0.1]',
+    selectedBorder: 'border-slate-300',
+    selectedText: 'text-slate-100',
+    glowColor: 'rgba(203, 213, 225, 0.28)',
   },
   {
     value: 5,
     label: 'Strongly Agree',
-    tintClass: 'bg-green-500/5 hover:bg-green-500/10 border-green-500/20',
-    selectedBg: 'bg-green-500/15',
-    selectedBorder: 'border-green-500',
-    selectedText: 'text-green-400',
-    glowColor: 'rgba(34, 197, 94, 0.3)',
+    tintClass: 'bg-white/[0.035] hover:bg-white/[0.08] border-white/[0.11]',
+    selectedBg: 'bg-white/[0.12]',
+    selectedBorder: 'border-slate-200',
+    selectedText: 'text-white',
+    glowColor: 'rgba(226, 232, 240, 0.3)',
   },
 ];
 
@@ -350,7 +362,7 @@ function AnimatedProgressBar({ value, className, color }: { value: number; class
     <div className={`relative h-2.5 w-full overflow-hidden rounded-full bg-navy-700 ${className || ''}`}>
       <motion.div
         className="absolute inset-y-0 left-0 rounded-full"
-        style={{ backgroundColor: color || '#2563eb' }}
+        style={{ backgroundColor: color || '#7d93ad' }}
         initial={{ width: 0 }}
         animate={{ width: `${value}%` }}
         transition={{ duration: reduceMotion ? 0 : 0.8, ease: EASE_OUT }}
@@ -752,7 +764,7 @@ export default function AssessmentPage() {
                   strength on hover/selected, whisper otherwise (the old
                   per-sector rainbow read as clipart) */}
               <motion.div
-                className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-eari-blue via-indigo-400 to-violet-400 transition-opacity duration-200 ${isSelected ? 'opacity-100' : 'opacity-25 group-hover:opacity-70'}`}
+                className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-slate-600 to-slate-300 transition-opacity duration-200 ${isSelected ? 'opacity-100' : 'opacity-25 group-hover:opacity-70'}`}
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
                 transition={{ delay: 0.2 + idx * 0.06, duration: 0.4, ease: EASE_OUT }}
@@ -882,7 +894,7 @@ export default function AssessmentPage() {
                     animate="visible"
                     exit="exit"
                   >
-                    <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                    <CheckCircle2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -932,7 +944,7 @@ export default function AssessmentPage() {
                         animate="visible"
                         exit="exit"
                       >
-                        <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                        <CheckCircle2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -947,7 +959,7 @@ export default function AssessmentPage() {
                       }}
                       transition={{ duration: 0.5, ease: EASE_OUT }}
                       style={{
-                        backgroundColor: isComplete ? '#22c55e' : pillar.color,
+                        backgroundColor: isComplete ? '#cbd5e1' : pillar.color,
                       }}
                     />
                   </div>
@@ -1032,7 +1044,7 @@ export default function AssessmentPage() {
                     className="text-[10px] px-1.5 py-0 font-sans"
                     style={{
                       backgroundColor: 'rgba(37, 99, 235, 0.08)',
-                      color: '#93c5fd',
+                      color: '#a8bdd4',
                       border: '1px solid rgba(37, 99, 235, 0.28)',
                     }}
                   >
@@ -1197,7 +1209,7 @@ export default function AssessmentPage() {
                     className="text-[10px] px-1.5 py-0 font-sans"
                     style={{
                       backgroundColor: 'rgba(37, 99, 235, 0.08)',
-                      color: '#93c5fd',
+                      color: '#a8bdd4',
                       border: '1px solid rgba(37, 99, 235, 0.28)',
                     }}
                   >
@@ -1251,12 +1263,12 @@ export default function AssessmentPage() {
                         exit={{ scale: 0 }}
                         transition={{ type: 'spring', stiffness: 500, damping: 15 }}
                       >
-                        <Badge className="bg-green-500/10 text-green-400 border-green-500/20 text-[10px] px-1.5 py-0">
+                        <Badge className="bg-white/[0.06] text-slate-300 border-white/[0.12] text-[10px] px-1.5 py-0">
                           Complete
                         </Badge>
                       </motion.div>
                     ) : (
-                      <Badge variant="outline" className="text-orange-400 border-orange-500/30 text-[10px] px-1.5 py-0">
+                      <Badge variant="outline" className="text-slate-400 border-white/[0.12] text-[10px] px-1.5 py-0">
                         Incomplete
                       </Badge>
                     )}
@@ -1272,7 +1284,7 @@ export default function AssessmentPage() {
                       }}
                       transition={{ duration: 0.6, ease: EASE_OUT, delay: idx * 0.05 }}
                       style={{
-                        backgroundColor: isComplete ? '#22c55e' : pillar.color,
+                        backgroundColor: isComplete ? '#cbd5e1' : pillar.color,
                       }}
                     />
                   </div>
@@ -1421,7 +1433,7 @@ export default function AssessmentPage() {
                     className="text-[10px] px-1.5 py-0 font-sans"
                     style={{
                       backgroundColor: 'rgba(37, 99, 235, 0.08)',
-                      color: '#93c5fd',
+                      color: '#a8bdd4',
                       border: '1px solid rgba(37, 99, 235, 0.28)',
                     }}
                   >
@@ -1459,9 +1471,9 @@ export default function AssessmentPage() {
                   animate={{
                     width: currentStep === 0 ? 24 : 8,
                     backgroundColor: currentStep === 0
-                      ? '#2563eb'
+                      ? '#e2e8f0'
                       : selectedSector
-                      ? '#22c55e'
+                      ? '#7d93ad'
                       : 'rgba(48, 57, 74, 0.6)',
                   }}
                   transition={{ duration: 0.3, ease: EASE_OUT }}
@@ -1490,7 +1502,7 @@ export default function AssessmentPage() {
                         backgroundColor: isCurrent
                           ? pillar.color
                           : isComplete
-                          ? '#22c55e'
+                          ? '#7d93ad'
                           : 'rgba(48, 57, 74, 0.6)',
                       }}
                       animate={{
@@ -1498,7 +1510,7 @@ export default function AssessmentPage() {
                         backgroundColor: isCurrent
                           ? pillar.color
                           : isComplete
-                          ? '#22c55e'
+                          ? '#7d93ad'
                           : 'rgba(48, 57, 74, 0.6)',
                       }}
                       transition={{ duration: 0.3, ease: EASE_OUT }}
@@ -1519,9 +1531,9 @@ export default function AssessmentPage() {
                   animate={{
                     width: currentStep === 9 ? 24 : 8,
                     backgroundColor: currentStep === 9
-                      ? '#2563eb'
+                      ? '#e2e8f0'
                       : allPillarsComplete
-                      ? '#22c55e'
+                      ? '#7d93ad'
                       : 'rgba(48, 57, 74, 0.6)',
                   }}
                   transition={{ duration: 0.3 }}

@@ -47,7 +47,7 @@ export const SECTORS: SectorDefinition[] = [
     shortName: 'Healthcare',
     description: 'Hospitals, pharmaceutical companies, biotech firms, and medical research organizations deploying AI for clinical decision support, drug discovery, and patient outcomes.',
     icon: 'Heart',
-    color: '#ef4444',
+    color: '#8fa8c4',
     highlights: ['Patient data privacy', 'Clinical AI validation', 'Regulatory compliance (HIPAA/FDA)', 'Diagnostic accuracy'],
     pillarOverrides: {
       strategy: {
@@ -252,7 +252,7 @@ export const SECTORS: SectorDefinition[] = [
     shortName: 'Finance',
     description: 'Banks, insurance companies, investment firms, and fintech organizations deploying AI for risk modeling, fraud detection, algorithmic trading, and customer experience.',
     icon: 'Shield',
-    color: '#3b82f6',
+    color: '#7f9ab8',
     highlights: ['Fraud detection & AML', 'Risk modeling & stress testing', 'Regulatory compliance (Basel/SOX)', 'Algorithmic trading'],
     pillarOverrides: {
       strategy: {
@@ -456,7 +456,7 @@ export const SECTORS: SectorDefinition[] = [
     shortName: 'Manufacturing',
     description: 'Discrete and process manufacturers, industrial automation companies, and supply chain organizations deploying AI for predictive maintenance, quality control, and operational optimization.',
     icon: 'Settings',
-    color: '#f59e0b',
+    color: '#93b0cb',
     highlights: ['Predictive maintenance', 'Quality inspection AI', 'Supply chain optimization', 'Digital twin technology'],
     pillarOverrides: {
       strategy: {
@@ -662,7 +662,7 @@ export const SECTORS: SectorDefinition[] = [
     shortName: 'Retail',
     description: 'Retailers, e-commerce platforms, and consumer goods companies deploying AI for personalization, demand forecasting, customer analytics, and supply chain optimization.',
     icon: 'Target',
-    color: '#8b5cf6',
+    color: '#7590ad',
     highlights: ['Customer personalization', 'Demand forecasting', 'Inventory optimization', 'Visual search & recommendations'],
     pillarOverrides: {
       strategy: {
@@ -866,7 +866,7 @@ export const SECTORS: SectorDefinition[] = [
     shortName: 'Government',
     description: 'Federal, state, and local government agencies, public service organizations, and defense institutions deploying AI for citizen services, policy analysis, and operational efficiency.',
     icon: 'Shield',
-    color: '#64748b',
+    color: '#89a3bf',
     highlights: ['Citizen service delivery', 'Policy & regulatory AI', 'Procurement & transparency', 'National security applications'],
     pillarOverrides: {
       strategy: {
@@ -1072,7 +1072,7 @@ export const SECTORS: SectorDefinition[] = [
     shortName: 'Technology',
     description: 'Software companies, SaaS providers, platform companies, and tech startups deploying AI for product intelligence, developer productivity, and platform-scale operations.',
     icon: 'Cpu',
-    color: '#06b6d4',
+    color: '#6f89a6',
     highlights: ['AI-native product features', 'Developer productivity (Copilot)', 'Platform-scale MLOps', 'Data-driven product iteration'],
     pillarOverrides: {
       strategy: {
@@ -1276,7 +1276,7 @@ export const SECTORS: SectorDefinition[] = [
     shortName: 'Energy',
     description: 'Oil and gas companies, renewable energy providers, utility operators, and grid management organizations deploying AI for asset optimization, safety compliance, and energy transition.',
     icon: 'Database',
-    color: '#14b8a6',
+    color: '#9ab6d0',
     highlights: ['Grid optimization', 'Asset predictive maintenance', 'Safety & compliance', 'Energy demand forecasting'],
     pillarOverrides: {
       strategy: {
@@ -1482,7 +1482,7 @@ export const SECTORS: SectorDefinition[] = [
     shortName: 'Education',
     description: 'Universities, research institutions, EdTech companies, and educational organizations deploying AI for student outcomes, research acceleration, personalized learning, and institutional operations.',
     icon: 'Users',
-    color: '#ec4899',
+    color: '#7e97b3',
     highlights: ['Personalized learning', 'Research acceleration', 'Student success prediction', 'Academic integrity'],
     pillarOverrides: {
       strategy: {
@@ -1686,7 +1686,7 @@ export const SECTORS: SectorDefinition[] = [
     shortName: 'General',
     description: 'Organizations that span multiple industries or prefer a general-purpose AI readiness assessment using standard, industry-agnostic questions across all eight pillars.',
     icon: 'ClipboardList',
-    color: '#8b949e',
+    color: '#8b9db4',
     highlights: ['Industry-agnostic baseline', 'Universal readiness framework', 'Cross-sector benchmarking', 'Foundational assessment'],
     pillarOverrides: {}, // Uses base pillar questions (no overrides)
   },

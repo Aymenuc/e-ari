@@ -41,6 +41,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PILLARS, getPillarById } from '@/lib/pillars';
+import { scoreRamp } from '@/lib/score-ramp';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -278,13 +279,10 @@ function applyInlineFormatting(text: string, baseKey: number): React.ReactNode {
   return parts.length > 0 ? parts : text;
 }
 
-/** Get maturity color based on score */
-function getMaturityColor(score: number): string {
-  if (score <= 25) return '#ef4444';
-  if (score <= 50) return '#f59e0b';
-  if (score <= 75) return '#3b82f6';
-  return '#22c55e';
-}
+/** Maturity colour — the product's single score ramp, not a local traffic
+    light. This was the fifth hardcoded copy of band colours in the codebase
+    and had already drifted from the canonical set. */
+const getMaturityColor = scoreRamp;
 
 /** Get maturity label based on score */
 function getMaturityLabel(score: number): string {

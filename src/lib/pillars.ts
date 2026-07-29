@@ -26,10 +26,10 @@ export interface PillarDefinition {
 }
 
 export const MATURITY_BANDS = {
-  laggard: { label: 'Laggard', min: 0, max: 25, color: '#ef4444', description: 'Minimal or no AI readiness. Organization lacks foundational elements for AI adoption.' },
-  follower: { label: 'Follower', min: 26, max: 50, color: '#f59e0b', description: 'Early-stage readiness. Some initiatives exist but lack cohesion and strategic alignment.' },
-  chaser: { label: 'Chaser', min: 51, max: 75, color: '#3b82f6', description: 'Progressing readiness. Key foundations are in place with active investment in AI capabilities.' },
-  pacesetter: { label: 'Pacesetter', min: 76, max: 100, color: '#22c55e', description: 'Advanced readiness. Organization is well-positioned to leverage AI for competitive advantage.' },
+  laggard: { label: 'Laggard', min: 0, max: 25, color: '#4a5f78', description: 'Minimal or no AI readiness. Organization lacks foundational elements for AI adoption.' },
+  follower: { label: 'Follower', min: 26, max: 50, color: '#47708f', description: 'Early-stage readiness. Some initiatives exist but lack cohesion and strategic alignment.' },
+  chaser: { label: 'Chaser', min: 51, max: 75, color: '#3d7fa6', description: 'Progressing readiness. Key foundations are in place with active investment in AI capabilities.' },
+  pacesetter: { label: 'Pacesetter', min: 76, max: 100, color: '#2b8fbe', description: 'Advanced readiness. Organization is well-positioned to leverage AI for competitive advantage.' },
 } as const;
 
 export type MaturityBand = keyof typeof MATURITY_BANDS;
@@ -42,7 +42,7 @@ export const PILLARS: PillarDefinition[] = [
     weight: 0.15,
     description: 'Measures the alignment of AI initiatives with business objectives, the existence of a formal AI strategy, executive sponsorship, and long-term investment commitment.',
     icon: 'Target',
-    color: '#3b82f6',
+    color: '#8fa8c4',
     questions: [
       {
         id: 'strategy_1',
@@ -88,7 +88,7 @@ export const PILLARS: PillarDefinition[] = [
     weight: 0.15,
     description: 'Evaluates data quality, accessibility, governance practices, and the technical infrastructure supporting AI workloads including compute, storage, and pipelines.',
     icon: 'Database',
-    color: '#8b5cf6',
+    color: '#7f9ab8',
     questions: [
       {
         id: 'data_1',
@@ -134,7 +134,7 @@ export const PILLARS: PillarDefinition[] = [
     weight: 0.12,
     description: 'Assesses the maturity of AI/ML platforms, model deployment infrastructure, MLOps practices, and the integration of AI tools into existing technology ecosystems.',
     icon: 'Cpu',
-    color: '#06b6d4',
+    color: '#93b0cb',
     questions: [
       {
         id: 'technology_1',
@@ -180,7 +180,7 @@ export const PILLARS: PillarDefinition[] = [
     weight: 0.13,
     description: 'Measures AI workforce readiness including technical skills availability, hiring capability, upskilling programs, and organizational AI literacy across all levels.',
     icon: 'Users',
-    color: '#f59e0b',
+    color: '#7590ad',
     questions: [
       {
         id: 'talent_1',
@@ -226,7 +226,7 @@ export const PILLARS: PillarDefinition[] = [
     weight: 0.15,
     description: 'Evaluates the existence and maturity of AI governance frameworks, ethical guidelines, bias detection practices, transparency requirements, and accountability structures.',
     icon: 'Shield',
-    color: '#ef4444',
+    color: '#89a3bf',
     questions: [
       {
         id: 'governance_1',
@@ -272,7 +272,7 @@ export const PILLARS: PillarDefinition[] = [
     weight: 0.10,
     description: 'Measures organizational readiness for AI-driven change including innovation culture, cross-functional collaboration, change management maturity, and employee receptiveness.',
     icon: 'Heart',
-    color: '#ec4899',
+    color: '#6f89a6',
     questions: [
       {
         id: 'culture_1',
@@ -318,7 +318,7 @@ export const PILLARS: PillarDefinition[] = [
     weight: 0.10,
     description: 'Assesses the maturity of process automation, operational integration of AI, performance measurement, and continuous improvement practices for AI-powered workflows.',
     icon: 'Settings',
-    color: '#14b8a6',
+    color: '#9ab6d0',
     questions: [
       {
         id: 'process_1',
@@ -364,7 +364,7 @@ export const PILLARS: PillarDefinition[] = [
     weight: 0.10,
     description: 'Evaluates AI-specific security practices, data privacy protections, regulatory compliance posture, and the robustness of controls for adversarial and misuse scenarios.',
     icon: 'Lock',
-    color: '#64748b',
+    color: '#7e97b3',
     questions: [
       {
         id: 'security_1',

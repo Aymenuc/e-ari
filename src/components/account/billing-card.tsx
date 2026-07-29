@@ -35,6 +35,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { tierBadgeClasses } from '@/lib/tier';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -89,17 +90,6 @@ function tierLabel(tier: string): string {
       return 'Enterprise';
     default:
       return 'Free';
-  }
-}
-
-function tierBadgeClasses(tier: string): string {
-  switch (tier) {
-    case 'professional':
-      return 'bg-eari-blue/20 text-eari-blue-light border-eari-blue/30';
-    case 'enterprise':
-      return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-    default:
-      return 'bg-muted text-muted-foreground border-border';
   }
 }
 

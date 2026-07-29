@@ -75,3 +75,28 @@ export const TIER_FEATURE = {
   /** Full CRUD API access (write). */
   apiWrite: (t: string | null | undefined) => isEnterprise(t),
 } as const;
+
+/**
+ * Badge styling for a plan tier — the one definition.
+ *
+ * There were two copies of this: one on the portal dashboard and a second,
+ * incomplete one on the billing card that had no case for growth or autopilot
+ * and rendered them as plain muted chips. Both painted Enterprise gold, which
+ * made the billing plan the loudest object on a page about readiness scores.
+ *
+ * Tiers are a progression, so they are drawn as one: brighter is higher.
+ */
+export function tierBadgeClasses(tier: string | null | undefined): string {
+  switch (tier) {
+    case 'professional':
+      return 'bg-white/[0.06] text-slate-300 border-white/[0.12]';
+    case 'growth':
+      return 'bg-white/[0.08] text-slate-200 border-white/[0.16]';
+    case 'autopilot':
+      return 'bg-white/[0.11] text-slate-100 border-white/[0.2]';
+    case 'enterprise':
+      return 'bg-white/[0.14] text-white border-white/[0.26]';
+    default:
+      return 'bg-muted text-muted-foreground border-border';
+  }
+}

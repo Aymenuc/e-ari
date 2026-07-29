@@ -106,6 +106,11 @@ import { getVocab, type EntityType } from '@/lib/entity-types'
 import { LeverageMoves } from '@/components/shared/leverage-moves'
 import { ResultsTabs } from '@/components/shared/results-tabs'
 import { OverviewSpread } from '@/components/shared/overview-spread'
+import { scoreRamp } from '@/lib/score-ramp'
+
+/** Single accent for chart marks — the bright end of the score ramp, so
+    charts and score bars read as one visual language. */
+const CHART_ACCENT = '#38bdf8'
 
 /* ─── Deterministic pseudo-random (avoids hydration mismatch) ─────────── */
 
@@ -128,39 +133,42 @@ const RESULTS_TABS = [
 type UserTier = 'free' | 'professional' | 'growth' | 'autopilot' | 'enterprise'
 
 const TIER_CONFIG: Record<UserTier, { label: string; color: string; bgColor: string; borderColor: string; icon: React.ElementType }> = {
+  /* One ladder, brightening with the plan. The previous slate/violet/cyan/gold
+     set made the billing tier the most colourful thing on a page whose job is
+     to communicate a score — and gold on Enterprise was the loudest of all. */
   free: {
     label: 'Free',
     color: 'text-slate-400',
-    bgColor: 'bg-slate-500/15',
-    borderColor: 'border-slate-500/30',
+    bgColor: 'bg-white/[0.03]',
+    borderColor: 'border-white/[0.08]',
     icon: Zap,
   },
   professional: {
     label: 'Professional',
     color: 'text-slate-300',
-    bgColor: 'bg-white/[0.04] border border-white/[0.07]',
-    borderColor: 'border-eari-blue/30',
+    bgColor: 'bg-white/[0.05]',
+    borderColor: 'border-white/[0.11]',
     icon: Award,
   },
   growth: {
     label: 'Growth',
-    color: 'text-violet-400',
-    bgColor: 'bg-violet-500/15',
-    borderColor: 'border-violet-500/30',
+    color: 'text-slate-200',
+    bgColor: 'bg-white/[0.07]',
+    borderColor: 'border-white/[0.15]',
     icon: Award,
   },
   autopilot: {
     label: 'Autopilot',
-    color: 'text-cyan-400',
-    bgColor: 'bg-cyan-500/15',
-    borderColor: 'border-cyan-500/30',
+    color: 'text-slate-100',
+    bgColor: 'bg-white/[0.1]',
+    borderColor: 'border-white/[0.19]',
     icon: Award,
   },
   enterprise: {
     label: 'Enterprise',
-    color: 'text-amber-400',
-    bgColor: 'bg-amber-500/15',
-    borderColor: 'border-amber-500/30',
+    color: 'text-white',
+    bgColor: 'bg-white/[0.13]',
+    borderColor: 'border-white/[0.24]',
     icon: Crown,
   },
 }
@@ -213,12 +221,31 @@ function getMaturityBandDescription(band: MaturityBand): string {
   return MATURITY_BANDS[band]?.description ?? ''
 }
 
+const REVIEW_CYCLE_DAYS = 90
+
+/**
+ * Next-review chip. Colour is spent only on urgency that is actually
+ * actionable — overdue, or close enough to plan around. A review three months
+ * out is simply not news, so the default state stays neutral rather than
+ * congratulating the user in green for having done nothing yet.
+ */
+function reviewStatus(completedAt: string | Date): { cls: string; label: string } {
+  const due = new Date(completedAt).getTime() + REVIEW_CYCLE_DAYS * 86_400_000
+  const daysLeft = Math.ceil((due - Date.now()) / 86_400_000)
+  if (daysLeft <= 0) return { cls: 'border-red-500/40 text-red-400 bg-red-500/10', label: 'Review overdue — re-run now' }
+  if (daysLeft <= 14) return { cls: 'border-amber-500/40 text-amber-400 bg-amber-500/10', label: `${daysLeft} days until next review` }
+  return { cls: 'border-white/[0.12] text-slate-400 bg-white/[0.03]', label: `${daysLeft} days until next review` }
+}
+
+/* The band pill sits inches from the score ring and the pillar bars, which
+   both draw from the cool ordinal ramp. Giving it a red/amber/blue/green
+   traffic light made one number look like it had two colour systems. */
 function getMaturityBgClass(band: MaturityBand): string {
   switch (band) {
-    case 'laggard': return 'bg-red-500/15 text-red-400 border-red-500/30'
-    case 'follower': return 'bg-amber-500/15 text-amber-400 border-amber-500/30'
-    case 'chaser': return 'bg-blue-500/15 text-blue-400 border-blue-500/30'
-    case 'pacesetter': return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+    case 'laggard': return 'bg-white/[0.05] text-slate-400 border-white/[0.1]'
+    case 'follower': return 'bg-white/[0.06] text-slate-300 border-white/[0.12]'
+    case 'chaser': return 'bg-sky-400/[0.1] text-sky-300/90 border-sky-400/25'
+    case 'pacesetter': return 'bg-sky-400/[0.14] text-sky-300 border-sky-400/35'
     default: return 'bg-muted text-muted-foreground border-border'
   }
 }
@@ -1120,9 +1147,11 @@ export default function ResultsPage() {
     {
       label: '0-3 Months',
       subtitle: 'Quick Wins & Foundation',
-      color: 'text-emerald-400',
-      bgColor: 'bg-emerald-500/15',
-      borderColor: 'border-emerald-500/30',
+      /* Horizons are a sequence, not a severity scale — the nearest one is
+         brightest because it is next, not because later work is worse. */
+      color: 'text-slate-100',
+      bgColor: 'bg-white/[0.07]',
+      borderColor: 'border-white/[0.16]',
       items: scoring.pillarScores
         .filter(p => p.normalizedScore < 40)
         .slice(0, 2)
@@ -1131,9 +1160,9 @@ export default function ResultsPage() {
     {
       label: '3-6 Months',
       subtitle: 'Building Capability',
-      color: 'text-amber-400',
-      bgColor: 'bg-amber-500/15',
-      borderColor: 'border-amber-500/30',
+      color: 'text-slate-300',
+      bgColor: 'bg-white/[0.05]',
+      borderColor: 'border-white/[0.11]',
       items: scoring.pillarScores
         .filter(p => p.normalizedScore >= 40 && p.normalizedScore < 65)
         .slice(0, 3)
@@ -1142,9 +1171,9 @@ export default function ResultsPage() {
     {
       label: '6-12 Months',
       subtitle: 'Scaling & Optimization',
-      color: 'text-slate-300',
-      bgColor: 'bg-white/[0.04] border border-white/[0.07]',
-      borderColor: 'border-eari-blue/30',
+      color: 'text-slate-400',
+      bgColor: 'bg-white/[0.03]',
+      borderColor: 'border-white/[0.08]',
       items: scoring.pillarScores
         .filter(p => p.normalizedScore >= 65)
         .slice(0, 3)
@@ -1292,26 +1321,10 @@ export default function ResultsPage() {
                           {assessment.completedAt && (
                             <Badge
                               variant="outline"
-                              className={`text-xs px-3 py-1.5 font-heading ${
-                                (() => {
-                                  const completedDate = new Date(assessment.completedAt)
-                                  const nextReview = new Date(completedDate.getTime() + 90 * 24 * 60 * 60 * 1000)
-                                  const daysLeft = Math.ceil((nextReview.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-                                  if (daysLeft <= 0) return 'border-red-500/40 text-red-400 bg-red-500/10'
-                                  if (daysLeft <= 14) return 'border-amber-500/40 text-amber-400 bg-amber-500/10'
-                                  return 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10'
-                                })()
-                              }`}
+                              className={`text-xs px-3 py-1.5 font-heading ${reviewStatus(assessment.completedAt).cls}`}
                             >
                               <Calendar className="h-3 w-3 mr-1.5" />
-                              {(() => {
-                                const completedDate = new Date(assessment.completedAt)
-                                const nextReview = new Date(completedDate.getTime() + 90 * 24 * 60 * 60 * 1000)
-                                const daysLeft = Math.ceil((nextReview.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-                                return daysLeft <= 0
-                                  ? 'Review overdue — re-run now'
-                                  : `${daysLeft} days until next review`
-                              })()}
+                              {reviewStatus(assessment.completedAt).label}
                             </Badge>
                           )}
                         </div>
@@ -1366,16 +1379,16 @@ export default function ResultsPage() {
           {/* ─── ENTERPRISE: EXECUTIVE SUMMARY (Print-Ready) ────────────── */}
           {isEnterprise && (
             <FadeUp>
-              <Card className="bg-navy-800 border-amber-500/20 ring-1 ring-amber-500/10 hover-lift print:border-black print:bg-white print:text-black">
+              <Card className="bg-navy-800 border-white/[0.12] ring-1 ring-white/[0.05] hover-lift print:border-black print:bg-white print:text-black">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Landmark className="h-5 w-5 text-amber-400" />
+                      <Landmark className="h-5 w-5 text-slate-300" />
                       <CardTitle className="font-heading text-2xl font-bold tracking-tight text-foreground">
                         Executive Summary
                       </CardTitle>
                     </div>
-                    <Badge variant="outline" className="font-mono text-[10px] border-amber-500/30 text-amber-400">
+                    <Badge variant="outline" className="font-mono text-[10px] border-white/[0.16] text-slate-300">
                       Enterprise Exclusive
                     </Badge>
                   </div>
@@ -1404,13 +1417,13 @@ export default function ResultsPage() {
                       <div className="grid grid-cols-2 gap-3">
                         <div className="p-3 rounded-lg bg-navy-700/50">
                           <p className="text-[10px] text-muted-foreground font-heading uppercase tracking-wider">Strongest Pillar</p>
-                          <p className="font-heading text-sm font-semibold text-emerald-400 mt-1">
+                          <p className="font-heading text-sm font-semibold mt-1" style={{ color: scoreRamp([...scoring.pillarScores].sort((a, b) => b.normalizedScore - a.normalizedScore)[0]?.normalizedScore ?? 0) }}>
                             {[...scoring.pillarScores].sort((a, b) => b.normalizedScore - a.normalizedScore)[0]?.pillarName}
                           </p>
                         </div>
                         <div className="p-3 rounded-lg bg-navy-700/50">
                           <p className="text-[10px] text-muted-foreground font-heading uppercase tracking-wider">Weakest Pillar</p>
-                          <p className="font-heading text-sm font-semibold text-red-400 mt-1">
+                          <p className="font-heading text-sm font-semibold mt-1" style={{ color: scoreRamp([...scoring.pillarScores].sort((a, b) => a.normalizedScore - b.normalizedScore)[0]?.normalizedScore ?? 0) }}>
                             {[...scoring.pillarScores].sort((a, b) => a.normalizedScore - b.normalizedScore)[0]?.pillarName}
                           </p>
                         </div>
@@ -1486,11 +1499,9 @@ export default function ResultsPage() {
                     {/* 3 Regulation Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                       {complianceSummary.map(summary => {
-                        const regColor = summary.regulation === 'EU AI Act'
-                          ? '#3b82f6'
-                          : summary.regulation === 'NIST AI RMF'
-                            ? '#8b5cf6'
-                            : '#06b6d4'
+                        /* Peer frameworks, no rank between them — one accent, the
+                            name does the distinguishing. */
+                        const regColor = '#7d93ad'
                         const regGaps = complianceGaps.filter(g => g.regulation === summary.regulation)
                         return (
                           <div key={summary.regulation} className="p-4 rounded-lg bg-navy-700/40 border border-border/20">
@@ -1739,7 +1750,7 @@ export default function ResultsPage() {
                               contentStyle={{ background: '#161b22', border: '1px solid rgba(48,57,74,0.6)', borderRadius: '8px', fontSize: '12px' }}
                               labelStyle={{ color: '#e6edf3', fontWeight: 600 }}
                             />
-                            <Line type="monotone" dataKey="overall" name="Overall" stroke="#2563eb" strokeWidth={3} dot={{ fill: '#2563eb', r: 4 }} activeDot={{ r: 6 }} />
+                            <Line type="monotone" dataKey="overall" name="Overall" stroke={CHART_ACCENT} strokeWidth={3} dot={{ fill: CHART_ACCENT, r: 4 }} activeDot={{ r: 6 }} />
                             {/* Sector average reference line */}
                             {benchmarkData?.overall && benchmarkData.overall.avgScore > 0 && (
                               <ReferenceLine
@@ -2329,8 +2340,8 @@ export default function ResultsPage() {
                         <Radar
                           name="Score"
                           dataKey="score"
-                          stroke="#3b82f6"
-                          fill="#3b82f6"
+                          stroke={CHART_ACCENT}
+                          fill={CHART_ACCENT}
                           fillOpacity={0.25}
                           strokeWidth={2}
                         />
@@ -2980,7 +2991,7 @@ export default function ResultsPage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <Badge variant="outline" className="font-mono text-[10px] border-amber-500/30 text-amber-400">
+                                <Badge variant="outline" className="font-mono text-[10px] border-white/[0.16] text-slate-300">
                                   {adj.type}
                                 </Badge>
                                 <span className="font-heading text-sm font-semibold text-foreground">
@@ -3050,19 +3061,19 @@ export default function ResultsPage() {
                     const secScore = scoring.pillarScores.find(p => p.pillarId === 'security')?.normalizedScore ?? 0
                     const procScore = scoring.pillarScores.find(p => p.pillarId === 'process')?.normalizedScore ?? 0
                     const roleInsights = [
-                      { role: 'CEO', insight: strategyScore < 50 ? `Strategy at ${Math.round(strategyScore)}% is the binding constraint: without a documented multi-year case, initiatives compete quarter to quarter and stall at budget reviews. First move: charter the AI investment case before adding pilots.` : `Strategy at ${Math.round(strategyScore)}% gives you the mandate. The leadership question is sequencing — commit to the 2-3 use cases whose evidence trail you can defend to the board.`, color: '#d4a853', score: strategyScore },
-                      { role: 'CTO', insight: techScore < 60 ? `Technology at ${Math.round(techScore)}% — model versioning, monitoring, and drift detection are the gaps that surface in production first. Put them in place before widening the deployment surface.` : `Technology at ${Math.round(techScore)}% — the platform holds. Next bottleneck is operational: automate retraining triggers and expand monitored workload coverage.`, color: '#3b82f6', score: techScore },
-                      { role: 'CFO', insight: `The weakest funded capability is ${[{n:'strategy',s:strategyScore},{n:'governance',s:govScore},{n:'talent',s:talentScore}].sort((a,b)=>a.s-b.s)[0].n} at ${Math.round([strategyScore,govScore,talentScore].sort((a,b)=>a-b)[0])}%. Spend on new use cases is outpacing the controls that keep them auditable — rebalance toward the constraint before the next funding cycle.`, color: '#22c55e', score: Math.round((strategyScore + govScore + talentScore) / 3) },
-                      { role: 'CISO', insight: secScore < 60 ? `Security at ${Math.round(secScore)}% — AI-specific controls (model access, prompt-injection defence, adversarial testing) trail the deployment surface. Close that gap before expansion; generic SOC controls don't cover it.` : `Security at ${Math.round(secScore)}% — controls are adequate today. The residual exposure is adversarial robustness; schedule AI-specific red-teaming rather than relying on standard assessments.`, color: '#ef4444', score: secScore },
-                      { role: 'CHRO', insight: talentScore < 50 ? `Talent at ${Math.round(talentScore)}% — internal capacity caps delivery before budget does. Formalise AI roles and mandatory literacy training; Article 4 of the AI Act already makes staff literacy a legal duty, not a perk.` : `Talent at ${Math.round(talentScore)}% — you can deliver in-house. The risk shifts to retention: specialists at this maturity read the ceiling above them within months, so career paths matter more than hiring.`, color: '#ec4899', score: talentScore },
-                      { role: 'COO', insight: procScore < 50 ? `Process at ${Math.round(procScore)}% — AI outputs aren't wired into operational workflows with tracked human oversight, so adoption stalls at the pilot boundary. Pick one workflow and instrument the human-in-the-loop step end to end.` : `Process at ${Math.round(procScore)}% — operations absorb AI outputs reliably. Standardise oversight KPIs so you can prove, not just assert, how often humans override the models.`, color: '#14b8a6', score: procScore },
+                      { role: 'CEO', insight: strategyScore < 50 ? `Strategy at ${Math.round(strategyScore)}% is the binding constraint: without a documented multi-year case, initiatives compete quarter to quarter and stall at budget reviews. First move: charter the AI investment case before adding pilots.` : `Strategy at ${Math.round(strategyScore)}% gives you the mandate. The leadership question is sequencing — commit to the 2-3 use cases whose evidence trail you can defend to the board.`, score: strategyScore },
+                      { role: 'CTO', insight: techScore < 60 ? `Technology at ${Math.round(techScore)}% — model versioning, monitoring, and drift detection are the gaps that surface in production first. Put them in place before widening the deployment surface.` : `Technology at ${Math.round(techScore)}% — the platform holds. Next bottleneck is operational: automate retraining triggers and expand monitored workload coverage.`, score: techScore },
+                      { role: 'CFO', insight: `The weakest funded capability is ${[{n:'strategy',s:strategyScore},{n:'governance',s:govScore},{n:'talent',s:talentScore}].sort((a,b)=>a.s-b.s)[0].n} at ${Math.round([strategyScore,govScore,talentScore].sort((a,b)=>a-b)[0])}%. Spend on new use cases is outpacing the controls that keep them auditable — rebalance toward the constraint before the next funding cycle.`, score: Math.round((strategyScore + govScore + talentScore) / 3) },
+                      { role: 'CISO', insight: secScore < 60 ? `Security at ${Math.round(secScore)}% — AI-specific controls (model access, prompt-injection defence, adversarial testing) trail the deployment surface. Close that gap before expansion; generic SOC controls don't cover it.` : `Security at ${Math.round(secScore)}% — controls are adequate today. The residual exposure is adversarial robustness; schedule AI-specific red-teaming rather than relying on standard assessments.`, score: secScore },
+                      { role: 'CHRO', insight: talentScore < 50 ? `Talent at ${Math.round(talentScore)}% — internal capacity caps delivery before budget does. Formalise AI roles and mandatory literacy training; Article 4 of the AI Act already makes staff literacy a legal duty, not a perk.` : `Talent at ${Math.round(talentScore)}% — you can deliver in-house. The risk shifts to retention: specialists at this maturity read the ceiling above them within months, so career paths matter more than hiring.`, score: talentScore },
+                      { role: 'COO', insight: procScore < 50 ? `Process at ${Math.round(procScore)}% — AI outputs aren't wired into operational workflows with tracked human oversight, so adoption stalls at the pilot boundary. Pick one workflow and instrument the human-in-the-loop step end to end.` : `Process at ${Math.round(procScore)}% — operations absorb AI outputs reliably. Standardise oversight KPIs so you can prove, not just assert, how often humans override the models.`, score: procScore },
                     ]
                     return (
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         {roleInsights.map((item) => (
                           <div key={item.role} className="p-3 rounded-lg bg-navy-700/50 border border-border/20 hover:border-border/40 transition-colors">
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="font-heading text-xs font-bold" style={{ color: item.color }}>{item.role}</span>
+                              <span className="font-heading text-xs font-bold" style={{ color: scoreRamp(item.score) }}>{item.role}</span>
                               <Badge variant="outline" className={`text-[9px] font-mono ml-auto px-1 py-0 ${item.score >= 65 ? 'border-emerald-500/30 text-emerald-400' : item.score >= 40 ? 'border-amber-500/30 text-amber-400' : 'border-red-500/30 text-red-400'}`}>
                                 {Math.round(item.score)}%
                               </Badge>
@@ -3218,7 +3229,7 @@ export default function ResultsPage() {
                             )
                           }}
                         />
-                        <Scatter data={priorityMatrixData} fill="#3b82f6" fillOpacity={0.7} />
+                        <Scatter data={priorityMatrixData} fill={CHART_ACCENT} fillOpacity={0.7} />
                       </ScatterChart>
                     </ResponsiveContainer>
                   </div>
@@ -3854,10 +3865,10 @@ export default function ResultsPage() {
                       )}
 
                       {certificationResult.isCertified && certificationResult.level === 'platinum' && (
-                        <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20 mt-3">
+                        <div className="p-3 rounded-lg bg-white/[0.06] border border-white/[0.14] mt-3">
                           <div className="flex items-center gap-2">
-                            <Award className="h-4 w-4 text-purple-400" />
-                            <span className="font-heading text-sm font-semibold text-purple-400">
+                            <Award className="h-4 w-4 text-slate-200" />
+                            <span className="font-heading text-sm font-semibold text-slate-100">
                               Highest certification achieved — maintain excellence
                             </span>
                           </div>

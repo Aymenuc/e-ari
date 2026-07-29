@@ -72,29 +72,29 @@ const AGENT_META: Record<AgentId, {
   scoring: {
     label: 'Scoring',
     icon: Brain,
-    color: '#3b82f6',
+    color: '#93a9c4',
     colorLight: '#60a5fa',
     description: 'Computing pillar scores & maturity band',
     role: 'Score computation engine',
-    gradient: 'from-blue-500 to-blue-600',
+    gradient: 'from-slate-300 to-slate-400',
   },
   insight: {
     label: 'Insight',
     icon: Lightbulb,
-    color: '#8b5cf6',
+    color: '#7f9ab8',
     colorLight: '#a78bfa',
     description: 'Generating strategic AI insights',
     role: 'Strategic insight analyst',
-    gradient: 'from-purple-500 to-purple-600',
+    gradient: 'from-slate-400 to-slate-500',
   },
   discovery: {
     label: 'Discovery',
     icon: Search,
-    color: '#06b6d4',
+    color: '#9ab6d0',
     colorLight: '#22d3ee',
     description: 'Mapping AI landscape & gaps',
     role: 'Landscape discovery scanner',
-    gradient: 'from-cyan-500 to-cyan-600',
+    gradient: 'from-slate-400 to-slate-500',
   },
   report: {
     label: 'Report',
@@ -867,7 +867,7 @@ export function PipelineStatus({ assessmentId, autoPoll = true, pollInterval = 3
 
   const statusConfig = {
     complete: { color: '#10b981', bgColor: 'rgba(16,185,129,0.15)', label: 'Pipeline Complete', icon: CheckCircle2 },
-    running: { color: '#3b82f6', bgColor: 'rgba(59,130,246,0.15)', label: 'Pipeline Running', icon: Activity },
+    running: { color: '#93a9c4', bgColor: 'rgba(147,169,196,0.15)', label: 'Pipeline Running', icon: Activity },
     partial: { color: '#f59e0b', bgColor: 'rgba(245,158,11,0.15)', label: 'Partially Complete', icon: AlertTriangle },
     failed: { color: '#ef4444', bgColor: 'rgba(239,68,68,0.15)', label: 'Pipeline Failed', icon: XCircle },
   };
@@ -964,7 +964,7 @@ export function PipelineStatus({ assessmentId, autoPoll = true, pollInterval = 3
                 <motion.div
                   className="h-full rounded-full pipeline-progress-shimmer"
                   style={{
-                    '--bar-color-from': '#3b82f6',
+                    '--bar-color-from': '#93a9c4',
                     '--bar-color-to': '#10b981',
                   } as React.CSSProperties}
                   initial={{ width: 0 }}

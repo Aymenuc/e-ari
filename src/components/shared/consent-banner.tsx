@@ -73,7 +73,7 @@ export function ConsentBanner() {
             fontSize: '14px',
             fontWeight: 600,
             color: '#e8edf5',
-            fontFamily: "'Segoe UI', system-ui, sans-serif",
+            fontFamily: 'var(--font-sans), system-ui, sans-serif',
           }}>
             We use cookies
           </p>
@@ -82,13 +82,13 @@ export function ConsentBanner() {
             fontSize: '13px',
             color: '#8b95a8',
             lineHeight: 1.6,
-            fontFamily: "'Segoe UI', system-ui, sans-serif",
+            fontFamily: 'var(--font-sans), system-ui, sans-serif',
           }}>
             We use Google Analytics to understand how visitors use E-ARI so we can improve the platform.
             No data is collected without your consent.{' '}
             <a
               href="/privacy"
-              style={{ color: '#3b5bdb', textDecoration: 'underline' }}
+              style={{ color: '#93a9c4', textDecoration: 'underline' }}
             >
               Privacy Policy
             </a>
@@ -103,7 +103,7 @@ export function ConsentBanner() {
               padding: '9px 20px',
               fontSize: '13px',
               fontWeight: 500,
-              fontFamily: "'Segoe UI', system-ui, sans-serif",
+              fontFamily: 'var(--font-sans), system-ui, sans-serif',
               color: '#8b95a8',
               background: 'transparent',
               border: '1px solid #1e2a45',
@@ -120,9 +120,9 @@ export function ConsentBanner() {
               padding: '9px 20px',
               fontSize: '13px',
               fontWeight: 600,
-              fontFamily: "'Segoe UI', system-ui, sans-serif",
-              color: '#ffffff',
-              background: '#3b5bdb',
+              fontFamily: 'var(--font-sans), system-ui, sans-serif',
+              color: '#0b1020',
+              background: '#f6f7f9',
               border: '1px solid transparent',
               borderRadius: '8px',
               cursor: 'pointer',
