@@ -24,7 +24,7 @@ const C = {
   card:        '#ffffff',
   border:      '#dbe4f0',
   headerBg:    '#f8fbff',
-  accent:      '#2f5edb',
+  accent:      '#141b2c',
   heading:     '#111827',
   body:        '#4b5563',
   bodyStrong:  '#0f172a',
@@ -220,7 +220,7 @@ function stepRow(num: string, title: string, desc: string): string {
     </table>`;
 }
 
-export function welcomeEmailHtml(name: string, assessmentUrl: string): string {
+export function welcomeEmailHtml(name: string, assessmentUrl: string, earlyAccess = false): string {
   const firstName = name.split(' ')[0];
 
   const content = `
@@ -246,10 +246,20 @@ export function welcomeEmailHtml(name: string, assessmentUrl: string): string {
         <p class="body-p" style="margin:0 0 16px;font-size:15px;color:${C.body};line-height:1.7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
           Hi <strong class="strong-p" style="color:${C.bodyStrong}">${firstName}</strong>,
         </p>
-        <p class="body-p" style="margin:0 0 28px;font-size:15px;color:${C.body};line-height:1.7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+        <p class="body-p" style="margin:0 0 20px;font-size:15px;color:${C.body};line-height:1.7;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
           You have joined the platform that organizations use to measure, benchmark, and improve AI readiness.
           Your first step is to establish a baseline score across <strong class="strong-p" style="color:${C.bodyStrong}">8 critical dimensions</strong>.
         </p>
+        ${earlyAccess ? `
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 28px">
+          <tr><td style="background-color:${C.headerBg};border:1px solid ${C.border};border-radius:10px;padding:18px 20px">
+            <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:${C.muted};letter-spacing:0.08em;text-transform:uppercase;font-family:'Segoe UI',Helvetica,Arial,sans-serif">You are in the founding cohort</p>
+            <p style="margin:0;font-size:14px;color:${C.body};line-height:1.65;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
+              Everything on the <strong class="strong-p" style="color:${C.bodyStrong}">Growth plan</strong> &mdash; normally &euro;149 a month &mdash; is yours at no cost while we work with our first organizations. No card, no trial countdown in the product.
+              We only ask one thing in return: tell us what is missing. Replies to this address reach the founder directly.
+            </p>
+          </td></tr>
+        </table>` : ''}
 
         <!-- Steps -->
         <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:${C.muted};letter-spacing:0.06em;text-transform:uppercase;font-family:'Segoe UI',Helvetica,Arial,sans-serif">Get started in 3 steps</p>
@@ -264,7 +274,7 @@ export function welcomeEmailHtml(name: string, assessmentUrl: string): string {
             <td style="border-radius:10px;background-color:${C.accent}">
               <a href="${assessmentUrl}" target="_blank"
                 style="display:block;padding:14px 36px;color:${C.btnText};font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-weight:600;font-size:15px;text-decoration:none;letter-spacing:0.1px;white-space:nowrap">
-                Start Your First Assessment
+                ${earlyAccess ? 'Set up your account' : 'Start Your First Assessment'}
               </a>
             </td>
           </tr>
@@ -273,13 +283,15 @@ export function welcomeEmailHtml(name: string, assessmentUrl: string): string {
         ${divider()}
 
         <p style="margin:0;font-size:12px;color:${C.muted};text-align:center;font-family:'Segoe UI',Helvetica,Arial,sans-serif;line-height:1.6">
-          Free to start &middot; No credit card required &middot; Scoring engine v5.3
+          ${earlyAccess ? 'Founding cohort &middot; Full Growth access, no card required' : 'Free to start &middot; No credit card required'} &middot; Scoring engine v5.3
         </p>
 
       </td></tr>
     </table>`;
 
-  return base(content, `Welcome, ${firstName}! Start your first AI readiness assessment today.`);
+  return base(content, earlyAccess
+    ? `Welcome, ${firstName} — you're in the E-ARI founding cohort. Full Growth access, no cost.`
+    : `Welcome, ${firstName}! Start your first AI readiness assessment today.`);
 }
 
 // ─── Verification email ───────────────────────────────────────────────────────

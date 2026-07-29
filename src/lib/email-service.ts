@@ -137,13 +137,19 @@ export async function sendWelcomeEmail(
   userName: string | null
 ): Promise<EmailResult> {
   const firstName = userName?.split(' ')[0] || 'there';
-  const assessmentUrl = `${BASE_URL}/assessment`;
+  const { isEarlyAccessOn } = await import('./early-access');
+  const earlyAccess = await isEarlyAccessOn().catch(() => false);
+  // Send new users to the concierge, which hands them a 3-step plan, rather
+  // than dropping them cold into a 40-question wizard.
+  const assessmentUrl = `${BASE_URL}${earlyAccess ? '/welcome' : '/assessment'}`;
 
-  const html = welcomeEmailHtml(firstName, assessmentUrl);
+  const html = welcomeEmailHtml(firstName, assessmentUrl, earlyAccess);
 
   const emailResult = await sendEmail({
     to: userEmail,
-    subject: 'Welcome to E-ARI — Your AI Readiness Journey Starts Here',
+    subject: earlyAccess
+      ? 'Welcome to E-ARI — you are in the founding cohort'
+      : 'Welcome to E-ARI — Your AI Readiness Journey Starts Here',
     html,
     text: `Hi ${firstName}, welcome to E-ARI! Start your first AI readiness assessment at ${BASE_URL}/assessment`,
     from: EMAIL_FROM_HELLO,
