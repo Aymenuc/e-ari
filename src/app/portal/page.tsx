@@ -219,6 +219,7 @@ export default function PortalPage() {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [quota, setQuota] = useState<{
     tier: string;
+    foundingMemberNo?: number | null;
     assessment: { used: number; limit: number | null };
     pulse: { used: number; limit: number | null };
     report: { used: number; limit: number | null };
@@ -401,6 +402,11 @@ export default function PortalPage() {
                     <Award className="h-3 w-3 mr-1" />
                     {tierLabel(userTier)} Tier
                   </Badge>
+                  {quota?.foundingMemberNo ? (
+                    <Badge className="bg-slate-100 text-navy-900 border-transparent font-mono text-[11px]">
+                      Founding member #{quota.foundingMemberNo}
+                    </Badge>
+                  ) : null}
                   <span className="text-sm text-muted-foreground font-mono">{userEmail}</span>
                 </div>
               </div>

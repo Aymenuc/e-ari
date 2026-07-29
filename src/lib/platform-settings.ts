@@ -17,6 +17,7 @@ export interface PlatformSettings {
   custom_brand_accent_color: string;
   enterprise_price_label: string;
   early_access_mode: boolean;
+  early_access_cap: number;
 }
 
 const DEFAULTS: PlatformSettings = {
@@ -36,6 +37,7 @@ const DEFAULTS: PlatformSettings = {
   custom_brand_accent_color: '#2563EB',
   enterprise_price_label: 'Custom',
   early_access_mode: true,
+  early_access_cap: 50,
 };
 
 export async function getPlatformSettings(): Promise<PlatformSettings> {

@@ -22,6 +22,29 @@ import { normalizeTier, type Tier } from './tier';
  *  branding and dedicated support stay a real sales conversation. */
 export const EARLY_ACCESS_TIER: Tier = 'growth';
 
+/** Live cohort state — every number here is counted, never fabricated. */
+export async function getCohortState(): Promise<{
+  on: boolean;
+  cap: number;
+  claimed: number;
+  remaining: number;
+  full: boolean;
+}> {
+  const on = await isEarlyAccessOn();
+  let cap = 50;
+  try {
+    const raw = await getSetting('early_access_cap');
+    const n = typeof raw === 'number' ? raw : parseInt(String(raw), 10);
+    if (Number.isFinite(n) && n > 0) cap = n;
+  } catch { /* default */ }
+  let claimed = 0;
+  try {
+    claimed = await db.user.count({ where: { foundingMemberNo: { not: null } } });
+  } catch { /* unreachable DB — report zero rather than guess */ }
+  const remaining = Math.max(0, cap - claimed);
+  return { on, cap, claimed, remaining, full: remaining === 0 };
+}
+
 export async function isEarlyAccessOn(): Promise<boolean> {
   try {
     return (await getSetting('early_access_mode')) === true;
@@ -43,13 +66,28 @@ export async function grantEarlyAccessIfEligible(user: {
 }): Promise<Tier> {
   const current = normalizeTier(user.tier);
   if (current !== 'free' || user.earlyAccessAt) return current;
-  if (!(await isEarlyAccessOn())) return current;
+  const cohort = await getCohortState();
+  if (!cohort.on || cohort.full) return current;
+  const cap = cohort.cap;
 
   try {
-    await db.user.update({
-      where: { id: user.id },
-      data: { tier: EARLY_ACCESS_TIER, earlyAccessAt: new Date() },
-    });
+    // Assign the next founding number and grant the tier in ONE statement so
+    // two simultaneous signups cannot claim the same number, and so the cap
+    // cannot be exceeded by a race. The WHERE clause re-checks capacity at
+    // write time, which is the only place it can be checked safely.
+    const rows = await db.$queryRaw<Array<{ foundingMemberNo: number }>>`
+      UPDATE "User"
+         SET "tier" = ${EARLY_ACCESS_TIER},
+             "earlyAccessAt" = NOW(),
+             "foundingMemberNo" = (
+               SELECT COALESCE(MAX("foundingMemberNo"), 0) + 1 FROM "User"
+             )
+       WHERE "id" = ${user.id}
+         AND "foundingMemberNo" IS NULL
+         AND (SELECT COUNT(*) FROM "User" WHERE "foundingMemberNo" IS NOT NULL) < ${cap}
+      RETURNING "foundingMemberNo"
+    `;
+    if (rows.length === 0) return current; // cohort full — user stays free
     return EARLY_ACCESS_TIER;
   } catch (err) {
     console.error('[early-access] grant failed (user keeps free tier):', err);

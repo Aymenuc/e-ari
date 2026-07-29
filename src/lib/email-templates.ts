@@ -220,7 +220,7 @@ function stepRow(num: string, title: string, desc: string): string {
     </table>`;
 }
 
-export function welcomeEmailHtml(name: string, assessmentUrl: string, earlyAccess = false): string {
+export function welcomeEmailHtml(name: string, assessmentUrl: string, earlyAccess = false, memberNo?: number | null): string {
   const firstName = name.split(' ')[0];
 
   const content = `
@@ -253,7 +253,7 @@ export function welcomeEmailHtml(name: string, assessmentUrl: string, earlyAcces
         ${earlyAccess ? `
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 28px">
           <tr><td style="background-color:${C.headerBg};border:1px solid ${C.border};border-radius:10px;padding:18px 20px">
-            <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:${C.muted};letter-spacing:0.08em;text-transform:uppercase;font-family:'Segoe UI',Helvetica,Arial,sans-serif">You are in the founding cohort</p>
+            <p style="margin:0 0 6px;font-size:11px;font-weight:700;color:${C.muted};letter-spacing:0.08em;text-transform:uppercase;font-family:'Segoe UI',Helvetica,Arial,sans-serif">${memberNo ? `Founding member #${memberNo}` : 'You are in the founding cohort'}</p>
             <p style="margin:0;font-size:14px;color:${C.body};line-height:1.65;font-family:'Segoe UI',Helvetica,Arial,sans-serif">
               Everything on the <strong class="strong-p" style="color:${C.bodyStrong}">Growth plan</strong> &mdash; normally &euro;149 a month &mdash; is yours at no cost while we work with our first organizations. No card, no trial countdown in the product.
               We only ask one thing in return: tell us what is missing. Replies to this address reach the founder directly.

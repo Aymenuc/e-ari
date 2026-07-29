@@ -37,6 +37,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { Navigation } from '@/components/shared/navigation'
+import { CohortBanner } from '@/components/shared/cohort-banner'
 import { Footer } from '@/components/shared/footer'
 
 // ---------------------------------------------------------------------------
@@ -290,18 +291,7 @@ export default function PricingPage() {
       })
   }, [])
 
-  const earlyAccessBanner = earlyAccess ? (
-    <div className="mx-auto mb-10 max-w-3xl rounded-xl border border-white/[0.08] bg-navy-800/50 px-6 py-5 text-center">
-      <p className="font-heading text-base font-semibold text-foreground">
-        Early Access — every plan below is free right now
-      </p>
-      <p className="mt-2 font-sans text-sm text-muted-foreground">
-        E-ARI is in Early Access while we work with our first cohort. Create an account and you get the
-        full Growth feature set at no cost and no card required. Prices are shown so you know what the
-        platform will cost when the programme ends — we will tell you well before that happens.
-      </p>
-    </div>
-  ) : null
+  const earlyAccessBanner = earlyAccess ? <CohortBanner /> : null
 
   const pricingTiers = PRICING_TIERS.map((tier) =>
     tier.id === 'enterprise'

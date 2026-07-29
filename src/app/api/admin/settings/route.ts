@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 
 const ALLOWED_KEYS = new Set([
   'early_access_mode',
+  'early_access_cap',
   'allow_registrations',
   'require_email_verification',
   'enable_ai_assistant',
@@ -24,6 +25,7 @@ const ALLOWED_KEYS = new Set([
 
 const DEFAULTS: Record<string, unknown> = {
   early_access_mode: true,
+  early_access_cap: 50,
   allow_registrations: true,
   require_email_verification: false,
   enable_ai_assistant: true,

@@ -22,7 +22,7 @@ export async function GET() {
 
     const user = await db.user.findUnique({
       where: { id: ws.ownerId },
-      select: { tier: true },
+      select: { tier: true, foundingMemberNo: true },
     });
     const tier = user?.tier ?? 'free';
 
@@ -50,6 +50,7 @@ export async function GET() {
       tier,
       assessment: serialise(assessment),
       pulse: serialise(pulse),
+      foundingMemberNo: user?.foundingMemberNo ?? null,
       report: serialise(report),
       // Absolute caps (not monthly): Article 4 roster + vendor registry.
       member: { used: memberCount, limit: Number.isFinite(memberCap) ? memberCap : null },

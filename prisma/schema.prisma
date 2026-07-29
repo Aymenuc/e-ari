@@ -24,6 +24,7 @@ model User {
   image            String?
   stripeCustomerId String? // Stripe customer ID for billing portal
   earlyAccessAt    DateTime? // granted free programme access (see lib/early-access)
+  foundingMemberNo Int? // sequential founding-cohort number (real, never fabricated)
   emailVerified    DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt

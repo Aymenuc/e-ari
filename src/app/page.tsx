@@ -47,6 +47,7 @@ import { ToolkitGrid } from '@/components/marketing/toolkit-grid'
 import { HowScoringWorks } from '@/components/marketing/how-scoring-works'
 import { HeroScene, Magnetic, HeroStats, FrameworkMarquee } from '@/components/marketing/hero-scene'
 import { LandingBackdrop } from '@/components/marketing/landing-backdrop'
+import { CohortBanner } from '@/components/shared/cohort-banner'
 import { InsightStream, CtaAura } from '@/components/marketing/landing-magic'
 import { MethodologyExplorer } from '@/components/marketing/methodology-radar'
 import { AgentsConstellation } from '@/components/marketing/agents-constellation'
@@ -1125,16 +1126,7 @@ export default function Home() {
 
             {earlyAccess && (
               <FadeUp>
-                <div className="mx-auto mt-10 max-w-3xl rounded-xl border border-white/[0.08] bg-navy-800/50 px-6 py-5 text-center">
-                  <p className="font-heading text-base font-semibold text-slate-100">
-                    Early Access &mdash; every plan below is free right now
-                  </p>
-                  <p className="mt-2 font-sans text-sm text-slate-400">
-                    We&apos;re working with our first cohort. Create an account and you get the full Growth
-                    feature set at no cost, no card required. Prices are shown so you know what the platform
-                    will cost when the programme ends.
-                  </p>
-                </div>
+                <CohortBanner className="mt-10" />
               </FadeUp>
             )}
 
