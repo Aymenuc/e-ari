@@ -29,6 +29,8 @@ export async function getCohortState(): Promise<{
   claimed: number;
   remaining: number;
   full: boolean;
+  /** ISO date the programme ends, or null if none is set. */
+  endsAt: string | null;
 }> {
   const on = await isEarlyAccessOn();
   let cap = 50;
@@ -41,8 +43,16 @@ export async function getCohortState(): Promise<{
   try {
     claimed = await db.user.count({ where: { foundingMemberNo: { not: null } } });
   } catch { /* unreachable DB — report zero rather than guess */ }
+  let endsAt: string | null = null;
+  try {
+    const raw = await getSetting('early_access_ends');
+    const str = String(raw ?? '').trim();
+    // Only publish a date we can actually parse — a malformed deadline is
+    // worse than none.
+    if (str && !Number.isNaN(Date.parse(str))) endsAt = str;
+  } catch { /* no date */ }
   const remaining = Math.max(0, cap - claimed);
-  return { on, cap, claimed, remaining, full: remaining === 0 };
+  return { on, cap, claimed, remaining, full: remaining === 0, endsAt };
 }
 
 export async function isEarlyAccessOn(): Promise<boolean> {

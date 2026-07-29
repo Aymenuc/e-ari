@@ -142,18 +142,21 @@ export async function sendWelcomeEmail(
   // The founding number is assigned on first session refresh, so it may not
   // exist yet at welcome time; the template omits it rather than guessing.
   let memberNo: number | null = null;
+  let endsAt: string | null = null;
   if (earlyAccess) {
     try {
       const { db } = await import('./db');
       const u = await db.user.findUnique({ where: { id: userId }, select: { foundingMemberNo: true } });
       memberNo = u?.foundingMemberNo ?? null;
+      const { getCohortState } = await import('./early-access');
+      endsAt = (await getCohortState()).endsAt;
     } catch { memberNo = null; }
   }
   // Send new users to the concierge, which hands them a 3-step plan, rather
   // than dropping them cold into a 40-question wizard.
   const assessmentUrl = `${BASE_URL}${earlyAccess ? '/welcome' : '/assessment'}`;
 
-  const html = welcomeEmailHtml(firstName, assessmentUrl, earlyAccess, memberNo);
+  const html = welcomeEmailHtml(firstName, assessmentUrl, earlyAccess, memberNo, endsAt);
 
   const emailResult = await sendEmail({
     to: userEmail,

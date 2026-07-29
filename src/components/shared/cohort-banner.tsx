@@ -17,6 +17,15 @@ interface Cohort {
   claimed: number;
   remaining: number;
   full: boolean;
+  endsAt: string | null;
+}
+
+/** "31 December 2026" — long form reads as a commitment, not a countdown. */
+function formatEnd(iso: string | null): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 export function CohortBanner({ className = '' }: { className?: string }) {
@@ -30,6 +39,7 @@ export function CohortBanner({ className = '' }: { className?: string }) {
   }, []);
 
   if (!cohort?.on) return null;
+  const ends = formatEnd(cohort.endsAt);
 
   return (
     <div className={`mx-auto max-w-3xl rounded-xl border border-white/[0.08] bg-navy-800/50 px-6 py-5 text-center ${className}`}>
@@ -38,8 +48,10 @@ export function CohortBanner({ className = '' }: { className?: string }) {
       </p>
       <p className="mt-2 font-heading text-base font-semibold text-slate-100">
         {cohort.full
-          ? `The first ${cohort.cap} places are taken — join the waitlist`
-          : 'Every plan below is free while we work with our first organisations'}
+          ? `All ${cohort.cap} places are taken — join the waitlist`
+          : ends
+            ? `Free through ${ends} for the first ${cohort.cap} organisations`
+            : 'Every plan below is free while we work with our first organisations'}
       </p>
       <p className="mt-2 font-sans text-sm text-slate-400">
         {cohort.full ? (
@@ -50,7 +62,8 @@ export function CohortBanner({ className = '' }: { className?: string }) {
         ) : (
           <>
             Create an account and you get the full Growth feature set at no cost, no card required.
-            Prices are shown so you know what the platform will cost when the programme ends.
+            Prices are shown so you know what the platform will cost afterwards &mdash; and founding
+            members keep a permanent discount on whichever plan they choose.
           </>
         )}
       </p>

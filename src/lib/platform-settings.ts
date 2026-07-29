@@ -18,6 +18,7 @@ export interface PlatformSettings {
   enterprise_price_label: string;
   early_access_mode: boolean;
   early_access_cap: number;
+  early_access_ends: string;
 }
 
 const DEFAULTS: PlatformSettings = {
@@ -38,6 +39,7 @@ const DEFAULTS: PlatformSettings = {
   enterprise_price_label: 'Custom',
   early_access_mode: true,
   early_access_cap: 50,
+  early_access_ends: '2026-12-31',
 };
 
 export async function getPlatformSettings(): Promise<PlatformSettings> {
