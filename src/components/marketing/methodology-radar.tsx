@@ -103,7 +103,7 @@ function Radar({ active, onActive }: { active: number | null; onActive: (i: numb
           </radialGradient>
           <linearGradient id="radarWebStroke" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#38bdf8" />
-            <stop offset="100%" stopColor="#6366f1" />
+            <stop offset="100%" stopColor="#3a5274" />
           </linearGradient>
         </defs>
 

@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { motion, useInView, useReducedMotion } from 'framer-motion';
 import { Activity, Search, GraduationCap, MessageSquare, ArrowUpRight } from 'lucide-react';
+import { scoreRamp } from '@/lib/score-ramp';
 
 /* ─── Vignettes: the module at work, ~90 px tall ────────────────────────── */
 
@@ -119,7 +120,7 @@ function LiteracyVignette({ go }: { go: boolean }) {
         <circle cx="30" cy="30" r="24" fill="none" stroke="rgba(148,163,184,0.14)" strokeWidth="5" />
         <motion.circle
           cx="30" cy="30" r="24" fill="none"
-          stroke="#a5b4fc" strokeWidth="5" strokeLinecap="round"
+          stroke={scoreRamp(80)} strokeWidth="5" strokeLinecap="round"
           strokeDasharray={C}
           transform="rotate(-90 30 30)"
           initial={{ strokeDashoffset: C }}

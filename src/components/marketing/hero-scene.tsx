@@ -16,6 +16,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Radar, Calculator, Sparkles, FileText, CheckCircle2 } from 'lucide-react';
+import { scoreRamp } from '@/lib/score-ramp';
 
 // ─── Choreography ────────────────────────────────────────────────────────────
 
@@ -38,7 +39,7 @@ const EVENTS: Array<{ at: number; stage?: Stage; line?: Omit<FeedLine, 'id'> }> 
   { at: 4500, line: { tone: 'warn', text: 'X-RAY P-02 · Ambition Gap — strategy 82 vs talent 44' } },
   { at: 5700, stage: 'insight', line: { tone: 'run', text: 'insight — grounding narrative in findings' } },
   { at: 6300, line: { tone: 'type', text: 'Talent (44) constrains execution. Highest-leverage move: +2.4 pts.' } },
-  { at: 10300, stage: 'report', line: { tone: 'run', text: 'report — assembling board-ready docx' } },
+  { at: 10300, stage: 'report', line: { tone: 'run', text: 'report — assembling board-ready pdf' } },
   { at: 11500, stage: 'done', line: { tone: 'ok', text: 'report ready · 12 sections · certification path: Silver' } },
 ];
 
@@ -49,10 +50,13 @@ const STAGES: Array<{ id: Stage; label: string; icon: typeof Radar }> = [
   { id: 'report', label: 'Report', icon: FileText },
 ];
 
+/* Colours come from the product's own score ramp rather than being picked by
+   hand, so the demo panel cannot drift away from what a real result looks
+   like. Talent reads dim here because 44 is genuinely low, not for effect. */
 const PILLAR_BARS = [
-  { label: 'Strategy', value: 82, color: '#60a5fa' },
-  { label: 'Governance', value: 78, color: '#818cf8' },
-  { label: 'Talent', value: 44, color: '#f59e0b' },
+  { label: 'Strategy', value: 82 },
+  { label: 'Governance', value: 78 },
+  { label: 'Talent', value: 44 },
 ];
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
@@ -165,24 +169,27 @@ export function HeroScene() {
                     <motion.span
                       className="flex h-6 w-6 items-center justify-center rounded-md border"
                       animate={{
-                        borderColor: isActive ? 'rgba(96,165,250,0.6)' : isDone ? 'rgba(52,211,153,0.35)' : 'rgba(148,163,184,0.15)',
-                        backgroundColor: isActive ? 'rgba(37,99,235,0.18)' : isDone ? 'rgba(16,185,129,0.08)' : 'rgba(148,163,184,0.03)',
+                        /* Pipeline state reads from brightness: the running step is
+                           lit, completed steps sit back, pending steps are barely
+                           there. Hue would say nothing extra here. */
+                        borderColor: isActive ? 'rgba(226,232,240,0.55)' : isDone ? 'rgba(148,163,184,0.3)' : 'rgba(148,163,184,0.14)',
+                        backgroundColor: isActive ? 'rgba(226,232,240,0.12)' : isDone ? 'rgba(148,163,184,0.06)' : 'rgba(148,163,184,0.03)',
                         scale: isActive && !prefersReducedMotion ? [1, 1.08, 1] : 1,
                       }}
                       transition={isActive && !prefersReducedMotion ? { scale: { repeat: Infinity, duration: 1.6 } } : { duration: 0.3 }}
                     >
                       {isDone && !isActive
-                        ? <CheckCircle2 className="h-3 w-3 text-emerald-400" />
-                        : <Icon className={`h-3 w-3 ${isActive ? 'text-sky-300' : 'text-slate-500'}`} />}
+                        ? <CheckCircle2 className="h-3 w-3 text-slate-300" />
+                        : <Icon className={`h-3 w-3 ${isActive ? 'text-slate-100' : 'text-slate-500'}`} />}
                     </motion.span>
-                    <span className={`font-mono text-[9px] uppercase tracking-[0.14em] ${isActive ? 'text-sky-300' : isDone ? 'text-emerald-400/80' : 'text-slate-600'}`}>
+                    <span className={`font-mono text-[9px] uppercase tracking-[0.14em] ${isActive ? 'text-slate-100' : isDone ? 'text-slate-400' : 'text-slate-600'}`}>
                       {s.label}
                     </span>
                   </div>
                   {i < STAGES.length - 1 && (
                     <div className="relative mx-2 h-px flex-1 bg-white/[0.06] overflow-hidden">
                       <motion.div
-                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-sky-500/70 to-indigo-400/70"
+                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-slate-500/60 to-slate-300/70"
                         animate={{ width: i < stageIdx || stage === 'done' ? '100%' : '0%' }}
                         transition={{ duration: 0.9, ease: 'easeInOut' }}
                       />
@@ -201,8 +208,8 @@ export function HeroScene() {
                 <svg width="104" height="104" viewBox="0 0 104 104" aria-label={`Overall readiness score: ${score}`}>
                   <defs>
                     <linearGradient id="heroSceneRing" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#3b82f6" />
-                      <stop offset="100%" stopColor="#818cf8" />
+                      <stop offset="0%" stopColor="#3a5274" />
+                      <stop offset="100%" stopColor="#38bdf8" />
                     </linearGradient>
                   </defs>
                   <circle cx="52" cy="52" r="46" fill="none" stroke="rgba(48,57,74,0.35)" strokeWidth="6" />
@@ -226,12 +233,12 @@ export function HeroScene() {
                   <div key={b.label}>
                     <div className="flex justify-between font-mono text-[8px] text-slate-500 mb-0.5">
                       <span>{b.label}</span>
-                      <span className="tabular-nums" style={{ color: b.color }}>{b.value}</span>
+                      <span className="tabular-nums" style={{ color: scoreRamp(b.value) }}>{b.value}</span>
                     </div>
                     <div className="h-1 rounded-full bg-white/[0.05] overflow-hidden">
                       <motion.div
                         className="h-full rounded-full"
-                        style={{ backgroundColor: b.color }}
+                        style={{ backgroundColor: scoreRamp(b.value) }}
                         animate={{ width: scoringReached || prefersReducedMotion ? `${b.value}%` : '0%' }}
                         transition={{ duration: 1.1, delay: 0.2 + i * 0.15, ease: 'easeOut' }}
                       />
@@ -262,7 +269,7 @@ export function HeroScene() {
                           <>
                             {typed}
                             {typed.length < line.text.length && (
-                              <span className="inline-block w-[6px] h-[12px] translate-y-[2px] bg-sky-300/80 animate-pulse ml-px" />
+                              <span className="inline-block w-[6px] h-[12px] translate-y-[2px] bg-slate-300/80 animate-pulse ml-px" />
                             )}
                           </>
                         ) : line.text}
@@ -288,10 +295,10 @@ export function HeroScene() {
                   transition={{ duration: 0.35 }}
                   className="flex items-center gap-3 w-full"
                 >
-                  <span className="inline-flex items-center gap-1.5 font-mono text-[9.5px] text-emerald-400">
-                    <CheckCircle2 className="h-3 w-3" /> Board-ready report · docx
+                  <span className="inline-flex items-center gap-1.5 font-mono text-[9.5px] text-slate-300">
+                    <CheckCircle2 className="h-3 w-3" /> Board-ready report · pdf
                   </span>
-                  <span className="ml-auto inline-flex items-center rounded-full border border-emerald-500/25 bg-emerald-500/[0.07] px-2 py-0.5 font-mono text-[9px] text-emerald-300">
+                  <span className="ml-auto inline-flex items-center rounded-full border border-white/[0.14] bg-white/[0.05] px-2 py-0.5 font-mono text-[9px] text-slate-200">
                     +2.4 pts next move identified
                   </span>
                 </motion.div>
@@ -398,7 +405,7 @@ export function FrameworkMarquee() {
             {FRAMEWORKS.map(f => (
               <span key={f} className="flex items-center whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500">
                 <span className="px-6">{f}</span>
-                <span className="text-eari-blue/50">◆</span>
+                <span className="text-slate-500">◆</span>
               </span>
             ))}
           </div>

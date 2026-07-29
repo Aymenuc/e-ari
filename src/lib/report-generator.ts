@@ -512,7 +512,7 @@ export async function generateAssessmentReport(data: AssessmentReportData): Prom
     spacing: { after: 60 },
   }));
   children.push(new Paragraph({
-    children: [new TextRun({ text: 'Enterprise AI Readiness Assessment', font: FONT_HEADING, size: 36, color: COLOR_PRIMARY })],
+    children: [new TextRun({ text: 'Enterprise AI Readiness Index', font: FONT_HEADING, size: 36, color: COLOR_PRIMARY })],
     alignment: AlignmentType.CENTER,
     spacing: { after: 300 },
   }));

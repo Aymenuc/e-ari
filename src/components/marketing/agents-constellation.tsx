@@ -144,7 +144,7 @@ export function AgentsConstellation({
                       type="button"
                       aria-label={`${agent.name}: ${agent.tagline}`}
                       aria-pressed={isActive}
-                      className="relative outline-none focus-visible:ring-2 focus-visible:ring-eari-blue/70 rounded-xl"
+                      className="relative outline-none focus-visible:ring-2 focus-visible:ring-slate-300/70 rounded-xl"
                       onMouseEnter={() => setActiveIdx(i)}
                       onFocus={() => setActiveIdx(i)}
                       onClick={() => setActiveIdx(i)}
@@ -189,9 +189,9 @@ export function AgentsConstellation({
                   onMouseEnter={() => setActiveIdx(i)}
                   onFocus={() => setActiveIdx(i)}
                   onClick={() => setActiveIdx(i)}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-eari-blue/70 ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-slate-300/70 ${
                     i === activeIdx
-                      ? 'bg-eari-blue/10 border-eari-blue/40'
+                      ? 'bg-white/[0.07] border-white/[0.22]'
                       : 'bg-navy-800/50 border-white/[0.04] hover:border-white/[0.1]'
                   }`}
                 >
@@ -257,7 +257,7 @@ export function AgentsConstellation({
                 onMouseEnter={() => setActiveIdx(i)}
                 onFocus={() => setActiveIdx(i)}
                 onClick={() => setActiveIdx(i)}
-                className={`flex w-full items-center gap-3 py-2.5 px-2 -mx-2 rounded-md text-left border-b border-white/[0.04] last:border-b-0 transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-eari-blue/50 ${isActive ? 'bg-white/[0.03]' : 'hover:bg-white/[0.02]'}`}
+                className={`flex w-full items-center gap-3 py-2.5 px-2 -mx-2 rounded-md text-left border-b border-white/[0.04] last:border-b-0 transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-slate-300/60 ${isActive ? 'bg-white/[0.03]' : 'hover:bg-white/[0.02]'}`}
               >
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg flex-shrink-0" style={{ backgroundColor: `${agent.color}${isActive ? '22' : '10'}` }}>
                   <Icon className="h-3.5 w-3.5" style={{ color: agent.color }} />

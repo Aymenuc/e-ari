@@ -99,14 +99,14 @@ export function HowScoringWorks() {
       <FadeUpBlock reducedMotion={prefersReducedMotion}>
         <div className="text-center max-w-2xl mx-auto">
           <div className="mb-5 flex items-center justify-center gap-3">
-            <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
+            <span aria-hidden className="h-px w-8 eyebrow-rule" />
             <span
               id="how-scoring-works-heading"
               className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400"
             >
               Deterministic engine
             </span>
-            <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
+            <span aria-hidden className="h-px w-8 eyebrow-rule-l" />
           </div>
           <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
             How Scoring Works
@@ -140,7 +140,7 @@ export function HowScoringWorks() {
                   {/* Node */}
                   <div className="relative z-[1] flex-shrink-0">
                     <motion.div
-                      className="flex h-10 w-10 items-center justify-center rounded-lg border bg-[#0c1220] transition-colors duration-200 group-hover:border-eari-blue/50"
+                      className="flex h-10 w-10 items-center justify-center rounded-lg border bg-[#0c1220] transition-colors duration-200 group-hover:border-white/[0.2]"
                       initial={prefersReducedMotion ? false : { borderColor: 'rgba(255,255,255,0.07)' }}
                       whileInView={prefersReducedMotion ? {} : { borderColor: ['rgba(255,255,255,0.07)', 'rgba(96,165,250,0.65)', 'rgba(255,255,255,0.12)'] }}
                       viewport={{ once: true, margin: '-25% 0px -25% 0px' }}

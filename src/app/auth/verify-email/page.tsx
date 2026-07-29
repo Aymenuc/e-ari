@@ -56,7 +56,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 
         {/* Footer */}
         <p className="text-center text-xs text-muted-foreground/50 font-sans mt-6">
-          © {new Date().getFullYear()} E-ARI · Enterprise AI Readiness Platform
+          © {new Date().getFullYear()} E-ARI · Enterprise AI Readiness Index
         </p>
       </motion.div>
     </div>

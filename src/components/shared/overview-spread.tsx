@@ -22,18 +22,7 @@ import {
 } from '@/lib/assessment-engine';
 import type { XRayFinding } from '@/lib/scoring-patterns';
 
-function ramp(score: number): string {
-  const t = Math.max(0, Math.min(1, (score - 40) / 45));
-  const ch = (a: number, b: number) => Math.round(a + (b - a) * t);
-  return `rgb(${ch(0x3a, 0x38)}, ${ch(0x52, 0xbd)}, ${ch(0x74, 0xf8)})`;
-}
-
-const SEVERITY_DOT: Record<string, string> = {
-  critical: '#ef4444',
-  high: '#f59e0b',
-  medium: '#facc15',
-  low: '#64748b',
-};
+import { scoreRamp as ramp, SEVERITY_DOT } from '@/lib/score-ramp';
 
 export function OverviewSpread({
   scoring,

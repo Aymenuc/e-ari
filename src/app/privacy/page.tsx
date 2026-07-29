@@ -150,7 +150,7 @@ export default function PrivacyPolicyPage() {
             {/* 1. Overview */}
             <Section id="overview" icon={Eye} title="1. Overview">
               <p>
-                E-ARI (Enterprise AI Readiness Assessment) is a platform operated by E-ARI that enables organizations to assess their preparedness for AI adoption across eight strategic pillars: Strategy & Vision, Data & Infrastructure, Talent & Culture, Governance & Ethics, Technology & Tools, Process & Operations, Customer & Market, and Innovation & Agility. This Privacy Policy describes how we collect, use, disclose, and protect information when you use our platform at e-ari.com and any associated subdomains, APIs, and services.
+                E-ARI (Enterprise AI Readiness Index) is a platform operated by E-ARI that enables organizations to assess their preparedness for AI adoption across eight strategic pillars: Strategy & Vision, Data & Infrastructure, Talent & Culture, Governance & Ethics, Technology & Tools, Process & Operations, Customer & Market, and Innovation & Agility. This Privacy Policy describes how we collect, use, disclose, and protect information when you use our platform at e-ari.com and any associated subdomains, APIs, and services.
               </p>
               <p>
                 By accessing or using E-ARI, you agree to the data practices described in this policy. If you are using E-ARI on behalf of an organization, you represent that you have the authority to bind that organization to this policy. We encourage you to read this document carefully and review it periodically, as we may update it from time to time. When we make material changes, we will notify you through the platform or by email before the changes take effect.

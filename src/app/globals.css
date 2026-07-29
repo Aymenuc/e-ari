@@ -50,9 +50,15 @@
   --color-navy-700: #1c2333;
   --color-navy-600: #252d3a;
   --color-navy-500: #30394a;
-  --color-eari-blue: #2563eb;
-  --color-eari-blue-light: #3b82f6;
-  --color-eari-blue-dark: #1d4ed8;
+  /* Interface accent. Was #2563eb — the saturated blue that reads as a
+     generated default and shouted from every icon, badge and metric in the
+     portal. Now a muted steel: still cool, still a family with the score
+     ramp, but quiet enough that the DATA is the loudest thing on screen.
+     -light carries text and icons on navy; the base stays dark enough to
+     hold white text on the solid fills that use it. */
+  --color-eari-blue: #33465f;
+  --color-eari-blue-light: #93a9c4;
+  --color-eari-blue-dark: #26364a;
   --color-gold: #f59e0b;
   --color-emerald: #10b981;
   --color-slate: #64748b;
@@ -952,7 +958,9 @@
   top: 0;
   left: 0;
   height: 3px;
-  background: linear-gradient(90deg, #2563eb, #6366f1, #8b5cf6);
+  /* Was blue → indigo → violet: a rainbow pinned to the top of the results
+     page, above the score it is meant to be quietly measuring. */
+  background: linear-gradient(90deg, #3a5274, #38bdf8);
   z-index: 9999;
   transition: width 0.1s linear;
 }
@@ -1353,16 +1361,21 @@
   0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.5; }
   50% { transform: translate3d(-40px, -60px, 0) scale(1.12); opacity: 0.8; }
 }
+/* Three drifting light fields behind the hero. They were blue / violet / cyan
+   — the stock "AI aurora" trio, and the strongest template signal on the page.
+   One cool-neutral hue at three luminances gives the same depth and motion,
+   and lets the navy read as a deliberate brand colour rather than a backdrop
+   something else was painted over. */
 .hero-aurora-a {
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.32) 0%, rgba(37, 99, 235, 0.08) 45%, transparent 70%);
+  background: radial-gradient(circle, rgba(148, 163, 184, 0.18) 0%, rgba(148, 163, 184, 0.05) 45%, transparent 70%);
   animation: auroraDriftA 22s ease-in-out infinite;
 }
 .hero-aurora-b {
-  background: radial-gradient(circle, rgba(124, 58, 237, 0.22) 0%, rgba(124, 58, 237, 0.06) 45%, transparent 70%);
+  background: radial-gradient(circle, rgba(203, 213, 225, 0.12) 0%, rgba(203, 213, 225, 0.035) 45%, transparent 70%);
   animation: auroraDriftB 28s ease-in-out infinite;
 }
 .hero-aurora-c {
-  background: radial-gradient(circle, rgba(8, 145, 178, 0.16) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(226, 232, 240, 0.08) 0%, transparent 65%);
   animation: auroraDriftC 26s ease-in-out infinite;
 }
 .hero-grid {
@@ -1373,19 +1386,33 @@
   mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 30%, transparent 75%);
   -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 30%, transparent 75%);
 }
+/* Emphasis for the hero headline. Monochrome by design: the phrase lifts off
+   the softer body text through luminance, not hue — a rainbow gradient here
+   reads as a template, and this is the first thing a regulator-facing buyer
+   sees. The vertical fall from white to slate is a letterpress cue. */
 .text-gradient-hero {
-  background: linear-gradient(100deg, #60a5fa 0%, #818cf8 48%, #c084fc 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #c8d2e0 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
-.btn-gradient-primary {
-  background: #f6f7f9;
-  color: #0b1020 !important;
-  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-}
-.btn-gradient-primary:hover { background: #ffffff; }
 
+/* The hairline flanking every section eyebrow. Defined once so the rhythm
+   stays identical across all 16 call sites; width is set by the utility. */
+.eyebrow-rule {
+  background-image: linear-gradient(
+    to right,
+    rgba(148, 163, 184, 0.08) 0%,
+    rgba(203, 213, 225, 0.55) 100%
+  );
+}
+.eyebrow-rule-l {
+  background-image: linear-gradient(
+    to left,
+    rgba(148, 163, 184, 0.08) 0%,
+    rgba(203, 213, 225, 0.55) 100%
+  );
+}
 @media (prefers-reduced-motion: reduce) {
   .hero-aurora-a, .hero-aurora-b, .hero-aurora-c { animation: none; }
 }

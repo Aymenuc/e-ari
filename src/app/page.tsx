@@ -93,26 +93,6 @@ function ParallaxSection({ children, className, speed = 0.1, id }: { children: R
   )
 }
 
-/* ─── Animated Checkmark ───────────────────────────────────────────────── */
-
-function AnimatedCheck({ className, delay = 0 }: { className?: string; delay?: number }) {
-  return (
-    <svg className={className} width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <motion.path
-        d="M3 8L6.5 11.5L13 4.5"
-        stroke="#0369a1"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        initial={{ pathLength: 0 }}
-        whileInView={{ pathLength: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.4, delay, ease: 'easeOut' }}
-      />
-    </svg>
-  )
-}
-
 /* ─── Back to Top Button ──────────────────────────────────────────────── */
 
 function BackToTop() {
@@ -132,7 +112,7 @@ function BackToTop() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 10 }}
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 right-6 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-eari-blue text-white border border-white/10 shadow-lg shadow-black/40 hover:bg-eari-blue-dark transition-colors"
+          className="fixed bottom-6 right-6 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-navy-800/90 text-slate-200 border border-white/[0.12] shadow-lg shadow-black/40 backdrop-blur hover:bg-navy-700 hover:text-white transition-colors"
           aria-label="Back to top"
         >
           <ArrowUp className="h-5 w-5" />
@@ -157,16 +137,10 @@ const ICON_MAP: Record<string, React.ElementType> = {
 
 /* ─── Sample pillar scores for the hero preview ────────────────────────── */
 
-const SAMPLE_SCORES = [
-  { name: 'Strategy', score: 72, color: '#2563eb' },
-  { name: 'Data', score: 58, color: '#475569' },
-  { name: 'Technology', score: 65, color: '#0369a1' },
-  { name: 'Talent', score: 44, color: '#64748b' },
-  { name: 'Governance', score: 78, color: '#0ea5e9' },
-  { name: 'Culture', score: 55, color: '#334155' },
-  { name: 'Process', score: 61, color: '#0284c7' },
-  { name: 'Security', score: 83, color: '#94a3b8' },
-]
+/* Demo pillar scores for the signed-in assistant preview, in PILLARS order.
+   Names and colours live on PILLARS itself — carrying copies here let them
+   drift out of sync, so this is only the scores. */
+const SAMPLE_SCORES = [72, 58, 65, 44, 78, 55, 61, 83]
 
 /* ─── Agentic Properties ────────────────────────────────────────────────── */
 
@@ -178,7 +152,7 @@ const AGENT_PROPERTIES = [
     tagline: 'Autonomous Stakeholder Interviews',
     description: 'Conducts structured, adaptive interviews with stakeholders to map organizational readiness, surface blind spots, and capture qualitative context that questionnaires alone cannot reach.',
     capability: '5 question types · Adaptive follow-ups · Sector-aware prompts',
-    color: '#2563eb',
+    color: '#e2e8f0',
     status: 'active',
     href: '/discovery',
   },
@@ -189,7 +163,7 @@ const AGENT_PROPERTIES = [
     tagline: 'Strategic Narrative Generation',
     description: 'Generates board-ready strategic narratives grounded in your actual assessment scores. Identifies cross-pillar correlations, risk patterns, and prioritized action paths.',
     capability: 'Score-grounded analysis · Cross-pillar correlation · Risk flags',
-    color: '#0369a1',
+    color: '#cbd5e1',
     status: 'active',
     href: '/assessment',
   },
@@ -200,7 +174,7 @@ const AGENT_PROPERTIES = [
     tagline: 'Adaptive Learning Paths',
     description: 'Creates personalized AI literacy curricula based on role, seniority, and assessment gaps. Serves tailored micro-lessons that build organizational competence over time.',
     capability: 'Role-based paths · Gap-driven content · Progress tracking',
-    color: '#0ea5e9',
+    color: '#aab6c8',
     status: 'active',
     href: '/literacy',
   },
@@ -211,7 +185,7 @@ const AGENT_PROPERTIES = [
     tagline: 'Deterministic + Pattern-Aware Engine',
     description: 'Runs the seven-step pipeline: normalize, six cross-pillar adjustment rules, X-Ray detection of structural failure patterns, sector-specific re-weighting, composite, classify. Every score is reproducible and audit-replayable.',
     capability: 'X-Ray patterns · Sector weighting · Six interdependency rules · Zero randomness',
-    color: '#475569',
+    color: '#94a3b8',
     status: 'active',
     href: '/assessment',
   },
@@ -222,7 +196,7 @@ const AGENT_PROPERTIES = [
     tagline: 'Automated Board-Ready Output',
     description: 'Generates publication-quality PDF reports with executive summaries, radar visualizations, and maturity classifications. Formatted for board presentations and compliance records.',
     capability: 'PDF generation · Executive summary · Visual dashboards',
-    color: '#64748b',
+    color: '#7d8a9e',
     status: 'active',
     href: '/assessment',
   },
@@ -233,7 +207,7 @@ const AGENT_PROPERTIES = [
     tagline: 'Context-Aware AI Companion',
     description: 'An always-available AI assistant that understands your assessment context, answers questions about methodology, and provides real-time guidance throughout your readiness journey.',
     capability: 'Context memory · Methodology expert · Real-time guidance',
-    color: '#334155',
+    color: '#68768c',
     status: 'active',
     href: '/assessment',
   },
@@ -316,13 +290,13 @@ const PRICING_TIERS = [
     yearlyPeriod: '/mo, billed yearly',
     description: 'For practitioners running regular assessments with AI-powered insights.',
     icon: Sparkles,
-    color: '#2563eb',
+    color: '#94a3b8',
     features: [
       { text: '5 assessments per month', included: true },
       { text: 'Full AI narrative insights', included: true },
       { text: '15 pulse checks per month', included: true },
       { text: '5 team members', included: true },
-      { text: '3 Board-ready report (PDF + Word)s/mo', included: true },
+      { text: '3 board-ready reports (PDF + Word) per month', included: true },
       { text: 'Core sector benchmarks', included: true },
       { text: 'Basic admin portal', included: true },
       { text: 'Email support', included: true },
@@ -342,7 +316,7 @@ const PRICING_TIERS = [
     yearlyPeriod: '/mo, billed yearly',
     description: 'For scaling organizations that need broader coverage and team collaboration.',
     icon: TrendingUp,
-    color: '#7c3aed',
+    color: '#cbd5e1',
     features: [
       { text: '20 assessments per month', included: true },
       { text: '50 pulse checks per month', included: true },
@@ -368,7 +342,7 @@ const PRICING_TIERS = [
     yearlyPeriod: '',
     description: 'Organization-wide AI readiness at scale with dedicated support and SLAs.',
     icon: Shield,
-    color: '#d4a853',
+    color: '#f1f5f9',
     features: [
       { text: 'Everything in Growth', included: true },
       { text: 'Unlimited assessments & pulse checks', included: true },
@@ -510,7 +484,7 @@ export default function Home() {
           const deadline = new Date('2026-08-02T00:00:00Z')
           const daysLeft = Math.ceil((deadline.getTime() - Date.now()) / 86_400_000)
           if (daysLeft <= 0) return (
-            <div className="border-b border-eari-blue/20 bg-eari-blue/[0.06] px-4 py-2.5 text-center">
+            <div className="border-b border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-center">
               <p className="font-sans text-[13px] text-slate-300">
                 <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mr-3">EU AI Act</span>
                 High-risk obligations are now in full application. <Link href="/assessment" className="text-slate-400 hover:underline font-medium">Check your exposure →</Link>
@@ -518,7 +492,7 @@ export default function Home() {
             </div>
           )
           return (
-            <div className="border-b border-eari-blue/20 bg-eari-blue/[0.06] px-4 py-2.5 text-center">
+            <div className="border-b border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-center">
               <p className="font-sans text-[13px] text-slate-300">
                 <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mr-3">EU AI Act</span>
                 Full high-risk obligations apply on <span className="text-slate-100 font-medium">2 August 2026</span>
@@ -541,7 +515,7 @@ export default function Home() {
                 <FadeUp>
                   {/* Hairline rule + label — calmer than a pill badge */}
                   <div className="mb-7 flex items-center gap-3 justify-center lg:justify-start">
-                    <span aria-hidden className="h-px w-10 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
+                    <span aria-hidden className="h-px w-10 eyebrow-rule" />
                     <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
                       AI Readiness · EU AI Act Compliance
                     </span>
@@ -566,7 +540,7 @@ export default function Home() {
                     <Link href="/auth/register">
                       <Button
                         size="lg"
-                        className="group h-12 px-7 btn-gradient-primary text-white font-heading font-semibold text-[15px] tracking-[-0.005em] w-full sm:w-auto shadow-[0_8px_28px_-6px_rgba(79,70,229,0.5)] hover:translate-y-[-1px] hover:shadow-[0_14px_34px_-6px_rgba(99,102,241,0.6)]"
+                        className="group h-12 px-7 btn-brand font-heading font-semibold text-[15px] tracking-[-0.005em] w-full sm:w-auto"
                       >
                         <span className="flex items-center">
                           Start Free Assessment
@@ -623,7 +597,7 @@ export default function Home() {
               {ORG_ARCHETYPES.map((label, i) => (
                 <motion.span
                   key={label}
-                  className="rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 text-xs sm:text-sm font-medium text-slate-300 font-sans tracking-tight hover:border-eari-blue/25 hover:bg-eari-blue/[0.06] transition-colors duration-300"
+                  className="rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 text-xs sm:text-sm font-medium text-slate-300 font-sans tracking-tight hover:border-white/[0.18] hover:bg-white/[0.05] transition-colors duration-300"
                   initial={{ opacity: 0, y: 8 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -637,41 +611,46 @@ export default function Home() {
         </section>
 
 
-        <section className="py-16 sm:py-20 relative overflow-hidden" aria-labelledby="compliance-spotlight-heading">
+        <section className="py-20 sm:py-28 relative overflow-hidden" aria-labelledby="compliance-spotlight-heading">
           <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
             <div
               className="absolute top-1/2 right-0 translate-y-[-50%] w-[380px] h-[380px] rounded-full opacity-[0.05]"
-              style={{ background: 'radial-gradient(circle, rgba(37,99,235,0.35) 0%, transparent 68%)' }}
+              style={{ background: 'radial-gradient(circle, rgba(203,213,225,0.30) 0%, transparent 68%)' }}
             />
           </div>
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-2xl border border-emerald-500/[0.18] bg-[#0e131c] p-8 sm:p-10 lg:p-12 flex flex-col lg:flex-row lg:items-center gap-8 lg:gap-12 shadow-[0_30px_70px_-30px_rgba(0,0,0,0.7)]">
+            <div className="rounded-2xl border border-white/[0.09] bg-[#0e131c] p-8 sm:p-10 lg:p-12 flex flex-col lg:flex-row lg:items-center gap-8 lg:gap-12 shadow-[0_30px_70px_-30px_rgba(0,0,0,0.7)]">
               <div className="flex-1">
-                <Badge variant="outline" className="font-mono text-xs border-emerald-500/35 text-emerald-300 bg-emerald-500/5 mb-4">
-                  Compliance &amp; evidence
-                </Badge>
-                <h2 id="compliance-spotlight-heading" className="font-heading text-2xl sm:text-3xl font-semibold tracking-tight text-slate-100">
+                <div className="mb-5 flex items-center gap-3">
+                  <span aria-hidden className="h-px w-8 eyebrow-rule" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
+                    Compliance &amp; evidence
+                  </span>
+                </div>
+                <h2 id="compliance-spotlight-heading" className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
                   From assessment to{' '}
                   <span className="text-slate-400 font-medium">audit-ready artifacts</span>
                 </h2>
-                <p className="mt-4 text-muted-foreground font-sans leading-relaxed max-w-xl">
-                  Collect AI Act evidence, maintain FRIA and technical files, bundle regulator-facing submission packs, and rely on immutable admin logs—so governance teams ship filings without chasing screenshots.
+                <p className="mt-4 text-[17px] text-slate-400 font-sans leading-relaxed max-w-xl">
+                  Collect AI Act evidence, maintain FRIA and technical files, bundle regulator-facing
+                  submission packs, and rely on immutable admin logs &mdash; so governance teams ship
+                  filings without chasing screenshots.
                 </p>
                 <ul className="mt-6 grid sm:grid-cols-2 gap-3 text-sm text-muted-foreground font-sans">
                   <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" aria-hidden />
+                    <Check className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" aria-hidden />
                     AI Act evidence trails
                   </li>
                   <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" aria-hidden />
+                    <Check className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" aria-hidden />
                     FRIA &amp; technical documentation
                   </li>
                   <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" aria-hidden />
+                    <Check className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" aria-hidden />
                     Submission-ready packs
                   </li>
                   <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" aria-hidden />
+                    <Check className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" aria-hidden />
                     Admin audit logs
                   </li>
                 </ul>
@@ -686,7 +665,7 @@ export default function Home() {
               </div>
               <div className="flex-shrink-0 w-full lg:w-auto lg:max-w-sm">
                 <div className="rounded-xl border border-white/[0.06] bg-navy-900/60 p-6 font-mono text-xs text-muted-foreground/80 space-y-3">
-                  <div className="flex items-center gap-2 text-emerald-400/90">
+                  <div className="flex items-center gap-2 text-slate-300">
                     <FileCheck className="h-4 w-4" aria-hidden />
                     <span>Evidence vault · versioned</span>
                   </div>
@@ -710,11 +689,11 @@ export default function Home() {
             <FadeUp>
               <div className="text-center max-w-2xl mx-auto">
                 <div className="mb-5 flex items-center justify-center gap-3">
-                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
+                  <span aria-hidden className="h-px w-8 eyebrow-rule" />
                   <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
                     Methodology
                   </span>
-                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
+                  <span aria-hidden className="h-px w-8 eyebrow-rule-l" />
                 </div>
                 <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
                   The 8-Pillar Framework
@@ -819,11 +798,11 @@ export default function Home() {
             <FadeUp>
               <div className="text-center max-w-2xl mx-auto">
                 <div className="mb-5 flex items-center justify-center gap-3">
-                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
+                  <span aria-hidden className="h-px w-8 eyebrow-rule" />
                   <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
                     Agentic architecture
                   </span>
-                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
+                  <span aria-hidden className="h-px w-8 eyebrow-rule-l" />
                 </div>
                 <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
                   The Innovation: Agentic AI Assessment
@@ -848,11 +827,11 @@ export default function Home() {
             <FadeUp>
               <div className="text-center max-w-3xl mx-auto">
                 <div className="mb-5 flex items-center justify-center gap-3">
-                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
+                  <span aria-hidden className="h-px w-8 eyebrow-rule" />
                   <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
                     AI-powered insights
                   </span>
-                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
+                  <span aria-hidden className="h-px w-8 eyebrow-rule-l" />
                 </div>
                 <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
                   Strategic Insights Powered by AI
@@ -875,27 +854,23 @@ export default function Home() {
                   {[
                     {
                       icon: Eye,
-                      title: 'Grounded in Your Scores',
+                      title: 'Grounded in your scores',
                       desc: 'AI narratives are derived from your actual assessment data — no hallucinated metrics or invented benchmarks.',
-                      color: '#3b82f6',
                     },
                     {
                       icon: LockKeyhole,
-                      title: 'Privacy-First Architecture',
+                      title: 'Privacy-first architecture',
                       desc: 'Your assessment data is processed securely and never used for model training. Enterprise-grade data isolation.',
-                      color: '#10b981',
                     },
                     {
                       icon: FileCheck,
-                      title: 'Fallback Templates',
+                      title: 'Deterministic fallback',
                       desc: 'If AI is unavailable, template-based insights are generated deterministically from your scores. You always get value.',
-                      color: '#f59e0b',
                     },
                     {
                       icon: Zap,
-                      title: 'Clearly Labeled',
+                      title: 'Clearly labelled',
                       desc: 'Every AI-generated insight is explicitly marked. No ambiguity about what comes from algorithms versus AI narrative.',
-                      color: '#06b6d4',
                     },
                   ].map((point, i) => {
                     const Icon = point.icon
@@ -909,12 +884,11 @@ export default function Home() {
                         className="flex gap-4 items-start group"
                       >
                         <motion.div
-                          className="flex h-10 w-10 items-center justify-center rounded-lg flex-shrink-0 mt-0.5 border border-white/[0.06]"
-                          style={{ backgroundColor: `${point.color}14` }}
+                          className="flex h-10 w-10 items-center justify-center rounded-lg flex-shrink-0 mt-0.5 border border-white/[0.07] bg-white/[0.03]"
                           whileHover={{ scale: 1.03 }}
                           transition={{ duration: 0.18 }}
                         >
-                          <Icon className="h-5 w-5" style={{ color: point.color }} />
+                          <Icon className="h-5 w-5 text-slate-300" strokeWidth={1.75} />
                         </motion.div>
                         <div>
                           <h4 className="font-heading font-semibold text-foreground">{point.title}</h4>
@@ -932,20 +906,25 @@ export default function Home() {
         {/* ─── 4E. COMPETITIVE COMPARISON SECTION ──────────────────────────── */}
         <section className="py-20 sm:py-28 relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[560px] h-[380px] rounded-full opacity-[0.045]" style={{ background: 'radial-gradient(circle, #2563eb 0%, transparent 72%)' }} />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[560px] h-[380px] rounded-full opacity-[0.045]" style={{ background: 'radial-gradient(circle, rgba(203,213,225,0.28) 0%, transparent 72%)' }} />
           </div>
 
           <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center mb-14">
-                <Badge variant="outline" className="font-mono text-xs border-[#d4a853]/30 text-[#d4a853] bg-[#d4a853]/5 mb-4">
-                  Competitive Edge
-                </Badge>
-                <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-tight text-[#d4b878]">
-                  E-ARI vs. Traditional Tools
+                <div className="mb-5 flex items-center justify-center gap-3">
+                  <span aria-hidden className="h-px w-8 eyebrow-rule" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
+                    How we differ
+                  </span>
+                  <span aria-hidden className="h-px w-8 eyebrow-rule-l" />
+                </div>
+                <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
+                  Against a static questionnaire
                 </h2>
-                <p className="mt-4 text-lg text-muted-foreground font-sans max-w-2xl mx-auto">
-                  Five dimensions where agentic intelligence replaces static workflows — and the gap widens with every release.
+                <p className="mt-4 text-[17px] text-slate-400 font-sans leading-relaxed max-w-2xl mx-auto">
+                  Most readiness tools are a spreadsheet with a form on top. Five places where that
+                  difference actually changes what you can do with the result.
                 </p>
               </div>
             </FadeUp>
@@ -979,8 +958,8 @@ export default function Home() {
                 {
                   icon: BarChart3,
                   label: 'Benchmarking',
-                  traditional: 'Self-reported, unverifiable claims',
-                  eari: 'Real sector data with percentile rankings',
+                  traditional: 'A score with nothing to compare it against',
+                  eari: 'Sector baselines with modelled percentile positioning',
                 },
               ].map((row, i) => (
                 <FadeUp key={row.label} delay={0.03 * i}>
@@ -992,22 +971,22 @@ export default function Home() {
                         <span className="font-heading font-semibold text-foreground text-sm">{row.label}</span>
                       </div>
 
-                      {/* Traditional column */}
-                      <div className="flex-1 flex items-center gap-3 px-5 py-4 border-b sm:border-b-0 sm:border-r border-border/10">
-                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-red-500/10 shrink-0">
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                            <path d="M3 3L9 9M9 3L3 9" stroke="#ef4444" strokeWidth="1.8" strokeLinecap="round" />
-                          </svg>
-                        </div>
-                        <span className="text-sm text-muted-foreground/60 font-sans">{row.traditional}</span>
+                      {/* Traditional column — recessed, not condemned. A red cross
+                          against an unnamed strawman competitor reads as a growth
+                          hack; letting the sentence sit dim does the same job. */}
+                      <div className="flex-1 px-5 py-4 border-b sm:border-b-0 sm:border-r border-white/[0.06]">
+                        <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-600 mb-1.5">
+                          Typical tool
+                        </p>
+                        <span className="text-sm text-slate-500 font-sans">{row.traditional}</span>
                       </div>
 
                       {/* E-ARI column */}
-                      <div className="flex-1 flex items-center gap-3 px-5 py-4 bg-white/[0.02] rounded-b-xl sm:rounded-b-none sm:rounded-r-xl group-hover:bg-white/[0.035] transition-colors duration-200">
-                        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-eari-blue/15 shrink-0">
-                          <AnimatedCheck className="shrink-0" delay={0.1 + i * 0.08} />
-                        </div>
-                        <span className="text-sm text-slate-200 font-medium font-sans">{row.eari}</span>
+                      <div className="flex-1 px-5 py-4 bg-white/[0.02] rounded-b-xl sm:rounded-b-none sm:rounded-r-xl group-hover:bg-white/[0.035] transition-colors duration-200">
+                        <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400 mb-1.5">
+                          E-ARI
+                        </p>
+                        <span className="text-sm text-slate-100 font-medium font-sans">{row.eari}</span>
                       </div>
                     </div>
                   </div>
@@ -1015,23 +994,12 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Column headers legend */}
             <FadeUp delay={0.18}>
-              <div className="flex justify-center gap-8 mt-8">
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center justify-center w-5 h-5 rounded-full bg-red-500/10">
-                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-                      <path d="M3 3L9 9M9 3L3 9" stroke="#ef4444" strokeWidth="1.8" strokeLinecap="round" />
-                    </svg>
-                  </div>
-                  <span className="text-xs text-muted-foreground/60 font-sans">Traditional</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center justify-center w-5 h-5 rounded-full bg-eari-blue/15">
-                    <Check className="h-3 w-3 text-slate-400" />
-                  </div>
-                  <span className="text-xs text-slate-300 font-sans">E-ARI</span>
-                </div>
+              <div className="mt-8 text-center">
+                <p className="font-sans text-xs text-slate-500">
+                  Comparison is against the general category of static readiness questionnaires,
+                  not any named product.
+                </p>
               </div>
             </FadeUp>
           </div>
@@ -1044,11 +1012,11 @@ export default function Home() {
             <FadeUp>
               <div className="text-center max-w-2xl mx-auto mb-14">
                 <div className="mb-5 flex items-center justify-center gap-3">
-                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
+                  <span aria-hidden className="h-px w-8 eyebrow-rule" />
                   <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
                     Beyond the score
                   </span>
-                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
+                  <span aria-hidden className="h-px w-8 eyebrow-rule-l" />
                 </div>
                 <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
                   From readiness score to <span className="text-slate-400 italic">continuous compliance</span>
@@ -1066,7 +1034,7 @@ export default function Home() {
                 { title: 'Continuous Controls', desc: 'Every applicable EU AI Act obligation with a live state: passing, failing, or awaiting evidence — derived from your evidence vault, never self-declared.', tag: 'PROVE' },
               ].map((m, i) => (
                 <FadeUp key={m.title} delay={i * 0.06}>
-                  <div className="h-full rounded-xl border border-border/60 bg-navy-800 p-6 hover:border-eari-blue/40 transition-colors">
+                  <div className="h-full rounded-xl border border-border/60 bg-navy-800 p-6 hover:border-white/[0.18] transition-colors">
                     <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">{m.tag}</span>
                     <h3 className="mt-2 font-heading text-base font-semibold text-slate-100">{m.title}</h3>
                     <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted-foreground">{m.desc}</p>
@@ -1089,7 +1057,7 @@ export default function Home() {
           <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
             <div
               className="absolute top-[22%] left-[8%] w-[280px] h-[280px] rounded-full opacity-[0.035]"
-              style={{ background: 'radial-gradient(circle, #2563eb 0%, transparent 72%)' }}
+              style={{ background: 'radial-gradient(circle, rgba(203,213,225,0.28) 0%, transparent 72%)' }}
             />
           </div>
 
@@ -1097,11 +1065,11 @@ export default function Home() {
             <FadeUp>
               <div className="text-center max-w-3xl mx-auto">
                 <div className="mb-5 flex items-center justify-center gap-3">
-                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
+                  <span aria-hidden className="h-px w-8 eyebrow-rule" />
                   <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
                     Pricing
                   </span>
-                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
+                  <span aria-hidden className="h-px w-8 eyebrow-rule-l" />
                 </div>
                 <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
                   Simple, Transparent Pricing
@@ -1114,7 +1082,7 @@ export default function Home() {
                   className="mt-6 inline-flex items-center gap-3 rounded-full bg-navy-800 border border-border/50 px-4 py-2 cursor-pointer hover:border-border transition-colors"
                 >
                   <span className={`text-sm font-sans font-medium transition-colors ${!isAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>Monthly</span>
-                  <div className={`w-8 h-[18px] rounded-full relative transition-colors duration-200 ${isAnnual ? 'bg-eari-blue' : 'bg-muted-foreground/30'}`}>
+                  <div className={`w-8 h-[18px] rounded-full relative transition-colors duration-200 ${isAnnual ? 'bg-slate-200' : 'bg-muted-foreground/30'}`}>
                     <div className={`absolute top-[2px] w-[14px] h-[14px] rounded-full bg-white transition-all duration-200 ${isAnnual ? 'right-[2px]' : 'left-[2px]'}`} />
                   </div>
                   <span className={`text-sm font-sans transition-colors ${isAnnual ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
@@ -1145,9 +1113,9 @@ export default function Home() {
                       <Card
                         className={`h-full relative overflow-hidden transition-colors duration-200 ${
                           isPro
-                            ? 'bg-navy-800/95 border-eari-blue/35 shadow-lg shadow-black/35 ring-1 ring-white/[0.04]'
+                            ? 'bg-navy-800/95 border-white/[0.2] shadow-lg shadow-black/35 ring-1 ring-white/[0.06]'
                             : isEnterprise
-                            ? 'bg-navy-800/85 border-[#d4a853]/25 shadow-md shadow-black/30'
+                            ? 'bg-navy-800/85 border-white/[0.12] shadow-md shadow-black/30'
                             : 'bg-navy-800/75 border-white/[0.08] shadow-md shadow-black/25'
                         }`}
                       >
@@ -1268,11 +1236,11 @@ export default function Home() {
             <FadeUp>
               <div className="text-center mb-10">
                 <div className="mb-5 flex items-center justify-center gap-3">
-                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
+                  <span aria-hidden className="h-px w-8 eyebrow-rule" />
                   <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
                     FAQ
                   </span>
-                  <span aria-hidden className="h-px w-8 bg-gradient-to-r from-eari-blue/10 via-eari-blue/70 to-violet-400/70" />
+                  <span aria-hidden className="h-px w-8 eyebrow-rule-l" />
                 </div>
                 <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
                   Questions, answered
@@ -1320,8 +1288,8 @@ export default function Home() {
           <CtaAura />
           <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
             <FadeUp>
-              <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground">
-                Ready to Measure Your AI Readiness?
+              <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
+                Ready to measure your AI readiness?
               </h2>
               <p className="mt-4 text-lg text-muted-foreground font-sans max-w-2xl mx-auto">
                 Start with a free assessment. Get your E-ARI score across 8 pillars in about 15 minutes. No credit card required.
@@ -1331,7 +1299,7 @@ export default function Home() {
                   <Link href="/auth/register">
                     <Button
                       size="lg"
-                      className="group btn-gradient-primary text-white font-heading font-semibold h-12 px-8 text-base w-full sm:w-auto shadow-[0_10px_30px_-8px_rgba(79,70,229,0.55)] border border-white/[0.06]"
+                      className="group btn-brand font-heading font-semibold h-12 px-8 text-base w-full sm:w-auto border border-white/[0.06]"
                     >
                       <span className="flex items-center">
                         Start Free Assessment
@@ -1360,14 +1328,11 @@ export default function Home() {
       {isAuthenticated && (
         <AgentPanel
           sector="technology"
-          pillarScores={SAMPLE_SCORES.map((s, i) => {
-            const pillar = PILLARS[i];
-            return {
-              pillarId: pillar.id,
-              score: s.score,
-              maturityLabel: s.score <= 25 ? 'Laggard' : s.score <= 50 ? 'Follower' : s.score <= 75 ? 'Chaser' : 'Pacesetter',
-            };
-          })}
+          pillarScores={SAMPLE_SCORES.map((score, i) => ({
+            pillarId: PILLARS[i].id,
+            score,
+            maturityLabel: score <= 25 ? 'Laggard' : score <= 50 ? 'Follower' : score <= 75 ? 'Chaser' : 'Pacesetter',
+          }))}
           overallScore={67}
           orgContext="A technology company with growing AI initiatives and established data practices, focusing on digital transformation across business units."
         />

@@ -33,7 +33,7 @@ export function LandingBackdrop() {
 
     const paint = () => {
       raf = 0;
-      glow.style.background = `radial-gradient(560px circle at ${x}px ${y}px, rgba(99, 102, 241, 0.07), rgba(37, 99, 235, 0.04) 40%, transparent 70%)`;
+      glow.style.background = `radial-gradient(560px circle at ${x}px ${y}px, rgba(203, 213, 225, 0.06), rgba(148, 163, 184, 0.035) 40%, transparent 70%)`;
       const mask = `radial-gradient(340px circle at ${x}px ${y}px, black 20%, transparent 75%)`;
       reveal.style.maskImage = mask;
       reveal.style.webkitMaskImage = mask;

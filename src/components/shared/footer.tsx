@@ -16,15 +16,15 @@ export function Footer() {
               <BrandWordmark size="sm" />
             </div>
             <p className="text-xs text-muted-foreground font-sans leading-relaxed">
-              Enterprise AI Readiness Assessment. Evidence-based, actionable outputs for organizations advancing their AI journey.
+              Enterprise AI Readiness Index. Evidence-based, actionable outputs for organizations advancing their AI journey.
             </p>
             <div className="space-y-1.5">
               <a href="mailto:support@e-ari.com" className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors font-sans">
-                <Mail className="h-3 w-3 shrink-0 text-eari-blue/70" />
+                <Mail className="h-3 w-3 shrink-0 text-slate-500" />
                 support@e-ari.com
               </a>
               <a href="mailto:hello@e-ari.com" className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors font-sans">
-                <MessageSquare className="h-3 w-3 shrink-0 text-eari-blue/70" />
+                <MessageSquare className="h-3 w-3 shrink-0 text-slate-500" />
                 hello@e-ari.com
               </a>
             </div>

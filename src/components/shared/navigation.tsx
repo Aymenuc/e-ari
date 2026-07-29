@@ -143,7 +143,7 @@ export function Navigation() {
                   </Button>
                 </Link>
                 <Link href="/auth/register">
-                  <Button className="btn-brand font-sans shadow-md shadow-eari-blue/15 transition-colors">
+                  <Button className="btn-brand font-sans shadow-md shadow-black/25 transition-colors">
                     Get Started
                   </Button>
                 </Link>
@@ -193,7 +193,7 @@ export function Navigation() {
                   </Button>
                 </Link>
                 <Link href="/auth/register" onClick={() => setMobileOpen(false)}>
-                  <Button className="w-full btn-brand font-sans shadow-md shadow-eari-blue/15">
+                  <Button className="w-full btn-brand font-sans shadow-md shadow-black/25">
                     Get Started
                   </Button>
                 </Link>

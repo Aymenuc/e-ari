@@ -170,7 +170,7 @@ function base(content: string, previewText: string): string {
           <table class="ftr" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
             <tr><td style="background-color:${C.headerBg};border-top:1px solid ${C.divider};padding:22px 40px;text-align:center">
               <p class="ftr-p" style="margin:0 0 4px;font-size:12px;color:${C.muted};line-height:1.6">
-                &copy; ${YEAR} E-ARI &middot; Enterprise AI Readiness Platform
+                &copy; ${YEAR} E-ARI &middot; Enterprise AI Readiness Index
               </p>
               <p class="ftr-p" style="margin:0;font-size:11px;color:${C.footerText}">
                 You received this because you have an account at

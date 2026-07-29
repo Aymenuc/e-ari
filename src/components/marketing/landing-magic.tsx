@@ -61,7 +61,7 @@ export function InsightStream() {
       rendered.push(
         <span
           key={s}
-          className={`font-mono tabular-nums ${seg.tone === 'blue' ? 'text-eari-blue-light' : 'text-amber-300/90'}`}
+          className={`font-mono tabular-nums ${seg.tone === 'blue' ? 'text-slate-200' : 'text-amber-300/90'}`}
         >
           {shown}
         </span>,
@@ -79,7 +79,7 @@ export function InsightStream() {
           {done ? 'Generated' : 'Writing'}
         </span>
       </div>
-      <div className="border-l-2 border-eari-blue/45 pl-5 min-h-[132px]">
+      <div className="border-l-2 border-white/[0.18] pl-5 min-h-[132px]">
         <p className="text-slate-100 font-sans leading-[1.65] text-[15px]">
           {rendered}
           {!done && !prefersReducedMotion && (
@@ -114,7 +114,7 @@ export function CtaAura() {
     <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
       <motion.div
         className="absolute left-1/2 top-1/2 h-[520px] w-[820px] -translate-x-1/2 -translate-y-1/2 rounded-[40%] opacity-[0.18]"
-        style={{ background: 'conic-gradient(from 0deg, #2563eb, #7c3aed, #0891b2, #2563eb)' }}
+        style={{ background: 'conic-gradient(from 0deg, rgba(203,213,225,0.55), rgba(148,163,184,0.12), rgba(226,232,240,0.5), rgba(203,213,225,0.55))' }}
         animate={prefersReducedMotion ? undefined : { rotate: 360 }}
         transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
       />
