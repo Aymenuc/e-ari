@@ -41,7 +41,23 @@ export async function GET(req: NextRequest) {
       ...(success !== undefined ? { success } : {}),
     };
 
-    const [logs, total] = await Promise.all([
+    /**
+     * Spend rollups.
+     *
+     * The table already showed input/output tokens per call, but with no
+     * aggregate anywhere an operator could read individual rows and still have
+     * no idea what the month costs. These windows answer "what am I spending,
+     * and did it just change" — which is the question a per-row log cannot.
+     *
+     * Unpriced deliberately: rates differ per model and change without notice,
+     * so a hardcoded €/token would quietly go stale and be worse than no number
+     * at all. Tokens are the honest unit; multiply by your current rate card.
+     */
+    const now = new Date();
+    const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const [logs, total, day, month, byModel, failures] = await Promise.all([
       db.complianceLog.findMany({
         where,
         orderBy: { createdAt: "desc" },
@@ -49,7 +65,47 @@ export async function GET(req: NextRequest) {
         take: pageSize,
       }),
       db.complianceLog.count({ where }),
+      db.complianceLog.aggregate({
+        where: { createdAt: { gte: dayAgo } },
+        _sum: { inputTokens: true, outputTokens: true },
+        _count: true,
+      }),
+      db.complianceLog.aggregate({
+        where: { createdAt: { gte: monthAgo } },
+        _sum: { inputTokens: true, outputTokens: true },
+        _count: true,
+      }),
+      db.complianceLog.groupBy({
+        by: ["model"],
+        where: { createdAt: { gte: monthAgo } },
+        _sum: { inputTokens: true, outputTokens: true },
+        _count: true,
+      }),
+      db.complianceLog.count({
+        where: { createdAt: { gte: monthAgo }, success: false },
+      }),
     ]);
+
+    const spend = {
+      day: {
+        calls: day._count,
+        inputTokens: day._sum.inputTokens ?? 0,
+        outputTokens: day._sum.outputTokens ?? 0,
+      },
+      month: {
+        calls: month._count,
+        inputTokens: month._sum.inputTokens ?? 0,
+        outputTokens: month._sum.outputTokens ?? 0,
+        failures,
+      },
+      byModel: byModel
+        .map((m) => ({
+          model: m.model,
+          calls: m._count,
+          tokens: (m._sum.inputTokens ?? 0) + (m._sum.outputTokens ?? 0),
+        }))
+        .sort((a, b) => b.tokens - a.tokens),
+    };
 
     return NextResponse.json({
       logs,
@@ -57,6 +113,7 @@ export async function GET(req: NextRequest) {
       page,
       pageSize,
       hasMore: (page + 1) * pageSize < total,
+      spend,
     });
   } catch (error) {
     console.error("Admin compliance-logs error:", error);

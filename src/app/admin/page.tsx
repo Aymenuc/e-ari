@@ -848,6 +848,11 @@ export default function AdminPage() {
 
   const [complianceLogs, setComplianceLogs] = useState<ComplianceLogRow[]>([]);
   const [complianceLogsTotal, setComplianceLogsTotal] = useState(0);
+  const [spend, setSpend] = useState<{
+    day: { calls: number; inputTokens: number; outputTokens: number };
+    month: { calls: number; inputTokens: number; outputTokens: number; failures: number };
+    byModel: Array<{ model: string; calls: number; tokens: number }>;
+  } | null>(null);
   const [complianceLogsPage, setComplianceLogsPage] = useState(0);
   const [complianceLogsLoading, setComplianceLogsLoading] = useState(false);
   const [complianceLogsOpDraft, setComplianceLogsOpDraft] = useState("");
@@ -980,6 +985,7 @@ export default function AdminPage() {
         const data = await res.json();
         setComplianceLogs(data.logs ?? []);
         setComplianceLogsTotal(typeof data.total === "number" ? data.total : 0);
+        setSpend(data.spend ?? null);
       }
     } catch {
       /* silent */
@@ -3436,6 +3442,52 @@ export default function AdminPage() {
                       </Button>
                     </div>
                   </div>
+                  {/* Inference spend. The per-row token columns below have
+                      always been there, but nothing added them up — so it was
+                      possible to read this page for a minute and still not know
+                      what the month costs. */}
+                  {spend && (
+                    <div className="mb-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
+                      {[
+                        { label: 'Calls · 24h', value: spend.day.calls.toLocaleString() },
+                        { label: 'Tokens · 24h', value: (spend.day.inputTokens + spend.day.outputTokens).toLocaleString() },
+                        { label: 'Calls · 30d', value: spend.month.calls.toLocaleString() },
+                        { label: 'Tokens · 30d', value: (spend.month.inputTokens + spend.month.outputTokens).toLocaleString() },
+                      ].map((s) => (
+                        <div key={s.label} className="rounded-lg border border-white/[0.07] bg-navy-800/50 px-4 py-3">
+                          <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">{s.label}</p>
+                          <p className="mt-1 font-heading text-xl font-semibold tabular-nums text-slate-100">{s.value}</p>
+                        </div>
+                      ))}
+                      <div className="col-span-2 lg:col-span-4 rounded-lg border border-white/[0.05] bg-white/[0.02] px-4 py-3">
+                        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 mb-2">
+                          By model · 30 days
+                        </p>
+                        {spend.byModel.length === 0 ? (
+                          <p className="font-sans text-xs text-muted-foreground">No inference calls recorded in the last 30 days.</p>
+                        ) : (
+                          <div className="space-y-1.5">
+                            {spend.byModel.slice(0, 5).map((m) => (
+                              <div key={m.model} className="flex items-center justify-between gap-4 font-mono text-[11px]">
+                                <span className="text-slate-300 truncate">{m.model}</span>
+                                <span className="text-slate-500 tabular-nums shrink-0">
+                                  {m.calls.toLocaleString()} calls · {m.tokens.toLocaleString()} tokens
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <p className="mt-3 font-sans text-[11px] text-muted-foreground">
+                          Tokens, not currency: per-model rates change without notice, so a hardcoded
+                          price here would go stale and read as authoritative. Multiply by your current
+                          rate card.
+                          {spend.month.failures > 0 && (
+                            <> {spend.month.failures.toLocaleString()} call{spend.month.failures === 1 ? '' : 's'} failed in the last 30 days — failed calls are usually billed too.</>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                   <div className="rounded-lg border border-border/40 overflow-x-auto">
                     <Table>
                       <TableHeader>

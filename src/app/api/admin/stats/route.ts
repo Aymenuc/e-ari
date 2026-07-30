@@ -59,9 +59,24 @@ export async function GET() {
       db.user.count({
         where: { assessments: { some: {} } },
       }),
-      // Users on paid tiers (for conversion funnel)
+      /**
+       * Converted users, for the funnel.
+       *
+       * This used to count everyone on a paid *tier*, which produced a "186%
+       * conversion" on the dashboard — impossible, and not a rounding artifact:
+       * Early Access grants `growth` to every user the moment they register, so
+       * the numerator counted plans we gave away and the denominator counted
+       * people who had actually done an assessment.
+       *
+       * A funnel stage has to be a subset of the stage above it, so this now
+       * requires both an assessment and a real payment. stripeCustomerId is the
+       * same marker endEarlyAccess() uses to avoid downgrading real customers.
+       */
       db.user.count({
-        where: { tier: { in: ["professional", "growth", "autopilot", "enterprise"] } },
+        where: {
+          stripeCustomerId: { not: null },
+          assessments: { some: {} },
+        },
       }),
     ]);
 
