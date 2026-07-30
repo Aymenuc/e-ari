@@ -29,6 +29,10 @@ export async function GET() {
         // surfaced anywhere an operator could see who holds which number.
         foundingMemberNo: true,
         earlyAccessAt: true,
+        lastSeenAt: true,
+        lastSeenIp: true,
+        lastSeenCountry: true,
+        lastSeenCity: true,
         stripeCustomerId: true,
         _count: {
           select: { assessments: true },
@@ -49,6 +53,10 @@ export async function GET() {
       emailVerified: user.emailVerified,
       foundingMemberNo: user.foundingMemberNo,
       earlyAccessAt: user.earlyAccessAt,
+      lastSeenAt: user.lastSeenAt,
+      lastSeenIp: user.lastSeenIp,
+      lastSeenCountry: user.lastSeenCountry,
+      lastSeenCity: user.lastSeenCity,
       // Boolean, not the id: an operator needs to know "is this a real
       // customer or a granted plan", not the Stripe handle.
       isPaying: Boolean(user.stripeCustomerId),

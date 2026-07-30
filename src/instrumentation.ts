@@ -22,7 +22,7 @@
 // Bump this whenever a new migration is added to `apply-runtime-schema.ts`
 // or to the inline migrations below. Format: YYYY-MM-DD-N where N counts
 // migrations within the same day.
-const SCHEMA_VERSION = "2026-07-30-1";
+const SCHEMA_VERSION = "2026-07-30-2";
 
 // Module-scope guard: once a container has run instrumentation, never re-run.
 let migrationsApplied = false;
@@ -103,6 +103,10 @@ export async function register() {
     await db.$executeRawUnsafe(`
       ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "foundingMemberNo" INTEGER
     `);
+    await db.$executeRawUnsafe(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "lastSeenAt" TIMESTAMP(3)`);
+    await db.$executeRawUnsafe(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "lastSeenIp" TEXT`);
+    await db.$executeRawUnsafe(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "lastSeenCountry" TEXT`);
+    await db.$executeRawUnsafe(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "lastSeenCity" TEXT`);
     await db.$executeRawUnsafe(`
       CREATE TABLE IF NOT EXISTS "AdminAudit" (
         "id"          TEXT NOT NULL,

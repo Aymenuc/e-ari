@@ -228,6 +228,13 @@ export default function PortalPage() {
     }
   }, [sessionStatus, router]);
 
+  /* Record that this account is active, and roughly where from. Throttled to
+     one write an hour server-side, so this costs nothing on navigation. */
+  useEffect(() => {
+    if (sessionStatus !== 'authenticated') return;
+    fetch('/api/session/touch', { method: 'POST' }).catch(() => {});
+  }, [sessionStatus]);
+
   // Load saved profile from localStorage
   useEffect(() => {
     try {

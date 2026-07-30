@@ -22,6 +22,7 @@ export async function buildUserExport(userId: string) {
       organization: true, sector: true, orgSize: true, emailVerified: true,
       createdAt: true, updatedAt: true, stripeCustomerId: true,
       earlyAccessAt: true, foundingMemberNo: true,
+      lastSeenAt: true, lastSeenIp: true, lastSeenCountry: true, lastSeenCity: true,
     },
   });
   if (!user) return null;
@@ -51,7 +52,9 @@ export async function buildUserExport(userId: string) {
     format: 'e-ari-subject-access-v1',
     notice:
       'Personal data held for this account. Excludes password hashes and OAuth tokens, ' +
-      'which are credentials rather than personal data and are never exported.',
+      'which are credentials rather than personal data and are never exported. ' +
+      'lastSeenIp is stored truncated (final IPv4 octet zeroed) and, with the ' +
+      'location fields, is cleared 90 days after last activity.',
     user,
     assessments,
     pulseRuns,

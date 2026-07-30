@@ -136,6 +136,24 @@ interface UserRow {
   foundingMemberNo?: number | null;
   earlyAccessAt?: string | null;
   isPaying?: boolean;
+  lastSeenAt?: string | null;
+  lastSeenIp?: string | null;
+  lastSeenCountry?: string | null;
+  lastSeenCity?: string | null;
+}
+
+/** "3 days ago" — an operator reads recency, not a timestamp. */
+function relativeSince(iso: string): string {
+  const ms = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(ms / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} hr${hrs === 1 ? '' : 's'} ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 31) return `${days} day${days === 1 ? '' : 's'} ago`;
+  const months = Math.floor(days / 30);
+  return `${months} month${months === 1 ? '' : 's'} ago`;
 }
 
 interface AuditRow {
@@ -2363,6 +2381,7 @@ export default function AdminPage() {
                             <TableHead className="text-muted-foreground font-sans font-medium">Tier</TableHead>
                             <TableHead className="text-muted-foreground font-sans font-medium">Role</TableHead>
                             <TableHead className="text-muted-foreground font-sans font-medium text-center">Assessments</TableHead>
+                            <TableHead className="text-muted-foreground font-sans font-medium">Last seen</TableHead>
                             <TableHead className="text-muted-foreground font-sans font-medium">Created</TableHead>
                             <TableHead className="text-muted-foreground font-sans font-medium text-right pr-6">Actions</TableHead>
                           </TableRow>
@@ -2390,6 +2409,24 @@ export default function AdminPage() {
                               <TableCell>{roleBadge(user.role)}</TableCell>
                               <TableCell className="text-center">
                                 <span className="font-heading text-sm font-semibold text-foreground">{user.assessmentCount}</span>
+                              </TableCell>
+                              <TableCell>
+                                {/* Location is shown only where the edge supplied it, and the
+                                    address is already truncated at capture — the table never
+                                    holds a full IP to display. */}
+                                {user.lastSeenAt ? (
+                                  <div className="leading-tight">
+                                    <span className="block font-sans text-xs text-slate-300">
+                                      {relativeSince(user.lastSeenAt)}
+                                    </span>
+                                    <span className="block font-mono text-[10px] text-muted-foreground">
+                                      {[user.lastSeenCity, user.lastSeenCountry].filter(Boolean).join(', ') || 'location unknown'}
+                                      {user.lastSeenIp ? ` · ${user.lastSeenIp}` : ''}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span className="font-sans text-xs text-muted-foreground">never</span>
+                                )}
                               </TableCell>
                               <TableCell>
                                 <span className="font-sans text-xs text-muted-foreground">{formatDate(user.createdAt)}</span>

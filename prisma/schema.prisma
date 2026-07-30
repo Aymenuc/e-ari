@@ -23,6 +23,19 @@ model User {
   role             String    @default("user") // "user" | "admin"
   image            String?
   stripeCustomerId String? // Stripe customer ID for billing portal
+
+  /// Last activity, for operations only: is this account live, and is it being
+  /// used from somewhere unexpected. All three are personal data under GDPR,
+  /// so they are disclosed in the privacy policy, included in the subject
+  /// access export, and pruned after LAST_SEEN_RETENTION_DAYS.
+  lastSeenAt      DateTime?
+  /// Truncated before storage — final IPv4 octet (or last 80 bits of IPv6)
+  /// zeroed. Enough to spot "signing in from a new network", not enough to
+  /// single out a household. See anonymiseIp().
+  lastSeenIp      String?
+  /// ISO-3166 alpha-2, from the edge. No lookup service, no third party.
+  lastSeenCountry String?
+  lastSeenCity    String?
   earlyAccessAt    DateTime? // granted free programme access (see lib/early-access)
   foundingMemberNo Int? // sequential founding-cohort number (real, never fabricated)
   emailVerified    DateTime?
