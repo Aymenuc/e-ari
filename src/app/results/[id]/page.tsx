@@ -113,6 +113,8 @@ import {
 import { ComplianceTab } from '@/components/results/compliance-tab'
 import { FindingsTab } from '@/components/results/findings-tab'
 import { BenchmarkTab } from '@/components/results/benchmark-tab'
+import { CertificationTab } from '@/components/results/certification-tab'
+import { PlanExtras } from '@/components/results/plan-extras'
 import { scoreRamp } from '@/lib/score-ramp'
 
 /** Single accent for chart marks — the bright end of the score ramp, so
@@ -132,7 +134,8 @@ const RESULTS_TABS = [
   { id: 'action', label: 'Action Plan' },
   { id: 'compliance', label: 'Compliance' },
   { id: 'findings', label: 'Insights & Findings' },
-  { id: 'benchmark', label: 'Benchmark & Certification' },
+  { id: 'benchmark', label: 'Benchmark' },
+  { id: 'certification', label: 'Certification' },
 ]
 
 /* ─── Tier Types ──────────────────────────────────────────────────────── */
@@ -1162,6 +1165,11 @@ export default function ResultsPage() {
           <FadeUp>
             <LeverageMoves scoring={scoring} topN={5} />
           </FadeUp>
+          <PlanExtras
+            scoring={scoring} roadmapPhases={roadmapPhases} riskMatrixData={riskMatrixData}
+            isEnterprise={isEnterprise} isCommercialEntity={isCommercialEntity}
+            vocab={vocab} router={router}
+          />
 
 
           </>)}
@@ -1188,17 +1196,22 @@ export default function ResultsPage() {
               router={router} id={id}
             />
           )}
+          {activeTab === 'certification' && (
+            <CertificationTab
+              scoring={scoring} assessment={assessment} assessmentHistory={assessmentHistory}
+              certificationResult={certificationResult} certificationBadge={certificationBadge}
+              isPro={isPro} isEnterprise={isEnterprise} userTier={userTier}
+              agentOpen={agentOpen} setAgentOpen={setAgentOpen}
+              handleExportPDF={handleExportPDF} exporting={exporting}
+              router={router} id={id}
+            />
+          )}
           {activeTab === 'benchmark' && (
             <BenchmarkTab
-              scoring={scoring} assessment={assessment} assessmentHistory={assessmentHistory}
+              scoring={scoring} assessment={assessment}
               benchmarkData={benchmarkData} benchmarkLoading={benchmarkLoading}
               benchmarkConsented={benchmarkConsented} setBenchmarkConsented={setBenchmarkConsented}
-              certificationResult={certificationResult} certificationBadge={certificationBadge}
-              roadmapPhases={roadmapPhases} riskMatrixData={riskMatrixData}
-              isPro={isPro} isEnterprise={isEnterprise} isCommercialEntity={isCommercialEntity}
-              vocab={vocab} userTier={userTier} handleExportPDF={handleExportPDF}
-              exporting={exporting} agentOpen={agentOpen} setAgentOpen={setAgentOpen}
-              router={router} id={id}
+              isPro={isPro} vocab={vocab} router={router} id={id}
             />
           )}
 

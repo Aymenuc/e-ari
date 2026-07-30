@@ -43,19 +43,12 @@ export function FindingsTab(props: FindingsTabProps) {
   } = props
   return (
     <>
-    {/* ─── AI AGENT PIPELINE STATUS ────────────────────────────────── */}
-    {isPro && (
-      <FadeUp delay={0.07}>
-        <PipelineStatus assessmentId={id} />
-      </FadeUp>
-    )}
-
     <div id="sec-pillars" className="scroll-mt-24" />
     {/* ─── 3. PILLAR SCORE CARDS ──────────────────────────────────── */}
     <section>
       <FadeUp>
         <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground mb-6">
-          Pillar Scores
+          Pillar detail
         </h2>
       </FadeUp>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -882,6 +875,17 @@ export function FindingsTab(props: FindingsTabProps) {
             </div>
           </CardContent>
         </Card>
+      </FadeUp>
+    )}
+
+    {/* ─── AI AGENT PIPELINE STATUS ────────────────────────────────────
+        Moved to the foot of the tab. This is a diagnostics readout of how the
+        analysis ran; it sat above every finding, so the first thing a reader
+        met on the Insights tab was machine status rather than what the machine
+        found. */}
+    {isPro && (
+      <FadeUp delay={0.07}>
+        <PipelineStatus assessmentId={id} />
       </FadeUp>
     )}
     </>

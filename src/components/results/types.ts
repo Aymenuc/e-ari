@@ -164,9 +164,18 @@ export type FindingsTabProps = Pick<
 
 export type BenchmarkTabProps = Pick<
   ResultsContext,
-  | 'scoring' | 'assessment' | 'assessmentHistory' | 'benchmarkData' | 'benchmarkLoading'
-  | 'benchmarkConsented' | 'setBenchmarkConsented' | 'certificationResult' | 'certificationBadge'
-  | 'roadmapPhases' | 'riskMatrixData' | 'isPro' | 'isEnterprise' | 'isCommercialEntity'
-  | 'vocab' | 'userTier' | 'handleExportPDF' | 'exporting' | 'agentOpen' | 'setAgentOpen'
-  | 'router' | 'id'
+  | 'scoring' | 'assessment' | 'benchmarkData' | 'benchmarkLoading'
+  | 'benchmarkConsented' | 'setBenchmarkConsented' | 'isPro' | 'vocab' | 'router' | 'id'
+>
+
+export type CertificationTabProps = Pick<
+  ResultsContext,
+  | 'scoring' | 'assessment' | 'assessmentHistory' | 'certificationResult' | 'certificationBadge'
+  | 'isPro' | 'isEnterprise' | 'userTier' | 'agentOpen' | 'setAgentOpen'
+  | 'handleExportPDF' | 'exporting' | 'router' | 'id'
+>
+
+export type PlanExtrasProps = Pick<
+  ResultsContext,
+  'scoring' | 'roadmapPhases' | 'riskMatrixData' | 'isEnterprise' | 'isCommercialEntity' | 'vocab' | 'router'
 >
