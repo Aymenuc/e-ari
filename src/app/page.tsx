@@ -499,7 +499,7 @@ export default function Home() {
                 <span className="mx-2 text-slate-500">·</span>
                 <span className="font-mono tabular-nums text-slate-400 font-semibold">{daysLeft} days</span> to be audit-ready
                 <span className="mx-2 text-slate-500">·</span>
-                penalties up to €35M / 7% of turnover
+                penalties up to €15M / 3% of turnover
                 <Link href="/assessment" className="ml-3 text-slate-400 hover:underline font-medium">Start free assessment →</Link>
               </p>
             </div>

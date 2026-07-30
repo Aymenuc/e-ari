@@ -66,7 +66,7 @@ export const TRAINING_MODULES: TrainingModule[] = [
       },
       {
         heading: 'What this means day-to-day',
-        body: 'Before adopting an AI tool for a workflow, ask: does this touch decisions about people (hiring, evaluation, access to services)? If yes, it may be high-risk and needs registration, documentation, and human oversight — talk to your compliance lead BEFORE deployment, not after. Using an unapproved AI tool for a high-risk purpose can expose the organisation to penalties up to €35M or 7% of global turnover.',
+        body: 'Before adopting an AI tool for a workflow, ask: does this touch decisions about people (hiring, evaluation, access to services)? If yes, it may be high-risk and needs registration, documentation, and human oversight — talk to your compliance lead BEFORE deployment, not after. Using an unapproved AI tool for a high-risk purpose can expose the organisation to penalties up to €15M or 3% of global turnover — the €35M / 7% ceiling is reserved for the practices the Act prohibits outright.',
       },
       {
         heading: 'Article 4 — why you are taking this training',

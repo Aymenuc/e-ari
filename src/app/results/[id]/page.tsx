@@ -107,6 +107,7 @@ import { LeverageMoves } from '@/components/shared/leverage-moves'
 import { ResultsTabs } from '@/components/shared/results-tabs'
 import { OverviewSpread } from '@/components/shared/overview-spread'
 import { WhatThisMeans } from '@/components/results/what-this-means'
+import { WhatThisGivesYou } from '@/components/results/what-this-gives-you'
 import {
   TIER_CONFIG, ICON_MAP, PillarCard, LockedSectionCard, BarChartTooltip,
   getMaturityBandColor, getMaturityBgClass, scoreRampColor,
@@ -1083,6 +1084,11 @@ export default function ResultsPage() {
           <FadeUp>
             <OverviewSpread scoring={scoring} onGoTo={setActiveTab} />
           </FadeUp>
+
+          {/* What the subscription actually bought, in counted terms. Placed
+              after the substance rather than before it: value claimed ahead of
+              the result reads as a pitch. */}
+          <WhatThisGivesYou scoring={scoring} />
 
           {/* ─── ENTERPRISE: EXECUTIVE SUMMARY (Print-Ready) ────────────── */}
           {isEnterprise && (

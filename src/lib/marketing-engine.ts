@@ -35,7 +35,7 @@ export function buildProductFacts(): string {
     `- Continuous layer between assessments: Pulse (monthly re-checks), Shadow AI Discovery (SSO/expense-export scans for undeclared tools), Article 4 Literacy training (per-role quizzes, exportable roster), and a grounded Assistant.`,
     `- Compliance workspace: AI system registry, EU AI Act obligation mapping, evidence vault, FRIA and technical-file exports, vendor questionnaires.`,
     `- Reports: board-ready .docx with sector weighting, structural findings, and an owner/timeline/metric action table.`,
-    `- EU AI Act timeline fact: full high-risk obligations apply from 2 August 2026 — ${daysToDeadline} days from today. Penalties reach €35M or 7% of global turnover.`,
+    `- EU AI Act timeline fact: full high-risk obligations apply from 2 August 2026 — ${daysToDeadline} days from today. Penalties for high-risk non-compliance reach EUR 15M or 3% of global turnover (Art. 99(4)); the EUR 35M / 7% ceiling applies only to prohibited practices under Art. 5. Never conflate the two.`,
     `- Maturity bands: Laggard, Follower, Chaser, Pacesetter. Certification tiers: Bronze → Platinum, each with published overall + per-pillar minimums.`,
     `- Tiers: Free, Professional, Growth, Autopilot, Enterprise.`,
   ].join('\n');
