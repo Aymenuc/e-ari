@@ -88,8 +88,19 @@ export function OverviewSpread({
                       <span className="w-9 text-right font-mono text-[12px] font-semibold tabular-nums" style={{ color: c }}>
                         {Math.round(p.normalizedScore)}
                       </span>
-                      <span className="hidden sm:block w-20 text-right font-mono text-[9px] uppercase tracking-wider text-slate-500">
-                        {p.maturityLabel}
+                      {/* Plain status, not the band name. "LAGGARD" repeated
+                          eight times is private vocabulary; what an officer
+                          needs from a row is whether it requires work. The
+                          band itself still appears once, in the header, with
+                          its score range beside it. */}
+                      <span className="hidden sm:block w-24 text-right font-sans text-[11px] text-slate-500">
+                        {p.normalizedScore < 26
+                          ? 'needs work now'
+                          : p.normalizedScore < 50
+                            ? 'below halfway'
+                            : p.normalizedScore < 76
+                              ? 'adequate'
+                              : 'strong'}
                       </span>
                     </motion.div>
                   );
@@ -146,7 +157,7 @@ export function OverviewSpread({
           <Card className="bg-navy-800/40 border-0 rounded-2xl h-full">
             <CardContent className="p-5">
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-3">
-                What the engine flagged
+                Issues we found
               </p>
               {findings.length === 0 ? (
                 <p className="font-sans text-sm text-muted-foreground">
@@ -182,7 +193,7 @@ export function OverviewSpread({
           <Card className="bg-navy-800/40 border-0 rounded-2xl h-full">
             <CardContent className="p-5 flex flex-col">
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-500 mb-3">
-                Your highest-leverage move
+                Start here
               </p>
               {topMove ? (
                 <>
@@ -193,13 +204,14 @@ export function OverviewSpread({
                     <div className="min-w-0">
                       <p className="font-sans text-[13px] leading-snug text-slate-200">{topMove.questionText}</p>
                       <p className="mt-1.5 font-mono text-[11px] text-slate-500">
-                        {topMove.pillarName} · {topMove.currentAnswer}/5 → {topMove.targetAnswer}/5 ·{' '}
-                        <span className="text-emerald-400 font-semibold">+{topMove.scoreDelta.toFixed(2)} pts exact</span>
+                        In {topMove.pillarName} · worth{' '}
+                        <span className="text-emerald-400 font-semibold">+{topMove.scoreDelta.toFixed(1)} points</span>{' '}
+                        on your overall result
                       </p>
                     </div>
                   </div>
                   <Button onClick={() => onGoTo('action')} className="btn-brand font-heading font-semibold h-9 px-4 text-sm mt-4 self-start">
-                    Open the full action plan <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                    See everything to fix <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                   </Button>
                 </>
               ) : (

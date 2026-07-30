@@ -106,6 +106,7 @@ import { getVocab, type EntityType } from '@/lib/entity-types'
 import { LeverageMoves } from '@/components/shared/leverage-moves'
 import { ResultsTabs } from '@/components/shared/results-tabs'
 import { OverviewSpread } from '@/components/shared/overview-spread'
+import { WhatThisMeans } from '@/components/results/what-this-means'
 import {
   TIER_CONFIG, ICON_MAP, PillarCard, LockedSectionCard, BarChartTooltip,
   getMaturityBandColor, getMaturityBgClass, scoreRampColor,
@@ -979,6 +980,9 @@ export default function ResultsPage() {
                         <div className="mt-4 flex items-center gap-3 justify-center md:justify-start flex-wrap">
                           <Badge className={`text-sm px-3 py-1 font-heading font-semibold border ${getMaturityBgClass(scoring.maturityBand)}`}>
                             {scoring.maturityLabel}
+                            <span className="ml-1.5 font-sans font-normal text-[11px] opacity-70">
+                              {MATURITY_BANDS[scoring.maturityBand]?.min}&ndash;{MATURITY_BANDS[scoring.maturityBand]?.max}
+                            </span>
                           </Badge>
                           {assessment?.sector && assessment.sector !== 'general' && (
                             <Badge variant="outline" className="text-sm px-3 py-1 font-heading border-eari-blue/30 text-slate-300">
@@ -991,18 +995,7 @@ export default function ResultsPage() {
                             <TierIcon className="h-3.5 w-3.5 mr-1.5" />
                             {tierConfig.label} Plan
                           </Badge>
-                          <span className="font-mono text-xs text-muted-foreground">
-                            Scoring v{scoring.scoringVersion}
-                          </span>
-                          {scoring.sectorWeighting && typeof scoring.baselineOverallScore === 'number' && Math.abs(scoring.overallScore - scoring.baselineOverallScore) >= 1 && (
-                            <Badge variant="outline" className="font-mono text-[10px] border-eari-blue/30 text-slate-300" title={scoring.sectorWeighting.rationale}>
-                              {Math.round(scoring.baselineOverallScore)}% baseline → {Math.round(scoring.overallScore)}% {scoring.sectorWeighting.sector}-weighted
-                            </Badge>
-                          )}
                         </div>
-                        <p className="mt-3 text-sm text-muted-foreground font-sans leading-relaxed max-w-lg">
-                          {getMaturityBandDescription(scoring.maturityBand)}
-                        </p>
                         {/* Action buttons row */}
                         <div className="mt-4 flex flex-wrap items-center gap-3">
                           <Button
@@ -1024,7 +1017,7 @@ export default function ResultsPage() {
                               className="border-eari-blue/40 text-slate-300 hover:bg-eari-blue/10 font-heading font-semibold h-10 px-5 text-sm"
                             >
                               <Scale className="mr-2 h-4 w-4" />
-                              Move from readiness to compliance
+                              Register an AI system
                               <ArrowUpRight className="ml-1.5 h-3.5 w-3.5 opacity-70" />
                             </Button>
                           </Link>
@@ -1082,6 +1075,10 @@ export default function ResultsPage() {
           )}
 
           <div id="sec-summary" className="scroll-mt-24" />
+          {/* Plain-language read first, charts second. An officer needs to know
+              what the number means before being shown how it was composed. */}
+          <WhatThisMeans scoring={scoring} />
+
           {/* ─── Composed state-of-readiness spread ─────────────────────── */}
           <FadeUp>
             <OverviewSpread scoring={scoring} onGoTo={setActiveTab} />
