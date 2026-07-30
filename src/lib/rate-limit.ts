@@ -387,3 +387,41 @@ export function resolveIdentifier(
   // Last-resort fallback — should rarely happen behind a proper proxy.
   return "ip:unknown";
 }
+
+/**
+ * Clear a caller's limit for one endpoint — the admin unlock.
+ *
+ * Login attempts are keyed by the target account, so eight fat-fingered
+ * passwords lock a real customer out for fifteen minutes. Without this the
+ * only remedy is "wait", which is a support ticket the operator cannot close.
+ *
+ * Clears both stores: the durable bucket (shared across serverless instances)
+ * and this instance's in-memory window, since a stale local window would keep
+ * refusing the user even after the durable row is gone.
+ */
+export async function clearRateLimit(
+  endpointType: string,
+  identifier: string,
+): Promise<{ cleared: boolean }> {
+  const key = `${identifier}:${endpointType}`;
+  let cleared = false;
+
+  try {
+    const { db } = await import('./db');
+    const res = await db.rateLimitBucket.deleteMany({
+      where: { key: { startsWith: key } },
+    });
+    cleared = res.count > 0;
+  } catch (err) {
+    console.error('[rate-limit] durable clear failed:', err);
+  }
+
+  for (const k of Array.from(requestStore.keys())) {
+    if (k.startsWith(key) || k.startsWith(`${endpointType}:${identifier}`)) {
+      requestStore.delete(k);
+      cleared = true;
+    }
+  }
+
+  return { cleared };
+}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { recordAdminAction } from "@/lib/admin-audit";
 
 const VALID_TIERS = ["free", "professional", "growth", "autopilot", "enterprise"];
 const VALID_ROLES = ["user", "admin"];
@@ -23,6 +24,12 @@ export async function GET() {
         role: true,
         organization: true,
         createdAt: true,
+        emailVerified: true,
+        // Cohort identity: built with real sequential numbering, but never
+        // surfaced anywhere an operator could see who holds which number.
+        foundingMemberNo: true,
+        earlyAccessAt: true,
+        stripeCustomerId: true,
         _count: {
           select: { assessments: true },
         },
@@ -39,6 +46,12 @@ export async function GET() {
       organization: user.organization,
       createdAt: user.createdAt,
       assessmentCount: user._count.assessments,
+      emailVerified: user.emailVerified,
+      foundingMemberNo: user.foundingMemberNo,
+      earlyAccessAt: user.earlyAccessAt,
+      // Boolean, not the id: an operator needs to know "is this a real
+      // customer or a granted plan", not the Stripe handle.
+      isPaying: Boolean(user.stripeCustomerId),
     }));
 
     return NextResponse.json(formatted);
@@ -123,6 +136,22 @@ export async function PATCH(req: NextRequest) {
     if (tier) updateData.tier = tier;
     if (role) updateData.role = role;
 
+    // Recorded before the response so a successful change is never invisible.
+    if (tier && tier !== existingUser.tier) {
+      await recordAdminAction({
+        actorId: session.user.id, actorEmail: session.user.email ?? 'unknown',
+        action: 'user.tier', targetId: userId, targetEmail: existingUser.email,
+        detail: { from: existingUser.tier, to: tier }, req,
+      });
+    }
+    if (role && role !== existingUser.role) {
+      await recordAdminAction({
+        actorId: session.user.id, actorEmail: session.user.email ?? 'unknown',
+        action: 'user.role', targetId: userId, targetEmail: existingUser.email,
+        detail: { from: existingUser.role, to: role }, req,
+      });
+    }
+
     const updatedUser = await db.user.update({
       where: { id: userId },
       data: updateData,
@@ -174,12 +203,21 @@ export async function DELETE(req: NextRequest) {
 
     const existingUser = await db.user.findUnique({
       where: { id: userId },
-      select: { id: true, role: true },
+      select: { id: true, role: true, email: true, tier: true },
     });
 
     if (!existingUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
+
+    // Recorded before the delete: afterwards there is nothing left to describe
+    // who was removed, and "an account vanished" is exactly what an audit
+    // trail exists to answer.
+    await recordAdminAction({
+      actorId: session.user.id, actorEmail: session.user.email ?? 'unknown',
+      action: 'user.delete', targetId: existingUser.id, targetEmail: existingUser.email,
+      detail: { tier: existingUser.tier, role: existingUser.role }, req,
+    });
 
     await db.user.delete({ where: { id: userId } });
     return NextResponse.json({ success: true, deletedUserId: userId });

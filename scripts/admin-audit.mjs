@@ -118,6 +118,54 @@ for (const [name, url] of [['stats', '/api/admin/stats'], ['users', '/api/admin/
   rec('authz', `anon ${name} blocked `.slice(0, 19), r.status() === 401 || r.status() === 403, `HTTP ${r.status()}`);
 }
 
+
+// ── NEW: the six additions ────────────────────────────────────────────────
+{
+  const stamp2 = Date.now().toString().slice(-7);
+  const email2 = `auditnew+${stamp2}@example.com`;
+  await api.post(`${BASE}/api/auth/register`, {
+    data: { email: email2, password: 'Str0ng-Passw0rd!' + stamp2.slice(0, 3), name: 'Audit New', organization: 'X', sector: 'technology', orgSize: '51-200' },
+  });
+  const list2 = asList(await (await api.get(`${BASE}/api/admin/users`)).json().catch(() => []));
+  const t2 = list2.find((u) => u.email === email2);
+
+  rec('cohort', 'cohort fields on user', t2 && 'foundingMemberNo' in t2 && 'isPaying' in t2,
+    t2 ? `founding=${t2.foundingMemberNo} paying=${t2.isPaying} verified=${Boolean(t2.emailVerified)}` : 'user missing');
+
+  if (t2) {
+    const unlock = await api.post(`${BASE}/api/admin/users/actions`, { data: { userId: t2.id, action: 'unlock' } });
+    const uj = await unlock.json().catch(() => ({}));
+    rec('support', 'clear lockout        ', unlock.ok(), `HTTP ${unlock.status()} ${String(uj.message ?? '').slice(0, 46)}`);
+
+    const resend = await api.post(`${BASE}/api/admin/users/actions`, { data: { userId: t2.id, action: 'resend_verification' } });
+    const rj = await resend.json().catch(() => ({}));
+    rec('support', 'resend verification  ', resend.status() !== 404 && resend.status() !== 500,
+      `HTTP ${resend.status()} ${String(rj.message ?? '').slice(0, 46)}`);
+
+    const exp = await api.post(`${BASE}/api/admin/users/actions`, { data: { userId: t2.id, action: 'export' } });
+    let expOk = false, counts = '';
+    try {
+      const j = JSON.parse(await exp.text());
+      expOk = j.format === 'e-ari-subject-access-v1' && j.user?.email === email2 && !('passwordHash' in (j.user ?? {}));
+      counts = `assessments=${j.counts?.assessments} noPwHash=${!('passwordHash' in (j.user ?? {}))}`;
+    } catch { /* not JSON */ }
+    rec('gdpr', 'subject access export', exp.ok() && expOk, `HTTP ${exp.status()} ${counts}`);
+
+    await api.patch(`${BASE}/api/admin/users`, { data: { userId: t2.id, tier: 'growth' } });
+    await api.delete(`${BASE}/api/admin/users?userId=${t2.id}`);
+  }
+
+  const audit = await api.get(`${BASE}/api/admin/audit`);
+  const aj = await audit.json().catch(() => ({}));
+  const acts = (aj.entries ?? []).map((e) => e.action);
+  rec('audit', 'trail records actions', audit.ok() && acts.length > 0, `HTTP ${audit.status()} ${acts.length} entries: ${[...new Set(acts)].slice(0, 6).join(',')}`);
+  rec('audit', 'tier+delete captured ', acts.includes('user.tier') && acts.includes('user.delete'),
+    `tier=${acts.includes('user.tier')} delete=${acts.includes('user.delete')} settings=${acts.includes('settings.update')}`);
+
+  const anonAudit = await anon.request.get(`${BASE}/api/admin/audit`);
+  rec('authz', 'anon audit blocked ', anonAudit.status() === 401 || anonAudit.status() === 403, `HTTP ${anonAudit.status()}`);
+}
+
 console.log('\n--- SUMMARY ---');
 console.log(`${rows.filter(r => r.ok).length}/${rows.length} passed`);
 rows.filter(r => !r.ok).forEach(r => console.log(`  FAILED: ${r.area} ${r.check.trim()} — ${r.detail}`));

@@ -643,3 +643,25 @@ model RateLimitBucket {
   count        Int      @default(0)
   windowEndsAt DateTime
 }
+
+/// Record of every privileged action an admin takes.
+///
+/// Deliberately append-only in use: nothing in the app updates or deletes
+/// these rows. A platform that sells immutable evidence trails to its
+/// customers has to be able to show its own.
+model AdminAudit {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  actorId     String
+  actorEmail  String
+  action      String // "user.tier", "user.role", "user.delete", "settings.update", "user.unlock", ...
+  targetId    String?
+  targetEmail String?
+  /// Small JSON blob: what changed, before -> after. Never credentials or PII beyond the email already stored.
+  detail      String?
+  ip          String?
+
+  @@index([createdAt])
+  @@index([actorId])
+  @@index([action])
+}

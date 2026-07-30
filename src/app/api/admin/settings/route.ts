@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { recordAdminAction } from '@/lib/admin-audit';
 
 const ALLOWED_KEYS = new Set([
   'early_access_mode',
@@ -92,6 +93,7 @@ export async function PUT(req: NextRequest) {
   if (!await assertAdmin()) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
+  const _session = await assertAdmin();
   try {
     await ensureTable();
     const body = await req.json();
@@ -111,6 +113,16 @@ export async function PUT(req: NextRequest) {
         })
       )
     );
+
+    if (updates.length > 0 && _session?.user?.id) {
+      await recordAdminAction({
+        actorId: _session.user.id,
+        actorEmail: _session.user.email ?? 'unknown',
+        action: 'settings.update',
+        detail: Object.fromEntries(updates.map(u => [u.key, u.value])),
+        req,
+      });
+    }
 
     return NextResponse.json({ updated: updates.map(u => u.key) });
   } catch (err) {

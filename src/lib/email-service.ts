@@ -785,3 +785,40 @@ export async function sendComplianceAttestationDueEmail(
     category: 'compliance',
   });
 }
+
+/**
+ * Issue a fresh verification token and email the link.
+ *
+ * Extracted from /api/auth/send-verification so the admin "resend
+ * verification" support action uses the same token lifetime, the same
+ * template, and the same sender as the self-serve path. A second
+ * implementation would have drifted the moment either changed.
+ */
+export async function sendVerificationEmail(
+  userId: string,
+  userEmail: string,
+  userName: string | null,
+): Promise<EmailResult> {
+  const crypto = await import('crypto');
+  const { verificationEmailHtml } = await import('./email-templates');
+  const { getBaseUrl } = await import('./site-url');
+
+  const token = crypto.randomBytes(32).toString('hex');
+  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+
+  // One live token per address: issuing a new link invalidates the old one.
+  await db.verificationToken.deleteMany({ where: { identifier: userEmail } });
+  await db.verificationToken.create({ data: { identifier: userEmail, token, expires } });
+
+  const name = userName?.split(' ')[0] || 'there';
+  const verifyUrl = `${getBaseUrl()}/auth/verify-email?token=${token}&email=${encodeURIComponent(userEmail)}`;
+
+  return sendEmail({
+    to: userEmail,
+    from: process.env.EMAIL_FROM_HELLO || process.env.EMAIL_FROM_ADDRESS || EMAIL_FROM_ADDRESS,
+    category: 'verification',
+    subject: 'Verify your E-ARI email address',
+    html: verificationEmailHtml(verifyUrl, name),
+    text: `Hi ${name},\n\nVerify your E-ARI account:\n${verifyUrl}\n\nThis link expires in 24 hours.`,
+  });
+}

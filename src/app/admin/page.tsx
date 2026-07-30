@@ -55,10 +55,13 @@ import {
   RotateCcw,
   Share2,
   Mail,
+  Unlock,
+  Download,
   Send,
   Megaphone,
   Trash2,
   ScrollText,
+  ShieldAlert,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -129,6 +132,20 @@ interface UserRow {
   organization: string | null;
   createdAt: string;
   assessmentCount: number;
+  emailVerified?: string | null;
+  foundingMemberNo?: number | null;
+  earlyAccessAt?: string | null;
+  isPaying?: boolean;
+}
+
+interface AuditRow {
+  id: string;
+  createdAt: string;
+  actorEmail: string;
+  action: string;
+  targetEmail: string | null;
+  detail: string | null;
+  ip: string | null;
 }
 
 interface AssessmentRow {
@@ -420,6 +437,7 @@ type AdminTab =
   | "inbox"
   | "social"
   | "compliance"
+  | "audit"
   | "settings";
 
 const NAV_ITEMS: { id: AdminTab; icon: React.ElementType; label: string }[] = [
@@ -431,7 +449,8 @@ const NAV_ITEMS: { id: AdminTab; icon: React.ElementType; label: string }[] = [
   { id: "refunds", icon: RotateCcw, label: "Refunds" },
   { id: "inbox", icon: Mail, label: "Inbox" },
   { id: "social", icon: Share2, label: "Social" },
-  { id: "compliance", icon: ScrollText, label: "Compliance logs" },
+  { id: "compliance", icon: ScrollText, label: "AI usage" },
+  { id: "audit", icon: ShieldAlert, label: "Audit" },
   { id: "settings", icon: Settings, label: "Settings" },
 ];
 
@@ -847,6 +866,9 @@ export default function AdminPage() {
   const [replyResult, setReplyResult] = useState<{ success: boolean; message: string } | null>(null);
 
   const [complianceLogs, setComplianceLogs] = useState<ComplianceLogRow[]>([]);
+  const [auditRows, setAuditRows] = useState<AuditRow[]>([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [userActionMsg, setUserActionMsg] = useState<string | null>(null);
   const [complianceLogsTotal, setComplianceLogsTotal] = useState(0);
   const [spend, setSpend] = useState<{
     day: { calls: number; inputTokens: number; outputTokens: number };
@@ -971,6 +993,56 @@ export default function AdminPage() {
     } catch { /* silent */ }
   }, []);
 
+  /** Audit trail — read-only; there is no write path from the UI by design. */
+  const fetchAudit = useCallback(async () => {
+    setAuditLoading(true);
+    try {
+      const res = await fetch("/api/admin/audit?page=0");
+      if (res.ok) {
+        const data = await res.json();
+        setAuditRows(data.entries ?? []);
+      }
+    } catch {
+      /* surfaced by the empty state */
+    } finally {
+      setAuditLoading(false);
+    }
+  }, []);
+
+  /**
+   * The three support actions. `export` streams a file rather than JSON, so it
+   * is handled separately — the others report a message the operator can read.
+   */
+  const runUserAction = useCallback(
+    async (userId: string, action: "unlock" | "resend_verification" | "export") => {
+      setUserActionMsg(null);
+      try {
+        const res = await fetch("/api/admin/users/actions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, action }),
+        });
+        if (action === "export") {
+          if (!res.ok) { setUserActionMsg("Export failed."); return; }
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `e-ari-data-${userId}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+          setUserActionMsg("Data export downloaded.");
+          return;
+        }
+        const data = await res.json().catch(() => ({}));
+        setUserActionMsg(data.message ?? (res.ok ? "Done." : "Action failed."));
+      } catch {
+        setUserActionMsg("Action failed — network error.");
+      }
+    },
+    [],
+  );
+
   const fetchComplianceLogs = useCallback(async () => {
     setComplianceLogsLoading(true);
     try {
@@ -1022,6 +1094,13 @@ export default function AdminPage() {
     if (activeTab !== "compliance") return;
     void fetchComplianceLogs();
   }, [activeTab, fetchComplianceLogs, session, status]);
+
+  useEffect(() => {
+    if (status === "loading") return;
+    if (!session || session.user?.role !== "admin") return;
+    if (activeTab !== "audit") return;
+    void fetchAudit();
+  }, [activeTab, fetchAudit, session, status]);
 
   // ─── Access Control ───────────────────────────────────────────────────
 
@@ -2219,6 +2298,21 @@ export default function AdminPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
+              {/* Support actions report their real outcome — including a mail
+                  provider rejection, which the email layer otherwise swallows
+                  and returns 200 for. */}
+              {userActionMsg && (
+                <div className="mb-4 flex items-start justify-between gap-4 rounded-lg border border-white/[0.1] bg-white/[0.03] px-4 py-3">
+                  <p className="font-sans text-sm text-slate-200">{userActionMsg}</p>
+                  <button
+                    type="button"
+                    onClick={() => setUserActionMsg(null)}
+                    className="font-sans text-xs text-muted-foreground hover:text-foreground shrink-0"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
               <Card className="bg-card/80 border-border">
                 <CardHeader>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -2354,8 +2448,36 @@ export default function AdminPage() {
                                         Delete User
                                       </DropdownMenuItem>
                                       <DropdownMenuSeparator className="bg-border" />
+                                      {/* The three things support is actually asked for. */}
+                                      <DropdownMenuItem
+                                        onClick={() => runUserAction(user.id, "unlock")}
+                                        className="font-sans cursor-pointer"
+                                      >
+                                        <Unlock className="h-4 w-4 mr-2" />
+                                        Clear sign-in lockout
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => runUserAction(user.id, "resend_verification")}
+                                        className="font-sans cursor-pointer"
+                                        disabled={Boolean(user.emailVerified)}
+                                      >
+                                        <Mail className="h-4 w-4 mr-2" />
+                                        {user.emailVerified ? "Already verified" : "Resend verification"}
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => runUserAction(user.id, "export")}
+                                        className="font-sans cursor-pointer"
+                                      >
+                                        <Download className="h-4 w-4 mr-2" />
+                                        Export data (GDPR)
+                                      </DropdownMenuItem>
+                                      <DropdownMenuSeparator className="bg-border" />
                                       <DropdownMenuItem disabled className="font-sans text-muted-foreground text-xs">
-                                        User ID: {user.id.slice(0, 8)}...
+                                        {user.foundingMemberNo
+                                          ? `Founding member #${user.foundingMemberNo}`
+                                          : user.isPaying
+                                            ? "Paying customer"
+                                            : `User ID: ${user.id.slice(0, 8)}...`}
                                       </DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
@@ -3334,6 +3456,75 @@ export default function AdminPage() {
             </DialogContent>
           </Dialog>
 
+          {activeTab === "audit" && (
+            <div className="space-y-6">
+              <Card className="bg-card/80 border-border/40">
+                <CardHeader>
+                  <CardTitle className="font-heading text-lg flex items-center gap-2">
+                    <ShieldAlert className="h-5 w-5 text-slate-300" />
+                    Admin audit trail
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground font-sans mt-1">
+                    Every privileged action — tier and role changes, deletions, settings edits,
+                    unlocks and data exports. Append-only: nothing in the product edits or removes
+                    these rows.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="rounded-lg border border-border/40 overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="font-sans">When</TableHead>
+                          <TableHead className="font-sans">Admin</TableHead>
+                          <TableHead className="font-sans">Action</TableHead>
+                          <TableHead className="font-sans">Target</TableHead>
+                          <TableHead className="font-sans">Detail</TableHead>
+                          <TableHead className="font-sans">IP</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {auditLoading ? (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center py-10 text-muted-foreground font-sans">
+                              Loading…
+                            </TableCell>
+                          </TableRow>
+                        ) : auditRows.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center py-10 text-muted-foreground font-sans">
+                              No admin actions recorded yet. Entries appear here as soon as an admin
+                              changes a tier or role, deletes a user, or edits settings.
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          auditRows.map((r) => (
+                            <TableRow key={r.id} className="border-border/30">
+                              <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
+                                {new Date(r.createdAt).toLocaleString()}
+                              </TableCell>
+                              <TableCell className="font-sans text-sm text-foreground">{r.actorEmail}</TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="font-mono text-[10px] border-white/[0.16] text-slate-300">
+                                  {r.action}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="font-sans text-sm text-muted-foreground">{r.targetEmail ?? "—"}</TableCell>
+                              <TableCell className="font-mono text-[11px] text-muted-foreground max-w-xs truncate" title={r.detail ?? ""}>
+                                {r.detail ?? "—"}
+                              </TableCell>
+                              <TableCell className="font-mono text-[11px] text-muted-foreground">{r.ip ?? "—"}</TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           {activeTab === "compliance" && (
             <div className="space-y-6">
               <Card className="bg-card/80 border-border/40">
@@ -3341,10 +3532,10 @@ export default function AdminPage() {
                   <div>
                     <CardTitle className="font-heading text-lg flex items-center gap-2">
                       <ScrollText className="h-5 w-5 text-eari-blue-light" />
-                      Compliance LLM logs
+                      AI usage & inference logs
                     </CardTitle>
                     <p className="text-sm text-muted-foreground font-sans mt-1">
-                      Observability for compliance automation calls — no document content or PII.
+                      Model calls, token spend and failures. No document content or PII. This is inference telemetry, not a regulatory record — admin actions are logged under Audit.
                     </p>
                   </div>
                   <div className="flex flex-wrap items-end gap-2">

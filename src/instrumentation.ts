@@ -22,7 +22,7 @@
 // Bump this whenever a new migration is added to `apply-runtime-schema.ts`
 // or to the inline migrations below. Format: YYYY-MM-DD-N where N counts
 // migrations within the same day.
-const SCHEMA_VERSION = "2026-07-21-3";
+const SCHEMA_VERSION = "2026-07-30-1";
 
 // Module-scope guard: once a container has run instrumentation, never re-run.
 let migrationsApplied = false;
@@ -103,6 +103,23 @@ export async function register() {
     await db.$executeRawUnsafe(`
       ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "foundingMemberNo" INTEGER
     `);
+    await db.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "AdminAudit" (
+        "id"          TEXT NOT NULL,
+        "createdAt"   TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "actorId"     TEXT NOT NULL,
+        "actorEmail"  TEXT NOT NULL,
+        "action"      TEXT NOT NULL,
+        "targetId"    TEXT,
+        "targetEmail" TEXT,
+        "detail"      TEXT,
+        "ip"          TEXT,
+        CONSTRAINT "AdminAudit_pkey" PRIMARY KEY ("id")
+      )
+    `);
+    await db.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "AdminAudit_createdAt_idx" ON "AdminAudit"("createdAt")`);
+    await db.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "AdminAudit_actorId_idx"  ON "AdminAudit"("actorId")`);
+    await db.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "AdminAudit_action_idx"   ON "AdminAudit"("action")`);
     await db.$executeRawUnsafe(`
       CREATE TABLE IF NOT EXISTS "PlatformSetting" (
         "key"       TEXT NOT NULL,
