@@ -218,35 +218,11 @@ export function FindingsTab(props: FindingsTabProps) {
                 </FadeUp>
               </div>
 
-              {/* Recommended Next Steps */}
-              <FadeUp delay={0.25}>
-                <Card className="bg-navy-800 border-border/50 hover-lift">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <h3 className="font-heading font-semibold text-foreground tracking-tight">
-                        Recommended Next Steps
-                      </h3>
-                      {insightsFallback && (
-                        <Badge variant="outline" className="text-[10px] font-mono border-border text-muted-foreground">
-                          Calculated from your answers
-                        </Badge>
-                      )}
-                    </div>
-                    <ol className="space-y-3">
-                      {insights.nextSteps.map((step, i) => (
-                        <li key={i} className="flex items-start gap-3">
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/[0.04] border border-white/[0.07] text-slate-300 font-heading text-xs font-semibold flex-shrink-0 mt-0.5">
-                            {i + 1}
-                          </span>
-                          <span className="text-sm text-foreground font-sans leading-relaxed">
-                            {step}
-                          </span>
-                        </li>
-                      ))}
-                    </ol>
-                  </CardContent>
-                </Card>
-              </FadeUp>
+              {/* The LLM "Recommended Next Steps" block was removed here.
+                  It was a genuinely distinct layer, not a duplicate of the
+                  Action Plan — but two different lists of "steps" on one page
+                  makes the reader arbitrate between them, and only the
+                  deterministic one can be traced back to an answer. */}
 
               {/* Pillar Drilldown — per-pillar strongest/weakest questions */}
               {insights.pillarDrilldown && insights.pillarDrilldown.length > 0 && (
@@ -716,79 +692,10 @@ export function FindingsTab(props: FindingsTabProps) {
       </FadeUp>
     )}
 
-    {/* ─── PRO: HISTORICAL COMPARISON ──────────────────────────────── */}
-    {isPro && (
-      <FadeUp>
-        <Card className="bg-navy-800 border-border/50 hover-lift">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-slate-300" />
-              <CardTitle className="font-heading text-lg text-foreground">
-                Historical Comparison
-              </CardTitle>
-              <Badge variant="outline" className="ml-auto text-[10px] font-mono border-eari-blue/30 text-slate-300">
-                Professional
-              </Badge>
-            </div>
-            <CardDescription className="font-sans text-sm">
-              Track your AI readiness progress over time
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {historicalData.map((entry, i) => (
-                <div key={i} className="flex items-center gap-4">
-                  <div className="w-28 flex-shrink-0">
-                    <p className="font-heading text-sm font-semibold text-foreground">{entry.label}</p>
-                    <p className="font-mono text-[10px] text-muted-foreground">{entry.date}</p>
-                  </div>
-                  <div className="flex-1">
-                    <div className="h-8 rounded-lg bg-navy-700 overflow-hidden relative">
-                      <motion.div
-                        className="h-full rounded-lg flex items-center px-3"
-                        style={{
-                          backgroundColor: i === 0 ? `${scoring.maturityColor}30` : 'rgba(139,148,158,0.15)',
-                        }}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${entry.score}%` }}
-                        transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 + i * 0.15 }}
-                      >
-                        <span className="font-mono text-xs font-semibold text-foreground whitespace-nowrap">
-                          {entry.score}%
-                        </span>
-                      </motion.div>
-                    </div>
-                  </div>
-                  {i === 0 && historicalData.length > 1 && (
-                    <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-400 font-mono flex-shrink-0">
-                      +{entry.score - historicalData[1].score}%
-                    </Badge>
-                  )}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </FadeUp>
-    )}
-
-    {/* ─── Free: Locked Historical Comparison ──────────────────────── */}
-    {!isPro && (
-      <LockedSectionCard
-        title="Historical Comparison"
-        description="Compare your current scores against previous assessments to track your AI readiness progress over time."
-        requiredTier="professional"
-        onUpgrade={() => router.push('/pricing')}
-        previewContent={
-          <div className="space-y-3">
-            <div className="h-6 w-24 bg-navy-700 rounded" />
-            <div className="h-8 w-full bg-navy-700 rounded-lg" />
-            <div className="h-6 w-20 bg-navy-700 rounded" />
-            <div className="h-8 w-3/4 bg-navy-700 rounded-lg" />
-          </div>
-        }
-      />
-    )}
+    {/* Historical Comparison was removed here — the bar list rebuilt the same
+        assessmentHistory series that the Readiness Over Time chart already
+        plots, so the same question was answered twice on two different tabs.
+        The time dimension now lives in one place: the Monitoring tab. */}
 
     {/* The Recommendation Priority Matrix was removed here.
 

@@ -113,6 +113,8 @@ import {
   getMaturityBandColor, getMaturityBgClass, scoreRampColor,
 } from '@/components/results/shared'
 import { ComplianceTab } from '@/components/results/compliance-tab'
+import { MonitoringTab } from '@/components/results/monitoring-tab'
+import { ProgrammeHeader } from '@/components/results/programme-header'
 import { FindingsTab } from '@/components/results/findings-tab'
 import { BenchmarkTab } from '@/components/results/benchmark-tab'
 import { CertificationTab } from '@/components/results/certification-tab'
@@ -133,9 +135,30 @@ const RESULTS_TABS = [
   { id: 'certification', label: 'Certification' },
 ]
 
+/** Operate-tier tab, inserted after Compliance. */
+const MONITORING_TAB = { id: 'monitoring', label: 'Monitoring' }
+
 /* ─── Tier Types ──────────────────────────────────────────────────────── */
 
 type UserTier = 'free' | 'professional' | 'growth' | 'autopilot' | 'enterprise'
+
+/**
+ * What a tier is allowed to do, as a rank rather than a name.
+ *
+ * The page used to gate on `isPro`, one boolean spanning every paid tier, so
+ * there were two experiences for five tiers — and a second gate that tested
+ * `userTier === 'enterprise'` by name, which silently excluded `autopilot`
+ * even though autopilot outranks growth and costs considerably more. Comparing
+ * rank means a new tier slots in by editing this map alone.
+ *
+ * The three ranks are the product promise, not arbitrary numbers:
+ *   0 read    — understand where you stand          (a mirror)
+ *   1 map     — know what to fix, and what it wins  (a map)
+ *   2 operate — run it over time and prove it moved (a control panel)
+ */
+const TIER_RANK: Record<UserTier, number> = {
+  free: 0, professional: 1, growth: 1, autopilot: 2, enterprise: 2,
+}
 
 
 /* ─── Icon map ─────────────────────────────────────────────────────────── */
@@ -401,10 +424,21 @@ export default function ResultsPage() {
   const sessionTier = (session?.user as Record<string, unknown> | undefined)?.tier as string | undefined
   const userTier: UserTier = (sessionTier === 'professional' || sessionTier === 'growth' || sessionTier === 'autopilot' || sessionTier === 'enterprise') ? sessionTier : 'free'
 
-  // "isPro" here is the legacy variable name for "any paid tier" — it gates
-  // features that Pro/Growth/Enterprise all get. Growth was excluded before.
-  const isPro = userTier === 'professional' || userTier === 'growth' || userTier === 'autopilot' || userTier === 'enterprise'
-  const isEnterprise = userTier === 'enterprise'
+  const tierRank = TIER_RANK[userTier]
+  /** Can see what to fix and what each fix is worth. */
+  const canMap = tierRank >= 1
+  /** Can see whether it moved, what changed, and prove it. */
+  const canOperate = tierRank >= 2
+  // Monitoring is inserted rather than locked. A locked tab would hand the
+  // operate tier the same shape as the map tier with a padlock on it, which is
+  // the shape this rebuild set out to remove.
+  const visibleTabs = canOperate
+    ? [...RESULTS_TABS.slice(0, 3), MONITORING_TAB, ...RESULTS_TABS.slice(3)]
+    : RESULTS_TABS
+  // Kept as aliases so the tab components read the same prop names; the
+  // meaning is now "rank at least map/operate", not "is exactly this tier".
+  const isPro = canMap
+  const isEnterprise = canOperate
 
   // Entity-type-aware vocab. Persisted on the Assessment row at submit
   // time from the orgContext returned by ContextEnrichment. Defaults to
@@ -804,16 +838,6 @@ export default function ResultsPage() {
   })
 
   // Risk assessment matrix data (Enterprise)
-  const riskMatrixData = scoring.pillarScores
-    .filter(p => p.normalizedScore < 60)
-    .map(p => ({
-      pillar: PILLARS.find(pd => pd.id === p.pillarId)?.shortName ?? p.pillarId,
-      probability: Math.round(Math.max(20, 100 - p.normalizedScore)),
-      impact: Math.round(40 + (60 - p.normalizedScore) * 0.8),
-      fullLabel: p.pillarName,
-      score: Math.round(p.normalizedScore),
-    }))
-
   // Roadmap timeline data (Enterprise)
   const questionText = (pillarId: string, questionId: string): string | null => {
     const def = PILLARS.find(d => d.id === pillarId)
@@ -936,7 +960,18 @@ export default function ResultsPage() {
 
       <main className="flex-1">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12 space-y-8">
-          <ResultsTabs tabs={RESULTS_TABS} active={activeTab} onChange={setActiveTab} />
+          {/* Persistent across every tab: the operate tier is looking at a
+              programme, not at one document. */}
+          {canOperate && (
+            <ProgrammeHeader
+              completedAt={assessment?.completedAt ?? null}
+              assessmentCount={assessmentHistory.length}
+              drift={driftAnalysis}
+              schedule={monitoringSchedule}
+              openFindings={scoring.xRayFindings?.length ?? 0}
+            />
+          )}
+          <ResultsTabs tabs={visibleTabs} active={activeTab} onChange={setActiveTab} />
           {activeTab === 'overview' && (<>
           <div id="sec-score" className="scroll-mt-24" />
 
@@ -1143,12 +1178,34 @@ export default function ResultsPage() {
           </>)}
           {activeTab === 'action' && (<>
           <div id="sec-action" className="scroll-mt-24" />
-          {/* ─── HIGHEST-LEVERAGE MOVES (All Tiers — deterministic) ───────── */}
-          <FadeUp>
-            <LeverageMoves scoring={scoring} topN={5} />
-          </FadeUp>
+          {/* ─── HIGHEST-LEVERAGE MOVES (map tier) ─────────────────────────
+              This is the map tier's whole argument: not "governance is weak"
+              but "governance is worth 6.2 points, more than the next two
+              combined". Gains come from computeLeverage(), which re-runs the
+              scoring pipeline per answer, so each figure traces to an input. */}
+          {canMap ? (
+            <FadeUp>
+              <LeverageMoves scoring={scoring} topN={5} />
+            </FadeUp>
+          ) : (
+            <FadeUp>
+              <LockedSectionCard
+                title="Highest-leverage moves"
+                description="The five changes that move your score most, each with the exact points it is worth — calculated by re-running the full scoring pipeline against every answer."
+                requiredTier="growth"
+                onUpgrade={() => router.push('/pricing')}
+                previewContent={
+                  <div className="space-y-3">
+                    <div className="h-6 w-2/3 rounded bg-navy-700" />
+                    <div className="h-6 w-1/2 rounded bg-navy-700" />
+                    <div className="h-6 w-3/5 rounded bg-navy-700" />
+                  </div>
+                }
+              />
+            </FadeUp>
+          )}
           <PlanExtras
-            scoring={scoring} roadmapPhases={roadmapPhases} riskMatrixData={riskMatrixData}
+            scoring={scoring} roadmapPhases={roadmapPhases}
             isEnterprise={isEnterprise} isCommercialEntity={isCommercialEntity}
             vocab={vocab} router={router}
           />
@@ -1157,6 +1214,17 @@ export default function ResultsPage() {
           </>)}
           {activeTab === 'compliance' && (
             <ComplianceTab
+              isPro={isPro} sessionStatus={sessionStatus} complianceOutlook={complianceOutlook}
+              complianceSummary={complianceSummary} complianceGaps={complianceGaps}
+              assessment={assessment} assessmentHistory={assessmentHistory} historyLoading={historyLoading}
+              driftAnalysis={driftAnalysis} monitoringAlerts={monitoringAlerts}
+              monitoringSchedule={monitoringSchedule} pulseData={pulseData} pulseLoading={pulseLoading}
+              barData={barData} benchmarkData={benchmarkData}
+              handleRerun={handleRerun} rerunning={rerunning} router={router} id={id} scoring={scoring}
+            />
+          )}
+          {activeTab === 'monitoring' && canOperate && (
+            <MonitoringTab
               isPro={isPro} sessionStatus={sessionStatus} complianceOutlook={complianceOutlook}
               complianceSummary={complianceSummary} complianceGaps={complianceGaps}
               assessment={assessment} assessmentHistory={assessmentHistory} historyLoading={historyLoading}

@@ -116,7 +116,6 @@ export interface ResultsContext {
 
   // charts
   barData: Array<{ pillar: string; score: number; band: MaturityBand }>
-  riskMatrixData: Array<Record<string, unknown>>
 
   // benchmark + certification
   benchmarkData: BenchmarkData | null
@@ -175,5 +174,5 @@ export type CertificationTabProps = Pick<
 
 export type PlanExtrasProps = Pick<
   ResultsContext,
-  'scoring' | 'roadmapPhases' | 'riskMatrixData' | 'isEnterprise' | 'isCommercialEntity' | 'vocab' | 'router'
+  'scoring' | 'roadmapPhases' | 'isEnterprise' | 'isCommercialEntity' | 'vocab' | 'router'
 >

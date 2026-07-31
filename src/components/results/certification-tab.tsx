@@ -228,13 +228,16 @@ export function CertificationTab(props: CertificationTabProps) {
             </span>
           </Button>
         )}
-        {isPro && (
+        {/* The editable Word file is the board-pack format — it goes out
+            under the organisation's own cover, not ours. That is an operate-
+            tier deliverable; the map tier gets the branded PDF above. */}
+        {isEnterprise && (
           <button
             onClick={() => handleExportPDF('docx')}
             disabled={exporting}
             className="self-center font-sans text-xs text-slate-400 hover:text-slate-100 transition-colors underline underline-offset-4"
           >
-            Word version (editable)
+            Word version (editable, unbranded)
           </button>
         )}
         <Link href="/assessment">

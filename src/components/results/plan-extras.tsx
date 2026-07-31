@@ -10,14 +10,8 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import {
-  AlertTriangle, ArrowLeft, ArrowUpRight, Award, BarChart3, Building2, Calendar,
-  CheckCircle2, Clock, Download, Globe, Info, Loader2, Lock, Palette, RefreshCw,
-  Shield, TrendingUp, XCircle, AlertOctagon, GitBranch, Plus, UsersRound,
-} from 'lucide-react'
-import {
-  CartesianGrid, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis,
-} from 'recharts'
+import { AlertTriangle, ArrowLeft, ArrowUpRight, Award, BarChart3, Building2, Calendar, CheckCircle2, Clock, Download, Globe, Info, Loader2, Lock, Palette, RefreshCw, Shield, TrendingUp, XCircle, GitBranch, Plus, UsersRound } from 'lucide-react'
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -33,7 +27,7 @@ import type { PlanExtrasProps } from './types'
 
 export function PlanExtras(props: PlanExtrasProps) {
   const {
-    scoring, roadmapPhases, riskMatrixData, isEnterprise, isCommercialEntity, vocab, router,
+    scoring, roadmapPhases, isEnterprise, isCommercialEntity, vocab, router,
   } = props
   return (
     <>
@@ -94,82 +88,14 @@ export function PlanExtras(props: PlanExtrasProps) {
       </FadeUp>
     )}
 
-    {/* ─── ENTERPRISE: RISK ASSESSMENT MATRIX ─────────────────────── */}
-    {isEnterprise && riskMatrixData.length > 0 && (
-      <FadeUp>
-        <Card className="bg-navy-800 border-amber-500/20 hover-lift">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <AlertOctagon className="h-5 w-5 text-amber-400" />
-              <CardTitle className="font-heading text-lg text-foreground">
-                Risk Assessment Matrix
-              </CardTitle>
-              <Badge variant="outline" className="ml-auto text-[10px] font-mono border-amber-500/30 text-amber-400">
-                Enterprise
-              </Badge>
-            </div>
-            <CardDescription className="font-sans text-sm">
-              Identified risks plotted by probability vs. impact
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="w-full h-[350px] sm:h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(48,57,74,0.4)" />
-                  <XAxis
-                    type="number"
-                    dataKey="probability"
-                    name="Probability"
-                    domain={[0, 100]}
-                    tick={{ fill: '#8b949e', fontSize: 11 }}
-                    axisLine={{ stroke: 'rgba(48,57,74,0.4)' }}
-                    tickLine={{ stroke: 'rgba(48,57,74,0.4)' }}
-                    label={{ value: 'Probability →', position: 'insideBottomRight', offset: -5, fill: '#8b949e', fontSize: 11 }}
-                  />
-                  <YAxis
-                    type="number"
-                    dataKey="impact"
-                    name="Impact"
-                    domain={[0, 100]}
-                    tick={{ fill: '#8b949e', fontSize: 11 }}
-                    axisLine={{ stroke: 'rgba(48,57,74,0.4)' }}
-                    tickLine={{ stroke: 'rgba(48,57,74,0.4)' }}
-                    label={{ value: '← Impact', angle: -90, position: 'insideBottomLeft', offset: 10, fill: '#8b949e', fontSize: 11 }}
-                  />
-                  <ZAxis type="number" dataKey="score" range={[100, 500]} />
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (!active || !payload || payload.length === 0) return null
-                      const d = payload[0].payload as { fullLabel: string; score: number; probability: number; impact: number }
-                      return (
-                        <div className="bg-navy-800 border border-border/60 rounded-lg px-3 py-2 shadow-xl">
-                          <p className="font-heading text-sm text-foreground font-semibold">{d.fullLabel}</p>
-                          <p className="font-mono text-xs text-red-400">Score: {d.score}%</p>
-                          <p className="font-mono text-xs text-muted-foreground">Probability: {d.probability}%</p>
-                          <p className="font-mono text-xs text-muted-foreground">Impact: {d.impact}</p>
-                        </div>
-                      )
-                    }}
-                  />
-                  <Scatter data={riskMatrixData} fill="#ef4444" fillOpacity={0.7} />
-                </ScatterChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="grid grid-cols-2 gap-3 mt-4">
-              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-                <p className="font-heading text-xs font-semibold text-red-400">High Probability, High Impact</p>
-                <p className="text-[10px] text-muted-foreground font-sans mt-0.5">Critical risks — mitigate immediately</p>
-              </div>
-              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <p className="font-heading text-xs font-semibold text-amber-400">Monitor Closely</p>
-                <p className="text-[10px] text-muted-foreground font-sans mt-0.5">Risks to watch — develop contingency plans</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </FadeUp>
-    )}
+    {/* The Risk Assessment Matrix was removed here.
+
+        It plotted probability against impact, but probability was
+        max(20, 100 - score) and impact was 40 + (60 - score) * 0.8 — both
+        straight-line functions of the same number, so every point sat on one
+        line. A 2-D chart carrying 1-D data, presenting two independent risk
+        dimensions where there was only ever one, with values reachable solely
+        by hover. */}
 
     {/* ─── ENTERPRISE: MULTI-ENTITY / PROGRAMME COMPARISON ──────────
         The vocab swap below ("business units or teams" → vocab.scalingNoun)
