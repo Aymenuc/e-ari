@@ -274,65 +274,74 @@ export async function generateAssessmentPdf(data: ReportPdfData): Promise<Uint8A
   const findings = sc.xRayFindings ?? [];
 
   // ══ COVER (page 1) ═══════════════════════════════════════════════════════
+  //
+  // Rebuilt to read as a report cover rather than a dashboard. Three changes
+  // carry it: one full-bleed field instead of a split panel; the metrics strip
+  // removed entirely (a consultancy puts findings inside, never on the cover —
+  // KPIs on the front say "screenshot", not "document"); and the composite
+  // score demoted to a tonal graphic instead of a headline number, so the
+  // client's name is the largest thing on the page. It is their report.
   d.addPage(false);
-  const coverH = 430;
-  d.page.drawRectangle({ x: 0, y: A4[1] - coverH, width: A4[0], height: coverH, color: NAVY });
+  d.page.drawRectangle({ x: 0, y: 0, width: A4[0], height: A4[1], color: NAVY });
 
-  const bx = M, by = A4[1] - 92;
-  d.page.drawRectangle({ x: bx, y: by + 20, width: 30, height: 5, color: WHITE });
-  d.page.drawRectangle({ x: bx, y: by + 10, width: 18, height: 5, color: rgb(0.72, 0.76, 0.82) });
-  d.page.drawRectangle({ x: bx, y: by, width: 30, height: 5, color: rgb(0.42, 0.47, 0.55) });
-  d.page.drawText('E-ARI', { x: bx + 42, y: by + 8, size: 15, font: d.bold, color: WHITE });
+  // Hairline at the head of the page — the only rule above the title block.
+  d.page.drawRectangle({ x: 0, y: A4[1] - 4, width: A4[0], height: 4, color: rgb(0.22, 0.28, 0.38) });
 
-  d.page.drawText('AI READINESS ASSESSMENT', { x: M, y: A4[1] - 190, size: 9, font: d.bold, color: NAVY_TEXT });
-  let oy = A4[1] - 226;
-  for (const ln of d.wrap(organization, 30, d.bold, W)) {
-    d.page.drawText(ln, { x: M, y: oy, size: 30, font: d.bold, color: WHITE });
-    oy -= 38;
-  }
-  d.page.drawText(
-    sane(`${date}  ·  ${sector ? `${sector[0].toUpperCase()}${sector.slice(1)} sector  ·  ` : ''}Scoring ${sc.scoringVersion}`),
-    { x: M, y: A4[1] - coverH + 92, size: 9.5, font: d.font, color: NAVY_TEXT },
-  );
+  // Identity, small and top-left. It is our mark on their document.
+  const bx = M, by = A4[1] - 96;
+  d.page.drawRectangle({ x: bx, y: by + 20, width: 28, height: 4.5, color: WHITE });
+  d.page.drawRectangle({ x: bx, y: by + 10.5, width: 17, height: 4.5, color: rgb(0.72, 0.76, 0.82) });
+  d.page.drawRectangle({ x: bx, y: by + 1, width: 28, height: 4.5, color: rgb(0.42, 0.47, 0.55) });
+  d.page.drawText('E-ARI', { x: bx + 40, y: by + 7, size: 14, font: d.bold, color: WHITE });
 
-  // Metrics strip inside the panel
-  const stripY = A4[1] - coverH + 34;
-  d.page.drawLine({ start: { x: M, y: stripY + 34 }, end: { x: A4[0] - M, y: stripY + 34 }, thickness: 0.5, color: rgb(0.18, 0.22, 0.3) });
-  const metrics: Array<[string, string]> = [
-    ['MATURITY', sc.maturityLabel],
-    ['PILLARS BELOW 50', `${sc.pillarScores.filter((p) => p.normalizedScore < 50).length} of ${sc.pillarScores.length}`],
-    ['STRUCTURAL FINDINGS', `${findings.length}`],
-    ['CERTIFICATION', cert.isCertified ? cert.certification.label : 'Not yet certified'],
-  ];
-  metrics.forEach(([k, v], i) => {
-    const x = M + i * (W / 4);
-    d.page.drawText(k, { x, y: stripY + 18, size: 6.5, font: d.bold, color: rgb(0.45, 0.5, 0.58) });
-    d.page.drawText(sane(v), { x, y: stripY + 2, size: 11, font: d.bold, color: WHITE });
+  // The score as a tonal mark, not a readout: very large, very quiet, sitting
+  // in the upper field where it reads as texture rather than as a statistic.
+  const ghost = `${Math.round(sc.overallScore)}`;
+  const gSize = 250;
+  const gW = d.bold.widthOfTextAtSize(ghost, gSize);
+  d.page.drawText(ghost, {
+    x: A4[0] - M - gW,
+    y: A4[1] - 380,
+    size: gSize,
+    font: d.bold,
+    color: rgb(0.10, 0.14, 0.24),
   });
 
-  // The number, below the panel
-  const scoreStr = `${Math.round(sc.overallScore)}`;
-  d.page.drawText(scoreStr, { x: M, y: A4[1] - coverH - 120, size: 88, font: d.bold, color: INK });
-  const sw = d.bold.widthOfTextAtSize(scoreStr, 88);
-  d.page.drawText('/ 100', { x: M + sw + 10, y: A4[1] - coverH - 118, size: 16, font: d.font, color: MUTED });
-  if (typeof sc.baselineOverallScore === 'number' && Math.round(sc.baselineOverallScore) !== Math.round(sc.overallScore)) {
-    d.page.drawText(
-      sane(`Baseline ${Math.round(sc.baselineOverallScore)} re-weighted to ${Math.round(sc.overallScore)} for sector context.`),
-      { x: M, y: A4[1] - coverH - 146, size: 9, font: d.font, color: MUTED },
-    );
+  // Title block, lower third. Eyebrow small, client name large.
+  d.page.drawText('AI READINESS ASSESSMENT', {
+    x: M, y: 296, size: 8.5, font: d.bold, color: rgb(0.45, 0.53, 0.64),
+  });
+
+  let oy = 252;
+  for (const ln of d.wrap(organization, 34, d.bold, W - 40)) {
+    d.page.drawText(ln, { x: M, y: oy, size: 34, font: d.bold, color: WHITE });
+    oy -= 42;
   }
-  if (typeof previousScore === 'number') {
-    const delta = sc.overallScore - previousScore;
-    d.page.drawText(
-      sane(`${delta >= 0 ? '+' : ''}${delta.toFixed(1)} points since the previous assessment (${Math.round(previousScore)}).`),
-      { x: M, y: A4[1] - coverH - 162, size: 9, font: d.font, color: delta >= 0 ? GREEN : AMBER },
-    );
-  }
+
+  d.page.drawLine({
+    start: { x: M, y: oy + 6 }, end: { x: M + 116, y: oy + 6 },
+    thickness: 1.6, color: rgb(0.42, 0.55, 0.72),
+  });
+
   d.page.drawText(
-    'Deterministic scoring - identical answers always produce an identical score. Prepared for board and regulatory review.',
-    { x: M, y: M + 16, size: 8.5, font: d.font, color: MUTED },
+    sane(`${sector ? `${sector[0].toUpperCase()}${sector.slice(1)} sector` : 'Cross-sector'}  ·  ${date}`),
+    { x: M, y: oy - 24, size: 10, font: d.font, color: rgb(0.58, 0.65, 0.75) },
   );
-  d.page.drawText('CONFIDENTIAL', { x: M, y: M, size: 8.5, font: d.bold, color: ACCENT });
+
+  // Reference line at the foot — where a consultancy puts provenance.
+  d.page.drawLine({
+    start: { x: M, y: 92 }, end: { x: A4[0] - M, y: 92 },
+    thickness: 0.5, color: rgb(0.18, 0.23, 0.32),
+  });
+  d.page.drawText(
+    sane(`Deterministic scoring ${sc.scoringVersion}  ·  Identical answers always produce an identical score`),
+    { x: M, y: 70, size: 8.5, font: d.font, color: rgb(0.45, 0.52, 0.62) },
+  );
+  d.page.drawText('CONFIDENTIAL', { x: M, y: 52, size: 8.5, font: d.bold, color: rgb(0.62, 0.69, 0.78) });
+  d.page.drawText('Prepared for board and regulatory review', {
+    x: A4[0] - M - d.font.widthOfTextAtSize('Prepared for board and regulatory review', 8.5),
+    y: 52, size: 8.5, font: d.font, color: rgb(0.38, 0.45, 0.55),
+  });
 
   // Reserve page 2 for the contents page (inserted at the end).
   d.pageNo = 2;

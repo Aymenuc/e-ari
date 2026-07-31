@@ -13,6 +13,12 @@ const nextConfig: NextConfig = {
    * Development only: Vercel builds with NODE_ENV=production, so the deployed
    * output path is unchanged.
    */
+  /**
+   * The dev-mode badge sits bottom-left over everything, including the promo
+   * film's clean stage. It is development-only so it never reaches production,
+   * but it lands in every frame shot against `next dev`.
+   */
+  devIndicators: false,
   distDir: process.env.NODE_ENV === 'development' ? '.next-dev' : '.next',
   output: 'standalone',
   typescript: {
