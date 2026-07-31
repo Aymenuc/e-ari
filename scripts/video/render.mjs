@@ -14,7 +14,7 @@ import { chromium } from 'playwright';
 import { mkdirSync, rmSync, readFileSync } from 'node:fs';
 import {
   sceneLogo, sceneStatement, sceneLikert, scenePipeline, sceneScore,
-  sceneBars, sceneFinding, sceneMove, sceneReport, clamp01,
+  sceneBars, sceneFinding, sceneMove, sceneSpread, sceneEnd, clamp01,
 } from './film.mjs';
 
 const OUT = process.argv[2] ?? '/tmp/film';
@@ -24,8 +24,11 @@ const W = SQUARE ? 1080 : 1920;
 const H = 1080;
 const XF = 0.34; // dissolve length, seconds
 
-const REPORT = 'data:image/png;base64,' +
-  readFileSync(new URL('./report-page.png', import.meta.url)).toString('base64');
+/** Both pages are rendered from the real PDF by scripts/video/make-report.mts. */
+const png = (f) => 'data:image/png;base64,' +
+  readFileSync(new URL(f, import.meta.url)).toString('base64');
+const COVER = png('./report-cover.png');
+const INNER = png('./report-inner.png');
 
 /** Each shot: how long it runs, and how to draw it at local time t. */
 const SHOTS = [
@@ -39,18 +42,18 @@ const SHOTS = [
   { d: 2.6, f: (t) => sceneBars(t, { w: W, h: H }) },
   { d: 2.5, f: (t) => sceneFinding(t, { w: W, h: H }) },
   { d: 2.4, f: (t) => sceneMove(t, { w: W, h: H }) },
-  { d: 2.2, f: (t) => sceneReport(t, { w: W, h: H, imgDataUri: REPORT }) },
+  { d: 2.7, f: (t) => sceneSpread(t, { w: W, h: H, cover: COVER, inner: INNER }) },
   { d: 2.1, f: (t) => sceneStatement(t, {
       w: W, h: H, kicker: 'Deterministic',
       lines: ['Same answers.', 'Same score.', 'Every time.'], size: SQUARE ? 56 : 78 }) },
   { d: 2.4, f: (t) => sceneStatement(t, {
       w: W, h: H, kicker: 'Founding cohort',
-      lines: ['50 places.', 'Free through December.'],
-      sub: 'Full platform, no card. Founding members keep a permanent discount.',
+      lines: ['50 places.', 'Free for 90 days.'],
+      sub: 'Full Growth platform, no card. Founding members keep a permanent discount.',
       size: SQUARE ? 48 : 68 }) },
-  { d: 2.3, f: (t) => sceneLogo(t, {
-      w: W, h: H, size: SQUARE ? 98 : 116,
-      kicker: 'e-ari.com', title: 'Know where you stand.' }) },
+  { d: 3.0, f: (t) => sceneEnd(t, {
+      w: W, h: H, size: SQUARE ? 98 : 116, title: 'Know where you stand.',
+      domain: 'e-ari.com', email: 'hello@e-ari.com' }) },
 ];
 
 // Absolute start time of each shot.

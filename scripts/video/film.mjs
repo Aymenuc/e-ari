@@ -468,3 +468,95 @@ export function sceneReport(t, { w, h, imgDataUri }) {
     ${caption(t - 0.3, { title: 'Board-ready in one click.', sub: 'Methodology, scope and limits included. Nothing to rewrite.', w })}`,
     { w, h });
 }
+
+// ── SCENE: the report, opened ─────────────────────────────────────────────
+/**
+ * Two pages, fanned apart.
+ *
+ * A single page held at an angle only ever proves a cover exists — which is
+ * the one thing a viewer already assumes. Opening to the spread shows the
+ * radar and the band scale, so the shot argues that the artefact has content
+ * rather than styling. The pages start stacked and separate on a curve, which
+ * performs the opening instead of cutting to an already-open document.
+ */
+export function sceneSpread(t, { w, h, cover, inner }) {
+  const p = easeOut(at(t, 0, 1.5));
+  const ph = h * (w < 1200 ? 0.54 : 0.68);
+  const gap = 26 * p;                 // pages part rather than appearing apart
+  const lift = (1 - p) * 26;
+
+  const leaf = (src, side) => `
+    <img src="${src}" style="height:${ph}px;border-radius:5px;
+      transform:translateX(${side * gap}px) translateY(${lift}px)
+                rotateY(${side * (11 - 2 * p)}deg) scale(${0.9 + 0.1 * p});
+      transform-origin:${side < 0 ? 'right' : 'left'} center;
+      box-shadow:${side * -22}px 46px 110px -34px rgba(0,0,0,0.95),
+                 0 0 0 1px rgba(255,255,255,0.07)"/>`;
+
+  return shell(`
+    <div style="position:absolute;inset:0;display:flex;align-items:center;
+                justify-content:center;gap:10px;perspective:2100px;
+                transform:translateY(${-h * 0.045}px)">
+      ${leaf(cover, -1)}${leaf(inner, 1)}
+    </div>
+    ${caption(t - 0.35, {
+      title: 'Board-ready in one click.',
+      sub: 'Scored profile, structural findings, methodology and limits. Nothing to rewrite.', w })}`,
+    { w, h });
+}
+
+// ── SCENE: sign-off ───────────────────────────────────────────────────────
+/**
+ * The last frame has one job: leave an address behind.
+ *
+ * The mark and line land first and the contact row arrives after, so the eye
+ * reaches the email once it has stopped reading — a CTA that appears with the
+ * logo competes with it and gets skimmed past.
+ */
+export function sceneEnd(t, { w, h, size = 116, title, domain, email }) {
+  const u = size / 48;
+  const bars = [
+    { y: 0, wf: 1.0, o: 1.0 },
+    { y: 1, wf: 0.583, o: 0.62 },
+    { y: 2, wf: 1.0, o: 0.35 },
+  ]
+    .map((b, i) => {
+      const p = easeOut(at(t, i * 0.12, 0.4));
+      return `<div style="position:absolute;left:${12 * u}px;top:${(13 + b.y * 9) * u}px;
+        width:${24 * u * b.wf * p}px;height:${4 * u}px;border-radius:${1.2 * u}px;
+        background:${TEXT};opacity:${b.o}"></div>`;
+    })
+    .join('');
+
+  const wp = easeOut(at(t, 0.42, 0.46));
+  const tp = easeOut(at(t, 0.66, 0.42));
+  const cp = easeOut(at(t, 1.05, 0.5));
+
+  return shell(`
+    <div style="position:absolute;inset:0;display:grid;place-items:center">
+      <div style="text-align:center">
+        <div style="display:flex;align-items:center;justify-content:center">
+          <div style="position:relative;width:${size}px;height:${size}px;border-radius:${11 * u}px;
+                      background:${NAVY};border:1px solid rgba(38,49,77,0.9);
+                      box-shadow:0 30px 80px -30px rgba(0,0,0,0.9)">${bars}</div>
+          <div style="margin-left:${26 * u}px;font-family:${HEAD};font-size:${size * 0.46}px;
+                      font-weight:600;letter-spacing:-0.02em;color:${TEXT};
+                      opacity:${wp};transform:translateX(${(1 - wp) * -16}px)">E-ARI</div>
+        </div>
+        <div style="margin-top:${size * 0.36}px;opacity:${tp};
+                    transform:translateY(${(1 - tp) * 12}px)">
+          <div style="font-family:${HEAD};font-size:${size * 0.34}px;font-weight:600;
+               letter-spacing:-0.03em;color:${TEXT}">${title}</div>
+        </div>
+        <div style="margin-top:${size * 0.34}px;display:flex;align-items:center;
+                    justify-content:center;gap:${w < 1200 ? 18 : 26}px;opacity:${cp};
+                    transform:translateY(${(1 - cp) * 14}px)">
+          <div style="font-family:${MONO};font-size:${w < 1200 ? 17 : 21}px;letter-spacing:0.02em;
+                      color:${TEXT}">${domain}</div>
+          <div style="width:1px;height:${w < 1200 ? 16 : 20}px;background:rgba(255,255,255,0.16)"></div>
+          <div style="font-family:${MONO};font-size:${w < 1200 ? 17 : 21}px;letter-spacing:0.02em;
+                      color:${MUTED}">${email}</div>
+        </div>
+      </div>
+    </div>`, { w, h, vignette: false });
+}
