@@ -27,6 +27,33 @@ interface TierQuota {
   report: number;
 }
 
+/**
+ * What a tier may do, as a rank rather than a name — the server-side twin of
+ * TIER_RANK on the results page.
+ *
+ * Tier checks were written as name equality (`tier === 'enterprise'`), which
+ * silently excluded `autopilot` every time even though it outranks growth and
+ * costs far more. Comparing rank makes omission impossible: a new tier gets a
+ * number here and every gate follows.
+ *
+ *   0 read    — understand where you stand
+ *   1 map     — know what to fix, and what it wins
+ *   2 operate — run it over time and prove it moved
+ */
+export const TIER_RANK: Record<Tier, number> = {
+  free: 0, professional: 1, growth: 1, autopilot: 2, enterprise: 2,
+};
+
+/** Tier is at least the "map" rank (any paid tier). */
+export function canMap(tier: string | null | undefined): boolean {
+  return (TIER_RANK[(tier ?? 'free') as Tier] ?? 0) >= 1;
+}
+
+/** Tier is at least the "operate" rank (autopilot, enterprise). */
+export function canOperate(tier: string | null | undefined): boolean {
+  return (TIER_RANK[(tier ?? 'free') as Tier] ?? 0) >= 2;
+}
+
 /** Monthly entitlements per tier — must match /pricing. */
 const TIER_QUOTAS: Record<Tier, TierQuota> = {
   free:         { assessment: 1,  pulse: 3,  report: 1        }, // pricing: "1 .docx report / month"

@@ -9,7 +9,7 @@ import { generateAssessmentReport, type AssessmentReportData } from "@/lib/repor
 import { generateAssessmentPdf } from "@/lib/report-pdf";
 import { getSectorStats } from "@/lib/benchmark-engine";
 import { getSetting } from "@/lib/platform-settings";
-import { checkQuota, recordReportGenerated } from "@/lib/tier-limits";
+import { checkQuota, recordReportGenerated, canMap, canOperate } from "@/lib/tier-limits";
 import { checkRateLimit, resolveIdentifier } from "@/lib/rate-limit";
 
 // GET /api/assessment/[id]/pdf — Generate professional .docx assessment report
@@ -97,7 +97,7 @@ export async function GET(
     // noun, role addressed). Without this the PDF reads as corporate even
     // for UN bodies / NGOs / public agencies.
     const entityType = assessment.entityType || undefined;
-    if (userTier === 'professional' || userTier === 'growth' || userTier === 'enterprise') {
+    if (canMap(userTier)) {
       // Reuse the narrative the insights route already generated and cached on
       // the assessment. This route used to ignore that cache entirely and pay
       // for a fresh generation on every single download of the same report.
@@ -205,7 +205,7 @@ export async function GET(
       previousDate,
     };
 
-    if (assessment.user.tier === "enterprise") {
+    if (canOperate(assessment.user.tier)) {
       const [enabled, brandName, logoUrl, accentColor] = await Promise.all([
         getSetting("custom_branding_enabled"),
         getSetting("custom_brand_name"),
@@ -230,6 +230,14 @@ export async function GET(
     // earned it.
     const format = req.nextUrl.searchParams.get("format");
     if (format === "docx") {
+      // The UI hides this behind the operate tier; a hidden button is not a
+      // paywall while the query parameter still serves the file.
+      if (!canOperate(assessment.user.tier)) {
+        return NextResponse.json(
+          { error: "The editable Word report is available on Autopilot and Enterprise plans." },
+          { status: 403 },
+        );
+      }
       const docxBuffer = await generateAssessmentReport(reportData);
       return new NextResponse(new Uint8Array(docxBuffer), {
         headers: {
