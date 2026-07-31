@@ -19,6 +19,25 @@ export function scoreRamp(score: number): string {
   return `rgb(${ch(0x3a, 0x38)}, ${ch(0x52, 0xbd)}, ${ch(0x74, 0xf8)})`;
 }
 
+/**
+ * What a score means, in the words a reader already owns.
+ *
+ * The maturity band ("Laggard", "Follower") is our vocabulary, not theirs, and
+ * repeating it down a list of eight rows teaches nothing — the reader has to
+ * hold a glossary in their head to skim. These four phrases answer the only
+ * question a row is really asked: does this need work? The band still appears
+ * once, in the header, with its range beside it.
+ *
+ * Every surface that lists pillar scores uses this, so the page says the same
+ * thing in the same words wherever the reader lands.
+ */
+export function plainBand(score: number): string {
+  if (score < 26) return 'needs work now';
+  if (score < 50) return 'below halfway';
+  if (score < 76) return 'adequate';
+  return 'strong';
+}
+
 /** Severity accents for X-Ray findings — categorical, so hue is meaningful. */
 export const SEVERITY_DOT: Record<string, string> = {
   critical: '#ef4444',

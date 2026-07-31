@@ -15,25 +15,16 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import {
-  Activity, AlertOctagon, AlertTriangle, ArrowUpRight, Bell, CheckCircle2,
-  ChevronRight, Clock, Landmark, Loader2, Minus, RefreshCw, RotateCcw,
-  ShieldCheck, TrendingDown, TrendingUp, Zap,
-} from 'lucide-react'
-import {
-  Bar, BarChart, CartesianGrid, Cell, Line, LineChart, PolarAngleAxis, PolarGrid,
-  PolarRadiusAxis, Radar, RadarChart, ReferenceLine, ResponsiveContainer, Tooltip,
-  XAxis, YAxis,
-} from 'recharts'
+import { Activity, AlertOctagon, AlertTriangle, ArrowUpRight, Bell, CheckCircle2, ChevronRight, Clock, Landmark, Loader2, Minus, RefreshCw, RotateCcw, ShieldCheck, TrendingDown, TrendingUp, Zap } from 'lucide-react'
+import { BarChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { scoreRamp, plainBand } from '@/lib/score-ramp'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { ComplianceOutlook } from '@/components/shared/compliance-outlook'
 import { PILLARS } from '@/lib/pillars'
-import {
-  BarChartTooltip, CHART_ACCENT, LockedSectionCard, getMaturityBandColor, scoreRampColor,
-} from './shared'
+import { CHART_ACCENT, LockedSectionCard, scoreRampColor } from './shared'
 import type { ComplianceTabProps } from './types'
 import { FadeUp } from './fade-up'
 
@@ -41,7 +32,7 @@ export function ComplianceTab(props: ComplianceTabProps) {
   const {
     isPro, sessionStatus, complianceOutlook, complianceSummary, complianceGaps,
     assessment, assessmentHistory, historyLoading, driftAnalysis, monitoringAlerts,
-    monitoringSchedule, pulseData, pulseLoading, barData, benchmarkData, radarData,
+    monitoringSchedule, pulseData, pulseLoading, barData, benchmarkData,
     handleRerun, rerunning, router, id, scoring,
   } = props
 
@@ -248,7 +239,6 @@ export function ComplianceTab(props: ComplianceTabProps) {
       />
     )}
 
-
     <div id="sec-monitoring" className="scroll-mt-24" />
     {/* ─── READINESS OVER TIME (Feature 1) ──────────────────────── */}
     <FadeUp delay={0.08}>
@@ -437,7 +427,6 @@ export function ComplianceTab(props: ComplianceTabProps) {
         </Card>
       </div>
     </FadeUp>
-
 
     {/* ─── MONITORING / READINESS TRACKING SECTION (Pro+) ─────────── */}
     {isPro ? (
@@ -641,7 +630,6 @@ export function ComplianceTab(props: ComplianceTabProps) {
         }
       />
     )}
-
 
     {/* ─── AI PULSE: CONTINUOUS MONITORING ──────────────────────────────── */}
     <FadeUp delay={0.08}>
@@ -896,115 +884,60 @@ export function ComplianceTab(props: ComplianceTabProps) {
       </div>
     </FadeUp>
 
+    {/* ─── 4. WHAT TO FIX FIRST ───────────────────────────────────
+        Was a radar and a ranked BarChart, one after the other, both
+        plotting the same eight numbers the Overview tab already states in
+        words — so the reader met the same data three times and had to
+        decode two chart grammars to learn nothing new. The radar lives on
+        in the PDF, where shape-at-a-glance earns a static page.
 
-    {/* ─── 4. RADAR CHART — Holographic Display ──────────────────── */}
+        What survives is the one question a list of eight scores is
+        actually asked: which of these do I deal with first? Plain rows
+        answer it without a tooltip, stay readable on a phone, and carry
+        the same words the Overview used. */}
     <FadeUp>
-      <div className="aurora-card rounded-2xl p-[1px]">
-        <Card className="bg-navy-800/40 border-0 rounded-2xl">
-          <CardHeader>
-            <CardTitle className="font-heading text-2xl font-bold tracking-tight text-foreground">
-              Readiness Radar
-            </CardTitle>
-            <CardDescription className="font-sans text-sm">
-              Visual overview of scores across all 8 pillars
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="w-full h-[350px] sm:h-[400px] relative radar-holographic-glow">
-              {/* Scan line overlay */}
-              <div className="scan-line-overlay" />
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-                  <PolarGrid stroke="rgba(139, 148, 158, 0.15)" />
-                  <PolarAngleAxis
-                    dataKey="pillar"
-                    tick={{ fill: '#8b949e', fontSize: 11 }}
-                  />
-                  <PolarRadiusAxis
-                    angle={90}
-                    domain={[0, 100]}
-                    tick={{ fill: '#8b949e', fontSize: 10 }}
-                    axisLine={false}
-                  />
-                  <Radar
-                    name="Score"
-                    dataKey="score"
-                    stroke={CHART_ACCENT}
-                    fill={CHART_ACCENT}
-                    fillOpacity={0.25}
-                    strokeWidth={2}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </FadeUp>
-
-
-    {/* ─── 5. PILLAR BAR CHART — Premium Visualization ──────────── */}
-    <FadeUp>
-      <Card className="bg-navy-800/90 border-border/50 hover-lift results-grid-pattern">
+      <Card className="bg-navy-800/90 border-border/50">
         <CardHeader>
           <CardTitle className="font-heading text-2xl font-bold tracking-tight text-foreground">
-            Pillar Comparison
+            What to fix first
           </CardTitle>
           <CardDescription className="font-sans text-sm">
-            Scores ranked from lowest to highest, color-coded by maturity band
+            Your eight areas, weakest first. Start at the top — the areas below
+            the halfway mark are the ones that hold your overall score down.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="w-full h-[350px] sm:h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={barData}
-                layout="vertical"
-                margin={{ top: 5, right: 50, left: 80, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(48,57,74,0.3)" horizontal={false} />
-                <XAxis
-                  type="number"
-                  domain={[0, 100]}
-                  tick={{ fill: '#8b949e', fontSize: 11 }}
-                  axisLine={{ stroke: 'rgba(48,57,74,0.4)' }}
-                  tickLine={{ stroke: 'rgba(48,57,74,0.4)' }}
-                />
-                <YAxis
-                  type="category"
-                  dataKey="pillar"
-                  tick={{ fill: '#8b949e', fontSize: 11 }}
-                  axisLine={{ stroke: 'rgba(48,57,74,0.4)' }}
-                  tickLine={false}
-                  width={75}
-                />
-                <Tooltip content={<BarChartTooltip />} cursor={{ fill: 'rgba(48,57,74,0.2)' }} />
-                <Bar dataKey="score" radius={[0, 4, 4, 0]} maxBarSize={24} animationBegin={0} animationDuration={1200} animationEasing="ease-out">
-                  {barData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={`url(#barGradient-${index})`}
-                    />
-                  ))}
-                  {/* Custom label renderer for values */}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          {/* SVG defs for gradient fills - rendered outside chart */}
-          <svg width="0" height="0" className="absolute">
-            <defs>
-              {barData.map((entry, index) => {
-                const baseColor = getMaturityBandColor(entry.band)
-                return (
-                  <linearGradient key={`barGrad-${index}`} id={`barGradient-${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor={baseColor} stopOpacity={0.6} />
-                    <stop offset="100%" stopColor={baseColor} stopOpacity={1} />
-                  </linearGradient>
-                )
-              })}
-            </defs>
-          </svg>
+          <ol className="space-y-3">
+            {barData.map((row, i) => (
+              <li key={row.pillar} className="flex items-center gap-3 sm:gap-4">
+                <span className="w-5 shrink-0 font-mono text-[12px] tabular-nums text-slate-500">
+                  {i + 1}
+                </span>
+                <span className="w-24 shrink-0 truncate font-sans text-sm text-slate-200 sm:w-36">
+                  {row.pillar}
+                </span>
+                <span className="relative h-2 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+                  <span
+                    className="absolute inset-y-0 left-0 rounded-full"
+                    style={{ width: `${row.score}%`, backgroundColor: scoreRamp(row.score) }}
+                  />
+                </span>
+                <span
+                  className="w-8 shrink-0 text-right font-mono text-[13px] font-semibold tabular-nums"
+                  style={{ color: scoreRamp(row.score) }}
+                >
+                  {row.score}
+                </span>
+                <span className="hidden w-28 shrink-0 text-right font-sans text-[11px] text-slate-500 sm:block">
+                  {plainBand(row.score)}
+                </span>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-5 border-t border-white/[0.06] pt-4 font-sans text-[12px] leading-relaxed text-slate-500">
+            Scores are out of 100 and comparable across assessments — the scale
+            does not move, so a change here is a real change.
+          </p>
         </CardContent>
       </Card>
     </FadeUp>

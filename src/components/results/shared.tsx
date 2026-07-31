@@ -25,7 +25,7 @@ import { PILLARS } from '@/lib/pillars'
 import type { PillarScoreResult } from '@/lib/assessment-engine'
 import { Button } from '@/components/ui/button'
 import { MATURITY_BANDS, type MaturityBand } from '@/lib/pillars'
-import { scoreRamp } from '@/lib/score-ramp'
+import { scoreRamp, plainBand } from '@/lib/score-ramp'
 import { FadeUp } from './fade-up'
 import type { UserTier } from './types'
 
@@ -218,24 +218,33 @@ export function PillarCard({
                         {pillar.pillarName}
                       </CardTitle>
                       <div className="flex items-center gap-2 mt-1">
+                        {/* The band name ("Chaser") is our vocabulary, and eight
+                            cards each repeating one teaches the reader nothing.
+                            The band still appears once in the header with its
+                            range; here the row answers the question actually
+                            being asked of it. */}
                         <Badge
                           variant="outline"
                           className={`text-[10px] px-1.5 py-0 font-mono ${getMaturityBgClass(pillar.maturityBand)}`}
                         >
-                          {pillar.maturityLabel}
+                          {plainBand(pillar.normalizedScore)}
                         </Badge>
                         <span className="font-mono text-[10px] text-muted-foreground">
-                          Weight: {Math.round(pillar.weight * 100)}%
+                          {Math.round(pillar.weight * 100)}% of your score
                         </span>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="text-right">
+                      {/* Score out of 100, not a percentage — every other
+                          surface states it that way, and a bare "%" here sat
+                          next to the weight's "% of your score" meaning
+                          something entirely different. */}
                       <span className="font-heading text-xl font-semibold tabular-nums text-foreground">
                         {Math.round(pillar.normalizedScore)}
                       </span>
-                      <span className="text-sm text-muted-foreground">%</span>
+                      <span className="text-sm text-muted-foreground">/100</span>
                     </div>
                     {showDetails && (
                       <motion.div

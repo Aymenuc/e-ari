@@ -10,14 +10,8 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import {
-  AlertOctagon, AlertTriangle, ArrowUpRight, Award, BarChart3, Brain, Calendar,
-  CheckCircle2, Clock, GitBranch, Globe, Info, Loader2, Plus, RefreshCw, Shield,
-  TrendingUp, UsersRound, XCircle,
-} from 'lucide-react'
-import {
-  CartesianGrid, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis,
-} from 'recharts'
+import { AlertOctagon, AlertTriangle, ArrowUpRight, Award, Brain, Calendar, CheckCircle2, Clock, GitBranch, Globe, Info, Loader2, Plus, RefreshCw, Shield, TrendingUp, UsersRound, XCircle } from 'lucide-react'
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -38,7 +32,7 @@ export function FindingsTab(props: FindingsTabProps) {
   const {
     scoring, assessment, insights, insightsLoading, insightsFallback,
     insightsUpgradeMessage, fetchInsights, isPro, isEnterprise, isCommercialEntity,
-    vocab, historicalData, priorityMatrixData, pillarEvidenceCounts,
+    vocab, historicalData, pillarEvidenceCounts,
     complianceSystemsForAssessment, router, id,
   } = props
   return (
@@ -47,9 +41,15 @@ export function FindingsTab(props: FindingsTabProps) {
     {/* ─── 3. PILLAR SCORE CARDS ──────────────────────────────────── */}
     <section>
       <FadeUp>
-        <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground mb-6">
-          Pillar detail
-        </h2>
+        <div className="mb-6">
+          <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground">
+            Each area in detail
+          </h2>
+          <p className="mt-2 max-w-3xl font-sans text-sm leading-relaxed text-muted-foreground">
+            The eight areas you were scored on, with what sits behind each score.
+            Open one to see the individual answers that produced it.
+          </p>
+        </div>
       </FadeUp>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {scoring.pillarScores.map((pillar, i) => (
@@ -70,14 +70,13 @@ export function FindingsTab(props: FindingsTabProps) {
       </div>
     </section>
 
-
     <div id="sec-insights" className="scroll-mt-24" />
     {/* ─── 6. AI STRATEGIC INSIGHTS SECTION ───────────────────────── */}
     <section>
       <FadeUp>
         <div className="flex items-center gap-3 mb-6">
           <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground">
-            Strategic Insights
+            What this means for you
           </h2>
           {insights && isPro && (
             <Badge
@@ -89,7 +88,7 @@ export function FindingsTab(props: FindingsTabProps) {
               }`}
             >
               <Brain className="h-3 w-3 mr-1" aria-hidden />
-              {insights.isAIGenerated ? 'AI-Assisted Narrative' : 'Calculated from Responses'}
+              {insights.isAIGenerated ? 'Written by AI from your scores' : 'Calculated from your answers'}
             </Badge>
           )}
         </div>
@@ -228,8 +227,8 @@ export function FindingsTab(props: FindingsTabProps) {
                         Recommended Next Steps
                       </h3>
                       {insightsFallback && (
-                        <Badge variant="outline" className="text-[10px] font-mono border-amber-500/30 text-amber-400">
-                          Fallback Analysis
+                        <Badge variant="outline" className="text-[10px] font-mono border-border text-muted-foreground">
+                          Calculated from your answers
                         </Badge>
                       )}
                     </div>
@@ -257,11 +256,8 @@ export function FindingsTab(props: FindingsTabProps) {
                       <div className="flex items-center gap-2 mb-4">
                         <Brain className="h-4 w-4 text-slate-300" />
                         <h3 className="font-heading font-semibold text-foreground tracking-tight">
-                          Pillar Drilldown
+                          Your best and worst answer in each area
                         </h3>
-                        <span className="text-xs text-muted-foreground font-sans ml-1">
-                          — Strongest & weakest questions per pillar
-                        </span>
                       </div>
                       <div className="space-y-4">
                         {insights.pillarDrilldown.map((pd, i) => {
@@ -474,7 +470,6 @@ export function FindingsTab(props: FindingsTabProps) {
       )}
     </section>
 
-
     <div id="sec-findings" className="scroll-mt-24" />
     {/* ─── 6.5 X-RAY FINDINGS ──────────────────────────────────────── */}
     {scoring.xRayFindings && scoring.xRayFindings.length > 0 && (
@@ -484,14 +479,17 @@ export function FindingsTab(props: FindingsTabProps) {
             <div className="mb-2 flex items-center gap-3">
               <span aria-hidden className="h-px w-6 bg-eari-blue/60" />
               <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-300">
-                Structural Patterns
+                X-Ray findings
               </span>
             </div>
             <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground">
-              X-Ray Findings
+              Patterns across your answers
             </h2>
             <p className="mt-2 max-w-3xl font-sans text-sm leading-relaxed text-muted-foreground/90">
-              Detected from how your responses combine across pillars — not from any single answer. Each pattern below carries its own evidence, business impact, and a concrete next move. These findings are the grounding evidence the Insight, Discovery, and Report agents anchor your tailored narrative in.
+              These come from how your answers combine, not from any single
+              answer — which is why they are not visible in the scores above.
+              Each one shows the evidence behind it, what it costs you, and one
+              concrete thing to do about it.
             </p>
           </div>
         </FadeUp>
@@ -589,9 +587,17 @@ export function FindingsTab(props: FindingsTabProps) {
           transition={{ duration: 0.4 }}
         >
           <FadeUp>
-            <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground mb-6">
-              Interdependency Adjustments
-            </h2>
+            <div className="mb-6">
+              <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground">
+                Why some scores were adjusted
+              </h2>
+              <p className="mt-2 max-w-3xl font-sans text-sm leading-relaxed text-muted-foreground">
+                Some areas depend on others. Strong tooling without governance to
+                match, for example, does not count for as much as tooling alone
+                would suggest. Each adjustment below shows what was changed and
+                on what basis, so the arithmetic stays open to challenge.
+              </p>
+            </div>
           </FadeUp>
           <div className="space-y-4">
             {scoring.adjustments.map((adj: AdjustmentRecord, i: number) => (
@@ -784,99 +790,17 @@ export function FindingsTab(props: FindingsTabProps) {
       />
     )}
 
-    {/* ─── PRO: RECOMMENDATION PRIORITY MATRIX ────────────────────── */}
-    {isPro && (
-      <FadeUp>
-        <Card className="bg-navy-800 border-border/50 hover-lift">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-slate-300" />
-              <CardTitle className="font-heading text-lg text-foreground">
-                Recommendation Priority Matrix
-              </CardTitle>
-              <Badge variant="outline" className="ml-auto text-[10px] font-mono border-eari-blue/30 text-slate-300">
-                Professional
-              </Badge>
-            </div>
-            <CardDescription className="font-sans text-sm">
-              Pillars plotted by improvement impact vs. estimated implementation effort
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="w-full h-[350px] sm:h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(48,57,74,0.4)" />
-                  <XAxis
-                    type="number"
-                    dataKey="impact"
-                    name="Impact"
-                    domain={[0, 100]}
-                    tick={{ fill: '#8b949e', fontSize: 11 }}
-                    axisLine={{ stroke: 'rgba(48,57,74,0.4)' }}
-                    tickLine={{ stroke: 'rgba(48,57,74,0.4)' }}
-                    label={{ value: 'Impact →', position: 'insideBottomRight', offset: -5, fill: '#8b949e', fontSize: 11 }}
-                  />
-                  <YAxis
-                    type="number"
-                    dataKey="effort"
-                    name="Effort"
-                    domain={[0, 100]}
-                    tick={{ fill: '#8b949e', fontSize: 11 }}
-                    axisLine={{ stroke: 'rgba(48,57,74,0.4)' }}
-                    tickLine={{ stroke: 'rgba(48,57,74,0.4)' }}
-                    label={{ value: '← Effort', angle: -90, position: 'insideBottomLeft', offset: 10, fill: '#8b949e', fontSize: 11 }}
-                  />
-                  <ZAxis type="number" dataKey="score" range={[80, 400]} />
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (!active || !payload || payload.length === 0) return null
-                      const d = payload[0].payload as { fullLabel: string; score: number; impact: number; effort: number }
-                      return (
-                        <div className="bg-navy-800 border border-border/60 rounded-lg px-3 py-2 shadow-xl">
-                          <p className="font-heading text-sm text-foreground font-semibold">{d.fullLabel}</p>
-                          <p className="font-mono text-xs text-muted-foreground">Score: {d.score}%</p>
-                          <p className="font-mono text-xs text-muted-foreground">Impact: {d.impact}</p>
-                          <p className="font-mono text-xs text-muted-foreground">Effort: {d.effort}</p>
-                        </div>
-                      )
-                    }}
-                  />
-                  <Scatter data={priorityMatrixData} fill={CHART_ACCENT} fillOpacity={0.7} />
-                </ScatterChart>
-              </ResponsiveContainer>
-            </div>
-            {/* Quadrant labels */}
-            <div className="grid grid-cols-2 gap-3 mt-4">
-              <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                <p className="font-heading text-xs font-semibold text-emerald-400">High Impact, Low Effort</p>
-                <p className="text-[10px] text-muted-foreground font-sans mt-0.5">Quick wins — prioritize first</p>
-              </div>
-              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <p className="font-heading text-xs font-semibold text-amber-400">High Impact, High Effort</p>
-                <p className="text-[10px] text-muted-foreground font-sans mt-0.5">Strategic investments — plan carefully</p>
-              </div>
-              <div className="p-3 rounded-lg bg-navy-700/50 border border-border/30">
-                <p className="font-heading text-xs font-semibold text-muted-foreground">Low Impact, Low Effort</p>
-                <p className="text-[10px] text-muted-foreground font-sans mt-0.5">Fill-in tasks — address when convenient</p>
-              </div>
-              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-                <p className="font-heading text-xs font-semibold text-red-400">Low Impact, High Effort</p>
-                <p className="text-[10px] text-muted-foreground font-sans mt-0.5">Deprioritize — limited ROI</p>
-              </div>
-            </div>
-            <div className="mt-4 p-3 rounded-lg bg-navy-700/30 border border-border/20">
-              <div className="flex items-start gap-2">
-                <Info className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                <p className="text-[10px] text-muted-foreground font-sans leading-relaxed">
-                  Effort estimates are derived from your score profile and industry patterns. Impact is calculated as improvement potential (100 minus current score). Actual implementation effort may vary based on organizational context.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </FadeUp>
-    )}
+    {/* The Recommendation Priority Matrix was removed here.
+
+        Its effort axis was seededRandom(score * 7.3) scaled into 30–70 — a
+        hash of the score, not a property of the organisation. Two companies
+        with the same pillar score got the same "effort", and the footnote
+        claimed it came from "your score profile and industry patterns". A
+        compliance officer could have sequenced a remediation programme on it.
+
+        Deleting it costs nothing: the Action Plan tab answers the same
+        question with computeLeverage(), which re-runs the whole scoring
+        pipeline per answer and reports the exact points each move is worth. */}
 
     {/* ─── AI AGENT PIPELINE STATUS ────────────────────────────────────
         Moved to the foot of the tab. This is a diagnostics readout of how the

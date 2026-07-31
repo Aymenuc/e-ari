@@ -123,13 +123,6 @@ import { scoreRamp } from '@/lib/score-ramp'
     charts and score bars read as one visual language. */
 const CHART_ACCENT = '#38bdf8'
 
-/* ─── Deterministic pseudo-random (avoids hydration mismatch) ─────────── */
-
-function seededRandom(seed: number) {
-  const x = Math.sin(seed * 9301 + 49297) * 49297
-  return x - Math.floor(x)
-}
-
 /* ─── Report views — one reader-job per tab (replaces the 18k-px scroll) ── */
 const RESULTS_TABS = [
   { id: 'overview', label: 'Overview' },
@@ -777,12 +770,6 @@ export default function ResultsPage() {
   const scoring = assessment.scoringResult
 
   /* ─── Chart data ─────────────────────────────────────────────────────── */
-  const radarData = scoring.pillarScores.map(p => ({
-    pillar: PILLARS.find(pd => pd.id === p.pillarId)?.shortName ?? p.pillarId,
-    score: Math.round(p.normalizedScore),
-    fullMark: 100,
-  }))
-
   const barData = [...scoring.pillarScores]
     .sort((a, b) => a.normalizedScore - b.normalizedScore)
     .map(p => ({
@@ -802,14 +789,6 @@ export default function ResultsPage() {
   /* ─── Derived data for tier-specific sections ────────────────────────── */
 
   // Recommendation Priority Matrix data (Pro+)
-  const priorityMatrixData = scoring.pillarScores.map(p => ({
-    pillar: PILLARS.find(pd => pd.id === p.pillarId)?.shortName ?? p.pillarId,
-    impact: 100 - p.normalizedScore, // Lower score = higher impact potential
-    effort: Math.round(30 + seededRandom(p.normalizedScore * 7.3) * 40), // Estimated effort derived from score patterns
-    score: Math.round(p.normalizedScore),
-    fullLabel: p.pillarName,
-  }))
-
   // Benchmark comparison data — now uses real benchmark API data when available
   // Falls back to curated research-based sector averages
   const benchmarkComparisonData = scoring.pillarScores.map(p => {
@@ -1183,7 +1162,7 @@ export default function ResultsPage() {
               assessment={assessment} assessmentHistory={assessmentHistory} historyLoading={historyLoading}
               driftAnalysis={driftAnalysis} monitoringAlerts={monitoringAlerts}
               monitoringSchedule={monitoringSchedule} pulseData={pulseData} pulseLoading={pulseLoading}
-              barData={barData} benchmarkData={benchmarkData} radarData={radarData}
+              barData={barData} benchmarkData={benchmarkData}
               handleRerun={handleRerun} rerunning={rerunning} router={router} id={id} scoring={scoring}
             />
           )}
@@ -1193,7 +1172,7 @@ export default function ResultsPage() {
               insightsLoading={insightsLoading} insightsFallback={insightsFallback}
               insightsUpgradeMessage={insightsUpgradeMessage} fetchInsights={fetchInsights}
               isPro={isPro} isEnterprise={isEnterprise} isCommercialEntity={isCommercialEntity}
-              vocab={vocab} historicalData={historicalData} priorityMatrixData={priorityMatrixData}
+              vocab={vocab} historicalData={historicalData}
               pillarEvidenceCounts={pillarEvidenceCounts}
               complianceSystemsForAssessment={complianceSystemsForAssessment}
               router={router} id={id}

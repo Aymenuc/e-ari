@@ -116,8 +116,6 @@ export interface ResultsContext {
 
   // charts
   barData: Array<{ pillar: string; score: number; band: MaturityBand }>
-  radarData: Array<Record<string, unknown>>
-  priorityMatrixData: Array<Record<string, unknown>>
   riskMatrixData: Array<Record<string, unknown>>
 
   // benchmark + certification
@@ -151,14 +149,14 @@ export type ComplianceTabProps = Pick<
   | 'isPro' | 'sessionStatus' | 'complianceOutlook' | 'complianceSummary' | 'complianceGaps'
   | 'assessment' | 'assessmentHistory' | 'historyLoading' | 'driftAnalysis' | 'monitoringAlerts'
   | 'monitoringSchedule' | 'pulseData' | 'pulseLoading' | 'barData' | 'benchmarkData'
-  | 'radarData' | 'handleRerun' | 'rerunning' | 'router' | 'id' | 'scoring'
+  | 'handleRerun' | 'rerunning' | 'router' | 'id' | 'scoring'
 >
 
 export type FindingsTabProps = Pick<
   ResultsContext,
   | 'scoring' | 'assessment' | 'insights' | 'insightsLoading' | 'insightsFallback'
   | 'insightsUpgradeMessage' | 'fetchInsights' | 'isPro' | 'isEnterprise'
-  | 'isCommercialEntity' | 'vocab' | 'historicalData' | 'priorityMatrixData'
+  | 'isCommercialEntity' | 'vocab' | 'historicalData'
   | 'pillarEvidenceCounts' | 'complianceSystemsForAssessment' | 'router' | 'id'
 >
 

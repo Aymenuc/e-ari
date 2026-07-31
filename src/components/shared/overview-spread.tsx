@@ -22,7 +22,7 @@ import {
 } from '@/lib/assessment-engine';
 import type { XRayFinding } from '@/lib/scoring-patterns';
 
-import { scoreRamp as ramp, SEVERITY_DOT } from '@/lib/score-ramp';
+import { scoreRamp as ramp, SEVERITY_DOT, plainBand } from '@/lib/score-ramp';
 
 export function OverviewSpread({
   scoring,
@@ -88,19 +88,8 @@ export function OverviewSpread({
                       <span className="w-9 text-right font-mono text-[12px] font-semibold tabular-nums" style={{ color: c }}>
                         {Math.round(p.normalizedScore)}
                       </span>
-                      {/* Plain status, not the band name. "LAGGARD" repeated
-                          eight times is private vocabulary; what an officer
-                          needs from a row is whether it requires work. The
-                          band itself still appears once, in the header, with
-                          its score range beside it. */}
                       <span className="hidden sm:block w-24 text-right font-sans text-[11px] text-slate-500">
-                        {p.normalizedScore < 26
-                          ? 'needs work now'
-                          : p.normalizedScore < 50
-                            ? 'below halfway'
-                            : p.normalizedScore < 76
-                              ? 'adequate'
-                              : 'strong'}
+                        {plainBand(p.normalizedScore)}
                       </span>
                     </motion.div>
                   );
