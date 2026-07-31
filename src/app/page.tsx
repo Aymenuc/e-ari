@@ -1098,7 +1098,9 @@ export default function Home() {
               </FadeUp>
             )}
 
-            <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+            {/* No items-start: the grid's default stretch is what gives the
+                cards equal height, and the h-full chain below depends on it. */}
+            <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {pricingTiers.map((tier, i) => {
                 const TierIcon = tier.icon
                 const isPro = tier.highlighted
@@ -1142,7 +1144,10 @@ export default function Home() {
                           <CardDescription className="font-sans text-sm">{tier.description}</CardDescription>
                         </CardHeader>
 
-                        <CardContent>
+                        {/* flex-1 pushes the footer down, so equal-height cards
+                            also get their CTAs on one line rather than trailing
+                            whichever feature list wrapped shortest. */}
+                        <CardContent className="flex-1">
                           <div className="mt-2 mb-6">
                             <span
                               className={`font-heading text-5xl font-semibold tracking-tight ${
