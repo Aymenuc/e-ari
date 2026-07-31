@@ -22,7 +22,7 @@
 // Bump this whenever a new migration is added to `apply-runtime-schema.ts`
 // or to the inline migrations below. Format: YYYY-MM-DD-N where N counts
 // migrations within the same day.
-const SCHEMA_VERSION = "2026-07-30-2";
+const SCHEMA_VERSION = "2026-07-31-1";
 
 // Module-scope guard: once a container has run instrumentation, never re-run.
 let migrationsApplied = false;
@@ -146,7 +146,7 @@ export async function register() {
         ('ip_whitelisting',            'false', NOW()),
         ('early_access_mode',          'true',  NOW()),
         ('early_access_cap',           '50',    NOW()),
-        ('early_access_ends',          '"2026-12-31"', NOW())
+        ('early_access_days', '90', NOW())
       ON CONFLICT ("key") DO NOTHING
     `);
 

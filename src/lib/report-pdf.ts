@@ -107,7 +107,7 @@ class Doc {
   drawFooter(page: PDFPage, n: number) {
     const fy = M - 20;
     page.drawLine({ start: { x: M, y: fy + 13 }, end: { x: A4[0] - M, y: fy + 13 }, thickness: 0.5, color: HAIR });
-    page.drawText(sane(`E-ARI - AI Readiness Assessment · ${this.footerOrg} · Confidential`), {
+    page.drawText(sane(`E-ARI — AI Readiness Assessment · ${this.footerOrg} · Confidential`), {
       x: M, y: fy, size: 7.5, font: this.font, color: MUTED,
     });
     const pn = `${n}`;
@@ -368,7 +368,7 @@ export async function generateAssessmentPdf(data: ReportPdfData): Promise<Uint8A
   const rcx = A4[0] / 2, rcy = d.y - 130;
   drawRadar(d, sc, rcx, rcy, 96);
   d.y = rcy - 140;
-  d.text('Pillar profile - the shape of readiness across all eight dimensions.', { size: 8.5, color: MUTED });
+  d.text('Pillar profile — the shape of readiness across all eight dimensions.', { size: 8.5, color: MUTED });
 
   // ══ 03 PILLAR RESULTS ════════════════════════════════════════════════════
   d.section('Pillar results');

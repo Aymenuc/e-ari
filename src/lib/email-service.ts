@@ -146,10 +146,17 @@ export async function sendWelcomeEmail(
   if (earlyAccess) {
     try {
       const { db } = await import('./db');
-      const u = await db.user.findUnique({ where: { id: userId }, select: { foundingMemberNo: true } });
+      const u = await db.user.findUnique({
+        where: { id: userId },
+        select: { foundingMemberNo: true, earlyAccessAt: true },
+      });
       memberNo = u?.foundingMemberNo ?? null;
-      const { getCohortState } = await import('./early-access');
-      endsAt = (await getCohortState()).endsAt;
+      // The free window runs from this member's own grant, so the date in the
+      // welcome email is theirs — not a shared deadline that reads as two
+      // weeks to whoever joins last.
+      const { getCohortState, accessEndsAt } = await import('./early-access');
+      const { days } = await getCohortState();
+      endsAt = accessEndsAt(u?.earlyAccessAt ?? new Date(), days)?.toISOString() ?? null;
     } catch { memberNo = null; }
   }
   // Send new users to the concierge, which hands them a 3-step plan, rather

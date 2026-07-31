@@ -22,7 +22,7 @@ export async function GET() {
 
     const user = await db.user.findUnique({
       where: { id: ws.ownerId },
-      select: { tier: true, foundingMemberNo: true },
+      select: { tier: true, foundingMemberNo: true, earlyAccessAt: true },
     });
     const tier = user?.tier ?? 'free';
 
@@ -34,6 +34,12 @@ export async function GET() {
       db.vendor.count({ where: { userId: ws.ownerId } }),
       countMonthlyDiscoveryScans(ws.ownerId),
     ]);
+    let earlyAccessEndsAt: Date | null = null;
+    if (user?.earlyAccessAt) {
+      const { getCohortState, accessEndsAt } = await import('@/lib/early-access');
+      const { days } = await getCohortState();
+      earlyAccessEndsAt = accessEndsAt(user.earlyAccessAt, days);
+    }
     const memberCap = getResourceCap(tier, 'member');
     const vendorCap = getResourceCap(tier, 'vendor');
     const discoveryLimit = getDiscoveryScanLimit(tier);
@@ -51,6 +57,10 @@ export async function GET() {
       assessment: serialise(assessment),
       pulse: serialise(pulse),
       foundingMemberNo: user?.foundingMemberNo ?? null,
+      // A rolling window is invisible unless the member is told their own end
+      // date. A shared deadline could live on the marketing page; this one
+      // cannot, so it ships with the quota the portal already reads.
+      earlyAccessEndsAt: earlyAccessEndsAt?.toISOString() ?? null,
       report: serialise(report),
       // Absolute caps (not monthly): Article 4 roster + vendor registry.
       member: { used: memberCount, limit: Number.isFinite(memberCap) ? memberCap : null },

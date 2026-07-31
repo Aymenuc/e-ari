@@ -206,6 +206,7 @@ export default function PortalPage() {
   const [quota, setQuota] = useState<{
     tier: string;
     foundingMemberNo?: number | null;
+    earlyAccessEndsAt?: string | null;
     assessment: { used: number; limit: number | null };
     pulse: { used: number; limit: number | null };
     report: { used: number; limit: number | null };
@@ -394,6 +395,14 @@ export default function PortalPage() {
                     <Badge className="bg-slate-100 text-navy-900 border-transparent font-mono text-[10.5px]">
                       Founding member #{quota.foundingMemberNo}
                     </Badge>
+                  ) : null}
+                  {quota?.earlyAccessEndsAt ? (
+                    <span className="font-mono text-[11px] text-muted-foreground">
+                      Free access to{' '}
+                      {new Date(quota.earlyAccessEndsAt).toLocaleDateString('en-GB', {
+                        day: 'numeric', month: 'short', year: 'numeric',
+                      })}
+                    </span>
                   ) : null}
                   <span className="font-mono text-[12px] text-muted-foreground">{userEmail}</span>
                 </div>

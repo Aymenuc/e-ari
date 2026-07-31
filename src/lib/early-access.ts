@@ -29,8 +29,8 @@ export async function getCohortState(): Promise<{
   claimed: number;
   remaining: number;
   full: boolean;
-  /** ISO date the programme ends, or null if none is set. */
-  endsAt: string | null;
+  /** Length of each member's free window, in days. */
+  days: number;
 }> {
   const on = await isEarlyAccessOn();
   let cap = 50;
@@ -43,16 +43,31 @@ export async function getCohortState(): Promise<{
   try {
     claimed = await db.user.count({ where: { foundingMemberNo: { not: null } } });
   } catch { /* unreachable DB — report zero rather than guess */ }
-  let endsAt: string | null = null;
+  let days = 90;
   try {
-    const raw = await getSetting('early_access_ends');
-    const str = String(raw ?? '').trim();
-    // Only publish a date we can actually parse — a malformed deadline is
-    // worse than none.
-    if (str && !Number.isNaN(Date.parse(str))) endsAt = str;
-  } catch { /* no date */ }
+    const raw = await getSetting('early_access_days');
+    const n = typeof raw === 'number' ? raw : parseInt(String(raw), 10);
+    if (Number.isFinite(n) && n > 0) days = n;
+  } catch { /* default */ }
   const remaining = Math.max(0, cap - claimed);
-  return { on, cap, claimed, remaining, full: remaining === 0, endsAt };
+  return { on, cap, claimed, remaining, full: remaining === 0, days };
+}
+
+/**
+ * When a given member's free window closes.
+ *
+ * The window runs from the member's own grant, not from a shared calendar
+ * date. A fixed deadline gave the first joiner five months and the last one a
+ * fortnight — same offer, wildly different value, and it was the late joiner
+ * who felt short-changed. Counting from the grant makes the offer identical
+ * for everyone and puts the renewal conversation on a rolling schedule instead
+ * of stacking all fifty into one week.
+ */
+export function accessEndsAt(grantedAt: Date | string | null | undefined, days = 90): Date | null {
+  if (!grantedAt) return null;
+  const start = grantedAt instanceof Date ? grantedAt : new Date(grantedAt);
+  if (Number.isNaN(start.getTime())) return null;
+  return new Date(start.getTime() + days * 86_400_000);
 }
 
 export async function isEarlyAccessOn(): Promise<boolean> {
