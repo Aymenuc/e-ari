@@ -47,6 +47,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { PILLARS, LIKERT_LABELS, type PillarDefinition } from '@/lib/pillars';
 import { validateCompleteness, type ResponseMap } from '@/lib/assessment-engine';
 import { ENTITY_TYPE_CHOICES, type EntityType } from '@/lib/entity-types';
+import { ScoringTransition } from '@/components/assessment/scoring-transition';
 import { SECTORS, getSectorById, getEffectivePillarQuestions, getSectorAdjustedPillars, sectorIdFromRegistration } from '@/lib/sectors';
 import type { OrgContext } from '@/lib/scraper';
 
@@ -438,6 +439,10 @@ export default function AssessmentPage() {
   // normal with the choice already made.
   const [hoveredSector, setHoveredSector] = useState<string | null>(null);
   const [showEnrichment, setShowEnrichment] = useState(false);
+  // Scoring hand-off: the overlay opens on submit and closes by navigating.
+  const [scoringOpen, setScoringOpen] = useState(false);
+  const [scoringScore, setScoringScore] = useState<number | null>(null);
+  const [scoringId, setScoringId] = useState<string | null>(null);
   const [entityType, setEntityType] = useState<EntityType | null>(null);
   const sectorPrefilled = useRef(false);
   // Picking a sector opens the only control that continues the assessment, and
@@ -603,6 +608,22 @@ export default function AssessmentPage() {
     setCurrentStep(1);
   }, []);
 
+  /**
+   * Leave the overlay for the results.
+   *
+   * startViewTransition lets the browser morph the score element into the
+   * results hero instead of cutting; both carry view-transition-name
+   * "eari-score". Feature-detected, because it is a progressive enhancement —
+   * without it this is an ordinary push and nothing is lost.
+   */
+  const handleScoreRevealed = useCallback(() => {
+    if (!scoringId) return;
+    const go = () => router.push(`/results/${scoringId}`);
+    const d = document as Document & { startViewTransition?: (cb: () => void) => void };
+    if (typeof d.startViewTransition === 'function') d.startViewTransition(go);
+    else go();
+  }, [scoringId, router]);
+
   // ── Step navigation ────────────────────────────────────────────────────────
   const goToStep = useCallback(
     (step: number) => {
@@ -675,6 +696,7 @@ export default function AssessmentPage() {
       const assessmentId = assessment.id;
 
       // Step 2: Submit assessment
+      setScoringOpen(true);
       const submitRes = await fetch(`/api/assessment/${assessmentId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -686,16 +708,27 @@ export default function AssessmentPage() {
         throw new Error(errData.error || 'Failed to submit assessment');
       }
 
-      // Success
+      // Success. The overlay is already up; hand it the score and let it
+      // navigate once the number has been read. No toast — the number is the
+      // confirmation, and a toast over a full-screen reveal is noise.
       clearDraft();
-      toast({
-        title: 'Assessment submitted',
-        description: 'Your AI readiness assessment has been scored successfully.',
-      });
-
-      // Redirect to results
-      router.push(`/results/${assessmentId}`);
+      const submitted = await submitRes.json().catch(() => ({}));
+      const scored = typeof submitted?.overallScore === 'number'
+        ? submitted.overallScore
+        : typeof submitted?.assessment?.overallScore === 'number'
+          ? submitted.assessment.overallScore
+          : null;
+      setScoringId(assessmentId);
+      if (scored === null) {
+        // Scored fine but the response carried no number: go straight to the
+        // results rather than reveal a figure we do not have.
+        router.push(`/results/${assessmentId}`);
+      } else {
+        setScoringScore(scored);
+      }
     } catch (error) {
+      setScoringOpen(false);
+      setScoringScore(null);
       const message = error instanceof Error ? error.message : 'An unexpected error occurred';
       toast({
         title: 'Submission failed',
@@ -1767,6 +1800,14 @@ export default function AssessmentPage() {
       </main>
 
       <Footer />
+
+      {/* Scoring hand-off — covers the submit round-trip and carries the
+          number across to the results page. */}
+      <ScoringTransition
+        open={scoringOpen}
+        score={scoringScore}
+        onRevealed={handleScoreRevealed}
+      />
 
       {/* Draft resume dialog */}
       <Dialog open={showDraftDialog} onOpenChange={setShowDraftDialog}>

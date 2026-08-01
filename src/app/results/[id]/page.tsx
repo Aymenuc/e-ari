@@ -244,7 +244,14 @@ function ScoreRing({ score, maturityColor, pillarScores }: { score: number; matu
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
       />
-      <svg width="220" height="220" viewBox="0 0 220 220" aria-label={`Overall readiness score: ${Math.round(score)}%`}>
+      {/* Shares view-transition-name with the scoring overlay's figure, so a
+          browser that supports the API morphs the number into this ring rather
+          than cutting between two pages. Ignored everywhere else. */}
+      <svg
+        width="220" height="220" viewBox="0 0 220 220"
+        style={{ viewTransitionName: 'eari-score' }}
+        aria-label={`Overall readiness score: ${Math.round(score)} out of 100`}
+      >
         <defs>
           <linearGradient id="scoreRingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor={maturityColor} />
