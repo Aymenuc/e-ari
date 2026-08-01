@@ -49,16 +49,40 @@ export async function register() {
   // ── NEXTAUTH_URL auto-detection ────────────────────────────────────────
   const nextAuthUrl = process.env.NEXTAUTH_URL;
   if (!nextAuthUrl || nextAuthUrl.includes("localhost")) {
+    // VERCEL_PROJECT_PRODUCTION_URL first, and this order matters.
+    //
+    // VERCEL_URL is the *per-deployment* host (e-ari-a1b2c3.vercel.app), which
+    // changes on every push and is never the domain a user is browsing. Using
+    // it makes NextAuth mint callbacks and cookies against a host the visitor
+    // is not on: sign-in succeeds, the session does not stick to the browsing
+    // domain, and every page keeps rendering as signed-out — which reads to a
+    // user as "I logged in but the login screen is still there".
+    // VERCEL_PROJECT_PRODUCTION_URL is the stable production domain.
     const deployedUrl =
-      process.env.VERCEL_URL ||
+      process.env.VERCEL_PROJECT_PRODUCTION_URL ||
       process.env.RENDER_EXTERNAL_URL ||
       process.env.RAILWAY_STATIC_URL ||
-      process.env.DEPLOYMENT_URL;
+      process.env.DEPLOYMENT_URL ||
+      process.env.VERCEL_URL;
     if (deployedUrl) {
       const protocol = deployedUrl.startsWith("http") ? "" : "https://";
       process.env.NEXTAUTH_URL = `${protocol}${deployedUrl}`;
       console.log(
         `[instrumentation] NEXTAUTH_URL auto-detected: ${process.env.NEXTAUTH_URL}`,
+      );
+      if (deployedUrl === process.env.VERCEL_URL) {
+        console.warn(
+          "[instrumentation] NEXTAUTH_URL fell back to the per-deployment " +
+            "VERCEL_URL. Set NEXTAUTH_URL to your production domain — on a " +
+            "custom domain, sign-in will appear to succeed while the session " +
+            "fails to persist.",
+        );
+      }
+    } else if (process.env.NODE_ENV === "production") {
+      console.error(
+        "[instrumentation] NEXTAUTH_URL is unset or points at localhost in " +
+          "production and no deployment URL was detectable. Sign-in will not " +
+          "persist. Set NEXTAUTH_URL to the domain users browse.",
       );
     }
   }
