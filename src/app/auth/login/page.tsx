@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useMemo, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -21,37 +21,74 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [retried, setRetried] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/portal";
 
+  /**
+   * Error codes come back on the URL, because success no longer waits.
+   *
+   * signIn({ redirect: false }) resolves only after NextAuth has re-fetched
+   * /api/auth/session on top of the credentials check. The form sits there for
+   * the whole of that second round trip — measured at ~3.5s against a slow
+   * session endpoint, and worse against a cold function — showing "Signing
+   * in..." over a form that still looks untouched. Users read that as a failed
+   * login and try again.
+   *
+   * redirect: true hands the navigation to NextAuth, so the browser leaves as
+   * soon as the credentials call returns. pages.error is already /auth/login,
+   * so failures come back here with ?error=CODE and are rendered below — the
+   * same three messages, same distinctions.
+   */
+  const urlError = useMemo(() => {
+    const code = searchParams.get("error");
+    if (!code) return "";
+    // TOO_MANY_ATTEMPTS is distinguished from a wrong password on purpose:
+    // someone locked out by their own typing needs to know that waiting fixes
+    // it, or they will sit there re-entering a password that was right two
+    // attempts ago.
+    if (code === "TOO_MANY_ATTEMPTS") {
+      return "Too many sign-in attempts. Please wait a few minutes and try again.";
+    }
+    if (code === "EMAIL_NOT_VERIFIED") {
+      return "Please verify your email address before signing in.";
+    }
+    return "Invalid email or password. Please try again.";
+  }, [searchParams]);
+
+  // Derived, not stored: a stale ?error= must not outlive the next attempt.
+  const shownError = error || (retried ? "" : urlError);
+
+  // Unverified email is not really a login failure, it is an unfinished
+  // signup — so it keeps its own destination rather than becoming a message
+  // the user has to act on themselves.
+  useEffect(() => {
+    if (searchParams.get("error") !== "EMAIL_NOT_VERIFIED") return;
+    let pending = "";
+    try { pending = sessionStorage.getItem("eari.pendingEmail") ?? ""; } catch { /* private mode */ }
+    router.replace(
+      pending
+        ? `/auth/verify-email?email=${encodeURIComponent(pending)}`
+        : "/auth/verify-email",
+    );
+  }, [searchParams, router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setRetried(true);
     setLoading(true);
 
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (result?.error === 'EMAIL_NOT_VERIFIED') {
-        router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
-      } else if (result?.error === 'TOO_MANY_ATTEMPTS') {
-        // Distinguished from a wrong password on purpose: someone locked out by
-        // their own typing needs to know waiting fixes it, or they will sit
-        // there re-entering a password that was right two attempts ago.
-        setError("Too many sign-in attempts. Please wait a few minutes and try again.");
-      } else if (result?.error) {
-        setError("Invalid email or password. Please try again.");
-      } else {
-        router.push(callbackUrl);
-      }
+      // NextAuth's error redirect carries a code but not the address, and the
+      // verify-email page needs one to be useful. Stash it for that hop only.
+      try { sessionStorage.setItem("eari.pendingEmail", email); } catch { /* private mode */ }
+      await signIn("credentials", { email, password, redirect: true, callbackUrl });
+      // Reached only if the navigation did not happen.
+      setLoading(false);
     } catch {
       setError("An unexpected error occurred. Please try again.");
-    } finally {
       setLoading(false);
     }
   };
@@ -69,9 +106,9 @@ function LoginForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
+          {shownError && (
             <Alert variant="destructive" className="bg-destructive/10 border-destructive/30">
-              <AlertDescription className="text-sm">{error}</AlertDescription>
+              <AlertDescription className="text-sm">{shownError}</AlertDescription>
             </Alert>
           )}
           <div className="space-y-2">
