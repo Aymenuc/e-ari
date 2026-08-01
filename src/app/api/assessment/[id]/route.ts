@@ -85,7 +85,7 @@ export async function PUT(
 
     const { id } = await params;
     const body = await req.json();
-    const { responses, action, orgContext, sector: bodySector } = body; // action: "save" | "submit"
+    const { responses, action, orgContext, sector: bodySector, entityType: declaredEntityType } = body; // action: "save" | "submit"
 
     const assessment = await db.assessment.findUnique({
       where: { id },
@@ -189,10 +189,22 @@ export async function PUT(
         // results are thin, the entity type pick from the org name +
         // single snippet is usually reliable. Persist it whenever the
         // classifier returned a known key.
+        // The user now states this on the sector step, so a declaration wins
+        // over anything the enrichment classifier guessed: they know what kind
+        // of organisation they work for and the classifier was frequently
+        // low-confidence for smaller orgs. Enrichment remains the fallback for
+        // anyone who ran it and did not answer.
+        const KNOWN_ENTITY_TYPES = [
+          'commercial','public_sector','nonprofit','academic','international_body','unknown',
+        ];
         const orgCtx = orgContext as { entityType?: string; confidence?: 'high' | 'medium' | 'low' | 'none' } | undefined;
-        const entityType = orgCtx?.entityType && [
-          'commercial','public_sector','nonprofit','academic','international_body','unknown'
-        ].includes(orgCtx.entityType) ? orgCtx.entityType : null;
+        const declared = typeof declaredEntityType === 'string' && KNOWN_ENTITY_TYPES.includes(declaredEntityType)
+          ? declaredEntityType
+          : null;
+        const inferred = orgCtx?.entityType && KNOWN_ENTITY_TYPES.includes(orgCtx.entityType)
+          ? orgCtx.entityType
+          : null;
+        const entityType = declared ?? inferred;
         // Diagnostic: confirm the entity type reaches persistence. Search
         // "[assessment] entity_type" in Vercel logs to verify the wiring.
         console.log(`[assessment] persisting submit id=${id} entity_type=${entityType ?? 'none'} confidence=${orgCtx?.confidence ?? 'none'}`);

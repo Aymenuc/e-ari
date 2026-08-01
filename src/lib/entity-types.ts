@@ -283,3 +283,27 @@ Also classify the entity type:
 
 Reply on a second line with: ENTITY: <one of the keys above>
 `;
+
+/**
+ * The entity-type question, asked rather than inferred.
+ *
+ * This value drives the vocabulary across the results page and report — peer
+ * noun, top role, whether ROI language appears. It used to be derived by the
+ * enrichment pipeline: a Tavily search, a Tavily extract and an LLM synthesis
+ * call, up to 60 seconds, to land on one of six enums — and the code that
+ * persists it notes that low confidence is "very common for smaller orgs".
+ *
+ * A person knows this about their own organisation instantly. One click is
+ * faster, free, and right every time.
+ */
+export const ENTITY_TYPE_CHOICES: ReadonlyArray<{
+  id: EntityType;
+  label: string;
+  hint: string;
+}> = [
+  { id: 'commercial', label: 'Company', hint: 'For-profit business of any size' },
+  { id: 'public_sector', label: 'Public body', hint: 'Government, agency, regulator' },
+  { id: 'nonprofit', label: 'Nonprofit', hint: 'NGO, foundation, charity' },
+  { id: 'academic', label: 'Academic', hint: 'University, school, research institute' },
+  { id: 'international_body', label: 'International body', hint: 'UN, OECD, multilateral' },
+];

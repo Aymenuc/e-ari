@@ -23,8 +23,7 @@ import {
   Menu,
   X,
   Save,
-  Briefcase,
-} from 'lucide-react';
+  Briefcase, ArrowRight } from 'lucide-react';
 
 import { Navigation } from '@/components/shared/navigation';
 import { Footer } from '@/components/shared/footer';
@@ -47,6 +46,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 import { PILLARS, LIKERT_LABELS, type PillarDefinition } from '@/lib/pillars';
 import { validateCompleteness, type ResponseMap } from '@/lib/assessment-engine';
+import { ENTITY_TYPE_CHOICES, type EntityType } from '@/lib/entity-types';
 import { SECTORS, getSectorById, getEffectivePillarQuestions, getSectorAdjustedPillars, sectorIdFromRegistration } from '@/lib/sectors';
 import type { OrgContext } from '@/lib/scraper';
 
@@ -436,6 +436,9 @@ export default function AssessmentPage() {
   // first thing the core product does, and re-asking what you already know
   // reads as not having listened. Still fully changeable — the step renders as
   // normal with the choice already made.
+  const [hoveredSector, setHoveredSector] = useState<string | null>(null);
+  const [showEnrichment, setShowEnrichment] = useState(false);
+  const [entityType, setEntityType] = useState<EntityType | null>(null);
   const sectorPrefilled = useRef(false);
   // Picking a sector opens the only control that continues the assessment, and
   // on a laptop it lands ~800px below the fold with the sector grid still
@@ -492,6 +495,12 @@ export default function AssessmentPage() {
       saveDraft(responses, selectedSector);
     }
   }, [responses, selectedSector]);
+
+  /** The sector the detail panel describes: hovered wins, else selected. */
+  const activeSector = useMemo(
+    () => SECTORS.find(x => x.id === (hoveredSector ?? selectedSector)) ?? null,
+    [hoveredSector, selectedSector],
+  );
 
   // ── Sector info ────────────────────────────────────────────────────────────
   const activeSectorDef = useMemo(() => {
@@ -654,7 +663,7 @@ export default function AssessmentPage() {
       const createRes = await fetch('/api/assessment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ responses, sector: selectedSector, orgContext: orgContext || undefined }),
+        body: JSON.stringify({ responses, sector: selectedSector, orgContext: orgContext || undefined, entityType: entityType || undefined }),
       });
 
       if (!createRes.ok) {
@@ -669,7 +678,7 @@ export default function AssessmentPage() {
       const submitRes = await fetch(`/api/assessment/${assessmentId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ responses, action: 'submit', sector: selectedSector, orgContext: orgContext || undefined }),
+        body: JSON.stringify({ responses, action: 'submit', sector: selectedSector, orgContext: orgContext || undefined, entityType: entityType || undefined }),
       });
 
       if (!submitRes.ok) {
@@ -762,109 +771,229 @@ export default function AssessmentPage() {
         </motion.p>
       </motion.div>
 
-      {/* Sector cards grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Sector tiles.
+
+          Every one of the nine cards used to carry an icon, a name, a
+          three-line description and up to four tag chips — fifty-odd competing
+          pieces of text for a decision that is "which of these am I". The tile
+          now carries only what identifies it, and the one sector you are
+          pointing at explains itself in the panel below. Same information,
+          read one at a time instead of all at once. */}
+      <div
+        className="grid grid-cols-2 gap-2.5 sm:grid-cols-3"
+        onMouseLeave={() => setHoveredSector(null)}
+      >
         {SECTORS.map((sector, idx) => {
           const IconComponent = ICON_MAP[sector.icon];
           const isSelected = selectedSector === sector.id;
+          const isActive = (hoveredSector ?? selectedSector) === sector.id;
           return (
             <motion.button
               key={sector.id}
               onClick={() => handleSelectSector(sector.id)}
-              className={`group relative flex flex-col items-start gap-3 p-5 rounded-xl border transition-colors text-left min-h-[44px] overflow-hidden ${
+              onMouseEnter={() => setHoveredSector(sector.id)}
+              onFocus={() => setHoveredSector(sector.id)}
+              className={`group relative flex items-center gap-3 overflow-hidden rounded-xl border p-3.5 text-left transition-colors ${
                 isSelected
-                  ? 'border-eari-blue bg-eari-blue/5 ring-1 ring-eari-blue/30'
-                  : 'border-border bg-navy-800 hover:bg-navy-700/60'
+                  ? 'border-eari-blue/60 bg-eari-blue/[0.07]'
+                  : isActive
+                    ? 'border-white/[0.14] bg-navy-700/50'
+                    : 'border-border bg-navy-800 hover:bg-navy-700/40'
               }`}
               variants={sectorCardVariants}
               initial="hidden"
               animate="visible"
               custom={idx}
-              whileHover={!isSelected ? { scale: 1.02, y: -2 } : undefined}
-              whileTap={!isSelected ? { scale: 0.98 } : undefined}
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.985 }}
+              transition={{ type: 'spring', stiffness: 420, damping: 26 }}
               aria-label={`Select ${sector.name} sector`}
               aria-pressed={isSelected}
             >
-              {/* Brand accent bar — one gradient for every sector; full
-                  strength on hover/selected, whisper otherwise (the old
-                  per-sector rainbow read as clipart) */}
-              <motion.div
-                className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-slate-600 to-slate-300 transition-opacity duration-200 ${isSelected ? 'opacity-100' : 'opacity-25 group-hover:opacity-70'}`}
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ delay: 0.2 + idx * 0.06, duration: 0.4, ease: EASE_OUT }}
+              {/* The accent sweeps in from the left on the active tile — the
+                  same gesture the landing page uses under its eyebrows. */}
+              <motion.span
+                aria-hidden
+                className="absolute inset-x-0 top-0 h-[2px] origin-left bg-gradient-to-r from-slate-500 to-slate-200"
+                initial={false}
+                animate={{ scaleX: isSelected ? 1 : isActive ? 0.55 : 0, opacity: isSelected ? 1 : 0.7 }}
+                transition={{ duration: 0.28, ease: EASE_OUT }}
               />
-
-              {/* Icon + Name */}
-              <div className="flex items-center gap-3">
-                <div
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors duration-200 ${isSelected ? 'border-eari-blue/50 bg-eari-blue/15 text-eari-blue-light' : 'border-white/[0.07] bg-white/[0.03] text-slate-400 group-hover:text-eari-blue-light group-hover:border-eari-blue/30'}`}
-                >
-                  {IconComponent && <IconComponent className="h-4.5 w-4.5" />}
-                </div>
-                <h3 className="font-heading text-sm font-semibold text-foreground group-hover:text-eari-blue-light transition-colors">
-                  {sector.name}
-                </h3>
-              </div>
-
-              {/* Description */}
-              <p className="text-xs text-muted-foreground font-sans leading-relaxed line-clamp-3">
-                {sector.description}
-              </p>
-
-              {/* Highlights as tags */}
-              <div className="flex flex-wrap gap-1.5 mt-auto">
-                {sector.highlights.map((highlight) => (
-                  <span
-                    key={highlight}
-                    className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-sans font-medium border border-white/[0.06] bg-white/[0.03] text-muted-foreground/80"
+              <span
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition-colors ${
+                  isSelected
+                    ? 'border-eari-blue/50 bg-eari-blue/15 text-eari-blue-light'
+                    : 'border-white/[0.07] bg-white/[0.03] text-slate-400 group-hover:text-slate-200'
+                }`}
+              >
+                {IconComponent && <IconComponent className="h-4 w-4" />}
+              </span>
+              <span className="min-w-0 flex-1 font-heading text-[13px] font-semibold leading-tight text-foreground">
+                {sector.name}
+              </span>
+              <AnimatePresence>
+                {isSelected && (
+                  <motion.span
+                    key="tick"
+                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-eari-blue"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 18 }}
                   >
-                    {highlight}
-                  </span>
-                ))}
-              </div>
-
-              {/* Selected check indicator */}
-              {isSelected && (
-                <motion.div
-                  className="absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-full bg-eari-blue"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 15 }}
-                >
-                  <CheckCircle2 className="h-4 w-4 text-white" />
-                </motion.div>
-              )}
-
-              {/* Hover glow effect */}
-              <motion.div
-                className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                style={{ boxShadow: `0 0 30px ${sector.color}15, inset 0 0 20px ${sector.color}05` }}
-              />
+                    <CheckCircle2 className="h-3.5 w-3.5 text-white" />
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </motion.button>
           );
         })}
       </div>
 
-      {/* Context Enrichment — appears after sector is selected */}
+      {/* One panel, describing whichever sector is under the cursor. */}
+      <div className="mt-4 min-h-[104px]">
+        <AnimatePresence mode="wait">
+          {activeSector ? (
+            <motion.div
+              key={activeSector.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.22, ease: EASE_OUT }}
+              className="rounded-xl border border-white/[0.08] bg-navy-800/60 p-4"
+            >
+              <p className="font-sans text-sm leading-relaxed text-slate-300">
+                {activeSector.description}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {activeSector.highlights.map((h) => (
+                  <span
+                    key={h}
+                    className="inline-flex items-center rounded-md border border-white/[0.06] bg-white/[0.03] px-2 py-0.5 font-sans text-[10px] font-medium text-muted-foreground"
+                  >
+                    {h}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.p
+              key="hint"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="px-1 font-sans text-sm text-muted-foreground"
+            >
+              Point at a sector to see what it changes.
+            </motion.p>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Entity type — asked, not inferred. See ENTITY_TYPE_CHOICES. */}
+      <AnimatePresence>
+        {selectedSector && (
+          <motion.div
+            key="entity-type"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.3, ease: EASE_OUT }}
+            className="mt-8"
+          >
+            <h3 className="font-heading text-sm font-semibold text-foreground">
+              And what kind of organisation is it?
+            </h3>
+            <p className="mt-1 font-sans text-sm text-muted-foreground">
+              This sets the language of your report — who it addresses, who it
+              compares you to, and whether it talks about ROI.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {ENTITY_TYPE_CHOICES.map((c) => {
+                const on = entityType === c.id;
+                return (
+                  <motion.button
+                    key={c.id}
+                    onClick={() => setEntityType(c.id)}
+                    title={c.hint}
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ type: 'spring', stiffness: 420, damping: 26 }}
+                    aria-pressed={on}
+                    className={`rounded-lg border px-3.5 py-2 font-sans text-[13px] transition-colors ${
+                      on
+                        ? 'border-eari-blue/60 bg-eari-blue/[0.10] text-slate-100'
+                        : 'border-border bg-navy-800 text-slate-300 hover:border-white/[0.16] hover:bg-navy-700/50'
+                    }`}
+                  >
+                    {c.label}
+                  </motion.button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Continue, and enrichment as an option rather than a toll gate.
+
+          Enrichment ran a Tavily search, a Tavily extract and an LLM synthesis
+          call — up to 60s and three paid requests — and the only thing it
+          durably produced was the entity type, which is now one click above,
+          plus context for the narrative layer. It stays available for anyone
+          who wants the richer narrative; it no longer stands between a user
+          and the questions. */}
       <AnimatePresence>
         {selectedSector && currentStep === 0 && (
           <motion.div
-            key="context-enrichment"
+            key="sector-continue"
             ref={enrichmentRef}
-            initial={{ opacity: 0, y: 20, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: 'auto' }}
-            exit={{ opacity: 0, y: -10, height: 0 }}
-            transition={{ duration: 0.4, ease: EASE_OUT }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3, ease: EASE_OUT }}
             className="mt-8"
           >
-            <ContextEnrichment
-              key={selectedSector}
-              sector={selectedSector}
-              initialOrgName={session?.user?.organization ?? ''}
-              onContextReady={handleContextReady}
-              onSkip={handleSkipEnrichment}
-            />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <motion.button
+                onClick={handleSkipEnrichment}
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.985 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 26 }}
+                className="btn-brand inline-flex h-11 items-center justify-center gap-2 rounded-lg px-6 font-heading text-sm font-semibold"
+              >
+                Start the assessment
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </motion.button>
+              <button
+                onClick={() => setShowEnrichment(v => !v)}
+                className="self-center font-sans text-sm text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground"
+                aria-expanded={showEnrichment}
+              >
+                {showEnrichment ? 'Hide' : 'Add public context first (optional, ~30s)'}
+              </button>
+            </div>
+
+            <AnimatePresence>
+              {showEnrichment && (
+                <motion.div
+                  key="enrichment-panel"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.35, ease: EASE_OUT }}
+                  className="mt-5 overflow-hidden"
+                >
+                  <ContextEnrichment
+                    key={selectedSector}
+                    sector={selectedSector}
+                    initialOrgName={session?.user?.organization ?? ''}
+                    onContextReady={handleContextReady}
+                    onSkip={handleSkipEnrichment}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
