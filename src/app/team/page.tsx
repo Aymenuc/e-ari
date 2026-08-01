@@ -59,26 +59,41 @@ const FOUNDER = {
   },
 }
 
-const LEADERSHIP = [
+/**
+ * What replaced the leadership roster.
+ *
+ * This page listed four people who do not exist. On any product that is a
+ * liability; on this one it is the specific liability, because the entire
+ * pitch is that nothing here is unverifiable — published methodology, no black
+ * box, a score you can defend. A prospect who discovers one invented VP has
+ * every reason to doubt the determinism claim too, and that is the asset the
+ * company actually has.
+ *
+ * The honest answer to "who is behind this" is not a smaller roster of names.
+ * It is that the method does not depend on how many of us there are: it is
+ * versioned, documented and reproducible, and anyone can check it. That is a
+ * stronger claim than four fabricated titles, and it happens to be true.
+ */
+const HOW_TO_CHECK = [
   {
-    name: 'Sarah Chen',
-    title: 'Head of Assessment Methodology',
     icon: Target,
+    title: 'The method is published',
+    desc: 'Eight pillars, forty questions, fixed weights, six interdependency rules. Versioned and documented — not a proprietary black box you are asked to trust.',
   },
   {
-    name: 'Marcus Okonkwo',
-    title: 'Head of AI & Insights',
-    icon: Sparkles,
-  },
-  {
-    name: 'Dr. Elena Vasquez',
-    title: 'Head of Governance & Ethics',
     icon: Shield,
+    title: 'The scoring is deterministic',
+    desc: 'No randomness anywhere in the pipeline. The same answers produce the same score on any day, on any account. You can re-run it and check.',
   },
   {
-    name: 'James Nakamura',
-    title: 'Head of Product Engineering',
+    icon: Sparkles,
+    title: 'Generated text is labelled',
+    desc: 'Where a narrative comes from a language model it says so, and where a figure is calculated it says that instead. The two are never blended.',
+  },
+  {
     icon: Rocket,
+    title: 'The limits are stated',
+    desc: 'A readiness measurement is not a legal opinion, and modelled benchmarks are not observed ones. Both are written on the report rather than left to be assumed.',
   },
 ]
 
@@ -143,14 +158,16 @@ export default function TeamPage() {
             <FadeUp>
               <div className="text-center max-w-3xl mx-auto">
                 <Badge variant="outline" className="mb-6 font-mono text-xs border-eari-blue/40 text-slate-400">
-                  The People Behind E-ARI
+                  Who is behind E-ARI
                 </Badge>
                 <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
                   Building the Standard for{' '}
                   <span className="text-slate-400">AI Readiness</span>
                 </h1>
                 <p className="mt-6 text-lg sm:text-xl text-muted-foreground font-sans leading-relaxed max-w-2xl mx-auto">
-                  We are a team of strategists, engineers, and researchers united by one conviction: organizations deserve a rigorous, transparent way to measure their AI readiness — not guesswork.
+                  E-ARI is built on one conviction: organisations deserve a
+                  rigorous, transparent way to measure their AI readiness — not
+                  guesswork. It is early, founder-led, and built in the open.
                 </p>
               </div>
             </FadeUp>
@@ -249,19 +266,22 @@ export default function TeamPage() {
             <FadeUp>
               <div className="text-center max-w-3xl mx-auto mb-16">
                 <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground">
-                  Leadership Team
+                  You don&apos;t have to take our word for it
                 </h2>
                 <p className="mt-4 text-lg text-muted-foreground font-sans">
-                  Domain experts across AI strategy, governance, engineering, and methodology — working together to ensure every assessment meets the highest standards.
+                  E-ARI is early and deliberately small — founder-led, with a
+                  short list of people helping. That means you get direct access
+                  rather than an account manager, and it means the platform has
+                  to earn trust the hard way: by being checkable.
                 </p>
               </div>
             </FadeUp>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {LEADERSHIP.map((person, i) => {
-                const Icon = person.icon
+              {HOW_TO_CHECK.map((item, i) => {
+                const Icon = item.icon
                 return (
-                  <FadeUp key={person.name} delay={i * 0.08}>
+                  <FadeUp key={item.title} delay={i * 0.08}>
                     <Card className="bg-navy-800 border-border/50 hover:border-eari-blue/30 transition-colors duration-300 h-full">
                       <CardContent className="p-6">
                         <div className="flex items-start gap-4">
@@ -269,8 +289,8 @@ export default function TeamPage() {
                             <Icon className="h-6 w-6 text-slate-400" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-heading font-semibold text-foreground text-base">{person.name}</h3>
-                            <p className="font-heading text-sm text-slate-400 mt-0.5">{person.title}</p>
+                            <h3 className="font-heading font-semibold text-foreground text-base">{item.title}</h3>
+                            <p className="mt-1.5 font-sans text-sm leading-relaxed text-muted-foreground">{item.desc}</p>
                           </div>
                         </div>
                       </CardContent>
