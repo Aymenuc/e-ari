@@ -146,26 +146,29 @@ export default function CareersPage() {
         <section className="relative overflow-hidden pt-20 pb-24 sm:pt-28 sm:pb-32">
           <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
             <div
-              className="mesh-blob absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full opacity-20"
-              style={{ background: 'radial-gradient(circle, #2563eb 0%, transparent 70%)' }}
+              className="mesh-blob hero-aurora-a absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full opacity-70"
             />
             <div
-              className="mesh-blob absolute top-1/2 right-0 w-[600px] h-[600px] rounded-full opacity-15"
-              style={{ background: 'radial-gradient(circle, #10b981 0%, transparent 70%)', animationDelay: '-7s' }}
+              className="mesh-blob hero-aurora-b absolute top-1/2 right-0 h-[600px] w-[600px] rounded-full opacity-60"
+              style={{ animationDelay: '-7s' }}
             />
           </div>
 
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center max-w-3xl mx-auto">
-                <Badge variant="outline" className="mb-6 font-mono text-xs border-emerald-500/40 text-emerald-400 bg-emerald-500/5">
-                  We&apos;re Hiring
-                </Badge>
-                <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
+                <div className="mb-7 flex items-center justify-center gap-3">
+                  <span aria-hidden className="h-px w-10 eyebrow-rule" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
+                    We&apos;re hiring
+                  </span>
+                  <span aria-hidden className="h-px w-10 eyebrow-rule-l" />
+                </div>
+                <h1 className="font-heading text-4xl font-semibold leading-[1.1] tracking-[-0.03em] text-slate-50 sm:text-5xl lg:text-6xl">
                   Build the Standard for{' '}
                   <span className="text-slate-400">AI Readiness</span>
                 </h1>
-                <p className="mt-6 text-lg sm:text-xl text-muted-foreground font-sans leading-relaxed max-w-2xl mx-auto">
+                <p className="mx-auto mt-6 max-w-2xl font-sans text-[17px] leading-relaxed text-slate-400 sm:text-lg">
                   Join a team that believes AI readiness deserves the same rigor as financial auditing. We are replacing guesswork with evidence — and we need exceptional people to make it happen.
                 </p>
                 <div className="mt-8 flex items-center justify-center gap-6">
@@ -174,7 +177,7 @@ export default function CareersPage() {
                     <span className="text-sm text-muted-foreground font-sans">{JOB_LISTINGS.length} open positions</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-emerald-400" />
+                    <Globe className="h-4 w-4 text-slate-400" />
                     <span className="text-sm text-muted-foreground font-sans">Remote-first</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -192,7 +195,7 @@ export default function CareersPage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center mb-12">
-                <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
+                <h2 className="font-heading text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-slate-50">
                   Why E-ARI?
                 </h2>
                 <p className="mt-3 text-muted-foreground font-sans max-w-xl mx-auto">
@@ -227,7 +230,7 @@ export default function CareersPage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center mb-12">
-                <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
+                <h2 className="font-heading text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-slate-50">
                   Open Positions
                 </h2>
                 <p className="mt-3 text-muted-foreground font-sans max-w-xl mx-auto">
@@ -251,7 +254,7 @@ export default function CareersPage() {
                             <div className="flex items-center gap-2 flex-wrap">
                               <h3 className="font-heading font-semibold text-foreground text-lg">{job.title}</h3>
                               {job.hot && (
-                                <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px] font-mono">
+                                <Badge className="bg-white/[0.06] text-slate-300 border-white/[0.12] text-[10px] font-mono">
                                   Hot
                                 </Badge>
                               )}
@@ -269,7 +272,7 @@ export default function CareersPage() {
                                 <Clock className="h-3.5 w-3.5" />
                                 <span className="text-xs font-sans">{job.type}</span>
                               </div>
-                              <Badge variant="outline" className="text-xs font-heading border-emerald-500/30 text-emerald-400">
+                              <Badge variant="outline" className="text-xs font-heading border-white/[0.12] text-slate-300">
                                 {job.salary}
                               </Badge>
                               <span className="text-xs text-muted-foreground font-sans">{job.posted}</span>
@@ -306,10 +309,10 @@ export default function CareersPage() {
           <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center mb-10">
-                <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
+                <h2 className="font-heading text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-slate-50">
                   Apply
                 </h2>
-                <p className="mt-4 text-lg text-muted-foreground font-sans max-w-xl mx-auto leading-relaxed">
+                <p className="mt-4 text-[17px] text-slate-400 font-sans max-w-xl mx-auto leading-relaxed">
                   Pick a role &mdash; or choose &ldquo;open application&rdquo; if you think we need you and don&apos;t know it yet. A link to your work says more than a formal CV.
                 </p>
               </div>
@@ -325,7 +328,7 @@ export default function CareersPage() {
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center mb-12">
-                <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
+                <h2 className="font-heading text-2xl sm:text-3xl font-semibold tracking-[-0.03em] text-slate-50">
                   Our Hiring Process
                 </h2>
                 <p className="mt-3 text-muted-foreground font-sans max-w-lg mx-auto">
@@ -345,7 +348,7 @@ export default function CareersPage() {
                   <Card className="bg-navy-800 border-border/50 h-full">
                     <CardContent className="p-6">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-eari-blue/15 mb-4">
-                        <span className="font-heading text-sm font-bold text-slate-400">{item.step}</span>
+                        <span className="font-heading text-sm font-semibold text-slate-400">{item.step}</span>
                       </div>
                       <h3 className="font-heading font-semibold text-foreground text-base mb-2">{item.title}</h3>
                       <p className="text-sm text-muted-foreground font-sans leading-relaxed">{item.desc}</p>

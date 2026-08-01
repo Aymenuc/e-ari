@@ -22,6 +22,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Navigation } from '@/components/shared/navigation'
 import { Footer } from '@/components/shared/footer'
+import { SectionHeader } from '@/components/marketing/section-header'
 
 /* ─── Animation helpers ────────────────────────────────────────────────── */
 
@@ -145,26 +146,29 @@ export default function TeamPage() {
           {/* Mesh background */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
             <div
-              className="mesh-blob absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full opacity-20"
-              style={{ background: 'radial-gradient(circle, #2563eb 0%, transparent 70%)' }}
+              className="mesh-blob hero-aurora-a absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full opacity-70"
             />
             <div
-              className="mesh-blob absolute top-1/2 right-0 w-[600px] h-[600px] rounded-full opacity-15"
-              style={{ background: 'radial-gradient(circle, #3b82f6 0%, transparent 70%)', animationDelay: '-7s' }}
+              className="mesh-blob hero-aurora-b absolute top-1/2 right-0 h-[600px] w-[600px] rounded-full opacity-60"
+              style={{ animationDelay: '-7s' }}
             />
           </div>
 
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center max-w-3xl mx-auto">
-                <Badge variant="outline" className="mb-6 font-mono text-xs border-eari-blue/40 text-slate-400">
-                  Who is behind E-ARI
-                </Badge>
-                <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
+                <div className="mb-7 flex items-center justify-center gap-3">
+                  <span aria-hidden className="h-px w-10 eyebrow-rule" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
+                    Who is behind E-ARI
+                  </span>
+                  <span aria-hidden className="h-px w-10 eyebrow-rule-l" />
+                </div>
+                <h1 className="font-heading text-4xl font-semibold leading-[1.1] tracking-[-0.03em] text-slate-50 sm:text-5xl lg:text-6xl">
                   Building the Standard for{' '}
                   <span className="text-slate-400">AI Readiness</span>
                 </h1>
-                <p className="mt-6 text-lg sm:text-xl text-muted-foreground font-sans leading-relaxed max-w-2xl mx-auto">
+                <p className="mx-auto mt-6 max-w-2xl font-sans text-[17px] leading-relaxed text-slate-400 sm:text-lg">
                   E-ARI is built on one conviction: organisations deserve a
                   rigorous, transparent way to measure their AI readiness — not
                   guesswork. It is early, founder-led, and built in the open.
@@ -179,10 +183,14 @@ export default function TeamPage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
               <div className="text-center mb-16">
-                <Badge variant="outline" className="font-mono text-xs border-eari-blue/40 text-slate-400 mb-4">
-                  Leadership
-                </Badge>
-                <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground">
+                <div className="mb-5 flex items-center justify-center gap-3">
+                  <span aria-hidden className="h-px w-8 eyebrow-rule" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
+                    Leadership
+                  </span>
+                  <span aria-hidden className="h-px w-8 eyebrow-rule-l" />
+                </div>
+                <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
                   Meet the Founder
                 </h2>
               </div>
@@ -205,7 +213,7 @@ export default function TeamPage() {
                     </div>
                   </div>
                   <CardContent className="p-6">
-                    <h3 className="font-heading text-2xl font-bold text-foreground">{FOUNDER.name}</h3>
+                    <h3 className="font-heading text-2xl font-semibold tracking-[-0.02em] text-slate-50">{FOUNDER.name}</h3>
                     <p className="font-heading text-sm font-medium text-slate-400 mt-1">{FOUNDER.title}</p>
 
                     {/* Social links */}
@@ -264,17 +272,17 @@ export default function TeamPage() {
         <section className="py-20 sm:py-28 bg-navy-900">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
-              <div className="text-center max-w-3xl mx-auto mb-16">
-                <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground">
-                  You don&apos;t have to take our word for it
-                </h2>
-                <p className="mt-4 text-lg text-muted-foreground font-sans">
+              <SectionHeader
+                className="mb-16"
+                eyebrow="How to check us"
+                title={<>You don&apos;t have to take our word for it</>}
+                sub={<>
                   E-ARI is early and deliberately small — founder-led, with a
                   short list of people helping. That means you get direct access
                   rather than an account manager, and it means the platform has
                   to earn trust the hard way: by being checkable.
-                </p>
-              </div>
+                </>}
+              />
             </FadeUp>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -306,14 +314,12 @@ export default function TeamPage() {
         <section className="py-20 sm:py-28 bg-navy-800/50">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <FadeUp>
-              <div className="text-center max-w-3xl mx-auto mb-16">
-                <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground">
-                  What We Stand For
-                </h2>
-                <p className="mt-4 text-lg text-muted-foreground font-sans">
-                  The principles that shape every feature, every score, and every insight on this platform.
-                </p>
-              </div>
+              <SectionHeader
+                className="mb-16"
+                eyebrow="Principles"
+                title="What we stand for"
+                sub="The principles that shape every feature, every score, and every insight on this platform."
+              />
             </FadeUp>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -341,10 +347,10 @@ export default function TeamPage() {
         <section className="py-20 sm:py-28 bg-navy-900">
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
             <FadeUp>
-              <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground">
-                Interested in Joining the Team?
+              <h2 className="font-heading text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-50">
+                Interested in joining?
               </h2>
-              <p className="mt-4 text-lg text-muted-foreground font-sans max-w-2xl mx-auto">
+              <p className="mx-auto mt-4 max-w-2xl font-sans text-[17px] leading-relaxed text-slate-400">
                 We are always looking for exceptional people who share our conviction that AI readiness deserves the same rigor as financial auditing. If that resonates, we would love to hear from you.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
