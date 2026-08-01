@@ -108,6 +108,7 @@ import { ResultsTabs } from '@/components/shared/results-tabs'
 import { OverviewSpread } from '@/components/shared/overview-spread'
 import { WhatThisMeans } from '@/components/results/what-this-means'
 import { WhatThisGivesYou } from '@/components/results/what-this-gives-you'
+import { RegisterSystems } from '@/components/results/register-systems'
 import {
   TIER_CONFIG, ICON_MAP, PillarCard, LockedSectionCard, BarChartTooltip,
   getMaturityBandColor, getMaturityBgClass, scoreRampColor,
@@ -1103,6 +1104,16 @@ export default function ResultsPage() {
               after the substance rather than before it: value claimed ahead of
               the result reads as a pitch. */}
           <WhatThisGivesYou scoring={scoring} />
+
+          {/* The score is about the organisation; every obligation attaches to
+              a system. This is where that hand-off happens — and it is the
+              step that turns a one-off diagnostic into an inventory worth
+              coming back to. */}
+          <RegisterSystems
+            assessmentId={id}
+            sector={assessment?.sector ?? null}
+            alreadyRegistered={complianceSystemsForAssessment.length}
+          />
 
           {/* ─── ENTERPRISE: EXECUTIVE SUMMARY (Print-Ready) ────────────── */}
           {isEnterprise && (
