@@ -88,9 +88,19 @@ export function CertificationTab(props: CertificationTabProps) {
                   </>
                 ) : (
                   <>
+                    {/* "Not Yet Certified" as the headline hands a paying
+                        customer an artefact that states they failed. The status
+                        is unchanged and still shown on the seal; leading with
+                        naming the level being worked toward makes the same
+                        fact answer "what now" instead of "too bad". No points
+                        figure here: certification gates on per-pillar minimums
+                        as well as the overall score, so a single distance would
+                        be wrong whenever a pillar is what blocks it. */}
                     <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
-                      <span className="font-heading text-2xl font-extrabold text-muted-foreground">
-                        Not Yet Certified
+                      <span className="font-heading text-2xl font-extrabold text-slate-200">
+                        {certificationResult.nextLevel
+                          ? `Working toward ${certificationResult.nextLevel.label}`
+                          : 'Not yet certified'}
                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground font-sans leading-relaxed mb-4">

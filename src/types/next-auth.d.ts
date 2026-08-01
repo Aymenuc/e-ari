@@ -8,6 +8,9 @@ declare module "next-auth" {
       name?: string | null;
       tier: string;
       role?: string;
+      /** Registered sector, so the assessment need not ask a second time. */
+      sector?: string | null;
+      organization?: string | null;
     };
   }
 
@@ -17,6 +20,8 @@ declare module "next-auth" {
     name?: string | null;
     tier: string;
     role?: string;
+    sector?: string | null;
+    organization?: string | null;
   }
 }
 
@@ -26,5 +31,7 @@ declare module "next-auth/jwt" {
     email: string;
     tier: string;
     role?: string;
+    sector?: string | null;
+    organization?: string | null;
   }
 }

@@ -84,11 +84,21 @@ export function buildPlainSummary(
       ? 'The areas a reviewer tends to open first — governance, security and data — are all above the halfway mark. That is the part of this result worth showing.'
       : `Of the areas a reviewer tends to open first, ${ordinalList(regulatorWeak)} ${regulatorWeak.length === 1 ? 'is' : 'are'} below the halfway mark. ${regulatorWeak.length === 1 ? 'That is the one' : 'Those are the ones'} most likely to invite follow-up questions.`;
 
+  // Three framings, because a countdown stops being useful the moment it runs
+  // out. Read far from the date it creates urgency; read close to it, or after
+  // it, the same sentence tells the reader they are already too late and that
+  // nothing here can help — which is both discouraging and untrue. The
+  // obligations are continuous, so once the date is near the honest question
+  // stops being "will you make it" and becomes "what can you evidence today".
   const days = Math.ceil((AI_ACT_HIGH_RISK.getTime() - now.getTime()) / 86_400_000);
+  const classifierNote =
+    'Whether they apply to you depends on how your systems are classified, which the Compliance tab walks through.';
   const timing =
-    days > 0
-      ? `The EU AI Act's obligations for high-risk systems apply from 2 August 2026 — ${days} day${days === 1 ? '' : 's'} away. Whether they apply to you depends on how your systems are classified, which the Compliance tab walks through.`
-      : `The EU AI Act's obligations for high-risk systems have applied since 2 August 2026. Whether they apply to you depends on how your systems are classified, which the Compliance tab walks through.`;
+    days > 30
+      ? `The EU AI Act's obligations for high-risk systems apply from 2 August 2026 — ${days} days away. ${classifierNote}`
+      : days > 0
+        ? `The EU AI Act's obligations for high-risk systems apply from 2 August 2026, ${days} day${days === 1 ? '' : 's'} away. Obligations do not stop at that date, so what matters is what you can evidence from it onward rather than what you finish before it. ${classifierNote}`
+        : `The EU AI Act's obligations for high-risk systems are in force. They are continuous, not a one-off deadline: what counts is what you can evidence now and keep evidencing. ${classifierNote}`;
 
   const bandGloss = BAND_GLOSS[scoring.maturityBand] ?? '';
 

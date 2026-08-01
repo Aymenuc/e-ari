@@ -47,7 +47,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 import { PILLARS, LIKERT_LABELS, type PillarDefinition } from '@/lib/pillars';
 import { validateCompleteness, type ResponseMap } from '@/lib/assessment-engine';
-import { SECTORS, getSectorById, getEffectivePillarQuestions, getSectorAdjustedPillars } from '@/lib/sectors';
+import { SECTORS, getSectorById, getEffectivePillarQuestions, getSectorAdjustedPillars, sectorIdFromRegistration } from '@/lib/sectors';
 import type { OrgContext } from '@/lib/scraper';
 
 // ─── Icon map for dynamic Lucide icon rendering ──────────────────────────────
@@ -432,6 +432,31 @@ export default function AssessmentPage() {
   // ── State ──────────────────────────────────────────────────────────────────
   const [currentStep, setCurrentStep] = useState(0); // 0 = sector, 1-8 = pillars, 9 = review
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
+  // Pre-select the sector the account was registered with. Asking again is the
+  // first thing the core product does, and re-asking what you already know
+  // reads as not having listened. Still fully changeable — the step renders as
+  // normal with the choice already made.
+  const sectorPrefilled = useRef(false);
+  // Picking a sector opens the only control that continues the assessment, and
+  // on a laptop it lands ~800px below the fold with the sector grid still
+  // filling the screen — so the click looks like it did nothing. Bringing it
+  // into view is the difference between "next step" and "broken".
+  const enrichmentRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!selectedSector || currentStep !== 0) return;
+    const t = setTimeout(() => {
+      enrichmentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 420); // after the height animation settles, or it scrolls to a 0px box
+    return () => clearTimeout(t);
+  }, [selectedSector, currentStep]);
+  useEffect(() => {
+    if (sectorPrefilled.current || selectedSector) return;
+    const fromAccount = sectorIdFromRegistration(session?.user?.sector);
+    if (fromAccount) {
+      sectorPrefilled.current = true;
+      setSelectedSector(fromAccount);
+    }
+  }, [session?.user?.sector, selectedSector]);
   const [responses, setResponses] = useState<ResponseMap>({});
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -826,6 +851,7 @@ export default function AssessmentPage() {
         {selectedSector && currentStep === 0 && (
           <motion.div
             key="context-enrichment"
+            ref={enrichmentRef}
             initial={{ opacity: 0, y: 20, height: 0 }}
             animate={{ opacity: 1, y: 0, height: 'auto' }}
             exit={{ opacity: 0, y: -10, height: 0 }}
@@ -835,6 +861,7 @@ export default function AssessmentPage() {
             <ContextEnrichment
               key={selectedSector}
               sector={selectedSector}
+              initialOrgName={session?.user?.organization ?? ''}
               onContextReady={handleContextReady}
               onSkip={handleSkipEnrichment}
             />

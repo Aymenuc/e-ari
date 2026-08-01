@@ -269,12 +269,15 @@ export const authOptions: NextAuthOptions = {
           try {
             const dbUser = await db.user.findUnique({
               where: { email: user.email! },
-              select: { id: true, tier: true, role: true },
+              select: { id: true, tier: true, role: true, sector: true, organization: true },
             });
             if (dbUser) {
               token.id = dbUser.id;
               token.tier = dbUser.tier;
               token.role = dbUser.role;
+              token.sector = dbUser.sector ?? null;
+            token.organization = dbUser.organization ?? null;
+              token.organization = dbUser.organization ?? null;
             }
           } catch (err) {
             console.error("[auth] jwt OAuth tier/role lookup failed (keeping token claims):", err);
@@ -308,11 +311,15 @@ export const authOptions: NextAuthOptions = {
         try {
           const dbUser = await db.user.findUnique({
             where: { email: token.email as string },
-            select: { id: true, tier: true, role: true, earlyAccessAt: true },
+            select: { id: true, tier: true, role: true, earlyAccessAt: true, sector: true, organization: true },
           });
           if (dbUser) {
             token.id = dbUser.id;
             token.role = dbUser.role;
+            // Carried so the assessment can pre-select the sector the user
+            // already gave at registration instead of asking a second time.
+            token.sector = dbUser.sector ?? null;
+            token.organization = dbUser.organization ?? null;
             // Early Access: grants the programme tier once, writing it to the
             // DB so every server gate sees it too. No-op once granted or off.
             token.tier = await grantEarlyAccessIfEligible(dbUser);
@@ -332,6 +339,8 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email as string;
         session.user.tier = token.tier as string;
         session.user.role = token.role as string;
+        session.user.sector = (token.sector as string | null) ?? null;
+        session.user.organization = (token.organization as string | null) ?? null;
       }
       return session;
     },

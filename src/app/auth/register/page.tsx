@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Navigation } from "@/components/shared/navigation";
 import { Footer } from "@/components/shared/footer";
 import { AuthBrandLockup } from "@/components/shared/auth-brand-lockup";
+import { CohortBanner } from "@/components/shared/cohort-banner";
 
 const SECTORS = [
   "Technology", "Financial Services", "Healthcare", "Manufacturing",
@@ -128,8 +129,12 @@ function RegisterForm() {
         </div>
         <CardTitle className="font-heading text-xl">Create your account</CardTitle>
         <CardDescription className="text-muted-foreground font-sans">
-          Start your AI readiness assessment journey
+          Your baseline score in about 15 minutes
         </CardDescription>
+        {/* The offer that brought the visitor here stopped being mentioned at
+            the one screen that asks them for six fields. Reinstating it costs a
+            line and answers "why am I filling this in". */}
+        <CohortBanner className="mt-5 text-left" />
       </CardHeader>
       <CardContent>
         <Button

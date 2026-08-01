@@ -23,6 +23,32 @@ import { normalizeTier, type Tier } from './tier';
 export const EARLY_ACCESS_TIER: Tier = 'growth';
 
 /** Live cohort state — every number here is counted, never fabricated. */
+/**
+ * Addresses that are ours, not a customer's.
+ *
+ * The public counter said "38 of 50 places remaining" while eleven of the
+ * thirteen claimed places were throwaway accounts from test runs. Scarcity a
+ * visitor can see has to be true, or it is just a number that moves — and the
+ * reserved domains below (RFC 2606) plus our own are exactly the ones that can
+ * never belong to a paying organisation.
+ */
+const NON_CUSTOMER_EMAILS = {
+  OR: [
+    // RFC 2606 reserves these names *and their subdomains*, so match on the
+    // dot form too — "marta@nordhaven-demo.example.com" is as reserved as
+    // "marta@example.com" and was slipping through an @-anchored check.
+    { email: { contains: 'example.com' } },
+    { email: { contains: 'example.org' } },
+    { email: { contains: 'example.net' } },
+    { email: { endsWith: '.test' } },
+    { email: { endsWith: '.invalid' } },
+    { email: { endsWith: '.localhost' } },
+    { email: { endsWith: '.local' } },
+    { email: { endsWith: '@e-ari.com' } },
+    { email: { contains: '+launchcheck' } },
+  ],
+};
+
 export async function getCohortState(): Promise<{
   on: boolean;
   cap: number;
@@ -41,7 +67,9 @@ export async function getCohortState(): Promise<{
   } catch { /* default */ }
   let claimed = 0;
   try {
-    claimed = await db.user.count({ where: { foundingMemberNo: { not: null } } });
+    claimed = await db.user.count({
+      where: { foundingMemberNo: { not: null }, NOT: NON_CUSTOMER_EMAILS },
+    });
   } catch { /* unreachable DB — report zero rather than guess */ }
   let days = 90;
   try {
@@ -109,7 +137,22 @@ export async function grantEarlyAccessIfEligible(user: {
              )
        WHERE "id" = ${user.id}
          AND "foundingMemberNo" IS NULL
-         AND (SELECT COUNT(*) FROM "User" WHERE "foundingMemberNo" IS NOT NULL) < ${cap}
+         AND (
+               -- Same exclusions as NON_CUSTOMER_EMAILS above. If the counter a
+               -- visitor sees and the capacity check that admits them disagree,
+               -- someone is told "12 places left" and then refused.
+               SELECT COUNT(*) FROM "User"
+                WHERE "foundingMemberNo" IS NOT NULL
+                  AND "email" NOT LIKE '%example.com'
+                  AND "email" NOT LIKE '%example.org'
+                  AND "email" NOT LIKE '%example.net'
+                  AND "email" NOT LIKE '%.test'
+                  AND "email" NOT LIKE '%.invalid'
+                  AND "email" NOT LIKE '%.localhost'
+                  AND "email" NOT LIKE '%.local'
+                  AND "email" NOT LIKE '%@e-ari.com'
+                  AND "email" NOT LIKE '%+launchcheck%'
+             ) < ${cap}
       RETURNING "foundingMemberNo"
     `;
     if (rows.length === 0) return current; // cohort full — user stays free

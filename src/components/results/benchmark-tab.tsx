@@ -36,6 +36,12 @@ export function BenchmarkTab(props: BenchmarkTabProps) {
     scoring, assessment, benchmarkData, benchmarkLoading,
     benchmarkConsented, setBenchmarkConsented, isPro, vocab, router, id,
   } = props
+
+  // One definition, used by the badge and the description — they disagreed
+  // before, so a tab could say "Live Data" above a modelled figure.
+  const hasRealBenchmark = Boolean(
+    benchmarkData?.pillars?.some((p: { isRealData?: boolean }) => p.isRealData),
+  );
   return (
     <>
     {/* ─── SECTOR BENCHMARK SECTION (Enhanced) ────────────────────────── */}
@@ -51,18 +57,25 @@ export function BenchmarkTab(props: BenchmarkTabProps) {
                 <CardTitle className="font-heading text-xl font-bold tracking-tight text-foreground">
                   Sector Benchmark
                 </CardTitle>
+                {/* The heading promised a comparison and, before enough
+                    assessments exist in a sector, delivered a request for the
+                    reader's data instead. Promising what is not there is how a
+                    paid tab reads as broken; naming the state costs nothing and
+                    keeps the modelled figures honest about what they are. */}
                 <CardDescription className="font-sans text-sm">
-                  How you compare to other organizations in your sector
+                  {hasRealBenchmark
+                    ? 'How you compare to other organisations in your sector'
+                    : 'Modelled sector positioning — not yet enough assessments in your sector for observed comparison'}
                 </CardDescription>
               </div>
               {/* Data source badge */}
               {benchmarkData && (
                 <Badge variant="outline" className={`ml-auto text-[10px] font-mono ${
-                  benchmarkData.pillars?.some((p: any) => p.isRealData)
+                  hasRealBenchmark
                     ? 'border-emerald-500/30 text-emerald-400'
                     : 'border-amber-500/30 text-amber-400'
                 }`}>
-                  {benchmarkData.pillars?.some((p: any) => p.isRealData) ? 'Live Data' : 'Research-Based'}
+                  {hasRealBenchmark ? 'Observed' : 'Modelled'}
                 </Badge>
               )}
             </div>

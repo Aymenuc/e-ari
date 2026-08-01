@@ -56,6 +56,14 @@ export function LeverageMoves({
   if (!leverage || leverage.moves.length === 0) return null;
 
   const top = leverage.moves.slice(0, topN);
+  // Equal to two decimals — the precision the figure is displayed at, so the
+  // note appears exactly when a reader would see identical numbers.
+  const allTied =
+    top.length > 1 &&
+    top.every(m => m.scoreDelta.toFixed(2) === top[0]!.scoreDelta.toFixed(2));
+  const tiedTotal = top.reduce((sum, m) => sum + m.scoreDelta, 0);
+  const tiedPillar =
+    allTied && top.every(m => m.pillarName === top[0]!.pillarName) ? top[0]!.pillarName : null;
   const maxDelta = top[0]?.scoreDelta || 1;
 
   return (
@@ -80,11 +88,29 @@ export function LeverageMoves({
           </div>
         </CardHeader>
         <CardContent className="space-y-5">
+          {/* A rank order that isn't one.
+
+              Questions inside a pillar carry equal weight, so every one-step
+              improvement in the same pillar is worth exactly the same. That is
+              correct arithmetic and a misleading list: numbering five identical
+              values 1 to 5 asserts a priority the model never computed, and a
+              reader's first thought is that it is broken. Saying so turns the
+              list into what it actually is — one work package, with a total. */}
+          {allTied && top.length > 1 && (
+            <p className="rounded-lg border border-border/40 bg-navy-900/40 px-3.5 py-3 font-sans text-sm text-muted-foreground">
+              These {top.length} moves are worth the same{tiedPillar ? <> — they are equally weighted questions inside <span className="text-foreground">{tiedPillar}</span></> : null}.
+              Treat them as one piece of work rather than a running order: together they are worth{' '}
+              <span className="font-semibold tabular-nums text-emerald-400">+{tiedTotal.toFixed(1)} points</span>.
+            </p>
+          )}
+
           {/* Ranked moves */}
           <div className="space-y-3">
             {top.map((m, i) => (
               <div key={m.questionId} className="flex items-start gap-3 rounded-lg border border-border/40 bg-navy-900/40 p-3.5">
-                <span className="font-mono text-xs text-muted-foreground mt-1 w-4 text-right">{i + 1}</span>
+                <span className="font-mono text-xs text-muted-foreground mt-1 w-4 text-right">
+                  {allTied ? '·' : i + 1}
+                </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <Badge variant="outline" className="font-mono text-[10px] border-border text-muted-foreground">{m.pillarName}</Badge>
@@ -115,8 +141,8 @@ export function LeverageMoves({
           {leverage.nextBand && (
             <div className="rounded-lg border border-eari-blue/20 bg-eari-blue/[0.06] p-4">
               <p className="font-sans text-sm text-foreground">
-                You are <span className="font-semibold tabular-nums">{leverage.nextBand.pointsNeeded.toFixed(1)} points</span> from{' '}
-                <span className="font-semibold">{leverage.nextBand.label}</span>.
+                You are <span className="font-semibold tabular-nums">{leverage.nextBand.pointsNeeded.toFixed(1)} points</span> from
+                the next band{' '}(<span className="font-semibold">{leverage.nextBand.label}</span>).
                 {leverage.pathToNextBand.length > 0 ? (
                   <> The shortest simulated path is <span className="font-semibold">{leverage.pathToNextBand.length} one-step improvement{leverage.pathToNextBand.length === 1 ? '' : 's'}</span>:</>
                 ) : (

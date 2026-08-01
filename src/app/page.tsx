@@ -497,7 +497,7 @@ export default function Home() {
                 <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mr-3">EU AI Act</span>
                 Full high-risk obligations apply on <span className="text-slate-100 font-medium">2 August 2026</span>
                 <span className="mx-2 text-slate-500">·</span>
-                <span className="font-mono tabular-nums text-slate-400 font-semibold">{daysLeft} days</span> to be audit-ready
+                <span className="font-mono tabular-nums text-slate-400 font-semibold">{daysLeft} day{daysLeft === 1 ? '' : 's'}</span> to be audit-ready
                 <span className="mx-2 text-slate-500">·</span>
                 penalties up to €15M / 3% of turnover
                 <Link href="/assessment" className="ml-3 text-slate-400 hover:underline font-medium">Start free assessment →</Link>

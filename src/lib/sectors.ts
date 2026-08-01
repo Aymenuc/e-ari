@@ -1782,3 +1782,31 @@ export function getSectorAdjustedPillars(sectorId: string | null | undefined): P
 
 // Re-import getPillarById locally for the helper functions
 import { getPillarById } from './pillars';
+
+/**
+ * The sector label captured at registration → the id the scoring engine uses.
+ *
+ * Registration stores a display label ("Financial Services") while the engine
+ * keys on a slug ("finance"), which is why the assessment asked for a sector
+ * the account already had. Only unambiguous matches are mapped: "Other" has no
+ * counterpart, and "Telecommunications" has no sector definition of its own —
+ * guessing one would silently apply the wrong weighting, so those return null
+ * and the user chooses, which is the existing behaviour.
+ */
+const REGISTRATION_SECTOR_TO_ID: Record<string, string> = {
+  healthcare: 'healthcare',
+  'financial services': 'finance',
+  finance: 'finance',
+  manufacturing: 'manufacturing',
+  retail: 'retail',
+  government: 'government',
+  technology: 'technology',
+  energy: 'energy',
+  education: 'education',
+};
+
+export function sectorIdFromRegistration(label: string | null | undefined): string | null {
+  if (!label) return null;
+  const id = REGISTRATION_SECTOR_TO_ID[label.trim().toLowerCase()];
+  return id && getSectorById(id) ? id : null;
+}
