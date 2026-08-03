@@ -1048,7 +1048,13 @@ export default function AssessmentPage() {
           ? `fixed inset-y-0 left-0 z-50 w-72 bg-navy-900 border-r border-border transform transition-transform duration-300 ease-in-out ${
               sidebarOpen ? 'translate-x-0' : '-translate-x-full'
             }`
-          : 'w-64 lg:w-72 shrink-0'
+          // Subordinate to the workspace rail, not a peer of it. At w-72 this
+          // sat beside the 232px rail as a second full-height column — 520px
+          // of a 1440px screen given to navigation before a question is read.
+          // Narrowed rather than hidden: the drawer only exists below 768px,
+          // so hiding it at lg would leave 768–1279 with no pillar navigation
+          // and no way to summon any.
+          : 'w-56 shrink-0'
       }`}
     >
       {/* Mobile close button */}

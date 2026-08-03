@@ -33,8 +33,6 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Separator } from '@/components/ui/separator'
-import { Navigation } from '@/components/shared/navigation'
-import { Footer } from '@/components/shared/footer'
 import { AIAssistant } from '@/components/shared/ai-assistant'
 import { PILLARS } from '@/lib/pillars'
 
@@ -244,8 +242,7 @@ export default function PulsePage() {
   /* ─── Loading state ───────────────────────────────────────────────────── */
   if (sessionStatus === 'loading' || (sessionStatus === 'authenticated' && loading)) {
     return (
-      <div className="min-h-screen flex flex-col bg-navy-900">
-        <Navigation />
+      <div className="flex flex-col">
         <main className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-eari-blue" />
         </main>
@@ -259,8 +256,7 @@ export default function PulsePage() {
      RENDER
      ═══════════════════════════════════════════════════════════════════════ */
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900">
-      <Navigation />
+    <div className="flex flex-col">
 
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
@@ -643,8 +639,6 @@ export default function PulsePage() {
 
         </div>
       </main>
-
-      <Footer />
       <AIAssistant userTier={userTier} />
     </div>
   )
