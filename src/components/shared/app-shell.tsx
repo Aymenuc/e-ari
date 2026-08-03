@@ -18,7 +18,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { type LucideIcon, Menu, X } from 'lucide-react'
-import { Navigation } from '@/components/shared/navigation'
+import { WorkspaceBar } from '@/components/shared/workspace-bar'
 
 export interface ShellItem {
   label: string
@@ -138,7 +138,7 @@ export function AppShell({
 
   return (
     <div className="flex min-h-screen flex-col bg-navy-900">
-      <Navigation />
+      <WorkspaceBar />
       <div className="mx-auto flex w-full max-w-[1600px] flex-1">
         <aside className="hidden w-[232px] shrink-0 border-r border-white/[0.06] px-3 lg:block">
           <Rail {...railProps} />
