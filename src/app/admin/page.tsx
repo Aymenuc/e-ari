@@ -67,6 +67,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Navigation } from "@/components/shared/navigation";
+import { AppShell } from "@/components/shared/app-shell";
+import type { LucideIcon } from "lucide-react";
 import { Footer } from "@/components/shared/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -458,19 +460,50 @@ type AdminTab =
   | "audit"
   | "settings";
 
-const NAV_ITEMS: { id: AdminTab; icon: React.ElementType; label: string }[] = [
-  { id: "overview", icon: LayoutDashboard, label: "Dashboard" },
-  { id: "revenue", icon: DollarSign, label: "Revenue" },
-  { id: "users", icon: UserCog, label: "Users" },
-  { id: "assessments", icon: ClipboardList, label: "Assessments" },
-  { id: "agents", icon: Brain, label: "Agents" },
-  { id: "refunds", icon: RotateCcw, label: "Refunds" },
-  { id: "inbox", icon: Mail, label: "Inbox" },
-  { id: "social", icon: Share2, label: "Social" },
-  { id: "compliance", icon: ScrollText, label: "AI usage" },
-  { id: "audit", icon: ShieldAlert, label: "Audit" },
-  { id: "settings", icon: Settings, label: "Settings" },
+/**
+ * Eleven destinations, grouped.
+ *
+ * They were a single flat row of pills — at eleven items that is well over a
+ * thousand pixels of horizontal chrome, so it wrapped, and nothing told you
+ * whether "Audit" was a money thing or a safety thing. Grouping by what the
+ * job is (the business, the customers, the platform's own conduct) makes the
+ * rail scannable and matches how the customer workspace is organised.
+ */
+const NAV_GROUPS: { label: string; items: { id: AdminTab; icon: React.ElementType; label: string }[] }[] = [
+  {
+    label: "Business",
+    items: [
+      { id: "overview", icon: LayoutDashboard, label: "Dashboard" },
+      { id: "revenue", icon: DollarSign, label: "Revenue" },
+      { id: "refunds", icon: RotateCcw, label: "Refunds" },
+    ],
+  },
+  {
+    label: "Customers",
+    items: [
+      { id: "users", icon: UserCog, label: "Users" },
+      { id: "assessments", icon: ClipboardList, label: "Assessments" },
+      { id: "inbox", icon: Mail, label: "Inbox" },
+    ],
+  },
+  {
+    label: "Platform",
+    items: [
+      { id: "agents", icon: Brain, label: "Agents" },
+      { id: "compliance", icon: ScrollText, label: "AI usage" },
+      { id: "audit", icon: ShieldAlert, label: "Audit" },
+    ],
+  },
+  {
+    label: "Operations",
+    items: [
+      { id: "social", icon: Share2, label: "Social" },
+      { id: "settings", icon: Settings, label: "Settings" },
+    ],
+  },
 ];
+
+const NAV_ITEMS = NAV_GROUPS.flatMap((g) => g.items);
 
 // ─── Custom Tooltip for Charts ──────────────────────────────────────────
 
@@ -1480,8 +1513,19 @@ export default function AdminPage() {
   // ─── Render ───────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Navigation />
+    <AppShell
+      groups={NAV_GROUPS.map((g) => ({
+        ...g,
+        items: g.items.map((i) => ({
+          ...i,
+          icon: i.icon as LucideIcon,
+          badge: i.id === "inbox" ? inboxMessages.filter((m) => m.status === "new").length : undefined,
+        })),
+      }))}
+      activeId={activeTab}
+      onSelect={(id) => setActiveTab(id as AdminTab)}
+      layoutId="admin-rail"
+    >
 
       <main className="flex-1">
         {/* Header */}
@@ -1552,79 +1596,10 @@ export default function AdminPage() {
           )}
 
           {/* ── Sidebar Navigation ─────────────────────────────────────── */}
-          <nav aria-label="Admin sections" className="mb-8">
-            {/* Mobile menu button */}
-            <div className="lg:hidden mb-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="w-full justify-between border-border font-sans"
-              >
-                <span className="flex items-center gap-2">
-                  {(() => { const item = NAV_ITEMS.find((n) => n.id === activeTab); const Icon = item?.icon ?? LayoutDashboard; return <><Icon className="h-4 w-4" />{item?.label ?? "Dashboard"}</>; })()}
-                </span>
-                <ChevronDown className={`h-4 w-4 transition-transform ${sidebarOpen ? "rotate-180" : ""}`} />
-              </Button>
-            </div>
-
-            {/* Mobile dropdown */}
-            <AnimatePresence>
-              {sidebarOpen && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="lg:hidden overflow-hidden mb-4"
-                >
-                  <div className="flex flex-col gap-1 p-2 rounded-lg border border-border/50 bg-card/50">
-                    {NAV_ITEMS.map((item) => {
-                      const Icon = item.icon;
-                      const unread = item.id === "inbox" ? inboxMessages.filter((m) => m.status === "new").length : 0;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => { setActiveTab(item.id); setSidebarOpen(false); }}
-                          className={`flex items-center gap-3 px-4 py-2.5 text-sm font-heading font-medium rounded-lg transition-all duration-200 ${
-                            activeTab === item.id
-                              ? "bg-eari-blue/15 text-eari-blue-light border border-eari-blue/30"
-                              : "text-muted-foreground hover:text-foreground hover:bg-navy-700/50 border border-transparent"
-                          }`}
-                        >
-                          <Icon className="h-4 w-4" />
-                          {item.label}
-                          {unread > 0 && <span className="ml-auto flex h-4 w-4 items-center justify-center rounded-full bg-eari-blue text-[9px] font-bold text-white">{unread}</span>}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Desktop sidebar tabs */}
-            <div className="hidden lg:flex items-center gap-1 p-1.5 rounded-xl border border-border/40 bg-card/30">
-              {NAV_ITEMS.map((item) => {
-                const Icon = item.icon;
-                const unread = item.id === "inbox" ? inboxMessages.filter((m) => m.status === "new").length : 0;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`relative flex items-center gap-2 px-4 py-2 text-sm font-heading font-medium rounded-lg transition-all duration-200 ${
-                      activeTab === item.id
-                        ? "bg-eari-blue/15 text-eari-blue-light border border-eari-blue/30 shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-navy-700/50 border border-transparent"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                    {unread > 0 && <span className="flex h-4 w-4 items-center justify-center rounded-full bg-eari-blue text-[9px] font-bold text-white">{unread}</span>}
-                  </button>
-                );
-              })}
-            </div>
-          </nav>
+          {/* The section rail lives in AppShell now — this was a single row
+              of eleven pills, which is more horizontal chrome than a 1600px
+              layout has to give and told you nothing about how the sections
+              relate. */}
 
           {/* ═══════════════════════════════════════════════════════════════
              OVERVIEW TAB
@@ -3798,7 +3773,6 @@ export default function AdminPage() {
         </div>
       </main>
 
-      <Footer />
-    </div>
+    </AppShell>
   );
 }

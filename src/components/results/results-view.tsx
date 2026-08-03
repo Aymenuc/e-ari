@@ -984,7 +984,7 @@ export function ResultsView({
       {chrome && <Navigation />}
 
       <main className="flex-1">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12 space-y-8">
+        <div className="mx-auto w-full max-w-[1200px] space-y-8 px-4 pb-8 pt-6 sm:px-6 sm:pb-12 lg:px-8">
           {/* Persistent across every tab: the operate tier is looking at a
               programme, not at one document. */}
           {canOperate && (
