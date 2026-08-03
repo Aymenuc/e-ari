@@ -16,13 +16,13 @@
  * how much you are not paying for.
  */
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Activity, BadgeCheck, Boxes, ClipboardList, FileCheck, GraduationCap,
-  KeyRound, LayoutDashboard, type LucideIcon, Menu, Radar, Settings,
+  BarChart3, KeyRound, LayoutDashboard, type LucideIcon, Menu, Radar, Settings,
   ShieldCheck, Users, X,
 } from 'lucide-react'
 import { Navigation } from '@/components/shared/navigation'
@@ -49,7 +49,7 @@ const GROUPS: Group[] = [
     label: 'Readiness',
     items: [
       { href: '/portal', label: 'Overview', icon: LayoutDashboard },
-      { href: '/assessment', label: 'Assessment', icon: ClipboardList, alsoMatch: ['/results'] },
+      { href: '/assessment', label: 'Assessment', icon: ClipboardList },
       { href: '/pulse', label: 'Pulse', icon: Activity },
     ],
   },
@@ -82,15 +82,58 @@ const GROUPS: Group[] = [
   },
 ]
 
+/**
+ * The rail's Results entry points at the newest completed assessment.
+ *
+ * A report needs an id, so there is no static href for it — which is why the
+ * section did not exist and results were reachable only by finding a row in a
+ * table. Until an assessment has been completed the entry is omitted rather
+ * than shown as a dead link: an empty destination teaches nothing.
+ */
+function useLatestResultId(): string | null {
+  const [id, setId] = useState<string | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/assessment')
+      .then(r => (r.ok ? r.json() : null))
+      .then((rows: Array<{ id: string; status: string; isPulse?: boolean }> | null) => {
+        if (cancelled || !Array.isArray(rows)) return
+        // Already ordered newest first by the API.
+        const latest = rows.find(a => a.status === 'completed' && !a.isPulse)
+        if (latest) setId(latest.id)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
+  return id
+}
+
 function isActive(pathname: string, item: Item): boolean {
   if (item.alsoMatch?.some(p => pathname.startsWith(p))) return true
   return item.prefix ? pathname.startsWith(item.href) : pathname === item.href
 }
 
-function Rail({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+function Rail({
+  pathname, onNavigate, latestResultId,
+}: {
+  pathname: string
+  onNavigate?: () => void
+  latestResultId: string | null
+}) {
+  const groups: Group[] = latestResultId
+    ? GROUPS.map(g => g.label !== 'Readiness' ? g : {
+        ...g,
+        items: [
+          ...g.items.slice(0, 2),
+          { href: `/results/${latestResultId}`, label: 'Results', icon: BarChart3, alsoMatch: ['/results'] },
+          ...g.items.slice(2),
+        ],
+      })
+    : GROUPS
+
   return (
     <nav aria-label="Workspace" className="flex flex-col gap-7 py-6">
-      {GROUPS.map((group) => (
+      {groups.map((group) => (
         <div key={group.label}>
           <p className="mb-2 px-3 font-mono text-[10px] uppercase tracking-[0.2em] text-slate-600">
             {group.label}
@@ -134,6 +177,7 @@ function Rail({ pathname, onNavigate }: { pathname: string; onNavigate?: () => v
 export function PortalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? ''
   const [open, setOpen] = useState(false)
+  const latestResultId = useLatestResultId()
 
   return (
     <div className="flex min-h-screen flex-col bg-navy-900">
@@ -142,7 +186,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
         {/* Persistent rail from lg up; a drawer below that, because a 240px
             rail on a phone leaves nothing for the work itself. */}
         <aside className="hidden w-[232px] shrink-0 border-r border-white/[0.06] px-3 lg:block">
-          <Rail pathname={pathname} />
+          <Rail pathname={pathname} latestResultId={latestResultId} />
         </aside>
 
         <AnimatePresence>
@@ -167,7 +211,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
                     <X className="h-5 w-5" />
                   </button>
                 </div>
-                <Rail pathname={pathname} onNavigate={() => setOpen(false)} />
+                <Rail pathname={pathname} latestResultId={latestResultId} onNavigate={() => setOpen(false)} />
               </motion.aside>
             </>
           )}
