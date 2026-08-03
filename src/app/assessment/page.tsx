@@ -48,6 +48,7 @@ import { PILLARS, LIKERT_LABELS, type PillarDefinition } from '@/lib/pillars';
 import { validateCompleteness, type ResponseMap } from '@/lib/assessment-engine';
 import { ENTITY_TYPE_CHOICES, type EntityType } from '@/lib/entity-types';
 import { ScoringTransition } from '@/components/assessment/scoring-transition';
+import { ResultsView } from '@/components/results/results-view';
 import { SECTORS, getSectorById, getEffectivePillarQuestions, getSectorAdjustedPillars, sectorIdFromRegistration } from '@/lib/sectors';
 import type { OrgContext } from '@/lib/scraper';
 
@@ -443,6 +444,8 @@ export default function AssessmentPage() {
   const [scoringOpen, setScoringOpen] = useState(false);
   const [scoringScore, setScoringScore] = useState<number | null>(null);
   const [scoringId, setScoringId] = useState<string | null>(null);
+  /** Set once scoring lands — switches the hub from wizard to results. */
+  const [completedId, setCompletedId] = useState<string | null>(null);
   const [entityType, setEntityType] = useState<EntityType | null>(null);
   const sectorPrefilled = useRef(false);
   // Picking a sector opens the only control that continues the assessment, and
@@ -618,11 +621,15 @@ export default function AssessmentPage() {
    */
   const handleScoreRevealed = useCallback(() => {
     if (!scoringId) return;
-    const go = () => router.push(`/results/${scoringId}`);
+    // The hub stays put. Results render in place rather than as a separate
+    // destination, so finishing an assessment is a change of phase and not a
+    // change of address. /results/[id] still exists and renders the same
+    // component — a compliance report has to stay linkable.
+    const show = () => { setCompletedId(scoringId); setScoringOpen(false); };
     const d = document as Document & { startViewTransition?: (cb: () => void) => void };
-    if (typeof d.startViewTransition === 'function') d.startViewTransition(go);
-    else go();
-  }, [scoringId, router]);
+    if (typeof d.startViewTransition === 'function') d.startViewTransition(show);
+    else show();
+  }, [scoringId]);
 
   // ── Step navigation ────────────────────────────────────────────────────────
   const goToStep = useCallback(
@@ -712,17 +719,22 @@ export default function AssessmentPage() {
       // navigate once the number has been read. No toast — the number is the
       // confirmation, and a toast over a full-screen reveal is noise.
       clearDraft();
+      // The submit route responds { status, scoringResult, pipelineTriggered },
+      // so the number is on scoringResult. Reading it from the top level meant
+      // `scored` was always null and the reveal never ran — the overlay opened
+      // and the no-score fallback navigated straight past it.
       const submitted = await submitRes.json().catch(() => ({}));
-      const scored = typeof submitted?.overallScore === 'number'
-        ? submitted.overallScore
-        : typeof submitted?.assessment?.overallScore === 'number'
-          ? submitted.assessment.overallScore
+      const scored = typeof submitted?.scoringResult?.overallScore === 'number'
+        ? submitted.scoringResult.overallScore
+        : typeof submitted?.overallScore === 'number'
+          ? submitted.overallScore
           : null;
       setScoringId(assessmentId);
       if (scored === null) {
-        // Scored fine but the response carried no number: go straight to the
-        // results rather than reveal a figure we do not have.
-        router.push(`/results/${assessmentId}`);
+        // Scored fine but the response carried no number: drop into the report
+        // without revealing a figure we do not have.
+        setCompletedId(assessmentId);
+        setScoringOpen(false);
       } else {
         setScoringScore(scored);
       }
@@ -1578,6 +1590,38 @@ export default function AssessmentPage() {
       </motion.div>
     </motion.div>
   );
+
+  // ── Completed: the hub becomes the report ──────────────────────────────────
+  // Same component /results/[id] renders, mounted here without its own chrome.
+  if (completedId) {
+    return (
+      <div className="min-h-screen flex flex-col bg-navy-900">
+        <Navigation />
+        <main className="flex-1">
+          <div className="mx-auto max-w-6xl px-4 pb-8 pt-6 sm:px-6 sm:pb-12 lg:px-8">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span aria-hidden className="h-px w-8 eyebrow-rule" />
+                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate-400">
+                  Assessment complete
+                </span>
+              </div>
+              {/* The shareable artefact, one click away. The hub keeps its own
+                  URL; this is the one you send to a board. */}
+              <Link
+                href={`/results/${completedId}`}
+                className="font-sans text-sm text-slate-400 underline underline-offset-4 transition-colors hover:text-slate-100"
+              >
+                Open the shareable report &rarr;
+              </Link>
+            </div>
+          </div>
+          <ResultsView assessmentId={completedId} chrome={false} />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   // ── Main render ────────────────────────────────────────────────────────────
   return (
