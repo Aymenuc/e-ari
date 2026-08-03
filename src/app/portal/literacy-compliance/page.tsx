@@ -3,8 +3,6 @@
 /** Article 4 Literacy Compliance — roster, assignments, completions, report. */
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Navigation } from '@/components/shared/navigation';
-import { Footer } from '@/components/shared/footer';
 import { Button } from '@/components/ui/button';
 import { TeachingEmptyState } from '@/components/shared/teaching-empty-state';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -81,8 +79,7 @@ export default function LiteracyCompliancePage() {
   const totalDone = members.reduce((n, m) => n + m.completions.filter((c) => assignments.some((a) => a.memberId === m.id && a.moduleId === c.moduleId)).length, 0);
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900">
-      <Navigation />
+    <div className="flex flex-col">
       <main className="flex-1 mx-auto w-full max-w-6xl px-4 sm:px-6 py-10 space-y-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -204,7 +201,6 @@ export default function LiteracyCompliancePage() {
           </CardContent>
         </Card>
       </main>
-      <Footer />
     </div>
   );
 }

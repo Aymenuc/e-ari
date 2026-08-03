@@ -25,8 +25,7 @@ import {
   Save,
   Briefcase, ArrowRight } from 'lucide-react';
 
-import { Navigation } from '@/components/shared/navigation';
-import { Footer } from '@/components/shared/footer';
+import { PortalShell } from '@/components/shared/portal-shell';
 import { ContextEnrichment } from '@/components/shared/context-enrichment';
 import { AgentPanel } from '@/components/shared/agent-panel';
 import { Button } from '@/components/ui/button';
@@ -377,8 +376,7 @@ function AnimatedProgressBar({ value, className, color }: { value: number; class
 
 function AuthGate() {
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900">
-      <Navigation />
+    <PortalShell>
       <main className="flex-1 flex items-center justify-center px-4">
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.97 }}
@@ -417,8 +415,7 @@ function AuthGate() {
           </Card>
         </motion.div>
       </main>
-      <Footer />
-    </div>
+    </PortalShell>
   );
 }
 
@@ -755,13 +752,11 @@ export default function AssessmentPage() {
   // ── Loading state ──────────────────────────────────────────────────────────
   if (sessionStatus === 'loading') {
     return (
-      <div className="min-h-screen flex flex-col bg-navy-900">
-        <Navigation />
+      <PortalShell>
         <main className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-eari-blue-light" />
         </main>
-        <Footer />
-      </div>
+      </PortalShell>
     );
   }
 
@@ -1595,8 +1590,7 @@ export default function AssessmentPage() {
   // Same component /results/[id] renders, mounted here without its own chrome.
   if (completedId) {
     return (
-      <div className="min-h-screen flex flex-col bg-navy-900">
-        <Navigation />
+      <PortalShell>
         <main className="flex-1">
           <div className="mx-auto max-w-6xl px-4 pb-8 pt-6 sm:px-6 sm:pb-12 lg:px-8">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -1618,15 +1612,13 @@ export default function AssessmentPage() {
           </div>
           <ResultsView assessmentId={completedId} chrome={false} />
         </main>
-        <Footer />
-      </div>
+      </PortalShell>
     );
   }
 
   // ── Main render ────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900">
-      <Navigation />
+    <PortalShell>
 
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
@@ -1843,7 +1835,6 @@ export default function AssessmentPage() {
         </div>
       </main>
 
-      <Footer />
 
       {/* Scoring hand-off — covers the submit round-trip and carries the
           number across to the results page. */}
@@ -1904,6 +1895,6 @@ export default function AssessmentPage() {
         isOpen={agentOpen}
         onOpenChange={setAgentOpen}
       />
-    </div>
+    </PortalShell>
   );
 }

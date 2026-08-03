@@ -3,8 +3,6 @@
 /** Shadow AI Discovery — CSV import wizard + results. */
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Navigation } from '@/components/shared/navigation';
-import { Footer } from '@/components/shared/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -67,8 +65,7 @@ export default function DiscoveryPage() {
   const ignored = tools.filter((t) => t.status === 'ignored');
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900">
-      <Navigation />
+    <div className="flex flex-col">
       <main className="flex-1 mx-auto w-full max-w-6xl px-4 sm:px-6 py-10 space-y-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -183,7 +180,6 @@ export default function DiscoveryPage() {
           </div>
         )}
       </main>
-      <Footer />
     </div>
   );
 }

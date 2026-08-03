@@ -219,7 +219,13 @@ export default function WelcomePage() {
               />
             ))}
           </div>
-          <Link href="/portal" className="font-sans text-xs text-muted-foreground hover:text-foreground transition-colors">
+          {/* Skipping is a decision, not an omission — record it so the
+              dashboard does not send them straight back here. */}
+          <Link
+            href="/portal"
+            onClick={() => { void fetch('/api/onboarding', { method: 'POST' }); }}
+            className="font-sans text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
             Skip — take me to the dashboard
           </Link>
         </div>
@@ -303,7 +309,7 @@ export default function WelcomePage() {
                             <p className="mt-0.5 font-sans text-[12.5px] leading-snug text-muted-foreground">{s.detail}</p>
                           </div>
                           {i === 0 ? (
-                            <Button onClick={() => router.push(s.href)} className="btn-brand font-heading font-semibold h-9 px-4 text-sm flex-shrink-0">
+                            <Button onClick={() => { void fetch('/api/onboarding', { method: 'POST' }); router.push(s.href); }} className="btn-brand font-heading font-semibold h-9 px-4 text-sm flex-shrink-0">
                               {s.cta} <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                             </Button>
                           ) : (

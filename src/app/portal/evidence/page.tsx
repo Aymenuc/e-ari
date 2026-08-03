@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Navigation } from '@/components/shared/navigation';
-import { Footer } from '@/components/shared/footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, ArrowLeft, Upload, Trash2 } from 'lucide-react';
@@ -83,7 +81,6 @@ export default function OrgEvidenceVaultPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-navy-900">
-      <Navigation />
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-10 sm:px-6 lg:px-8">
         <Link
           href="/portal"
@@ -160,7 +157,6 @@ export default function OrgEvidenceVaultPage() {
           </CardContent>
         </Card>
       </main>
-      <Footer />
     </div>
   );
 }

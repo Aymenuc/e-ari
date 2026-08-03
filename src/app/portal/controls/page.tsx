@@ -4,8 +4,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Navigation } from '@/components/shared/navigation';
-import { Footer } from '@/components/shared/footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,8 +31,7 @@ export default function ControlsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900">
-      <Navigation />
+    <div className="flex flex-col">
       <main className="flex-1 mx-auto w-full max-w-6xl px-4 sm:px-6 py-10 space-y-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -105,7 +102,6 @@ export default function ControlsPage() {
           </>
         )}
       </main>
-      <Footer />
     </div>
   );
 }

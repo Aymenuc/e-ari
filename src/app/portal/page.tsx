@@ -31,8 +31,6 @@ import {
   Zap,
 } from 'lucide-react';
 
-import { Navigation } from '@/components/shared/navigation';
-import { Footer } from '@/components/shared/footer';
 import { ProgressionBanner } from '@/components/shared/progression-banner';
 import { JourneyGuide } from '@/components/shared/journey-guide';
 import {
@@ -207,6 +205,7 @@ export default function PortalPage() {
     tier: string;
     foundingMemberNo?: number | null;
     earlyAccessEndsAt?: string | null;
+    onboarded?: boolean;
     assessment: { used: number; limit: number | null };
     pulse: { used: number; limit: number | null };
     report: { used: number; limit: number | null };
@@ -228,6 +227,19 @@ export default function PortalPage() {
       router.push('/auth/login');
     }
   }, [sessionStatus, router]);
+
+  /**
+   * First arrival goes to the concierge, however they got here.
+   *
+   * Registration already routed to /welcome, but signing in never did — so
+   * anyone who registered and abandoned onboarding never saw it again. The
+   * flag is set when the concierge is finished *or* skipped, so this cannot
+   * loop, and it waits for the quota payload rather than guessing: redirecting
+   * on an unknown value would bounce established users out of their dashboard.
+   */
+  useEffect(() => {
+    if (quota && quota.onboarded === false) router.replace('/welcome');
+  }, [quota, router]);
 
   /* Record that this account is active, and roughly where from. Throttled to
      one write an hour server-side, so this costs nothing on navigation. */
@@ -352,8 +364,7 @@ export default function PortalPage() {
 
   if (sessionStatus === 'loading') {
     return (
-      <div className="min-h-screen flex flex-col bg-navy-900">
-        <Navigation />
+      <div className="flex flex-col">
         <main className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-eari-blue" />
         </main>
@@ -370,8 +381,7 @@ export default function PortalPage() {
   // -----------------------------------------------------------------------
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900">
-      <Navigation />
+    <div className="flex flex-col">
 
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -692,8 +702,6 @@ export default function PortalPage() {
 
         </div>
       </main>
-
-      <Footer />
       <AIAssistant userTier={userTier as 'free' | 'professional' | 'enterprise'} />
     </div>
   )

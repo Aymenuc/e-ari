@@ -22,7 +22,7 @@ export async function GET() {
 
     const user = await db.user.findUnique({
       where: { id: ws.ownerId },
-      select: { tier: true, foundingMemberNo: true, earlyAccessAt: true },
+      select: { tier: true, foundingMemberNo: true, earlyAccessAt: true, onboardedAt: true },
     });
     const tier = user?.tier ?? 'free';
 
@@ -61,6 +61,7 @@ export async function GET() {
       // date. A shared deadline could live on the marketing page; this one
       // cannot, so it ships with the quota the portal already reads.
       earlyAccessEndsAt: earlyAccessEndsAt?.toISOString() ?? null,
+      onboarded: Boolean(user?.onboardedAt),
       report: serialise(report),
       // Absolute caps (not monthly): Article 4 roster + vendor registry.
       member: { used: memberCount, limit: Number.isFinite(memberCap) ? memberCap : null },

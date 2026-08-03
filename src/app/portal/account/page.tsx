@@ -20,8 +20,6 @@ import {
   Calendar, ChevronRight, ArrowUpRight, ArrowLeft, Building2,
 } from 'lucide-react';
 
-import { Navigation } from '@/components/shared/navigation';
-import { Footer } from '@/components/shared/footer';
 import { BillingCard } from '@/components/account/billing-card';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -106,8 +104,7 @@ export default function AccountPage() {
   const userEmail = session?.user?.email ?? '';
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900">
-      <Navigation />
+    <div className="flex flex-col">
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           <Link
@@ -463,7 +460,6 @@ export default function AccountPage() {
         </section>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

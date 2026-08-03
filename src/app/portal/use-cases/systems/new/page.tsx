@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Navigation } from "@/components/shared/navigation";
-import { Footer } from "@/components/shared/footer";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,8 +60,7 @@ export default function NewAISystemPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900">
-      <Navigation />
+    <div className="flex flex-col">
       <main className="flex-1 mx-auto max-w-2xl w-full px-4 sm:px-6 lg:px-8 py-10 space-y-6">
         <Link href="/portal/use-cases" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground font-sans">
           <ArrowLeft className="h-4 w-4 mr-1" />
@@ -174,7 +171,6 @@ export default function NewAISystemPage() {
           </CardContent>
         </Card>
       </main>
-      <Footer />
     </div>
   );
 }

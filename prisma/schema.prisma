@@ -37,6 +37,7 @@ model User {
   lastSeenCountry String?
   lastSeenCity    String?
   earlyAccessAt    DateTime? // granted free programme access (see lib/early-access)
+  onboardedAt      DateTime? // finished or deliberately skipped /welcome
   foundingMemberNo Int? // sequential founding-cohort number (real, never fabricated)
   emailVerified    DateTime?
   createdAt        DateTime  @default(now())

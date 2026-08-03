@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Navigation } from "@/components/shared/navigation";
-import { Footer } from "@/components/shared/footer";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TeachingEmptyState } from "@/components/shared/teaching-empty-state";
@@ -45,8 +43,7 @@ export default function UseCasesDashboardPage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900">
-      <Navigation />
+    <div className="flex flex-col">
       <main className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -142,7 +139,6 @@ export default function UseCasesDashboardPage() {
           </CardContent>
         </Card>
       </main>
-      <Footer />
     </div>
   );
 }

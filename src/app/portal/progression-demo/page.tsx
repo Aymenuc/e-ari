@@ -1,8 +1,6 @@
 import { redirect, notFound } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { Navigation } from '@/components/shared/navigation';
-import { Footer } from '@/components/shared/footer';
 import { ProgressionBanner } from '@/components/shared/progression-banner';
 import type { ProgressionState } from '@/lib/progression';
 
@@ -81,7 +79,6 @@ export default async function ProgressionDemoPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-navy-900">
-      <Navigation />
       <main className="flex-1 px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl space-y-10">
           <div>
@@ -102,7 +99,6 @@ export default async function ProgressionDemoPage() {
           ))}
         </div>
       </main>
-      <Footer />
     </div>
   );
 }
