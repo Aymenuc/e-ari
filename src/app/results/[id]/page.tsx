@@ -13,5 +13,6 @@ import { ResultsView } from '@/components/results/results-view'
 
 export default function ResultsPage() {
   const params = useParams()
-  return <ResultsView assessmentId={params.id as string} />
+  // The layout supplies the shell, so the view must not add its own.
+  return <ResultsView assessmentId={params.id as string} chrome={false} />
 }

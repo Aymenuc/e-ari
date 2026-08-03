@@ -33,6 +33,10 @@ interface Item {
   icon: LucideIcon
   /** Matches nested routes too, e.g. /portal/use-cases/systems/123. */
   prefix?: boolean
+  /** Other route prefixes this item owns — a report belongs to the assessment
+      that produced it, so /results keeps Assessment lit rather than leaving
+      the rail with nothing highlighted and the reader with no place-sense. */
+  alsoMatch?: string[]
 }
 
 interface Group {
@@ -45,7 +49,7 @@ const GROUPS: Group[] = [
     label: 'Readiness',
     items: [
       { href: '/portal', label: 'Overview', icon: LayoutDashboard },
-      { href: '/assessment', label: 'Assessment', icon: ClipboardList },
+      { href: '/assessment', label: 'Assessment', icon: ClipboardList, alsoMatch: ['/results'] },
       { href: '/pulse', label: 'Pulse', icon: Activity },
     ],
   },
@@ -79,6 +83,7 @@ const GROUPS: Group[] = [
 ]
 
 function isActive(pathname: string, item: Item): boolean {
+  if (item.alsoMatch?.some(p => pathname.startsWith(p))) return true
   return item.prefix ? pathname.startsWith(item.href) : pathname === item.href
 }
 
