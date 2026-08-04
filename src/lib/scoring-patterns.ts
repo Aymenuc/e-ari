@@ -147,7 +147,7 @@ function detectComplianceCliff(r: ResponseMap): XRayFinding | null {
         { questionId: 'security_5', answer: regulatory },
       ],
       businessImpact:
-        'The EU AI Act applies in full from 2 August 2026. High-risk systems require a Fundamental Rights Impact Assessment (Article 27), an Annex IV technical file, and post-market monitoring. None of these can be retro-fitted in under 90 days.',
+        'High-risk obligations were deferred by the Digital Omnibus to 2 December 2027 for standalone Annex III systems, but the Article 4 literacy duty binds you today. A Fundamental Rights Impact Assessment (Article 27), an Annex IV technical file and post-market monitoring take quarters to stand up, not weeks — the deferral is build time, not idle time.',
       recommendation:
         'Run an inventory and classification sprint within four weeks: list every AI system, classify against Article 6 (prohibited / high-risk / limited / minimal), and start a FRIA on every high-risk system today. Don\'t wait for the executive ask.',
       pillarsInvolved: ['governance', 'security'],

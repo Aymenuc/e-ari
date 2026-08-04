@@ -1,6 +1,15 @@
 /**
  * Static obligation catalogue for gap radar and coverage matrix.
  * Codes are stable E-ARI identifiers; labels summarize article headings (verify against Regulation (EU) 2024/1689 for your use case).
+ *
+ * Kept current with the Digital Omnibus on AI (in force, amending 2024/1689),
+ * which added two Article 5 prohibitions applying from 2 December 2026. The
+ * catalogue previously covered only the Regulation as adopted in 2024, so a
+ * gap radar run against it could report a clean sheet on practices that are
+ * about to be banned outright.
+ *
+ * Application dates live in lib/ai-act-timeline.ts, not here — this file says
+ * what the obligations are, that one says when they bite.
  */
 
 export interface AiActObligation {
@@ -20,6 +29,22 @@ export const AI_ACT_OBLIGATIONS: AiActObligation[] = [
     recommendedArtifactType: "training_record",
     ownerRoleHint: "CHRO",
     hintArticles: ["Art.4"],
+  },
+  {
+    code: "AI_ACT_ART_5_NCII",
+    label: "Prohibited: AI generating or manipulating non-consensual intimate imagery of identifiable people (from 2 Dec 2026)",
+    severity: "critical",
+    recommendedArtifactType: "policy",
+    ownerRoleHint: "CISO",
+    hintArticles: ["Art.5"],
+  },
+  {
+    code: "AI_ACT_ART_5_CSAM",
+    label: "Prohibited: AI producing child sexual abuse material (from 2 Dec 2026)",
+    severity: "critical",
+    recommendedArtifactType: "policy",
+    ownerRoleHint: "CISO",
+    hintArticles: ["Art.5"],
   },
   {
     code: "AI_ACT_ART_9",

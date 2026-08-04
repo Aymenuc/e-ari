@@ -1,3 +1,4 @@
+import { milestone, daysUntil, inForce, formatMilestoneDate } from './ai-act-timeline';
 import type { ScoringResult } from './assessment-engine';
 
 /**
@@ -21,7 +22,6 @@ import type { ScoringResult } from './assessment-engine';
  */
 
 /** The EU AI Act's high-risk obligations date, used for the time framing. */
-const AI_ACT_HIGH_RISK = new Date('2026-08-02T00:00:00Z');
 
 /** Pillars a regulator looks at first for a high-risk system. */
 const REGULATOR_FIRST = ['governance', 'security', 'data'];
@@ -84,21 +84,35 @@ export function buildPlainSummary(
       ? 'The areas a reviewer tends to open first — governance, security and data — are all above the halfway mark. That is the part of this result worth showing.'
       : `Of the areas a reviewer tends to open first, ${ordinalList(regulatorWeak)} ${regulatorWeak.length === 1 ? 'is' : 'are'} below the halfway mark. ${regulatorWeak.length === 1 ? 'That is the one' : 'Those are the ones'} most likely to invite follow-up questions.`;
 
-  // Three framings, because a countdown stops being useful the moment it runs
-  // out. Read far from the date it creates urgency; read close to it, or after
-  // it, the same sentence tells the reader they are already too late and that
-  // nothing here can help — which is both discouraging and untrue. The
-  // obligations are continuous, so once the date is near the honest question
-  // stops being "will you make it" and becomes "what can you evidence today".
-  const days = Math.ceil((AI_ACT_HIGH_RISK.getTime() - now.getTime()) / 86_400_000);
+  /**
+   * What actually applies, and when.
+   *
+   * This used to count down to 2 August 2026 as "the" deadline. The Digital
+   * Omnibus moved standalone Annex III high-risk obligations to 2 December
+   * 2027 and product-embedded ones to 2 August 2028, while leaving Article 4
+   * literacy and Article 50 transparency exactly where they were. A single
+   * countdown cannot express that, and stating a superseded date to a
+   * compliance officer is the worst thing this product could do.
+   *
+   * So the reader gets both halves: what binds them today, and what is coming.
+   */
+  const highRisk = milestone('high-risk-annex-iii')!;
+  const daysToHighRisk = daysUntil(highRisk, now);
+  const alreadyBinding = inForce(now)
+    .filter((m) => m.id === 'literacy' || m.id === 'transparency')
+    .length;
+
   const classifierNote =
-    'Whether they apply to you depends on how your systems are classified, which the Compliance tab walks through.';
+    'Whether the high-risk rules reach you depends on how your systems are classified, which the Compliance tab walks through.';
+
+  const bindingNow = alreadyBinding > 0
+    ? 'The AI literacy duty (Article 4) and the transparency duties (Article 50) already bind you today, whatever your systems are classified as. '
+    : '';
+
   const timing =
-    days > 30
-      ? `The EU AI Act's obligations for high-risk systems apply from 2 August 2026 — ${days} days away. ${classifierNote}`
-      : days > 0
-        ? `The EU AI Act's obligations for high-risk systems apply from 2 August 2026, ${days} day${days === 1 ? '' : 's'} away. Obligations do not stop at that date, so what matters is what you can evidence from it onward rather than what you finish before it. ${classifierNote}`
-        : `The EU AI Act's obligations for high-risk systems are in force. They are continuous, not a one-off deadline: what counts is what you can evidence now and keep evidencing. ${classifierNote}`;
+    daysToHighRisk > 0
+      ? `${bindingNow}High-risk obligations for standalone Annex III systems apply from ${formatMilestoneDate(highRisk)} — ${daysToHighRisk} days away, deferred from August 2026 by the Digital Omnibus. Systems embedded in regulated products follow on ${formatMilestoneDate(milestone('high-risk-annex-i')!)}. That is time to build evidence, not time to wait: the controls below take longer to stand up than they do to describe. ${classifierNote}`
+      : `${bindingNow}High-risk obligations are in force. They are continuous, not a one-off deadline: what counts is what you can evidence now and keep evidencing. ${classifierNote}`;
 
   const bandGloss = BAND_GLOSS[scoring.maturityBand] ?? '';
 

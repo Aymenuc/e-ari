@@ -135,7 +135,7 @@ const ROLES: RoleDefinition[] = [
     ],
     focusAreas: [
       { title: 'Sequence spend behind the constraint', description: 'AI investment returns are gated by your weakest funded pillar. Direct the next budget cycle to whichever of Strategy, Data, or Governance scores lowest before scaling use cases that depend on it.', priority: 'high', color: '#f59e0b' },
-      { title: 'Cost of inaction', description: 'The EU AI Act applies in full from 2 August 2026. Governance and documentation gaps cannot be retrofitted in under a quarter — the cost of delay is measured in audit exposure, not just remediation effort.', priority: 'critical', color: '#ef4444' },
+      { title: 'Cost of inaction', description: 'The Article 4 literacy duty is in force now; high-risk obligations follow on 2 December 2027 after the Digital Omnibus deferral. Governance and documentation gaps cannot be retrofitted in a quarter — the deferral moved the date, not the work.', priority: 'critical', color: '#ef4444' },
       { title: 'Budget Allocation', description: 'Current budget allocation overweights technology acquisition (45%) and underweights talent development (12%) and governance (8%). Industry benchmarks suggest 30% technology, 25% talent, 15% governance for optimal outcomes.', priority: 'medium', color: '#3b82f6' },
     ],
     keyInsight: 'AI investments are generating positive returns but budget allocation misalignment and technical debt accumulation are constraining value. Rebalancing toward governance and talent would unlock significantly higher ROI.',

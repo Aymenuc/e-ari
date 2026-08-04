@@ -16,16 +16,14 @@
 
 import { PILLARS, SCORING_VERSION } from './pillars';
 import { DEEPSEEK_API_KEY, DEEPSEEK_API_URL, DEEPSEEK_MODEL } from './llm-config';
+import { milestone, daysUntil, formatMilestoneDate } from './ai-act-timeline';
 
 // ─── Ground truth: compiled from code, not copywriting ──────────────────────
 
-const AI_ACT_FULL_APPLICATION = new Date('2026-08-02T00:00:00Z');
-
 export function buildProductFacts(): string {
-  const daysToDeadline = Math.max(
-    0,
-    Math.ceil((AI_ACT_FULL_APPLICATION.getTime() - Date.now()) / 86_400_000),
-  );
+  const highRisk = milestone('high-risk-annex-iii')!;
+  const annexI = milestone('high-risk-annex-i')!;
+  const daysToHighRisk = Math.max(0, daysUntil(highRisk));
   return [
     `- E-ARI is an enterprise AI-readiness and EU AI Act compliance platform (e-ari.com).`,
     `- Scoring is deterministic and versioned (${SCORING_VERSION}): the same 40 answers always produce the same score. No black box.`,
@@ -35,7 +33,12 @@ export function buildProductFacts(): string {
     `- Continuous layer between assessments: Pulse (monthly re-checks), Shadow AI Discovery (SSO/expense-export scans for undeclared tools), Article 4 Literacy training (per-role quizzes, exportable roster), and a grounded Assistant.`,
     `- Compliance workspace: AI system registry, EU AI Act obligation mapping, evidence vault, FRIA and technical-file exports, vendor questionnaires.`,
     `- Reports: board-ready .docx with sector weighting, structural findings, and an owner/timeline/metric action table.`,
-    `- EU AI Act timeline fact: full high-risk obligations apply from 2 August 2026 — ${daysToDeadline} days from today. Penalties for high-risk non-compliance reach EUR 15M or 3% of global turnover (Art. 99(4)); the EUR 35M / 7% ceiling applies only to prohibited practices under Art. 5. Never conflate the two.`,
+    // The dates are the fact the model most needs to get right, and it was
+    // being handed a superseded one. Both halves are stated so it cannot
+    // manufacture a countdown to a deadline that moved.
+    `- EU AI Act timeline fact: the Digital Omnibus (in force, amending Regulation (EU) 2024/1689) DEFERRED high-risk obligations. Standalone Annex III high-risk applies from ${formatMilestoneDate(highRisk)} (${daysToHighRisk} days from today); AI embedded in regulated products from ${formatMilestoneDate(annexI)}. NEVER state that high-risk obligations apply from 2 August 2026 — that date was superseded.`,
+    `- EU AI Act timeline fact: what binds an organisation TODAY regardless of classification is the Article 4 AI literacy duty, and from 2 August 2026 the Article 50 transparency duties. Both were deliberately left unchanged by the Omnibus. Two further Article 5 prohibitions (non-consensual intimate imagery; child sexual abuse material) apply from 2 December 2026.`,
+    `- EU AI Act penalty fact: high-risk non-compliance reaches EUR 15M or 3% of global turnover (Art. 99(4)); the EUR 35M / 7% ceiling applies only to prohibited practices under Art. 5. Never conflate the two.`,
     `- Maturity bands: Laggard, Follower, Chaser, Pacesetter. Certification tiers: Bronze → Platinum, each with published overall + per-pillar minimums.`,
     `- Tiers: Free, Professional, Growth, Autopilot, Enterprise.`,
   ].join('\n');
@@ -45,9 +48,9 @@ export function buildProductFacts(): string {
 
 export const MARKETING_TOPICS: Record<string, { label: string; angle: string }> = {
   'aiact-deadline': {
-    label: 'EU AI Act deadline',
+    label: 'EU AI Act timeline',
     angle:
-      'The countdown to 2 August 2026 (use the exact day count from the facts). What full high-risk application means, why waiting is the expensive option, how an assessment is the honest first step.',
+      'What actually binds an organisation today (Article 4 literacy, Article 50 transparency) versus what was deferred to December 2027 and August 2028 by the Digital Omnibus. Use the exact dates from the facts. The honest angle is that the deferral bought time to build evidence, not permission to wait — the controls take longer to stand up than to describe.',
   },
   methodology: {
     label: 'Methodology explainer',

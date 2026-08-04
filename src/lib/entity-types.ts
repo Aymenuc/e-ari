@@ -146,7 +146,7 @@ export function getDefaultRegulations(
   // Universal floor — every entity type sees these where relevant.
   const universal = (): string[] => [
     'GDPR — General Data Protection Regulation (where personal data is processed)',
-    'EU AI Act — risk-classification regime (effective 2 August 2026)',
+    'EU AI Act — risk-classification regime (high-risk duties from 2 December 2027; literacy and transparency already in force)',
   ];
 
   // Entity-type-specific overrides win over sector defaults for non-commercial orgs.

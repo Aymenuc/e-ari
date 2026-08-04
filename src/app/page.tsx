@@ -53,6 +53,7 @@ import { MethodologyExplorer } from '@/components/marketing/methodology-radar'
 import { AgentsConstellation } from '@/components/marketing/agents-constellation'
 import { AgentPanel } from '@/components/shared/agent-panel'
 import { PILLARS } from '@/lib/pillars'
+import { milestone, daysUntil, formatMilestoneDate } from '@/lib/ai-act-timeline'
 
 /* ─── Animation helpers ────────────────────────────────────────────────── */
 
@@ -481,26 +482,27 @@ export default function Home() {
             Factual regulatory countdown — the strongest conversion element
             this product can honestly run. Hides itself once the date passes. */}
         {(() => {
-          const deadline = new Date('2026-08-02T00:00:00Z')
-          const daysLeft = Math.ceil((deadline.getTime() - Date.now()) / 86_400_000)
-          if (daysLeft <= 0) return (
-            <div className="border-b border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-center">
-              <p className="font-sans text-[13px] text-slate-300">
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mr-3">EU AI Act</span>
-                High-risk obligations are now in full application. <Link href="/assessment" className="text-slate-400 hover:underline font-medium">Check your exposure →</Link>
-              </p>
-            </div>
-          )
+          // Two facts, not one countdown. The Digital Omnibus deferred
+          // high-risk to December 2027, but Article 4 literacy binds every
+          // organisation today and Article 50 transparency lands in August
+          // 2026 — a strip that counted down to a superseded date was both
+          // wrong and, once it lapsed, an argument for doing nothing.
+          const highRisk = milestone('high-risk-annex-iii')!
+          const daysLeft = daysUntil(highRisk)
           return (
             <div className="border-b border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-center">
               <p className="font-sans text-[13px] text-slate-300">
                 <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 mr-3">EU AI Act</span>
-                Full high-risk obligations apply on <span className="text-slate-100 font-medium">2 August 2026</span>
+                The <span className="text-slate-100 font-medium">AI literacy duty</span> applies now to every organisation using AI
                 <span className="mx-2 text-slate-500">·</span>
-                <span className="font-mono tabular-nums text-slate-400 font-semibold">{daysLeft} day{daysLeft === 1 ? '' : 's'}</span> to be audit-ready
-                <span className="mx-2 text-slate-500">·</span>
-                penalties up to €15M / 3% of turnover
-                <Link href="/assessment" className="ml-3 text-slate-400 hover:underline font-medium">Start free assessment →</Link>
+                high-risk obligations from <span className="text-slate-100 font-medium">{formatMilestoneDate(highRisk)}</span>
+                {daysLeft > 0 && (
+                  <>
+                    <span className="mx-2 text-slate-500">·</span>
+                    <span className="font-mono tabular-nums text-slate-400 font-semibold">{daysLeft} days</span> to build the evidence
+                  </>
+                )}
+                <Link href="/assessment" className="ml-3 text-slate-400 hover:underline font-medium">Check your exposure →</Link>
               </p>
             </div>
           )
