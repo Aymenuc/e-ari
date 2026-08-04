@@ -12,6 +12,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { assessSmallMidCap } from '@/lib/ai-act-scope';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -225,9 +226,28 @@ export default function AccountPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs text-muted-foreground font-sans">Organization Size</p>
                     <p className="text-sm text-foreground font-sans">{profileData.orgSize || 'Not set'}</p>
+                    {/* Regulation (EU) 2026/1744 gives small mid-caps simplified
+                        documentation, a proportionate QMS, sandbox priority and
+                        capped fines. The size band alone cannot establish the
+                        status — it turns on exact headcount, turnover and not
+                        already being an SME — so this says where the reader
+                        stands and what is still needed, and never asserts it. */}
+                    {(() => {
+                      const smc = assessSmallMidCap(profileData.orgSize)
+                      if (smc.likelihood === 'unknown') return null
+                      return (
+                        <p className="mt-1 font-sans text-[11px] leading-relaxed text-slate-500">
+                          <span className="text-slate-400">Small mid-cap status: {smc.likelihood}.</span>{' '}
+                          {smc.reason}
+                          {smc.missing.length > 0
+                            ? ` To settle it we would need your ${smc.missing.join(', ')}.`
+                            : ''}
+                        </p>
+                      )
+                    })()}
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

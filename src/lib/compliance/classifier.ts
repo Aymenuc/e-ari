@@ -1,12 +1,26 @@
 import type { AISystem, Evidence } from "@prisma/client";
 import { complianceLLMChat, complianceParseJson } from "@/lib/compliance/llm";
+import { scopeRulesForPrompt } from "@/lib/ai-act-scope";
 
+/**
+ * The prompt carries the amended scope test, not a vibe.
+ *
+ * It previously said only "prefer high only when description matches high-risk
+ * patterns (biometric ID, critical infra, employment scoring)". That is a list
+ * of examples, not the statutory test, and it predates Regulation (EU)
+ * 2026/1744 — which narrowed what counts as a safety component and added an
+ * express exclusion for systems used solely to assist or optimise. A model
+ * given examples instead of a test over-classifies, and over-classification
+ * bills the reader for controls they do not owe.
+ */
 const SYSTEM_PROMPT = `You are an EU AI Act compliance classifier. Output ONLY valid JSON with keys:
 riskTier (string: one of prohibited | high | limited | minimal — use minimal if unsure),
-riskRationale (string: 3–8 sentences citing plausible AI Act articles by label only, no fabricated court cases),
+riskRationale (string: 3–8 sentences applying the rules below and citing the articles you relied on by label only; no fabricated court cases, no invented recitals),
 citedArticles (string array of article refs like Art.6, Annex III).
 
-Temperature-equivalent discipline: be conservative; prefer "high" only when description matches high-risk patterns (biometric ID, critical infra, employment scoring, etc.).`;
+${scopeRulesForPrompt()}
+
+Discipline: apply the test, do not pattern-match on the sector. Where the evidence does not settle a limb, say which fact is missing rather than assuming the worse tier. Classification is the reader's decision to make with counsel; your job is to show the test and where their system falls in it.`;
 
 export interface ClassificationResult {
   riskTier: string;
