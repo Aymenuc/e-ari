@@ -144,6 +144,18 @@ function buildPlan(goal: Goal, visibility: Visibility | null): PlanStep[] {
 export default function WelcomePage() {
   const prefersReducedMotion = useReducedMotion();
   const router = useRouter();
+
+  /**
+   * Seeing the concierge is what "first time" means.
+   *
+   * The flag used to be written only by the Skip link and the step buttons, so
+   * every other way out — browser back, the logo, a typed URL, closing the tab
+   * — left it unset and /portal sent the user straight back here. Marking on
+   * arrival is both simpler and the honest reading of "show this once".
+   */
+  useEffect(() => {
+    void fetch('/api/onboarding', { method: 'POST' }).catch(() => {});
+  }, []);
   const [step, setStep] = useState(0);
   const [goal, setGoal] = useState<Goal | null>(null);
   const [visibility, setVisibility] = useState<Visibility | null>(null);
@@ -223,7 +235,6 @@ export default function WelcomePage() {
               dashboard does not send them straight back here. */}
           <Link
             href="/portal"
-            onClick={() => { void fetch('/api/onboarding', { method: 'POST' }); }}
             className="font-sans text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             Skip — take me to the dashboard
@@ -309,7 +320,7 @@ export default function WelcomePage() {
                             <p className="mt-0.5 font-sans text-[12.5px] leading-snug text-muted-foreground">{s.detail}</p>
                           </div>
                           {i === 0 ? (
-                            <Button onClick={() => { void fetch('/api/onboarding', { method: 'POST' }); router.push(s.href); }} className="btn-brand font-heading font-semibold h-9 px-4 text-sm flex-shrink-0">
+                            <Button onClick={() => router.push(s.href)} className="btn-brand font-heading font-semibold h-9 px-4 text-sm flex-shrink-0">
                               {s.cta} <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                             </Button>
                           ) : (
