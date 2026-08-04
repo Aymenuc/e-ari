@@ -33,8 +33,6 @@ import {
   Clock,
   ChevronDown,
 } from 'lucide-react';
-import { Navigation } from '@/components/shared/navigation';
-import { Footer } from '@/components/shared/footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -918,12 +916,10 @@ function QuizResults({ category, score, total, onRetry }: { category: QuizCatego
 export default function LiteracyPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex flex-col bg-navy-900">
-        <Navigation />
+      <div className="flex flex-col">
         <main className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-eari-blue-light" />
         </main>
-        <Footer />
       </div>
     }>
       <LiteracyPageContent />
@@ -975,8 +971,7 @@ function LiteracyPageContent() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900">
-      <Navigation />
+    <div className="flex flex-col">
 
       <main className="flex-1">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
@@ -1584,8 +1579,6 @@ function LiteracyPageContent() {
           </div>
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 }

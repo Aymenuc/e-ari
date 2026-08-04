@@ -3,8 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Navigation } from '@/components/shared/navigation';
-import { Footer } from '@/components/shared/footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,8 +57,7 @@ export default function BrandingPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900">
-      <Navigation />
+    <div className="flex flex-col">
       <main className="flex-1">
         <div className="mx-auto max-w-3xl px-4 py-10">
           <Card className="bg-card/80 border-border">
@@ -127,7 +124,6 @@ export default function BrandingPage() {
           </Card>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

@@ -18,7 +18,8 @@ import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import {
   Activity, BadgeCheck, BarChart3, Boxes, ClipboardList, FileCheck,
-  GraduationCap, KeyRound, LayoutDashboard, Radar, Settings, ShieldCheck, Users,
+  GraduationCap, KeyRound, LayoutDashboard, Palette, Radar, Settings,
+  ShieldCheck, Sparkles, Users,
 } from 'lucide-react'
 import { AppShell, type ShellGroup } from '@/components/shared/app-shell'
 
@@ -38,15 +39,20 @@ const GROUPS: ShellGroup[] = [
       { href: '/portal/evidence', label: 'Evidence', icon: FileCheck },
       { href: '/portal/controls', label: 'Controls', icon: ShieldCheck },
       { href: '/portal/vendors', label: 'Vendors', icon: BadgeCheck },
-      { href: '/portal/discovery', label: 'Discovery', icon: Radar },
+      // "Discovery" alone was ambiguous: this is the Shadow AI scan, and the
+      // Discovery Agent at /discovery is a different tool entirely.
+      { href: '/portal/discovery', label: 'Shadow AI scan', icon: Radar },
     ],
   },
   {
-    label: 'Organisation',
+    label: 'People',
     items: [
       { href: '/portal/team', label: 'Team', icon: Users },
-      { href: '/portal/literacy-compliance', label: 'Training', icon: GraduationCap },
-      { href: '/portal/api-keys', label: 'API keys', icon: KeyRound },
+      // Two different tools, and only the manager's view was reachable: this
+      // assigns modules and exports Article 4 evidence, while /literacy is the
+      // learner's own path. Someone assigned training had no way to open it.
+      { href: '/portal/literacy-compliance', label: 'Training programme', icon: GraduationCap },
+      { href: '/literacy', label: 'My learning', icon: Sparkles },
     ],
   },
   {
@@ -55,6 +61,9 @@ const GROUPS: ShellGroup[] = [
       // Billing lives on the account page rather than a route of its own; the
       // entry lands on the section instead of inventing a page for one card.
       { href: '/portal/account', label: 'Account & billing', icon: Settings },
+      { href: '/portal/api-keys', label: 'API keys', icon: KeyRound },
+      // Was reachable only from one button inside the certification tab.
+      { href: '/branding', label: 'Branding', icon: Palette },
     ],
   },
 ]
