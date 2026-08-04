@@ -2,12 +2,23 @@
  * E-ARI Regulatory Compliance Mapping
  *
  * Maps the 8-Pillar AI Readiness scores to specific requirements from:
- * - EU AI Act (Regulation 2024/1689)
+ * - EU AI Act (Regulation (EU) 2024/1689), as amended by Regulation (EU)
+ *   2026/1744 (Digital Omnibus on AI, in force 27 July 2026)
  * - NIST AI Risk Management Framework (AI RMF 1.0)
  * - ISO/IEC 42001:2023 (AI Management System)
  *
  * Each mapping links pillar scores to regulatory articles with minimum
  * compliance thresholds and actionable recommendations.
+ *
+ * The header previously cited only the 2024 text, which is the version a
+ * customer would have read off a compliance export. The articles mapped here
+ * (9, 10, 13, 14, 15, 16, 26) were not rewritten by the Omnibus — what changed
+ * is when they bite and, for Art. 6, which systems they reach. Those live in
+ * ai-act-timeline.ts and ai-act-scope.ts rather than being restated here, so
+ * there is one place to correct if they move again.
+ *
+ * Provenance is recorded in regulatory-provenance.ts. Content that encodes law
+ * without a recorded corpus is how a superseded date survived in eight files.
  */
 
 // ─── Types ────────────────────────────────────────────────────────────────────

@@ -62,7 +62,7 @@ export const TRAINING_MODULES: TrainingModule[] = [
     lessons: [
       {
         heading: 'The risk-based structure',
-        body: 'The EU AI Act (Regulation 2024/1689) regulates AI by risk level. Prohibited practices (social scoring, exploitative manipulation, most real-time remote biometric ID in public) are banned outright since February 2025. High-risk systems (AI in hiring, credit, education, essential services, safety components) carry heavy obligations from August 2026. Limited-risk systems (chatbots, deepfakes) need transparency: people must know they are interacting with AI. Everything else is minimal risk.',
+        body: 'The EU AI Act (Regulation 2024/1689, as amended by Regulation (EU) 2026/1744) regulates AI by risk level. Prohibited practices (social scoring, exploitative manipulation, most real-time remote biometric ID in public) have been banned since February 2025, with two further bans — non-consensual intimate imagery and child sexual abuse material — from December 2026. High-risk systems (AI in hiring, credit, education, essential services, safety components) carry heavy obligations from 2 December 2027 for standalone systems and 2 August 2028 for AI built into regulated products. Limited-risk systems (chatbots, deepfakes) need transparency from August 2026: people must know they are interacting with AI. The literacy duty you are meeting right now applies already, whatever your systems are classified as. Everything else is minimal risk.',
       },
       {
         heading: 'What this means day-to-day',
