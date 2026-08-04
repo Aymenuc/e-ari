@@ -37,7 +37,7 @@ import {
   ComplianceInboxCard,
   type PortalInboxItem,
 } from '@/components/shared/compliance-inbox';
-import { CoverageGaugeCard } from '@/components/shared/coverage-gauge';
+import { StatusStrip } from '@/components/portal/status-strip';
 import type { ProgressionState } from '@/lib/progression';
 import { AIAssistant } from '@/components/shared/ai-assistant';
 import { BillingCard } from '@/components/account/billing-card';
@@ -167,30 +167,6 @@ function CountUpNumber({ value, duration = 1100 }: { value: number; duration?: n
   return <>{v}</>;
 }
 
-/** Compact readiness ring beside the welcome heading — latest completed score. */
-function MiniScoreRing({ score }: { score: number; band?: string | null }) {
-  /* Same ramp the results page uses, driven by the score itself rather than
-     by the band — the ring and the number it wraps can no longer disagree. */
-  const color = scoreRamp(score);
-  const C = 2 * Math.PI * 26;
-  return (
-    <div className="relative hidden sm:flex h-16 w-16 items-center justify-center flex-shrink-0" aria-label={`Latest readiness score ${Math.round(score)}`}>
-      <svg width="64" height="64" viewBox="0 0 64 64">
-        <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(148,163,184,0.15)" strokeWidth="4" />
-        <circle
-          cx="32" cy="32" r="26" fill="none"
-          stroke={color} strokeWidth="4" strokeLinecap="round"
-          strokeDasharray={C} strokeDashoffset={C - (C * score) / 100}
-          transform="rotate(-90 32 32)"
-          style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.22,1,0.36,1)' }}
-        />
-      </svg>
-      <span className="absolute font-heading text-sm font-semibold tabular-nums text-foreground">
-        <CountUpNumber value={Math.round(score)} />
-      </span>
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Component
@@ -343,10 +319,16 @@ export default function PortalPage() {
   const completedAssessments = assessments.filter((a) => a.status === 'completed').length;
   const scoredAssessments = assessments.filter((a) => a.status === 'completed' && a.overallScore !== null);
   const latestCompleted = assessments.find((a) => a.status === 'completed' && !a.isPulse) ?? null;
-  const averageScore =
-    scoredAssessments.length > 0
-      ? Math.round(scoredAssessments.reduce((sum, a) => sum + (a.overallScore ?? 0), 0) / scoredAssessments.length)
-      : 0;
+  /**
+   * Full assessments only, newest first (the API orders createdAt desc).
+   *
+   * Movement compares like with like: scoredAssessments includes pulses, so
+   * index 1 there can be a pulse check, and measuring a full assessment
+   * against one would report a change that never happened.
+   */
+  const scoredFullAssessments = assessments.filter(
+    (a) => a.status === 'completed' && !a.isPulse && a.overallScore !== null,
+  );
 
   // User defaults (session has limited data; derive what we can)
   const userName = session?.user?.name || 'User';
@@ -396,9 +378,6 @@ export default function PortalPage() {
                 and the account page — a workspace header should say who you
                 are and where you stand, not repeat your login. */}
             <div className="flex items-center gap-3">
-              {latestCompleted && typeof latestCompleted.overallScore === 'number' ? (
-                <MiniScoreRing score={latestCompleted.overallScore} band={latestCompleted.maturityBand} />
-              ) : null}
               <div>
                 <h1 className="font-heading text-xl sm:text-2xl font-semibold tracking-[-0.02em] text-slate-50">
                   {userName}
@@ -430,91 +409,23 @@ export default function PortalPage() {
             <JourneyGuide />
           </section>
 
-          {/* ── At a glance ───────────────────────────────────────────────────
-              These four sat two-up inside the right-hand rail, ~187px each,
-              which is not enough room for a label and a number and left the
-              table squeezed beside them. A full-width strip gives each one
-              real space and hands the work zone its width back. */}
-          <section className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <Card className="bg-navy-800/70 border-border/50 transition-colors hover:border-border">
-              <CardContent className="p-4 sm:p-5">
-                <div className="flex items-baseline justify-between">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                    Total assessments
-                  </p>
-                  <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground/50" aria-hidden />
-                </div>
-                {loading ? (
-                  <Skeleton className="mt-3 h-8 w-16" />
-                ) : (
-                  <p className="mt-2 font-heading text-3xl font-semibold tabular-nums text-foreground">
-                    <CountUpNumber value={totalAssessments} />
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="bg-navy-800/70 border-border/50 transition-colors hover:border-border">
-              <CardContent className="p-4 sm:p-5">
-                <div className="flex items-baseline justify-between">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                    Completed
-                  </p>
-                  <Shield className="h-3.5 w-3.5 text-muted-foreground/50" aria-hidden />
-                </div>
-                {loading ? (
-                  <Skeleton className="mt-3 h-8 w-16" />
-                ) : (
-                  <p className="mt-2 font-heading text-3xl font-semibold tabular-nums text-foreground">
-                    <CountUpNumber value={completedAssessments} />
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="bg-navy-800/70 border-border/50 transition-colors hover:border-border">
-              <CardContent className="p-4 sm:p-5">
-                <div className="flex items-baseline justify-between">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                    Average score
-                  </p>
-                  <BarChart3 className="h-3.5 w-3.5 text-muted-foreground/50" aria-hidden />
-                </div>
-                {loading ? (
-                  <Skeleton className="mt-3 h-8 w-16" />
-                ) : (
-                  <p className="mt-2 font-heading text-3xl font-semibold tabular-nums text-foreground">
-                    {averageScore > 0 ? (
-                      <>
-                        <CountUpNumber value={averageScore} />
-                        <span className="ml-0.5 text-base font-medium text-muted-foreground">%</span>
-                      </>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="bg-navy-800/70 border-border/50 transition-colors hover:border-border">
-              <CardContent className="p-4 sm:p-5">
-                <div className="flex items-baseline justify-between">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                    Current tier
-                  </p>
-                  <Award className="h-3.5 w-3.5 text-muted-foreground/50" aria-hidden />
-                </div>
-                {loading ? (
-                  <Skeleton className="mt-3 h-8 w-24" />
-                ) : (
-                  <p className="mt-2 font-heading text-3xl font-semibold text-foreground">
-                    {tierLabel(userTier)}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </section>
+          {/* ── Where you stand ──────────────────────────────────────────────
+              Was: total assessments, completed, average score, current tier.
+              Three of those are trivia and the average mixed a baseline with
+              the improvements made since it, so a company that improved could
+              watch the number sit still. See StatusStrip for the reasoning. */}
+          <StatusStrip
+            score={typeof latestCompleted?.overallScore === 'number' ? latestCompleted.overallScore : null}
+            previousScore={
+              typeof scoredFullAssessments[1]?.overallScore === 'number'
+                ? scoredFullAssessments[1].overallScore
+                : null
+            }
+            completedAt={latestCompleted?.completedAt ?? null}
+            obligationsApplicable={progressionState?.verifying?.obligationsApplicable ?? 0}
+            obligationsEvidenced={progressionState?.verifying?.obligationsEvidenced ?? 0}
+            resultHref={latestCompleted ? `/results/${latestCompleted.id}` : null}
+          />
 
           {/* ── Work zone: the table you act on + a live context rail ──────── */}
           <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3 items-start">
@@ -664,15 +575,10 @@ export default function PortalPage() {
             </div>
 
             <aside className="space-y-4">
+              {/* Coverage was a gauge here, below the fold, while being the
+                  most actionable number on the page. It leads the strip now,
+                  so repeating it would just be the same figure twice. */}
               <ComplianceInboxCard items={inboxItems} loading={inboxLoading} />
-              {progressionState ? (
-                <CoverageGaugeCard
-                  obligationsApplicable={progressionState.verifying.obligationsApplicable}
-                  obligationsEvidenced={progressionState.verifying.obligationsEvidenced}
-                />
-              ) : (
-                <CoverageGaugeCard obligationsApplicable={0} obligationsEvidenced={0} />
-              )}
             </aside>
           </section>
 
