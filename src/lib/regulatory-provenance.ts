@@ -95,10 +95,22 @@ export const ENGINE_PROVENANCE: EngineProvenance[] = [
     checked: '2026-08-04',
   },
   {
-    engine: 'compliance/classifier.ts',
-    encodes: 'Risk-tier classification prompt',
+    engine: 'ai-act-annex.ts',
+    encodes: 'Annex III areas, Art. 5 prohibitions and Art. 50 triggers, as data',
     sources: ['ai-act', 'omnibus-ai'],
-    checked: '2026-08-04',
+    checked: '2026-08-06',
+  },
+  {
+    engine: 'ai-act-classify.ts',
+    encodes: 'Deterministic risk-tier rules and the trace behind each determination',
+    sources: ['ai-act', 'omnibus-ai'],
+    checked: '2026-08-06',
+  },
+  {
+    engine: 'compliance/classifier.ts',
+    encodes: 'Rationale prompt and citation guard over the rule-decided tier',
+    sources: ['ai-act', 'omnibus-ai'],
+    checked: '2026-08-06',
   },
   {
     engine: 'regulatory-mapping.ts',

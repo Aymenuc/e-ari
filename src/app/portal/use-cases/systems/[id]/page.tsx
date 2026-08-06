@@ -19,8 +19,10 @@ import {
   Download,
   Cpu,
   Grid3x3,
+  AlertTriangle,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { splitRationale } from "@/lib/ai-act-classify";
 
 interface CoverageRow {
   code: string;
@@ -188,6 +190,27 @@ function CoverageMatrixSection({
   );
 }
 
+/**
+ * Colour the tier by what it means.
+ *
+ * Every tier rendered emerald, so "prohibited" arrived in the same reassuring
+ * green as "minimal" — the most consequential word on the page styled as good
+ * news. Minimal is deliberately neutral rather than green too: it is reached by
+ * nothing matching, which is an absence of evidence, not a clearance.
+ */
+function tierBadgeClass(tier: string): string {
+  switch (tier.toLowerCase()) {
+    case "prohibited":
+      return "border-red-500/40 text-red-400 bg-red-500/5";
+    case "high":
+      return "border-amber-500/40 text-amber-400 bg-amber-500/5";
+    case "limited":
+      return "border-eari-blue/40 text-eari-blue-light bg-eari-blue/5";
+    default:
+      return "border-border text-muted-foreground";
+  }
+}
+
 interface SystemDetail {
   id: string;
   name: string;
@@ -302,7 +325,7 @@ export default function AISystemOverviewPage() {
                     {system.deployerRole}
                   </Badge>
                   {system.riskTier ? (
-                    <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-400">
+                    <Badge variant="outline" className={`text-[10px] ${tierBadgeClass(system.riskTier)}`}>
                       {system.riskTier}
                     </Badge>
                   ) : (
@@ -333,13 +356,55 @@ export default function AISystemOverviewPage() {
                 <CardHeader className="pb-2">
                   <CardTitle className="font-heading text-sm flex items-center gap-2">
                     <Scale className="h-4 w-4 text-eari-blue-light" />
-                    Classification rationale (draft)
+                    Classification rationale
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm font-sans text-muted-foreground whitespace-pre-wrap leading-relaxed">{system.riskRationale}</p>
+                <CardContent className="space-y-4">
+                  {(() => {
+                    const { prose, trace, provisional } = splitRationale(system.riskRationale!);
+                    return (
+                      <>
+                        <p className="text-sm font-sans text-muted-foreground whitespace-pre-wrap leading-relaxed">{prose}</p>
+
+                        {/* The trace is the part an auditor can check, so it is
+                            shown as evidence rather than folded into the prose. */}
+                        {trace.length > 0 ? (
+                          <div className="rounded-md border border-eari-blue/15 bg-navy-900/50 p-3">
+                            <p className="text-[10px] font-mono uppercase tracking-wider text-eari-blue-light/70 mb-2">
+                              Rules applied
+                            </p>
+                            <ul className="space-y-1.5">
+                              {trace.map((line, i) => (
+                                <li key={i} className="text-xs font-mono text-muted-foreground/90 leading-relaxed">
+                                  {line}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : null}
+
+                        {/* A caveat that reads like prose is a caveat nobody
+                            acts on. This one has to stop the eye. */}
+                        {provisional.length > 0 ? (
+                          <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3">
+                            <p className="text-[10px] font-mono uppercase tracking-wider text-amber-400/90 mb-2 flex items-center gap-1.5">
+                              <AlertTriangle className="h-3 w-3" />
+                              Provisional — confirm before relying on this
+                            </p>
+                            <ul className="space-y-1.5 list-disc pl-4">
+                              {provisional.map((q, i) => (
+                                <li key={i} className="text-xs font-sans text-amber-100/80 leading-relaxed">
+                                  {q}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : null}
+                      </>
+                    );
+                  })()}
                   {system.classifiedAt ? (
-                    <p className="text-[10px] font-mono text-muted-foreground/60 mt-2">Classified at {new Date(system.classifiedAt).toLocaleString()}</p>
+                    <p className="text-[10px] font-mono text-muted-foreground/60">Classified at {new Date(system.classifiedAt).toLocaleString()}</p>
                   ) : null}
                 </CardContent>
               </Card>

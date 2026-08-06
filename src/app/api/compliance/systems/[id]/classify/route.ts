@@ -3,6 +3,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { classifyAISystem } from "@/lib/compliance/classifier";
+import {
+  explainClassification, RATIONALE_TRACE_MARKER, RATIONALE_PROVISIONAL_MARKER,
+} from "@/lib/ai-act-classify";
 import { sendComplianceClassificationEmail } from "@/lib/email-service";
 import { findComplianceSystem } from "@/lib/compliance/access";
 import { checkRateLimit, getRateLimitHeaders, resolveIdentifier } from "@/lib/rate-limit";
@@ -38,11 +41,30 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
     const cited = result.citedArticles.length ? `\nArticles referenced: ${result.citedArticles.join(", ")}` : "";
 
+    /**
+     * The trace is the point, so it is persisted with the tier.
+     *
+     * A rationale a model wrote is an opinion; a rationale plus the rules that
+     * produced it is something an auditor can check. Storing only the prose
+     * would throw away the half that is defensible, and a determination shown
+     * as settled while it still depends on an unanswered question is worse
+     * than one shown as provisional.
+     */
+    const trace = explainClassification(result.rules).map((l) => `  · ${l}`).join("\n");
+    const provisional = result.rules.requiresHumanConfirmation
+      ? `\n\n${RATIONALE_PROVISIONAL_MARKER}\n${result.rules.openQuestions
+          .map((q) => `  · ${q}`)
+          .join("\n")}`
+      : "";
+    const audit =
+      `\n\n${RATIONALE_TRACE_MARKER} (deterministic, ${result.rules.confidence} confidence):\n${trace}` +
+      provisional;
+
     const updated = await db.aISystem.update({
       where: { id },
       data: {
         riskTier: result.riskTier,
-        riskRationale: `${result.riskRationale}${cited}`,
+        riskRationale: `${result.riskRationale}${cited}${audit}`,
         classifiedAt: new Date(),
       },
     });
