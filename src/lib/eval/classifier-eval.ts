@@ -23,6 +23,7 @@
  */
 
 import { classifyByRules, type RiskTier } from '@/lib/ai-act-classify';
+import { CURRENT_CORPUS } from '@/lib/regulatory-provenance';
 
 export interface ClassifierCase {
   id: string;
@@ -127,11 +128,20 @@ export function evaluateClassifier(cases: ClassifierCase[]): ClassifierMetrics {
   };
 }
 
-/** Human-readable report. Used by the CLI and by test failure messages. */
+/**
+ * Human-readable report. Used by the CLI and by test failure messages.
+ *
+ * Carries the corpus line, because an accuracy figure without the instrument it
+ * was measured against is not quotable. "97% accurate" is a claim about
+ * nothing; "97% against Regulation (EU) 2024/1689 as amended by 2026/1744, on
+ * 39 cases, with 3 held out as undecidable" is a claim someone can check.
+ */
 export function formatClassifierReport(m: ClassifierMetrics): string {
   const pct = (n: number) => `${(n * 100).toFixed(1)}%`;
   const lines: string[] = [
     `Classifier — ${m.correct}/${m.scored} correct (${pct(m.accuracy)})`,
+    `  measured against: ${CURRENT_CORPUS.citation}`,
+    `  labels: written in-house from the instrument, not independently reviewed`,
   ];
 
   const section = (title: string, rows: CaseOutcome[]) => {
