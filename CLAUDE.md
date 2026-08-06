@@ -1,0 +1,95 @@
+# E-ARI
+
+EU AI Act compliance and AI-readiness scoring platform. Next.js 16 (Turbopack, App
+Router), TypeScript strict, Prisma + Supabase Postgres, NextAuth v4 (JWT), Stripe,
+Resend. Deployed on Vercel.
+
+## Commands
+
+```bash
+npm run dev              # port 3000
+npm test                 # vitest run — needs a database (see below)
+npm run test:integration # RUN_INTEGRATION_TESTS=1, hits Supabase
+npm run lint             # eslint .
+npm run build            # prisma migrate deploy && generate && vitest run && next build
+```
+
+Tests need `DATABASE_URL`. Locally that comes from `.env.test` via `TEST_DATABASE_URL`
+(see `vitest.setup.ts`), or pass it inline:
+
+```bash
+DATABASE_URL="postgresql://postgres@localhost:5433/e_ari_dev" npx vitest run
+```
+
+**Do not run `next build` while `npm run dev` is running.** They share build output and
+the dev server starts returning 404 for every API route. Recovery: stop dev,
+`rm -rf .next-dev`, restart.
+
+## Invariants
+
+**The score is deterministic and versioned.** `SCORING_VERSION` (`src/lib/pillars.ts`)
+is `5.3`. Pillar weights, Likert normalisation, the 6 interdependency rules and the 8
+X-Ray detectors are published methodology. Changing any of them without bumping the
+version silently rewrites history — past assessments become unreproducible and the
+"defensible score" claim goes with them.
+
+**The risk tier is decided by rules, never by a model.** `src/lib/ai-act-classify.ts`
+matches the enumerated law in `src/lib/ai-act-annex.ts` and returns the tier plus which
+rule fired. `src/lib/compliance/classifier.ts` calls the LLM only to write the
+rationale, and drops any cited article the engine never applied. The tier decides
+whether an org owes a technical file, a FRIA and post-market monitoring — it is not a
+generation task.
+
+When adding regulatory triggers, prefer specific phrases. Bare `migration`, `visa` and
+`exploit vulnerability` each fired on ordinary IT and security vocabulary and produced
+confident false findings — a cloud-migration tool read as high-risk, a vulnerability
+scanner as a banned practice. No Annex III match is ever settled from a description:
+Article 6(3) lets a provider rebut the presumption, so the determination stays
+provisional and the question is attached.
+
+**Regulatory content must be registered.** Any module under `src/lib` that cites the
+Act needs a row in `src/lib/regulatory-provenance.ts` with a `checked` date. A test
+enforces this. A superseded application date once survived in eight files at once
+because nothing recorded what any of them had been checked against.
+
+**Paywalls belong at the API, not the UI.** Hiding a button is not gating a feature —
+the Word-export endpoint was reachable by direct URL for a whole tier while the button
+was correctly hidden. Tier ranks are in `src/lib/tier-limits.ts` (`TIER_RANK`,
+`canMap` ≥ 1, `canOperate` ≥ 2); check them in the route handler.
+
+**Schema changes go through runtime migrations.** Add tables via the sentinel-gated
+`CREATE TABLE IF NOT EXISTS` pattern in `src/instrumentation.ts` and bump
+`SCHEMA_VERSION` (currently `2026-08-02-1`).
+
+## Regulatory sources
+
+Regulation (EU) 2024/1689, as amended by **Regulation (EU) 2026/1744** (Digital Omnibus
+on AI, in force 27 July 2026). Dates live in `src/lib/ai-act-timeline.ts` — the single
+source of truth, do not hardcode them elsewhere. Scope tests and small mid-cap
+thresholds are in `src/lib/ai-act-scope.ts`.
+
+The draft Commission guidelines on high-risk classification (19 May 2026) are **not
+adopted**. Cite them as draft or not at all.
+
+## Conventions
+
+- Next 16 uses `src/proxy.ts`, not `middleware.ts`.
+- No default exports.
+- Commits: `type(scope): description`, co-authored trailer for Claude-assisted work.
+- Prefer a deterministic check over a prompt. If a rule can be written as an assertion,
+  it should not be a model's judgement — cheaper, testable, and it cannot drift.
+
+## Traps
+
+**Vitest hooks treat a returned function as teardown.** `beforeEach(() => m.mockReset())`
+returns the mock, so Vitest calls it with no arguments after every test. Use braces:
+`beforeEach(() => { m.mockReset(); })`.
+
+**Browser-preview screenshots are not measurements.** They capture at a different scale
+than the viewport, and `requestAnimationFrame` pauses when the pane is hidden, which
+freezes framer-motion mid-animation. Measure layout from the DOM (`getBoundingClientRect`,
+`getComputedStyle`); use screenshots to show a result, not to diagnose one.
+
+**Chrome in `/portal` comes from the shell.** `PortalShell` supplies the header, sidebar
+and footer. A nested layout adding its own `<Navigation />` produces two stacked
+`sticky top-0` bars that overlap on scroll.
