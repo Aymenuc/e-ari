@@ -85,6 +85,10 @@ describe('regulatory provenance', () => {
       'compliance/compliance-docx.ts', 'compliance/compliance-pdf.ts',
       'compliance/monitoring-plan.ts', 'compliance/access.ts',
       'member-tokens.ts', 'tier-limits.ts', 'tier.ts',
+      // Test infrastructure. It names articles to explain what the harness can
+      // and cannot decide; it encodes no obligation of its own. The regulatory
+      // content it measures is registered under the engines above.
+      'eval/classifier-eval.ts',
     ]);
     expect(unregistered.filter((f) => !allowed.has(f))).toEqual([]);
   });
