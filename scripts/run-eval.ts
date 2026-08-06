@@ -9,7 +9,7 @@
  * detail and for the live stage. Exit code is non-zero when a hard check fails,
  * so it can gate a deploy.
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { config } from 'dotenv';
 import { SCORING_VERSION } from '../src/lib/pillars';
@@ -78,7 +78,26 @@ if (LIVE) {
     process.exit(1);
   }
 
+  const { COMPLIANCE_MODEL } = await import('../src/lib/llm-config');
+  const { CURRENT_CORPUS } = await import('../src/lib/regulatory-provenance');
   const { classifyAISystem } = await import('../src/lib/compliance/classifier');
+
+  /**
+   * Every run is written out in full, not just its summary.
+   *
+   * The metrics are a lossy view of what the model said, and the interesting
+   * question later is usually "what changed?" — a model version moves, a prompt
+   * is edited, a reviewer disputes a rationale. Without the raw outputs there is
+   * nothing to diff against, and the run cannot be repeated because the model
+   * will not say the same thing twice.
+   */
+  const runRecord = {
+    ranAt: new Date().toISOString(),
+    model: COMPLIANCE_MODEL,
+    corpus: CURRENT_CORPUS.citation,
+    labelProvenance: 'in-house, not independently reviewed',
+    cases: [] as Array<Record<string, unknown>>,
+  };
 
   // Spread across tiers rather than taking the first N, which would be all
   // prohibited cases and would measure nothing about the common path.
@@ -114,6 +133,17 @@ if (LIVE) {
         } as never,
         [],
       );
+
+      runRecord.cases.push({
+        id: c.id,
+        expectedTier: c.expectedTier,
+        tier: res.riskTier,
+        rationale: res.riskRationale,
+        citedArticles: res.citedArticles,
+        droppedCitations: res.droppedCitations,
+        requiresHumanConfirmation: res.rules.requiresHumanConfirmation,
+        fellBack: res.riskRationale === res.rules.basis,
+      });
 
       if (res.riskRationale === res.rules.basis) {
         fellBack++;
@@ -162,6 +192,13 @@ if (LIVE) {
   console.log(`  tier contradictions       ${tierContradictions}/${scored}  (heuristic — read the flagged ones)`);
   console.log(`  provisional stated        ${provisionalDue === 0 ? 'n/a' : `${provisionalStated}/${provisionalDue}`}`);
   if (errors > 0) console.log(`  errors                    ${errors} (missing API key?)`);
+
+  const dir = join(GOLDEN, 'live-runs');
+  mkdirSync(dir, { recursive: true });
+  const stamp = runRecord.ranAt.replace(/[:.]/g, '-');
+  const out = join(dir, `${stamp}__${COMPLIANCE_MODEL.replace(/[^\w.-]/g, '-')}.json`);
+  writeFileSync(out, `${JSON.stringify(runRecord, null, 2)}\n`);
+  console.log(`\n  raw outputs written to ${out.replace(process.cwd(), '.')}`);
 }
 
 console.log('');
