@@ -1,0 +1,729 @@
+{
+  "scoringVersion": "5.3",
+  "frozenOn": "2026-08-06",
+  "profiles": [
+    {
+      "id": "floor",
+      "why": "Every answer at 1 — the bottom of the range, and the band boundary most likely to move under a normalisation change.",
+      "fill": 1
+    },
+    {
+      "id": "ceiling",
+      "why": "Every answer at 5 — the top of the range.",
+      "fill": 5
+    },
+    {
+      "id": "midpoint",
+      "why": "Every answer at 3 — no adjustment should fire on a flat profile.",
+      "fill": 3
+    },
+    {
+      "id": "near-band-edge",
+      "why": "A profile sitting close to a maturity band boundary, where a sub-point drift changes the label a customer sees.",
+      "fill": 3,
+      "overrides": {
+        "strategy_1": 4,
+        "strategy_2": 4,
+        "governance_1": 4
+      }
+    },
+    {
+      "id": "governance-gap",
+      "why": "High capability with weak governance — the interdependency rules exist for exactly this shape, so at least one adjustment must fire.",
+      "fill": 5,
+      "overrides": {
+        "governance_1": 1,
+        "governance_2": 1,
+        "governance_3": 1,
+        "governance_4": 1,
+        "governance_5": 1
+      }
+    },
+    {
+      "id": "critical-failure",
+      "why": "A pillar at the floor while the rest is strong — must register a critical pillar failure.",
+      "fill": 4,
+      "overrides": {
+        "data_1": 1,
+        "data_2": 1,
+        "data_3": 1,
+        "data_4": 1,
+        "data_5": 1
+      }
+    },
+    {
+      "id": "sector-healthcare",
+      "why": "Sector weighting on an uneven profile — healthcare re-weights toward governance and security.",
+      "fill": 3,
+      "overrides": {
+        "strategy_1": 5,
+        "strategy_2": 5,
+        "strategy_3": 5,
+        "strategy_4": 4,
+        "strategy_5": 4,
+        "security_1": 1,
+        "security_2": 1,
+        "security_3": 2,
+        "security_4": 1,
+        "security_5": 2,
+        "governance_1": 2,
+        "governance_2": 1,
+        "governance_3": 2,
+        "governance_4": 2,
+        "governance_5": 1,
+        "data_1": 4,
+        "data_2": 4,
+        "data_3": 3,
+        "data_4": 4,
+        "data_5": 3
+      },
+      "sector": "healthcare"
+    },
+    {
+      "id": "sector-finance",
+      "why": "The same answers under finance weighting — must not equal the healthcare score.",
+      "fill": 3,
+      "overrides": {
+        "strategy_1": 5,
+        "strategy_2": 5,
+        "strategy_3": 5,
+        "strategy_4": 4,
+        "strategy_5": 4,
+        "security_1": 1,
+        "security_2": 1,
+        "security_3": 2,
+        "security_4": 1,
+        "security_5": 2,
+        "governance_1": 2,
+        "governance_2": 1,
+        "governance_3": 2,
+        "governance_4": 2,
+        "governance_5": 1,
+        "data_1": 4,
+        "data_2": 4,
+        "data_3": 3,
+        "data_4": 4,
+        "data_5": 3
+      },
+      "sector": "finance"
+    },
+    {
+      "id": "sector-technology",
+      "why": "The same answers under technology weighting — three identical scores here would mean weighting is not being applied.",
+      "fill": 3,
+      "overrides": {
+        "strategy_1": 5,
+        "strategy_2": 5,
+        "strategy_3": 5,
+        "strategy_4": 4,
+        "strategy_5": 4,
+        "security_1": 1,
+        "security_2": 1,
+        "security_3": 2,
+        "security_4": 1,
+        "security_5": 2,
+        "governance_1": 2,
+        "governance_2": 1,
+        "governance_3": 2,
+        "governance_4": 2,
+        "governance_5": 1,
+        "data_1": 4,
+        "data_2": 4,
+        "data_3": 3,
+        "data_4": 4,
+        "data_5": 3
+      },
+      "sector": "technology"
+    },
+    {
+      "id": "mixed-realistic",
+      "why": "An uneven profile resembling a real submission, so the lock is not made only of uniform fills.",
+      "fill": 3,
+      "overrides": {
+        "strategy_1": 5,
+        "strategy_3": 2,
+        "governance_2": 1,
+        "governance_5": 4,
+        "data_1": 4,
+        "data_4": 2,
+        "talent_2": 5,
+        "talent_3": 1
+      },
+      "sector": "technology"
+    }
+  ],
+  "expectations": {
+    "floor": {
+      "overallScore": 0,
+      "baselineOverallScore": 0,
+      "maturityBand": "laggard",
+      "pillarScores": [
+        {
+          "pillarId": "strategy",
+          "normalizedScore": 0,
+          "maturityBand": "laggard"
+        },
+        {
+          "pillarId": "data",
+          "normalizedScore": 0,
+          "maturityBand": "laggard"
+        },
+        {
+          "pillarId": "technology",
+          "normalizedScore": 0,
+          "maturityBand": "laggard"
+        },
+        {
+          "pillarId": "talent",
+          "normalizedScore": 0,
+          "maturityBand": "laggard"
+        },
+        {
+          "pillarId": "governance",
+          "normalizedScore": 0,
+          "maturityBand": "laggard"
+        },
+        {
+          "pillarId": "culture",
+          "normalizedScore": 0,
+          "maturityBand": "laggard"
+        },
+        {
+          "pillarId": "process",
+          "normalizedScore": 0,
+          "maturityBand": "laggard"
+        },
+        {
+          "pillarId": "security",
+          "normalizedScore": 0,
+          "maturityBand": "laggard"
+        }
+      ],
+      "adjustmentTypes": [
+        "RULE_1",
+        "RULE_2",
+        "RULE_3",
+        "RULE_4",
+        "RULE_5",
+        "RULE_6"
+      ],
+      "criticalPillarFailures": [
+        "culture",
+        "data",
+        "governance",
+        "process",
+        "security",
+        "strategy",
+        "talent",
+        "technology"
+      ],
+      "xRayFindingIds": [
+        "P-04"
+      ],
+      "sectorWeightingApplied": false
+    },
+    "ceiling": {
+      "overallScore": 100,
+      "baselineOverallScore": 100,
+      "maturityBand": "pacesetter",
+      "pillarScores": [
+        {
+          "pillarId": "strategy",
+          "normalizedScore": 100,
+          "maturityBand": "pacesetter"
+        },
+        {
+          "pillarId": "data",
+          "normalizedScore": 100,
+          "maturityBand": "pacesetter"
+        },
+        {
+          "pillarId": "technology",
+          "normalizedScore": 100,
+          "maturityBand": "pacesetter"
+        },
+        {
+          "pillarId": "talent",
+          "normalizedScore": 100,
+          "maturityBand": "pacesetter"
+        },
+        {
+          "pillarId": "governance",
+          "normalizedScore": 100,
+          "maturityBand": "pacesetter"
+        },
+        {
+          "pillarId": "culture",
+          "normalizedScore": 100,
+          "maturityBand": "pacesetter"
+        },
+        {
+          "pillarId": "process",
+          "normalizedScore": 100,
+          "maturityBand": "pacesetter"
+        },
+        {
+          "pillarId": "security",
+          "normalizedScore": 100,
+          "maturityBand": "pacesetter"
+        }
+      ],
+      "adjustmentTypes": [],
+      "criticalPillarFailures": [],
+      "xRayFindingIds": [],
+      "sectorWeightingApplied": false
+    },
+    "midpoint": {
+      "overallScore": 50,
+      "baselineOverallScore": 50,
+      "maturityBand": "follower",
+      "pillarScores": [
+        {
+          "pillarId": "strategy",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "data",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "technology",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "talent",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "governance",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "culture",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "process",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "security",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        }
+      ],
+      "adjustmentTypes": [],
+      "criticalPillarFailures": [],
+      "xRayFindingIds": [],
+      "sectorWeightingApplied": false
+    },
+    "near-band-edge": {
+      "overallScore": 52.25,
+      "baselineOverallScore": 52.25,
+      "maturityBand": "chaser",
+      "pillarScores": [
+        {
+          "pillarId": "strategy",
+          "normalizedScore": 60,
+          "maturityBand": "chaser"
+        },
+        {
+          "pillarId": "data",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "technology",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "talent",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "governance",
+          "normalizedScore": 55,
+          "maturityBand": "chaser"
+        },
+        {
+          "pillarId": "culture",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "process",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "security",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        }
+      ],
+      "adjustmentTypes": [],
+      "criticalPillarFailures": [],
+      "xRayFindingIds": [],
+      "sectorWeightingApplied": false
+    },
+    "governance-gap": {
+      "overallScore": 81.4,
+      "baselineOverallScore": 81.4,
+      "maturityBand": "pacesetter",
+      "pillarScores": [
+        {
+          "pillarId": "strategy",
+          "normalizedScore": 100,
+          "maturityBand": "pacesetter"
+        },
+        {
+          "pillarId": "data",
+          "normalizedScore": 100,
+          "maturityBand": "pacesetter"
+        },
+        {
+          "pillarId": "technology",
+          "normalizedScore": 70,
+          "maturityBand": "chaser"
+        },
+        {
+          "pillarId": "talent",
+          "normalizedScore": 100,
+          "maturityBand": "pacesetter"
+        },
+        {
+          "pillarId": "governance",
+          "normalizedScore": 0,
+          "maturityBand": "laggard"
+        },
+        {
+          "pillarId": "culture",
+          "normalizedScore": 100,
+          "maturityBand": "pacesetter"
+        },
+        {
+          "pillarId": "process",
+          "normalizedScore": 100,
+          "maturityBand": "pacesetter"
+        },
+        {
+          "pillarId": "security",
+          "normalizedScore": 100,
+          "maturityBand": "pacesetter"
+        }
+      ],
+      "adjustmentTypes": [
+        "RULE_1"
+      ],
+      "criticalPillarFailures": [
+        "governance"
+      ],
+      "xRayFindingIds": [
+        "P-01",
+        "P-02",
+        "P-06"
+      ],
+      "sectorWeightingApplied": false
+    },
+    "critical-failure": {
+      "overallScore": 62.06,
+      "baselineOverallScore": 62.06,
+      "maturityBand": "chaser",
+      "pillarScores": [
+        {
+          "pillarId": "strategy",
+          "normalizedScore": 63.75,
+          "maturityBand": "chaser"
+        },
+        {
+          "pillarId": "data",
+          "normalizedScore": 0,
+          "maturityBand": "laggard"
+        },
+        {
+          "pillarId": "technology",
+          "normalizedScore": 75,
+          "maturityBand": "chaser"
+        },
+        {
+          "pillarId": "talent",
+          "normalizedScore": 75,
+          "maturityBand": "chaser"
+        },
+        {
+          "pillarId": "governance",
+          "normalizedScore": 75,
+          "maturityBand": "chaser"
+        },
+        {
+          "pillarId": "culture",
+          "normalizedScore": 75,
+          "maturityBand": "chaser"
+        },
+        {
+          "pillarId": "process",
+          "normalizedScore": 75,
+          "maturityBand": "chaser"
+        },
+        {
+          "pillarId": "security",
+          "normalizedScore": 75,
+          "maturityBand": "chaser"
+        }
+      ],
+      "adjustmentTypes": [
+        "RULE_2"
+      ],
+      "criticalPillarFailures": [
+        "data"
+      ],
+      "xRayFindingIds": [
+        "P-02",
+        "P-08"
+      ],
+      "sectorWeightingApplied": false
+    },
+    "sector-healthcare": {
+      "overallScore": 43.81,
+      "baselineOverallScore": 45.82,
+      "maturityBand": "follower",
+      "pillarScores": [
+        {
+          "pillarId": "strategy",
+          "normalizedScore": 90,
+          "maturityBand": "pacesetter"
+        },
+        {
+          "pillarId": "data",
+          "normalizedScore": 65,
+          "maturityBand": "chaser"
+        },
+        {
+          "pillarId": "technology",
+          "normalizedScore": 29.75,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "talent",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "governance",
+          "normalizedScore": 15,
+          "maturityBand": "laggard"
+        },
+        {
+          "pillarId": "culture",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "process",
+          "normalizedScore": 42.5,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "security",
+          "normalizedScore": 10,
+          "maturityBand": "laggard"
+        }
+      ],
+      "adjustmentTypes": [
+        "RULE_1",
+        "RULE_3",
+        "RULE_5"
+      ],
+      "criticalPillarFailures": [
+        "security"
+      ],
+      "xRayFindingIds": [
+        "P-02",
+        "P-04"
+      ],
+      "sectorWeightingApplied": true
+    },
+    "sector-finance": {
+      "overallScore": 44.52,
+      "baselineOverallScore": 45.82,
+      "maturityBand": "follower",
+      "pillarScores": [
+        {
+          "pillarId": "strategy",
+          "normalizedScore": 90,
+          "maturityBand": "pacesetter"
+        },
+        {
+          "pillarId": "data",
+          "normalizedScore": 65,
+          "maturityBand": "chaser"
+        },
+        {
+          "pillarId": "technology",
+          "normalizedScore": 29.75,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "talent",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "governance",
+          "normalizedScore": 15,
+          "maturityBand": "laggard"
+        },
+        {
+          "pillarId": "culture",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "process",
+          "normalizedScore": 42.5,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "security",
+          "normalizedScore": 10,
+          "maturityBand": "laggard"
+        }
+      ],
+      "adjustmentTypes": [
+        "RULE_1",
+        "RULE_3",
+        "RULE_5"
+      ],
+      "criticalPillarFailures": [
+        "security"
+      ],
+      "xRayFindingIds": [
+        "P-02",
+        "P-04"
+      ],
+      "sectorWeightingApplied": true
+    },
+    "sector-technology": {
+      "overallScore": 46.85,
+      "baselineOverallScore": 45.82,
+      "maturityBand": "follower",
+      "pillarScores": [
+        {
+          "pillarId": "strategy",
+          "normalizedScore": 90,
+          "maturityBand": "pacesetter"
+        },
+        {
+          "pillarId": "data",
+          "normalizedScore": 65,
+          "maturityBand": "chaser"
+        },
+        {
+          "pillarId": "technology",
+          "normalizedScore": 29.75,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "talent",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "governance",
+          "normalizedScore": 15,
+          "maturityBand": "laggard"
+        },
+        {
+          "pillarId": "culture",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "process",
+          "normalizedScore": 42.5,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "security",
+          "normalizedScore": 10,
+          "maturityBand": "laggard"
+        }
+      ],
+      "adjustmentTypes": [
+        "RULE_1",
+        "RULE_3",
+        "RULE_5"
+      ],
+      "criticalPillarFailures": [
+        "security"
+      ],
+      "xRayFindingIds": [
+        "P-02",
+        "P-04"
+      ],
+      "sectorWeightingApplied": true
+    },
+    "mixed-realistic": {
+      "overallScore": 50.14,
+      "baselineOverallScore": 50,
+      "maturityBand": "chaser",
+      "pillarScores": [
+        {
+          "pillarId": "strategy",
+          "normalizedScore": 55,
+          "maturityBand": "chaser"
+        },
+        {
+          "pillarId": "data",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "technology",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "talent",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "governance",
+          "normalizedScore": 45,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "culture",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "process",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        },
+        {
+          "pillarId": "security",
+          "normalizedScore": 50,
+          "maturityBand": "follower"
+        }
+      ],
+      "adjustmentTypes": [],
+      "criticalPillarFailures": [],
+      "xRayFindingIds": [
+        "P-05"
+      ],
+      "sectorWeightingApplied": true
+    }
+  }
+}

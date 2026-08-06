@@ -74,29 +74,57 @@ function searchable(facts: ClassificationFacts): Array<{ field: string; text: st
   ].filter((f) => f.text.trim().length > 0);
 }
 
+/** Words, lower-cased, punctuation dropped. */
+function tokenize(text: string): string[] {
+  return text.toLowerCase().match(/[a-z0-9]+/g) ?? [];
+}
+
 /**
- * Match on word boundaries, not substrings.
+ * Does one word match a trigger word, allowing regular English inflection?
  *
- * A naive `includes` matched "police" inside "policies" and "visa" inside
- * "visualisation", which would put a dashboard into Annex III(7). The boundary
- * check is what makes the trace trustworthy enough to show someone.
+ * "scrapes" is "scrape", "targets" is "target", "policing" is "police". A
+ * trigger phrase written in the infinitive has to match the sentence someone
+ * actually wrote, and people write "scrapes facial images", not "scrape facial
+ * images".
+ *
+ * Only regular suffixes, and only on a whole word — that is what keeps
+ * "policies" away from "police" and "upgrading" away from "grading". Matching
+ * words rather than characters is also why "Irish" no longer contains "iris":
+ * a substring search cannot see word structure, so it had to be told about
+ * boundaries; comparing tokens never sees inside a word in the first place.
  */
+function wordMatches(word: string, trigger: string): boolean {
+  if (word === trigger) return true;
+  if (word === `${trigger}s` || word === `${trigger}es`) return true;
+  if (word === `${trigger}ed` || word === `${trigger}ing`) return true;
+  // English drops a silent final "e" before -ing/-ed: score → scoring.
+  if (trigger.endsWith('e')) {
+    const stem = trigger.slice(0, -1);
+    if (word === `${stem}ing` || word === `${stem}ed`) return true;
+  }
+  return false;
+}
+
+/** A trigger matches when its words appear consecutively, in order. */
+function phraseAt(words: string[], trigger: string[], start: number): boolean {
+  if (start + trigger.length > words.length) return false;
+  for (let i = 0; i < trigger.length; i++) {
+    if (!wordMatches(words[start + i]!, trigger[i]!)) return false;
+  }
+  return true;
+}
+
 function findMatch(area: EnumeratedArea, facts: ClassificationFacts): FiredRule | null {
   for (const { field, text } of searchable(facts)) {
-    const hay = text.toLowerCase();
+    const words = tokenize(text);
     for (const trigger of area.triggers) {
-      const t = trigger.toLowerCase();
-      const idx = hay.indexOf(t);
-      if (idx === -1) continue;
-      const before = idx === 0 ? ' ' : hay[idx - 1]!;
-      if (/[a-z0-9]/.test(before)) continue;
-      let end = idx + t.length;
-      // A trailing plural "s" is the same word. Without this, "visa
-      // applications" and "dark patterns" both slipped past, which is a false
-      // negative — and a missed obligation costs more than a spare question.
-      if (hay[end] === 's' && !/[a-z0-9]/.test(hay[end + 1] ?? ' ')) end += 1;
-      if (/[a-z0-9]/.test(hay[end] ?? ' ')) continue;
-      return { code: area.code, heading: area.heading, article: area.article, matchedOn: trigger, field };
+      const t = tokenize(trigger);
+      if (t.length === 0) continue;
+      for (let i = 0; i < words.length; i++) {
+        if (phraseAt(words, t, i)) {
+          return { code: area.code, heading: area.heading, article: area.article, matchedOn: trigger, field };
+        }
+      }
     }
   }
   return null;

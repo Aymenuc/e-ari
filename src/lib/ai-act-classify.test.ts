@@ -107,7 +107,9 @@ describe('classifyByRules', () => {
   });
 
   it('quotes the phrase and the field, so the trace can be checked', () => {
-    const r = classifyByRules(sys({ purpose: 'Predictive policing for crime prediction' }));
+    // A purpose matching exactly one trigger, so the quoted phrase is not an
+    // artefact of which trigger happens to be listed first.
+    const r = classifyByRules(sys({ purpose: 'Crime prediction for patrol resource allocation' }));
     const line = explainClassification(r)[0]!;
     expect(line).toContain('Annex III(6)');
     expect(line).toContain('crime prediction');
@@ -209,6 +211,17 @@ describe('word boundaries', () => {
     // "promotional" is not "promotions"; only a bare trailing s counts.
     expect(classifyByRules(sys({ purpose: 'Promotional banner scheduling' })).tier).toBe('minimal');
     expect(classifyByRules(sys({ purpose: 'Employee promotions and reviews' })).tier).toBe('high');
+  });
+
+  it('matches regular inflections of a trigger word', () => {
+    // Trigger phrases are written in the infinitive; people write sentences.
+    // "scrapes facial images" and "targets vulnerable groups" both went
+    // unmatched until words were compared instead of characters — two missed
+    // Article 5 prohibitions, the most expensive miss the engine can make.
+    expect(classifyByRules(sys({ purpose: 'Scrapes facial images from social media' })).tier).toBe('prohibited');
+    expect(classifyByRules(sys({ purpose: 'Targets vulnerable groups by age' })).tier).toBe('prohibited');
+    expect(classifyByRules(sys({ purpose: 'Predictive policing deployment' })).tier).toBe('high');
+    expect(classifyByRules(sys({ purpose: 'Credit scoring for lending' })).tier).toBe('high');
   });
 
   it('matches across punctuation and casing', () => {

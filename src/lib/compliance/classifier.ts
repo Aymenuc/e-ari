@@ -48,6 +48,14 @@ export interface ClassificationResult {
   citedArticles: string[];
   /** The deterministic trace behind the tier. */
   rules: RuleClassification;
+  /**
+   * Articles the model cited that the engine never applied, and which were
+   * therefore withheld. Non-empty means the model reached for a provision the
+   * facts did not support — the misgrounding signal. Worth watching: it is the
+   * cheapest available measure of how much the narrative is drifting from the
+   * determination.
+   */
+  droppedCitations: string[];
 }
 
 function factsFrom(system: AISystem): ClassificationFacts {
@@ -128,6 +136,7 @@ export async function classifyAISystem(
 
   let riskRationale = rules.basis;
   let citedArticles = rules.firedRules.map((r) => r.article);
+  let droppedCitations: string[] = [];
 
   try {
     const raw = await complianceLLMChat(
@@ -145,6 +154,7 @@ export async function classifyAISystem(
       ? (parsed.citedArticles as unknown[]).map((x) => String(x).trim())
       : [];
     const kept = proposed.filter((a) => allowed.has(a));
+    droppedCitations = [...new Set(proposed.filter((a) => a.length > 0 && !allowed.has(a)))];
     // Fired rules are cited whether or not the model remembered them.
     citedArticles = [...new Set([...rules.firedRules.map((r) => r.article), ...kept])].slice(0, 24);
   } catch (err) {
@@ -153,5 +163,5 @@ export async function classifyAISystem(
     console.error("[classifier] rationale generation failed; using rule basis:", err);
   }
 
-  return { riskTier: rules.tier, riskRationale, citedArticles, rules };
+  return { riskTier: rules.tier, riskRationale, citedArticles, rules, droppedCitations };
 }

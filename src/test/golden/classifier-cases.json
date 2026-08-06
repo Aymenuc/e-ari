@@ -1,0 +1,379 @@
+{
+  "$comment": "Labelled from Regulation (EU) 2024/1689 as amended by 2026/1744 — NOT from this engine's output. Cases where the two disagree are findings, not cases to be retuned. `knownLimitation: true` marks a case the rules engine provably cannot decide from a description; those are reported as coverage gaps, never as passes.",
+  "labelledOn": "2026-08-06",
+  "cases": [
+    {
+      "id": "proh-001",
+      "purpose": "Assigns citizens a trustworthiness score used to restrict access to public services",
+      "description": "Social scoring across unrelated government datasets",
+      "expectedTier": "prohibited",
+      "expectedArticle": "Art.5(1)(c)",
+      "why": "Art. 5(1)(c) bans social scoring leading to detrimental treatment in unrelated contexts.",
+      "tags": ["article-5", "social-scoring"]
+    },
+    {
+      "id": "proh-002",
+      "purpose": "Generates deepfake nude images of real people from ordinary photographs",
+      "description": "A nudify app for consumer use",
+      "expectedTier": "prohibited",
+      "expectedArticle": "Art.5 (added by Reg. 2026/1744)",
+      "why": "Non-consensual intimate imagery of identifiable people, added to Art. 5 by the Digital Omnibus.",
+      "tags": ["article-5", "ncii", "omnibus"]
+    },
+    {
+      "id": "proh-003",
+      "purpose": "Produces synthetic child sexual abuse material for research datasets",
+      "description": "Generative model fine-tuned for this output",
+      "expectedTier": "prohibited",
+      "expectedArticle": "Art.5 (added by Reg. 2026/1744)",
+      "why": "CSAM, added to Art. 5 by the Digital Omnibus. Stated research purpose is not an exemption.",
+      "tags": ["article-5", "csam", "omnibus"]
+    },
+    {
+      "id": "proh-004",
+      "purpose": "Advertising engine that targets vulnerable groups by age and financial distress",
+      "description": "Optimises for conversion among users showing signs of debt",
+      "expectedTier": "prohibited",
+      "expectedArticle": "Art.5(1)(a)-(b)",
+      "why": "Art. 5(1)(b) bans exploiting vulnerabilities of persons due to age or socio-economic situation.",
+      "tags": ["article-5", "manipulation"]
+    },
+    {
+      "id": "proh-005",
+      "purpose": "Scrapes facial images from social media to build a recognition database",
+      "description": "Untargeted collection at scale",
+      "expectedTier": "prohibited",
+      "expectedArticle": "Art.5(1)(e)",
+      "why": "Art. 5(1)(e) bans untargeted scraping of facial images to build recognition databases.",
+      "tags": ["article-5", "scraping"]
+    },
+    {
+      "id": "proh-006-inverse",
+      "purpose": "Detects and blocks child sexual abuse material before upload to the platform",
+      "description": "Content moderation classifier",
+      "expectedTier": "prohibited",
+      "expectedArticle": "Art.5 (added by Reg. 2026/1744)",
+      "why": "The phrase matches, but detecting is the opposite of producing. The engine is expected to flag this for confirmation rather than treat it as settled — this case exists to assert requiresHumanConfirmation, not to assert the tier is correct in substance.",
+      "expectRequiresConfirmation": true,
+      "tags": ["article-5", "csam", "inverse-intent"]
+    },
+
+    {
+      "id": "hr-001",
+      "purpose": "Screens and ranks job applicants against role requirements",
+      "description": "CV screening for open vacancies",
+      "expectedTier": "high",
+      "expectedArticle": "Annex III(4)",
+      "why": "Annex III(4) — recruitment and selection.",
+      "tags": ["annex-iii", "employment"]
+    },
+    {
+      "id": "hr-002",
+      "purpose": "Allocates shift tasks and evaluates warehouse worker performance",
+      "description": "Task allocation and performance evaluation",
+      "expectedTier": "high",
+      "expectedArticle": "Annex III(4)",
+      "why": "Annex III(4) — decisions on task allocation and monitoring of performance.",
+      "tags": ["annex-iii", "employment"]
+    },
+    {
+      "id": "credit-001",
+      "purpose": "Assesses creditworthiness of loan applicants",
+      "description": "Consumer lending decisions",
+      "expectedTier": "high",
+      "expectedArticle": "Annex III(5)",
+      "why": "Annex III(5) — creditworthiness evaluation, excluding fraud detection.",
+      "tags": ["annex-iii", "essential-services"]
+    },
+    {
+      "id": "credit-002",
+      "purpose": "Determines eligibility for social benefits and public assistance",
+      "description": "Municipal benefits triage",
+      "expectedTier": "high",
+      "expectedArticle": "Annex III(5)",
+      "why": "Annex III(5) — access to essential public services and benefits.",
+      "tags": ["annex-iii", "essential-services"]
+    },
+    {
+      "id": "health-001",
+      "purpose": "Patient triage for emergency call dispatch priority",
+      "description": "Ambulance dispatch ordering",
+      "expectedTier": "high",
+      "expectedArticle": "Annex III(5)",
+      "why": "Annex III(5) explicitly covers emergency call triage and dispatch.",
+      "tags": ["annex-iii", "healthcare"]
+    },
+    {
+      "id": "bio-001",
+      "purpose": "Facial recognition for building access control",
+      "description": "Biometric identification at entry points",
+      "expectedTier": "high",
+      "expectedArticle": "Annex III(1)",
+      "why": "Annex III(1) — biometric identification and categorisation.",
+      "tags": ["annex-iii", "biometrics"]
+    },
+    {
+      "id": "bio-002",
+      "purpose": "Emotion recognition applied to call-centre staff during customer calls",
+      "description": "Infers agent emotional state",
+      "expectedTier": "high",
+      "expectedArticle": "Annex III(1)",
+      "why": "Annex III(1) covers emotion inference. In a workplace it also engages the Art. 5 prohibition on emotion recognition at work — a nuance this engine does not model.",
+      "tags": ["annex-iii", "biometrics", "workplace"]
+    },
+    {
+      "id": "edu-001",
+      "purpose": "Grades student exam submissions and determines course placement",
+      "description": "Automated assessment and educational placement",
+      "expectedTier": "high",
+      "expectedArticle": "Annex III(3)",
+      "why": "Annex III(3) — evaluating learning outcomes and assigning people to institutions.",
+      "tags": ["annex-iii", "education"]
+    },
+    {
+      "id": "edu-002",
+      "purpose": "Proctoring software monitoring candidates during remote examinations",
+      "description": "Detects prohibited behaviour during tests",
+      "expectedTier": "high",
+      "expectedArticle": "Annex III(3)",
+      "why": "Annex III(3) — monitoring prohibited behaviour during tests.",
+      "tags": ["annex-iii", "education"]
+    },
+    {
+      "id": "le-001",
+      "purpose": "Predicts recidivism risk to inform parole recommendations",
+      "description": "Used by a national probation service",
+      "expectedTier": "high",
+      "expectedArticle": "Annex III(6)",
+      "why": "Annex III(6) — law enforcement risk assessment of natural persons.",
+      "tags": ["annex-iii", "law-enforcement"]
+    },
+    {
+      "id": "le-002",
+      "purpose": "Assesses the reliability of evidence during criminal investigation",
+      "description": "Deployed by police investigators",
+      "expectedTier": "high",
+      "expectedArticle": "Annex III(6)",
+      "why": "Annex III(6) — evaluating the reliability of evidence.",
+      "tags": ["annex-iii", "law-enforcement"]
+    },
+    {
+      "id": "mig-001",
+      "purpose": "Assesses visa applications for eligibility and fraud indicators",
+      "description": "Consular decision support",
+      "expectedTier": "high",
+      "expectedArticle": "Annex III(7)",
+      "why": "Annex III(7) — examination of visa and residence permit applications.",
+      "tags": ["annex-iii", "migration"]
+    },
+    {
+      "id": "mig-002",
+      "purpose": "Border control passenger risk assessment at ports of entry",
+      "description": "Security screening of arrivals",
+      "expectedTier": "high",
+      "expectedArticle": "Annex III(7)",
+      "why": "Annex III(7) — risk assessment in border control management.",
+      "tags": ["annex-iii", "migration"]
+    },
+    {
+      "id": "jus-001",
+      "purpose": "Assists judges in researching and interpreting case law and facts",
+      "description": "Judicial research assistant",
+      "expectedTier": "high",
+      "expectedArticle": "Annex III(8)",
+      "why": "Annex III(8) — assisting a judicial authority in researching and interpreting facts and law.",
+      "tags": ["annex-iii", "justice"]
+    },
+    {
+      "id": "jus-002",
+      "purpose": "Targets political messaging to influence voters before a referendum",
+      "description": "Campaign audience optimisation",
+      "expectedTier": "high",
+      "expectedArticle": "Annex III(8)",
+      "why": "Annex III(8) — influencing the outcome of an election or referendum.",
+      "tags": ["annex-iii", "democratic-process"]
+    },
+    {
+      "id": "infra-001",
+      "purpose": "Controls load balancing on the regional electricity grid",
+      "description": "Safety component of grid management",
+      "expectedTier": "high",
+      "expectedArticle": "Annex III(2)",
+      "why": "Annex III(2) — safety component in the management of critical infrastructure.",
+      "tags": ["annex-iii", "critical-infrastructure"]
+    },
+    {
+      "id": "infra-002",
+      "purpose": "Traffic management signal timing across a city road network",
+      "description": "Municipal traffic control",
+      "expectedTier": "high",
+      "expectedArticle": "Annex III(2)",
+      "why": "Annex III(2) — safety component in road traffic management.",
+      "tags": ["annex-iii", "critical-infrastructure"]
+    },
+
+    {
+      "id": "lim-001",
+      "purpose": "Customer service chatbot answering order status questions",
+      "description": "Conversational assistant on the storefront",
+      "expectedTier": "limited",
+      "expectedArticle": "Art.50",
+      "why": "Art. 50(1) — interacts directly with natural persons, so disclosure is required. Applicable since 2 August 2026.",
+      "tags": ["article-50", "transparency"]
+    },
+    {
+      "id": "lim-002",
+      "purpose": "Generates marketing copy and product images for the catalogue",
+      "description": "Generative content production",
+      "expectedTier": "limited",
+      "expectedArticle": "Art.50",
+      "why": "Art. 50(2) — synthetic content must be machine-readably marked.",
+      "tags": ["article-50", "transparency"]
+    },
+    {
+      "id": "lim-003",
+      "purpose": "Voice synthesis for automated appointment reminder calls",
+      "description": "Text-to-speech outbound calling",
+      "expectedTier": "limited",
+      "expectedArticle": "Art.50",
+      "why": "Art. 50 — synthetic audio and interaction with a natural person.",
+      "tags": ["article-50", "transparency"]
+    },
+    {
+      "id": "lim-004",
+      "purpose": "Virtual assistant that answers internal HR policy questions for staff",
+      "description": "Answers questions about leave policy and does not decide anything",
+      "expectedTier": "limited",
+      "expectedArticle": "Art.50",
+      "why": "Interacts with people but makes no employment decision, so Art. 50 rather than Annex III(4). A good test of whether HR vocabulary alone drags a system into high risk.",
+      "tags": ["article-50", "near-miss"]
+    },
+
+    {
+      "id": "min-001",
+      "purpose": "Plans and tracks cloud migration of legacy databases",
+      "description": "Infrastructure migration scheduling",
+      "expectedTier": "minimal",
+      "why": "Ordinary IT tooling. 'Migration' here is not migration in the Annex III(7) sense — a bare keyword match would produce a confident false high-risk finding.",
+      "tags": ["false-positive-trap", "vocabulary-collision"]
+    },
+    {
+      "id": "min-002",
+      "purpose": "Reconciles Visa and Mastercard settlement files nightly",
+      "description": "Payments back-office automation",
+      "expectedTier": "minimal",
+      "why": "'Visa' is a payment network here, not a travel document.",
+      "tags": ["false-positive-trap", "vocabulary-collision"]
+    },
+    {
+      "id": "min-003",
+      "purpose": "Scans dependencies to exploit vulnerability classes in a staging environment",
+      "description": "Security testing tool",
+      "expectedTier": "minimal",
+      "why": "Art. 5(1)(b) concerns vulnerabilities of persons, not software. Matching this would call a scanner a banned practice.",
+      "tags": ["false-positive-trap", "vocabulary-collision"]
+    },
+    {
+      "id": "min-004",
+      "purpose": "Promotional email campaign scheduling and A/B testing",
+      "description": "Marketing automation",
+      "expectedTier": "minimal",
+      "why": "'Promotional' is not employment promotion.",
+      "tags": ["false-positive-trap", "word-boundary"]
+    },
+    {
+      "id": "min-005",
+      "purpose": "Upgrading legacy systems on a rolling maintenance schedule",
+      "description": "Change management planning",
+      "expectedTier": "minimal",
+      "why": "'Upgrading' contains 'grading'; without word boundaries this reads as educational assessment.",
+      "tags": ["false-positive-trap", "word-boundary"]
+    },
+    {
+      "id": "min-006",
+      "purpose": "Irish market expansion analysis and territory planning",
+      "description": "Commercial strategy support",
+      "expectedTier": "minimal",
+      "why": "'Irish' contains 'iris'; without word boundaries this reads as biometrics.",
+      "tags": ["false-positive-trap", "word-boundary"]
+    },
+    {
+      "id": "min-007",
+      "purpose": "Sends courtesy reminders to customers with overdue invoices",
+      "description": "Accounts receivable follow-up",
+      "expectedTier": "minimal",
+      "why": "'Courtesy' contains 'court'; without word boundaries this reads as administration of justice.",
+      "tags": ["false-positive-trap", "word-boundary"]
+    },
+    {
+      "id": "min-008",
+      "purpose": "Generates examples for the sales enablement library",
+      "description": "Content assistance for the sales team",
+      "expectedTier": "minimal",
+      "why": "'Examples' contains 'exam'; without word boundaries this reads as education. Note this system also generates content, so Art. 50 may apply on the facts — a reasonable disagreement to surface.",
+      "tags": ["false-positive-trap", "word-boundary", "ambiguous"]
+    },
+    {
+      "id": "min-009",
+      "purpose": "Controls office heating and cooling schedules by occupancy",
+      "description": "Building management",
+      "expectedTier": "minimal",
+      "why": "Comfort HVAC is not the supply of heating as critical infrastructure under Annex III(2).",
+      "tags": ["false-positive-trap", "vocabulary-collision"]
+    },
+    {
+      "id": "min-010",
+      "purpose": "Forecasts warehouse stock levels from historical sales",
+      "description": "Demand planning",
+      "expectedTier": "minimal",
+      "why": "No enumerated trigger. Art. 4 literacy still applies regardless of tier.",
+      "tags": ["genuinely-minimal"]
+    },
+    {
+      "id": "min-011",
+      "purpose": "Summarises meeting transcripts into action items",
+      "description": "Internal productivity tool",
+      "expectedTier": "minimal",
+      "why": "No enumerated trigger.",
+      "tags": ["genuinely-minimal"]
+    },
+    {
+      "id": "min-012",
+      "purpose": "Triages inbound support tickets into the correct queue by topic",
+      "description": "Ticket triage classifier",
+      "expectedTier": "minimal",
+      "why": "'Triage' here is ticket routing, not the emergency triage of Annex III(5).",
+      "tags": ["false-positive-trap", "vocabulary-collision"]
+    },
+
+    {
+      "id": "gap-001",
+      "purpose": "Vision component that halts the press when a hand enters the danger zone",
+      "description": "Machine safety interlock in an industrial press",
+      "expectedTier": "high",
+      "expectedArticle": "Art.6(1)",
+      "why": "High-risk under Art. 6(1) as a safety component of a product covered by Annex I (Machinery Regulation). Nothing in a purpose string identifies the product regulation, so the rules engine cannot reach this.",
+      "knownLimitation": true,
+      "tags": ["annex-i", "coverage-gap"]
+    },
+    {
+      "id": "gap-002",
+      "purpose": "Analyses radiology images to flag suspected fractures for the reporting radiologist",
+      "description": "Clinical decision support in a hospital",
+      "expectedTier": "high",
+      "expectedArticle": "Art.6(1)",
+      "why": "High-risk under Art. 6(1) as a safety component of a medical device under the MDR. Not an Annex III area, so the engine cannot reach it from a description.",
+      "knownLimitation": true,
+      "tags": ["annex-i", "coverage-gap", "healthcare"]
+    },
+    {
+      "id": "gap-003",
+      "purpose": "Narrow procedural step that reorders an already-complete shortlist alphabetically",
+      "description": "Applies no judgement of its own to candidates",
+      "expectedTier": "minimal",
+      "why": "Art. 6(3) derogation: a narrow procedural task within an Annex III area is not high-risk. The engine matches the Annex III vocabulary and cannot evaluate the derogation, so it is expected to return high-with-confirmation. Reported as a gap, not a pass.",
+      "knownLimitation": true,
+      "tags": ["article-6-3", "coverage-gap"]
+    }
+  ]
+}
