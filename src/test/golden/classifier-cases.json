@@ -1,6 +1,9 @@
 {
   "$comment": "Labelled from Regulation (EU) 2024/1689 as amended by 2026/1744 — NOT from this engine's output. Cases where the two disagree are findings, not cases to be retuned. `knownLimitation: true` marks a case the rules engine provably cannot decide from a description; those are reported as coverage gaps, never as passes.",
   "labelledOn": "2026-08-06",
+  "defaultStanding": "regression",
+  "$standing": "Every case here is 'regression': labelled in-house from the instrument. It gates the build and it has already found real bugs, but it tests the engine against its author's reading of the Act, not against the Act, so no figure from it may be quoted outside the repository. To promote a case to 'certification', add standing:'certification' and a complete `review` block naming the reviewer, their qualification, the date, and what they were asked. The test rejects the promotion without it — the standing claim has to be as checkable as the label.",
+  "$sampling": "These descriptions were written in-house, so they carry the author's phrasing habits. Real intended-purpose statements are published today in the Dutch national algorithm register, the UK Algorithmic Transparency Recording Standard, and the Amsterdam and Helsinki city AI registers. Note the EU database under Art. 71 is not a source yet: Annex III high-risk obligations apply from 2 December 2027, so provider registration has not begun. All four usable registers are public-sector, which over-represents Annex III(5), (6) and (8) and gives almost nothing on employment or credit — sample them knowing the tilt.",
   "cases": [
     {
       "id": "proh-001",

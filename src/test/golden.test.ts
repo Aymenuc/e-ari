@@ -6,7 +6,7 @@ import {
   detectScoringDrift, formatScoringReport, type ScoringLockFile,
 } from '@/lib/eval/scoring-lock';
 import {
-  evaluateClassifier, formatClassifierReport, type ClassifierCase,
+  evaluateClassifier, formatClassifierReport, quotableClaim, type ClassifierCase,
 } from '@/lib/eval/classifier-eval';
 
 const GOLDEN = join(process.cwd(), 'src/test/golden');
@@ -60,8 +60,9 @@ describe('scoring lock', () => {
 });
 
 describe('classifier accuracy', () => {
-  const cases: ClassifierCase[] = read('classifier-cases.json').cases;
-  const m = evaluateClassifier(cases);
+  const dataset = read('classifier-cases.json');
+  const cases: ClassifierCase[] = dataset.cases;
+  const m = evaluateClassifier(cases, dataset.defaultStanding ?? 'regression');
   const report = () => formatClassifierReport(m);
 
   it('never misses an obligation that exists', () => {
@@ -112,5 +113,64 @@ describe('classifier accuracy', () => {
     const tiers = new Set(cases.map((c) => c.expectedTier));
     expect([...tiers].sort()).toEqual(['high', 'limited', 'minimal', 'prohibited']);
     expect(cases.length).toBeGreaterThanOrEqual(40);
+  });
+});
+
+/**
+ * What an accuracy figure is allowed to claim.
+ *
+ * The regression set is real work and it finds real bugs, but its labels are
+ * the engine author's reading of the Act. Quoting it externally would present
+ * self-agreement as validation. These tests make that boundary structural
+ * rather than a habit someone has to remember under deadline.
+ */
+describe('label standing', () => {
+  const dataset = read('classifier-cases.json');
+  const cases: ClassifierCase[] = dataset.cases;
+  const m = evaluateClassifier(cases, dataset.defaultStanding ?? 'regression');
+
+  it('demands full provenance before a case counts as reviewed', () => {
+    // Promotion must cost something. Without this, 'certification' is one word
+    // in a JSON file away from a quotable number nobody actually reviewed.
+    for (const c of cases.filter((x) => x.standing === 'certification')) {
+      const r = c.review;
+      expect(r, `${c.id} claims certification with no review block`).toBeDefined();
+      expect(r!.reviewer?.trim(), `${c.id}: reviewer`).toBeTruthy();
+      expect(r!.qualification?.trim(), `${c.id}: qualification`).toBeTruthy();
+      expect(r!.method?.trim(), `${c.id}: method`).toBeTruthy();
+      expect(r!.reviewedOn, `${c.id}: reviewedOn must be an ISO date`).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+  });
+
+  it('refuses an external claim while nothing has been reviewed', () => {
+    // The honest state today. When this starts returning a string, it is
+    // because a reviewer's name is in the file — not because a threshold moved.
+    if (m.bySet.certification.scored === 0) {
+      expect(quotableClaim(m)).toBeNull();
+    }
+  });
+
+  it('never lets the regression figure reach an external claim', () => {
+    const claim = quotableClaim(m);
+    if (claim) {
+      expect(claim).not.toContain(String(m.bySet.regression.correct));
+      expect(claim).toContain('independently reviewed');
+    }
+  });
+
+  it('says plainly in the report that no figure is quotable', () => {
+    const text = formatClassifierReport(m);
+    if (m.bySet.certification.scored === 0) {
+      expect(text).toContain('External claim: none available');
+      expect(text).toContain('never quoted');
+    }
+  });
+
+  it('holds every case to the build gate regardless of standing', () => {
+    // Standing governs what may be claimed, not what is checked. A regression
+    // case failing is still a failing build.
+    expect(m.falseNegatives).toEqual([]);
+    expect(m.falsePositives).toEqual([]);
+    expect(m.bySet.regression.scored + m.bySet.certification.scored).toBe(m.scored);
   });
 });

@@ -25,6 +25,35 @@
 import { classifyByRules, type RiskTier } from '@/lib/ai-act-classify';
 import { CURRENT_CORPUS } from '@/lib/regulatory-provenance';
 
+/**
+ * What a case's label is worth.
+ *
+ * `regression` — labelled in-house from the instrument. Enough to catch a bug,
+ * and it has: two Article 5 prohibitions were found missing this way. Not
+ * enough to quote at anyone, because it tests the engine against its author's
+ * reading of the Act rather than against the Act.
+ *
+ * `certification` — labelled by a qualified reviewer who is not the author of
+ * the engine, with the review recorded. This is the only set whose accuracy
+ * figure may leave the building.
+ *
+ * Both are scored and both gate the build. The difference is not rigour of
+ * execution, it is standing: who is willing to put their name to the label.
+ */
+export type CaseStanding = 'regression' | 'certification';
+
+/** Provenance for a certification label. Required — see the test. */
+export interface CaseReview {
+  /** Who reviewed it. A name or firm, not "a lawyer". */
+  reviewer: string;
+  /** Their basis for reviewing EU AI Act classification. */
+  qualification: string;
+  /** ISO date of the review. */
+  reviewedOn: string;
+  /** What they were shown and what they were asked. */
+  method: string;
+}
+
 export interface ClassifierCase {
   id: string;
   purpose: string;
@@ -38,6 +67,12 @@ export interface ClassifierCase {
   knownLimitation?: boolean;
   expectRequiresConfirmation?: boolean;
   tags?: string[];
+  /** Defaults to the dataset's `defaultStanding`. */
+  standing?: CaseStanding;
+  /** Mandatory when standing is 'certification'. */
+  review?: CaseReview;
+  /** Where the description came from, when it was not written in-house. */
+  sourceUrl?: string;
 }
 
 export interface CaseOutcome {
@@ -52,9 +87,10 @@ export interface CaseOutcome {
   knownLimitation: boolean;
   tags: string[];
   why: string;
+  standing: CaseStanding;
 }
 
-export interface ClassifierMetrics {
+export interface CoreMetrics {
   /** Cases the engine is expected to be able to decide. */
   scored: number;
   correct: number;
@@ -71,12 +107,45 @@ export interface ClassifierMetrics {
   coverageGaps: CaseOutcome[];
   /** Cases asserting a confirmation flag that did not appear. */
   confirmationFailures: CaseOutcome[];
+}
+
+export interface ClassifierMetrics extends CoreMetrics {
+  /**
+   * The same measurements split by what the labels are worth.
+   *
+   * Kept separate rather than blended, because a single headline number over
+   * both sets would carry the certification set's authority and the regression
+   * set's provenance — which is precisely the misquote this exists to prevent.
+   */
+  bySet: Record<CaseStanding, CoreMetrics>;
   outcomes: CaseOutcome[];
 }
 
 const IN_SCOPE: ReadonlySet<RiskTier> = new Set<RiskTier>(['prohibited', 'high']);
 
-export function evaluateClassifier(cases: ClassifierCase[]): ClassifierMetrics {
+function computeMetrics(outcomes: CaseOutcome[]): CoreMetrics {
+  const gaps = outcomes.filter((o) => o.knownLimitation);
+  const scorable = outcomes.filter((o) => !o.knownLimitation);
+  const correct = scorable.filter((o) => o.match);
+  const wrong = scorable.filter((o) => !o.match);
+
+  return {
+    scored: scorable.length,
+    correct: correct.length,
+    accuracy: scorable.length === 0 ? 0 : correct.length / scorable.length,
+    falsePositives: wrong.filter((o) => !IN_SCOPE.has(o.expected) && IN_SCOPE.has(o.actual)),
+    falseNegatives: wrong.filter((o) => IN_SCOPE.has(o.expected) && !IN_SCOPE.has(o.actual)),
+    tierConfusions: wrong.filter((o) => IN_SCOPE.has(o.expected) === IN_SCOPE.has(o.actual)),
+    articleMismatches: scorable.filter((o) => o.articleMismatch),
+    coverageGaps: gaps,
+    confirmationFailures: outcomes.filter((o) => o.confirmationExpected === true && !o.confirmationActual),
+  };
+}
+
+export function evaluateClassifier(
+  cases: ClassifierCase[],
+  defaultStanding: CaseStanding = 'regression',
+): ClassifierMetrics {
   const outcomes: CaseOutcome[] = cases.map((c) => {
     const r = classifyByRules({
       name: c.id,
@@ -98,6 +167,7 @@ export function evaluateClassifier(cases: ClassifierCase[]): ClassifierMetrics {
       knownLimitation: c.knownLimitation === true,
       tags: c.tags ?? [],
       why: c.why,
+      standing: c.standing ?? defaultStanding,
     };
 
     if (c.expectedArticle && r.tier === c.expectedTier && !actualArticles.includes(c.expectedArticle)) {
@@ -106,26 +176,41 @@ export function evaluateClassifier(cases: ClassifierCase[]): ClassifierMetrics {
     return outcome;
   });
 
-  const gaps = outcomes.filter((o) => o.knownLimitation);
-  const scorable = outcomes.filter((o) => !o.knownLimitation);
-  const wrong = scorable.filter((o) => !o.match);
-
   return {
-    scored: scorable.length,
-    correct: scorable.filter((o) => o.match).length,
-    accuracy: scorable.length === 0 ? 0 : scorable.filter((o) => o.match).length / scorable.length,
-    falsePositives: wrong.filter((o) => !IN_SCOPE.has(o.expected) && IN_SCOPE.has(o.actual)),
-    falseNegatives: wrong.filter((o) => IN_SCOPE.has(o.expected) && !IN_SCOPE.has(o.actual)),
-    tierConfusions: wrong.filter(
-      (o) => IN_SCOPE.has(o.expected) === IN_SCOPE.has(o.actual),
-    ),
-    articleMismatches: scorable.filter((o) => o.articleMismatch),
-    coverageGaps: gaps,
-    confirmationFailures: outcomes.filter(
-      (o) => o.confirmationExpected === true && !o.confirmationActual,
-    ),
+    ...computeMetrics(outcomes),
+    bySet: {
+      regression: computeMetrics(outcomes.filter((o) => o.standing === 'regression')),
+      certification: computeMetrics(outcomes.filter((o) => o.standing === 'certification')),
+    },
     outcomes,
   };
+}
+
+/**
+ * The only function permitted to produce an external accuracy claim.
+ *
+ * It returns null when the certification set is empty, which is the current
+ * state and will be until a qualified reviewer has labelled cases. Routing
+ * every outward claim through one function that can refuse is the difference
+ * between a rule people remember and a rule that holds: there is no honest
+ * sentence to paste into a deck if this returns null, and no need to rely on
+ * whoever is writing the deck recalling why.
+ *
+ * The regression figure is deliberately unreachable from here. It is real, it
+ * gates the build, and it is nobody's business outside the repository.
+ */
+export function quotableClaim(m: ClassifierMetrics): string | null {
+  const cert = m.bySet.certification;
+  if (cert.scored === 0) return null;
+
+  const pct = ((cert.accuracy) * 100).toFixed(1);
+  const gaps = cert.coverageGaps.length;
+  return (
+    `${pct}% (${cert.correct}/${cert.scored}) on independently reviewed cases, ` +
+    `measured against ${CURRENT_CORPUS.citation}` +
+    (gaps > 0 ? `, with ${gaps} further case${gaps === 1 ? '' : 's'} held out as not determinable from a system description` : '') +
+    '.'
+  );
 }
 
 /**
@@ -138,17 +223,28 @@ export function evaluateClassifier(cases: ClassifierCase[]): ClassifierMetrics {
  */
 export function formatClassifierReport(m: ClassifierMetrics): string {
   const pct = (n: number) => `${(n * 100).toFixed(1)}%`;
+  const set = (label: string, c: CoreMetrics, note: string) =>
+    c.scored === 0
+      ? `  ${label.padEnd(14)} empty — ${note}`
+      : `  ${label.padEnd(14)} ${c.correct}/${c.scored} (${pct(c.accuracy)}) — ${note}`;
+
+  const claim = quotableClaim(m);
   const lines: string[] = [
-    `Classifier — ${m.correct}/${m.scored} correct (${pct(m.accuracy)})`,
-    `  measured against: ${CURRENT_CORPUS.citation}`,
-    `  labels: written in-house from the instrument, not independently reviewed`,
+    `Classifier — measured against ${CURRENT_CORPUS.citation}`,
+    '',
+    set('certification', m.bySet.certification, 'independently reviewed labels; the only set quotable externally'),
+    set('regression', m.bySet.regression, 'in-house labels; gates the build, never quoted'),
+    '',
+    claim
+      ? `  External claim: ${claim}`
+      : '  External claim: none available. No case carries an independent review, so there is no accuracy figure that may be quoted outside the repository.',
   ];
 
   const section = (title: string, rows: CaseOutcome[]) => {
     if (rows.length === 0) return;
     lines.push('', `${title} (${rows.length}):`);
     for (const o of rows) {
-      lines.push(`  ${o.id}: expected ${o.expected}, got ${o.actual}`);
+      lines.push(`  ${o.id} [${o.standing}]: expected ${o.expected}, got ${o.actual}`);
       lines.push(`    ${o.why}`);
     }
   };

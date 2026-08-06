@@ -43,8 +43,9 @@ if (drift.length > 0) failed = true;
 
 // ── Classifier ─────────────────────────────────────────────────────────────
 rule('Classifier accuracy');
-const cases: ClassifierCase[] = read('classifier-cases.json').cases;
-const m = evaluateClassifier(cases);
+const dataset = read('classifier-cases.json');
+const cases: ClassifierCase[] = dataset.cases;
+const m = evaluateClassifier(cases, dataset.defaultStanding ?? 'regression');
 console.log(formatClassifierReport(m));
 if (m.falseNegatives.length > 0 || m.falsePositives.length > 0) failed = true;
 

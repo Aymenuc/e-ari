@@ -65,6 +65,20 @@ up. Cases marked `knownLimitation` are provably undecidable from a description
 (Art. 6(1) Annex I components, Art. 6(3) derogations) and are reported as coverage,
 never scored either way.
 
+**No accuracy figure leaves the repository unless `quotableClaim()` produces it.** Cases
+carry a `standing`: `regression` labels are written in-house and gate the build but are
+never quoted; `certification` labels come from a qualified outside reviewer and are the
+only ones an external claim may rest on. Promotion requires a full `review` block —
+reviewer, qualification, date, method — and a test rejects it otherwise. Today the
+certification set is empty, so there is no quotable number, and that is the honest
+state rather than a gap to paper over.
+
+Never generate cases by mutating existing ones with a model. Either the mutation
+inherits a label that may no longer hold — "office heating" and "district heating
+supply" differ by one word and by one tier — or a model labels it, which measures
+agreement between models rather than with the Act. Paraphrases also add `n` without
+adding evidence.
+
 **Regulatory content must be registered.** Any module under `src/lib` that cites the
 Act needs a row in `src/lib/regulatory-provenance.ts` with a `checked` date. A test
 enforces this. A superseded application date once survived in eight files at once
